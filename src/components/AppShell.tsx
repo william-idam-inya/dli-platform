@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Menu, Moon, Sun, X } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { navigationSections } from '../data/navigation';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -58,7 +58,11 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export default function AppShell() {
+interface AppShellProps {
+  children: ReactNode;
+}
+
+export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -129,7 +133,7 @@ export default function AppShell() {
         </header>
 
         <div className="page-content">
-          <Outlet />
+          {children}
           <footer className="page-footer">
             <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
             <span>Built with security and learner privacy as priorities.</span>

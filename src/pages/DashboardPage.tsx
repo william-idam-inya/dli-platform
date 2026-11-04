@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CheckCircle2,
   CircleDashed,
-  ClipboardCheck,
   GraduationCap,
   LockKeyhole,
   ShieldCheck,
