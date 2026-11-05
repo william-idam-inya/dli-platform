@@ -8,6 +8,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage A branch: `feature/stage-a-foundation`, draft PR #1 targeting `main`.
 - Stage B branch: `feature/stage-b-identity-rbac`, draft PR #2 targeting Stage A.
 - Stage C branch: `feature/stage-c-user-management`, stacked on Stage B.
+- Stage D1 branch: `feature/stage-d1-academic-catalogue`, stacked on Stage C.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -48,14 +49,42 @@ changes, allowed Owner->Admin operation plus audit **rolled back in the
 same test transaction**. Both real accounts remain active. Supabase
 security advisor reports no database policy security finding.
 
-**Not yet run:** Stage C TypeScript check, production build, full browser
-interaction, dedicated test-user invitation, and negative-path end-to-end
-tests. Do not call Stage C complete until these pass. Read
-`docs/stage-c-setup.md` for exact commands.
+**Passed on user's Windows environment:** Stage C `npm.cmd run typecheck`
+and `npm.cmd run build`; Vite compiled successfully with a non-blocking
+bundle-size warning. The user supplied a screenshot of the Admin /users
+directory showing the Admin profile and correct Founder visibility restriction.
+The bundle warning is being addressed with React lazy loading on Stage D1.
+
+**Still pending:** controlled test-user invitation, role-change,
+suspend/reactivate/revoke browser tests and student/unregistered end-to-end
+checks. Do not mark Stage C fully complete. See `docs/stage-c-setup.md`.
+
+## Stage D1 — Academic catalogue (development, testing pending)
+
+Two DLI programmes, seven academic divisions, and ten documented JSS/SS
+subjects have been seeded in the development project. No invented courses,
+enrolments or student records were created.
+
+Deployed migrations:
+- `20261105074030_stage_d1_academic_catalogue.sql`
+- `20261105074719_stage_d1_foreign_key_indexes.sql`
+
+New `/academics` route contains programme, academic level, subject and course
+creation, activation/deactivation, live Supabase reads and client error states.
+Browser roles are restricted by RLS to active Owner, Admin and Academic
+Coordinator accounts; DELETE is not granted.
+
+Database checks passed: Admin read; unregistered and simulated Student
+no-read; Admin insert tested in a rolled-back transaction. Supabase security
+advisor has no database policy findings. **Frontend build/browser tests not
+yet run.** See `docs/stage-d1-setup.md`.
+
+Further Stage D work will include topics, tutors, cohorts and learner
+enrolments with scoped course access.
 
 ## Remaining roadmap
 
-D. Academic structure; E. LMS; F. Scheduling/attendance; G. Finance;
+Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
 H. Communications; I. Reports/governance; J. Gemini compliance gate;
 K. Production hardening and Cloudflare Pages release.
 
