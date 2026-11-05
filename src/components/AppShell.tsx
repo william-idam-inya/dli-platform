@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage B · Identity</strong>
-          <p>Access is verified against the DLI user registry.</p>
+          <strong>Stage C · User Management</strong>
+          <p>Account actions are restricted and audited in Supabase.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
