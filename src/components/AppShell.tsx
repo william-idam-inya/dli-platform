@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage E2 · Private lesson files</strong>
-          <p>Private file access is checked against current class membership and publication.</p>
+          <strong>Stage E3 · Assignments and grading</strong>
+          <p>Assignments, learner responses and grades are protected by current class membership.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
