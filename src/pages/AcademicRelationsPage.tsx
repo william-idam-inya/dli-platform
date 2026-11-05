@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { ArrowLeft, BookOpen, CheckCircle2, CircleOff, GraduationCap, Layers3, Plus, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import './AcademicSetupPage.css';
 import './AcademicRelationsPage.css';
 
 type RecordStatus = { id: string; is_active: boolean };
