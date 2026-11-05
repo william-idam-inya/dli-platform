@@ -86,6 +86,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Academic',
       },
       {
+        label: 'Quizzes & results',
+        path: '/quizzes',
+        icon: ClipboardCheck,
+        description: 'Secure multiple-choice question banks, class quizzes and saved results.',
+        group: 'Academic',
+      },
+      {
         label: 'Timetable & attendance',
         path: '/schedule',
         icon: CalendarDays,
