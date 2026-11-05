@@ -1,0 +1,44 @@
+/* Stage F2 — staff-recorded attendance and class-scoped reports */
+.attendance-page{width:100%}
+.attendance-selectors{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.attendance-selectors>label{font-size:12px;font-weight:750;color:var(--text)}
+.attendance-selectors>select{display:block;width:100%;min-height:44px;box-sizing:border-box;
+ padding:10px 12px;color:var(--text);background:var(--surface-soft);
+ border:1px solid var(--border);border-radius:9px;font:inherit;font-size:12px}
+.attendance-selectors a{color:var(--purple);text-decoration:underline}
+.attendance-session-details{display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+ border-top:1px solid var(--border);padding-top:15px;margin-top:7px;
+ font-size:12px;color:var(--muted);line-height:1.5}
+.attendance-session-details>svg{color:var(--purple)}
+.attendance-roster{display:flex;flex-direction:column;gap:12px;margin-top:17px}
+.attendance-roster-row{display:flex;justify-content:space-between;align-items:center;
+ gap:18px;flex-wrap:wrap;padding:15px;border:1px solid var(--border);
+ border-radius:12px;background:var(--surface-soft)}
+.attendance-learner{display:flex;flex-direction:column;align-items:flex-start;
+ min-width:150px;gap:7px;flex:1 1 170px}
+.attendance-learner>strong{font-size:13px;color:var(--text);overflow-wrap:anywhere}
+.attendance-learner>small{color:var(--muted);font-size:10px}
+.attendance-not-recorded{display:inline-flex;font-size:10px;line-height:1.2;
+ background:var(--surface);padding:7px 9px;border-radius:8px;color:var(--muted);
+ font-weight:700;border:1px solid var(--border)}
+.attendance-controls{display:flex;align-items:flex-end;gap:8px;flex:2 1 250px;
+ flex-wrap:wrap;justify-content:flex-end}
+.attendance-controls label{font-size:10px;color:var(--text);font-weight:750;width:100%}
+.attendance-controls select{min-width:165px;flex:1 1 160px;box-sizing:border-box;
+ min-height:42px;padding:9px 11px;border:1px solid var(--border);border-radius:9px;
+ background:var(--surface);color:var(--text);font:inherit;font-size:11px}
+.attendance-controls .academic-submit{min-width:118px;align-self:auto;min-height:42px;
+ white-space:nowrap}
+.attendance-own-mark{display:flex;align-items:center;gap:12px;border:1px solid var(--border);
+ border-radius:12px;background:var(--surface-soft);padding:16px;margin-top:12px}
+.attendance-own-mark>svg{color:var(--purple)}
+.attendance-own-mark>div{display:flex;flex-direction:column;gap:7px}
+.attendance-own-mark strong{color:var(--text);font-size:13px}
+.attendance-own-mark small{color:var(--muted);font-size:11px}
+.attendance-page button:focus-visible,.attendance-page select:focus-visible,
+.attendance-page a:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+@media(max-width:680px){
+ .attendance-roster-row{padding:12px}
+ .attendance-controls{justify-content:flex-start;width:100%}
+ .attendance-controls select,.attendance-controls .academic-submit{width:100%}
+}
