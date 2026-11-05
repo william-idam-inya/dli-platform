@@ -17,6 +17,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage E4 branch: `feature/stage-e4-quizzes-attempts-results`, stacked on E3.
 - Stage F1 branch: `feature/stage-f1-class-scheduling`, stacked on E4.
 - Stage F2 branch: `feature/stage-f2-attendance-reporting`, stacked on F1.
+- Stage G1 branch: `feature/stage-g1-finance-governance`, stacked on F2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -271,13 +272,40 @@ class marks. An initial circular RLS reference was detected and fixed,
 then the read-policy performance warnings were eliminated.
 All test records rolled back and the Admin account remains unchanged.
 
-**Pending:** Windows F2 TypeScript/build, Admin /attendance screenshot,
-live approved account marking/correction tests, cross-class negative-path
-browser tests, privacy/accessibility review and attendance-policy approval.
+**Passed:** F2 Windows TypeScript and Vite production build with no chunk warning; Admin screenshot of /attendance displays zero offerings, sessions, present and absent records. **Pending:** approved real-user marking/correction tests, cross-class browser denials, privacy/accessibility and attendance-policy approval.
 See `docs/stage-f2-setup.md`.
 
 The two E4 privileged quiz RPC and pre-existing Auth leaked-password
 warnings remain open. No new F2-specific security advisor findings.
+
+## Stage G1 — Restricted finance governance (under test)
+
+A finance-policy proposal foundation is deployed in DLI development and
+committed on `feature/stage-g1-finance-governance`:
+
+- `20261105230327_stage_g1_pending_finance_policy_proposals.sql`.
+
+`finance_policy_proposals` stores append-only, **pending-only** internal
+proposal text and optionally one exact numeric amount with separately
+stored NGN or USD currency. Founder/Owner, Admin and Finance Officer may
+propose or read records; others have no access. Browser approval, UPDATE,
+DELETE, invoice generation, transfer receipt, charge or payout are not
+enabled. Proposal creation is audited. The `/finance` page provides
+restricted entry and a pending review queue with no financial effect.
+
+**Passed rollback-only SQL tests:** Owner authored one pending NGN draft,
+Finance Officer read it and authored another, unsupported/missing
+currencies rejected, browser policy approval/update denied, Student
+read/create denied, audit event created. Everything rolled back;
+0 finance proposals remain and Admin role unchanged.
+
+**Pending:** G1 Windows TypeScript/build, browser empty-state, controlled
+finance-role test, institution approval process, and independent finance
+security/privacy acceptance. See `docs/stage-g1-setup.md`.
+
+No new G1 security advisor findings. Two E4 privileged quiz RPC and Auth
+leaked-password warnings remain unresolved. No invented fees, prices,
+financial transactions or paid integrations.
 
 ## Remaining roadmap
 
