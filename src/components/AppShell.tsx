@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage F1 · Class scheduling</strong>
-          <p>Published class sessions are restricted by active class enrolment.</p>
+          <strong>Stage F2 · Attendance & reports</strong>
+          <p>Attendance marks require verified classes and staff access.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
