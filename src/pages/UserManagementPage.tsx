@@ -282,7 +282,7 @@ export default function UserManagementPage() {
         </button>}
       </section>
 
-      <InviteUserPage embedded onCreated={() => { void loadUsers(true); void loadAudit(); }}/>
+      <InviteUserPage embedded allowedRoles={roles} onCreated={() => { void loadUsers(true); void loadAudit(); }}/>
 
       <section className="panel user-audit">
         <div className="panel-heading">
