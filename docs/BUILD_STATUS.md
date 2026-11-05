@@ -9,6 +9,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage B branch: `feature/stage-b-identity-rbac`, draft PR #2 targeting Stage A.
 - Stage C branch: `feature/stage-c-user-management`, stacked on Stage B.
 - Stage D1 branch: `feature/stage-d1-academic-catalogue`, stacked on Stage C.
+- Stage D2 branch: `feature/stage-d2-topics-cohorts-offerings`, stacked on D1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -59,7 +60,7 @@ The bundle warning is being addressed with React lazy loading on Stage D1.
 suspend/reactivate/revoke browser tests and student/unregistered end-to-end
 checks. Do not mark Stage C fully complete. See `docs/stage-c-setup.md`.
 
-## Stage D1 — Academic catalogue (development, testing pending)
+## Stage D1 — Academic catalogue (local build and live read verified)
 
 Two DLI programmes, seven academic divisions, and ten documented JSS/SS
 subjects have been seeded in the development project. No invented courses,
@@ -76,11 +77,34 @@ Coordinator accounts; DELETE is not granted.
 
 Database checks passed: Admin read; unregistered and simulated Student
 no-read; Admin insert tested in a rolled-back transaction. Supabase security
-advisor has no database policy findings. **Frontend build/browser tests not
-yet run.** See `docs/stage-d1-setup.md`.
+advisor has no database policy findings. **TypeScript and production build now passed on the user's Windows computer;**
+the screenshot verifies the 2/7/10/0 live catalogue. Browser create/update
+and controlled account-action tests are still pending. See `docs/stage-d1-setup.md`.
 
 Further Stage D work will include topics, tutors, cohorts and learner
 enrolments with scoped course access.
+
+## Stage D2 — Topics, cohorts and course offerings (implementation under test)
+
+Development migrations applied and committed:
+- `20261105075951_stage_d2_topics_cohorts_offerings.sql`
+- `20261105080800_stage_d2_offering_cohort_foreign_key_index.sql`
+
+The new `/cohorts` route manages three persistent relation types:
+topics belonging to an approved course, cohorts belonging to a programme
+and level, and offerings connecting matching approved courses/cohorts.
+No course, topic, cohort, offering, student or tutor record was invented.
+
+Database tests passed: permitted Admin relation inserts in a rolled-back
+transaction; a mismatched offering rejected; populated records hidden
+to a temporarily simulated Student role; transaction rolled back and
+real Admin role restored. No DB security policy findings. Vite 8
+Rolldown vendor chunk grouping has been configured to address the
+previous warning, but its effect has not yet been measured locally.
+
+**Pending:** Stage D2 typecheck/build; browser create/edit activation tests;
+real controlled user/tutor enrolment flows in later Stage D.
+See `docs/stage-d2-setup.md`.
 
 ## Remaining roadmap
 
