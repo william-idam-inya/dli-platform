@@ -291,3 +291,16 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(117, 91, 215, .3
   .auth-panel { padding: 27px 22px; }
   .auth-panel h1 { font-size: 25px; }
 }
+
+/* Stage B — manual invitation workflow */
+.invite-panel, .invite-result { max-width: 650px; margin-bottom: 18px; }
+.invite-panel h2 { margin: 0 0 7px; font-size: 18px; font-family: Manrope, sans-serif; }
+.auth-form select, .invite-result textarea {
+  display: block; width: 100%; padding: 12px 13px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--surface-soft); color: var(--text); font: inherit; font-size: 13px;
+}
+.auth-form select { min-height: 45px; cursor: pointer; }
+.invite-result label { display: block; margin: 12px 0 8px; font-size: 12px; font-weight: 700; }
+.invite-result textarea { max-width: 100%; min-height: 78px; word-break: break-all; }
+.invite-result .auth-submit { max-width: 250px; }
+.invite-result .auth-helper { display: flex; align-items: flex-start; gap: 8px; }
