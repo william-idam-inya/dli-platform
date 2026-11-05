@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage E1 · Lessons & resources</strong>
-          <p>Lesson publication and class membership are verified through Supabase RLS.</p>
+          <strong>Stage E2 · Private lesson files</strong>
+          <p>Private file access is checked against current class membership and publication.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
