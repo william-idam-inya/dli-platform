@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage F2 · Attendance & reports</strong>
-          <p>Attendance marks require verified classes and staff access.</p>
+          <strong>Stage G1 · Finance governance</strong>
+          <p>Only pending finance proposals are enabled; no financial transactions.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
