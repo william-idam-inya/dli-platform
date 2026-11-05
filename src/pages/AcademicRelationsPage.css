@@ -1,0 +1,17 @@
+/* Stage D2 — use DLI's existing academic design tokens. */
+.academic-relations { width: 100%; }
+.academic-relations-form { margin-top: 0; padding-top: 0; border-top: 0; }
+.academic-relations-list { margin-top: 18px; padding-top: 6px; border-top: 1px solid var(--border); }
+.academic-relations-dates {
+  display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px;
+}
+.academic-relations-dates label { display: flex; flex-direction: column; gap: 8px; }
+.academic-relations-dates input { min-width: 0; }
+.academic-offerings-panel { margin-bottom: 18px; }
+.academic-offerings-panel .academic-relations-form { max-width: 630px; }
+.academic-offerings-panel > .academic-empty { max-width: 700px; }
+.academic-relations .academic-record-text { min-width: 180px; }
+@media(max-width:680px) {
+  .academic-relations-dates { grid-template-columns: 1fr; }
+  .academic-offerings-panel .academic-record { align-items: flex-start; }
+}
