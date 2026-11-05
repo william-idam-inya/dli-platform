@@ -1,8 +1,8 @@
 # Stage E2 — private lesson-file uploads and authenticated downloads
 
-Status: implementation deployed to **DLI development** only. Windows
-TypeScript/build, actual file transfer, cross-role browser tests and
-production review are **still pending**. This work is stacked on Stage E1.
+Status: DLI development database and Windows TypeScript/build verified;
+actual file transfer, cross-role browser tests and production review remain
+**pending**. This work is stacked on Stage E1.
 
 ## Scope implemented
 
@@ -66,7 +66,7 @@ cannot be edited after reservation. No browser DELETE is granted.
       were created.
 - [ ] Real Storage API upload with approved non-sensitive file.
 - [ ] Browser authenticated download / forbidden download negative test.
-- [ ] Local TypeScript check and Vite build.
+- [x] Windows TypeScript check and Vite production build passed.
 - [ ] Narrow screen, keyboard, network failure and error recovery.
 
 **Important limitation:** If an upload succeeds but the final metadata
