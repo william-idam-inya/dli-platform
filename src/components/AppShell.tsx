@@ -1,9 +1,18 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Menu, Moon, Sun, X } from 'lucide-react';
+import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { navigationSections } from '../data/navigation';
+import { useAuth } from '../auth/AuthProvider';
+import { canAccessPath, roleLabels } from '../auth/permissions';
+import { supabase } from '../lib/supabase';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { account } = useAuth();
+  const permittedSections = navigationSections.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => account && canAccessPath(account.role, item.path)),
+  })).filter((section) => section.items.length > 0);
+
   return (
     <div className="sidebar-inner">
       <NavLink to="/" className="brand" onClick={onNavigate} aria-label="DLI Platform home">
@@ -24,7 +33,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="primary-nav" aria-label="Main navigation">
-        {navigationSections.map((section) => (
+        {permittedSections.map((section) => (
           <div className="nav-section" key={section.label}>
             <p className="nav-section-label">{section.label}</p>
             {section.items.map((item) => {
@@ -49,11 +58,11 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Build preview</strong>
-          <p>Platform foundation is in progress.</p>
+          <strong>Stage B · Identity</strong>
+          <p>Access is verified against the DLI user registry.</p>
         </div>
       </div>
-      <div className="sidebar-version">DLI Platform · Foundation</div>
+      <div className="sidebar-version">DLI Platform · Development</div>
     </div>
   );
 }
@@ -64,6 +73,15 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
+  const { account, clearNotice } = useAuth();
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const signOut = async () => {
+    if (!supabase) return;
+    setLogoutError(null);
+    clearNotice();
+    const { error } = await supabase.auth.signOut();
+    if (error) setLogoutError('Could not sign out. Please retry.');
+  };
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     try {
@@ -119,7 +137,7 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
           <div className="topbar-actions">
-            <span className="preview-label"><span className="preview-dot" /> Foundation preview</span>
+            <span className="preview-label"><span className="preview-dot" /> Development access</span>
             <button
               className="icon-button theme-toggle"
               onClick={() => setDarkMode((current) => !current)}
@@ -128,11 +146,17 @@ export default function AppShell({ children }: AppShellProps) {
             >
               {darkMode ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <div className="profile-placeholder" aria-label="Authentication not yet enabled">D</div>
+            <NavLink to="/change-password" className="account-mini" title="Account security">
+              <span className="profile-placeholder">{account?.full_name?.charAt(0).toUpperCase() || 'D'}</span>
+              <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? roleLabels[account.role] : ''}</small></span>
+            </NavLink>
+            <button className="icon-button" onClick={() => { void signOut(); }}
+              aria-label="Sign out" title="Sign out"><LogOut size={17} /></button>
           </div>
         </header>
 
         <div className="page-content">
+          {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
           {children}
           <footer className="page-footer">
             <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
