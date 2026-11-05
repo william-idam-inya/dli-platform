@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
+import { Link } from 'react-router-dom';
 
 type CatalogueTable = 'programmes' | 'academic_levels' | 'subjects' | 'courses';
 
@@ -419,8 +420,9 @@ export default function AcademicSetupPage() {
         </section>
       </div>
       <div className="module-footnote">
-        <ShieldCheck size={15}/> Topics, cohort enrolment and tutor assignments are not implemented in D1.
-        Existing records are never deleted by these controls.
+        <ShieldCheck size={15}/> Course topics, cohorts and offerings are managed separately.
+        Student enrolments and tutor assignments are not yet enabled.
+        <Link to="/cohorts" className="text-link">Open cohorts &amp; topics</Link>
       </div>
     </div>
   );
