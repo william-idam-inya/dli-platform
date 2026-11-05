@@ -82,7 +82,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Assessments',
         path: '/assessments',
         icon: ClipboardCheck,
-        description: 'Assignments, text responses, manual marking and written feedback. Quizzes are planned.',
+        description: 'Published assignments, Student text responses, manual grades and feedback.',
         group: 'Academic',
       },
       {
@@ -96,7 +96,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Timetable & attendance',
         path: '/schedule',
         icon: CalendarDays,
-        description: 'Class sessions, tutor schedules, meeting links and attendance.',
+        description: 'Approved class timetables, meeting links and cancellation notices. Attendance follows in F2.',
         group: 'Academic',
       },
     ],
