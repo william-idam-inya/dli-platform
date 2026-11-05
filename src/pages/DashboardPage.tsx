@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage F1 scheduling is implemented in development; attendance, security and browser acceptance remain.', status: 'active' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage F2 attendance and reporting implemented in dev; controlled browser acceptance remains.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage F1: timetable and class scheduling implementation</strong>
-          <span>Stage E4 passes the local TypeScript/build and shows the expected empty quiz screen. Stage F1 adds class timetables, meeting links and cancellation notices; browser verification is pending.</span>
+          <strong>Stage F2: attendance and reporting implementation</strong>
+          <span>Stage F1 passes the local TypeScript/build and displays the expected empty timetable. Stage F2 adds manually recorded Student attendance and role-scoped reporting; frontend verification is pending.</span>
         </div>
-        <span className="status-chip">Stage F1</span>
+        <span className="status-chip">Stage F2</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify the F1 timetable screen. Controlled account, file transfer, quiz and scheduling tests remain before production.</p>
+          <p>Verify F2 attendance in the browser. Controlled account, file-transfer, quiz and attendance tests remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/schedule')?.path ?? '/schedule'} className="text-link">
-          Open timetable <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/attendance')?.path ?? '/attendance'} className="text-link">
+          Open attendance register <ArrowRight size={16} />
         </Link>
       </section>
     </div>
