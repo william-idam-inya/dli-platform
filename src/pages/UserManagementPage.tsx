@@ -304,8 +304,8 @@ export default function UserManagementPage() {
               <div>
                 <strong>{event.event_type.replaceAll('.', ' · ').replaceAll('_', ' ')}</strong>
                 <span>{time(event.created_at)}</span>
-                {event.details?.new_role && <small>New role: {String(event.details.new_role).replaceAll('_', ' ')}</small>}
-                {event.details?.new_status && <small>New status: {String(event.details.new_status)}</small>}
+                {typeof event.details?.new_role === 'string' && <small>New role: {event.details.new_role.replaceAll('_', ' ')}</small>}
+                {typeof event.details?.new_status === 'string' && <small>New status: {event.details.new_status}</small>}
               </div>
             </div>
           ))}
