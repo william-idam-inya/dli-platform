@@ -1,0 +1,45 @@
+/* Stage F1 — Timetable & class scheduling. */
+.schedule-page { width: 100%; }
+.schedule-class-selector { margin-bottom: 16px; }
+.schedule-class-selector > label { display:block; margin-bottom:8px; font-size:12px; font-weight:750; }
+.schedule-class-selector > select { display:block; box-sizing:border-box; width:100%; min-height:44px;
+  padding:10px 12px; color:var(--text); background:var(--surface-soft); border:1px solid var(--border);
+  border-radius:9px; font:inherit; font-size:12px; }
+.schedule-class-selector a { color:var(--purple); text-decoration:underline; }
+.schedule-editor { margin-bottom:16px; }
+.schedule-form { border-top:0; padding-top:0; }
+.schedule-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.schedule-form-grid label { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.schedule-form-grid input { min-width:0; }
+.schedule-form h4 { font-size:13px; color:var(--text); margin:0 0 8px; }
+.schedule-session-list { display:flex; flex-direction:column; gap:14px; padding-top:12px; }
+.schedule-session { padding:18px; border:1px solid var(--border); border-radius:12px;
+  background:var(--surface-soft); min-width:0; }
+.schedule-session-header { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.schedule-session-header h3 { color:var(--text); font-size:17px; line-height:1.4; margin:0 0 9px; }
+.schedule-session-header p { display:flex; align-items:center; gap:7px;
+  color:var(--muted); font-size:11px; line-height:1.5; margin:0; flex-wrap:wrap; }
+.schedule-session-header p svg { color:var(--purple); }
+.schedule-session-badges { display:flex; align-items:flex-start; gap:7px; }
+.schedule-session-details { display:flex; align-items:flex-start; gap:13px; flex-wrap:wrap; margin:16px 0 8px; }
+.schedule-session-details span { display:inline-flex; align-items:flex-start; gap:6px;
+  color:var(--text); font-size:12px; overflow-wrap:anywhere; }
+.schedule-session-details svg { color:var(--purple); flex-shrink:0; }
+.schedule-notes { color:var(--muted); font-size:12px; line-height:1.65;
+  white-space:pre-wrap; overflow-wrap:anywhere; margin:14px 0; }
+.schedule-join-link { display:inline-flex; align-items:center; gap:7px;
+  color:var(--purple); text-decoration:underline; font-size:12px; font-weight:750;
+  overflow-wrap:anywhere; margin:8px 0 12px; }
+.schedule-actions { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:14px 0; }
+.schedule-list .panel-heading { margin-bottom:12px; }
+.schedule-session .academic-form { margin-top:18px; border-top:1px solid var(--border); padding-top:18px; }
+.schedule-session .academic-form .schedule-actions { margin:10px 0 0; }
+.schedule-page button:focus-visible,.schedule-page select:focus-visible,.schedule-page a:focus-visible{
+  outline:2px solid var(--purple); outline-offset:2px;
+}
+@media(max-width:680px){
+ .schedule-form-grid{grid-template-columns:1fr}
+ .schedule-session{padding:12px}
+ .schedule-actions>button{flex:1 1 130px}
+ .schedule-form .academic-submit{width:100%}
+}
