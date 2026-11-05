@@ -1,8 +1,6 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import { navigationItems } from './data/navigation';
-import DashboardPage from './pages/DashboardPage';
-import UserManagementPage from './pages/UserManagementPage';
 import ModulePage from './pages/ModulePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './auth/AuthProvider';
@@ -11,7 +9,11 @@ import {
   AccessDeniedPage, AuthChecking, ChangePasswordPage, ConfirmLinkPage,
   ForgotPasswordPage, LoginPage, MissingConfiguration, SetPasswordPage,
 } from './auth/AuthPages';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
+const AcademicSetupPage = lazy(() => import('./pages/AcademicSetupPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -30,16 +32,21 @@ function AllowedArea({ path, children }: { path: string; children: ReactNode }) 
 function Workspace() {
   return <RequireWorkspace>
     <AppShell>
+      <Suspense fallback={<p role="status" className="module-page">Loading workspace view…</p>}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
-        {navigationItems.filter((item) => item.path !== '/' && item.path !== '/users').map((item) => (
+        <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
+        {navigationItems.filter((item) =>
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics'
+        ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
         ))}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
     </AppShell>
   </RequireWorkspace>;
 }
