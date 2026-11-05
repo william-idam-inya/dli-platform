@@ -1,0 +1,30 @@
+/* DLI Stage D3 — academic member management and private class cards */
+.academic-assign-offering { margin-bottom: 16px; }
+.academic-assign-offering > label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.academic-assign-offering > select { width: 100%; max-width: 800px; min-height: 44px;
+  border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px;
+  background: var(--surface-soft); color: var(--text); font: inherit; font-size: 12px; }
+.academic-members-form { margin-top: 0; padding-top: 0; border-top: none; }
+.academic-members-form .academic-code-hint a { color: var(--purple); text-decoration: underline; }
+.academic-members-list { margin-top: 20px; padding-top: 6px; border-top: 1px solid var(--border); }
+.academic-members-list .academic-record { align-items: center; }
+.academic-assign-panel { min-width: 0; }
+.my-classes-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.my-class-card h2 { margin: 11px 0; font-size: 18px; line-height: 1.35; }
+.my-class-icon { display: grid; place-items: center; width: 40px; height: 40px;
+  background: var(--purple-soft); color: var(--purple); border-radius: 10px; }
+.my-class-cohort { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.my-class-topics { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+.my-class-topics strong { font-size: 12px; }
+.my-class-topics ol { margin: 10px 0; padding-left: 20px; }
+.my-class-topics li { margin-bottom: 9px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.my-class-topics p { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.my-classes-empty { text-align: center; max-width: 600px; margin: 30px auto 20px; padding: 40px 24px; }
+.my-classes-empty > svg { color: var(--purple); }
+.my-classes-empty h2 { font-size: 20px; margin: 12px 0; }
+.my-classes-empty p { color: var(--muted); font-size: 12px; line-height: 1.65; }
+@media(max-width: 900px) { .my-classes-grid { grid-template-columns: 1fr; } }
+@media(max-width: 680px) {
+  .academic-assign-offering > select { max-width: 100%; }
+  .academic-members-form .academic-submit { width: 100%; }
+}
