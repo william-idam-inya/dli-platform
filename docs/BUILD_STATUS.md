@@ -18,6 +18,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage F1 branch: `feature/stage-f1-class-scheduling`, stacked on E4.
 - Stage F2 branch: `feature/stage-f2-attendance-reporting`, stacked on F1.
 - Stage G1 branch: `feature/stage-g1-finance-governance`, stacked on F2.
+- Stage G2 branch: `feature/stage-g2-finance-proposal-review`, stacked on G1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -299,13 +300,40 @@ currencies rejected, browser policy approval/update denied, Student
 read/create denied, audit event created. Everything rolled back;
 0 finance proposals remain and Admin role unchanged.
 
-**Pending:** G1 Windows TypeScript/build, browser empty-state, controlled
-finance-role test, institution approval process, and independent finance
-security/privacy acceptance. See `docs/stage-g1-setup.md`.
+**Passed:** G1 Windows TypeScript/build after removing an unused import, with no chunk warnings; Admin screenshot shows 0 pending proposals, and invoice/payment/payout controls disabled. **Pending:** controlled finance-role browser tests, institution approval process, and independent financial privacy/security acceptance. See `docs/stage-g1-setup.md`.
 
 No new G1 security advisor findings. Two E4 privileged quiz RPC and Auth
 leaked-password warnings remain unresolved. No invented fees, prices,
 financial transactions or paid integrations.
+
+## Stage G2 — Internal finance proposal review (under test)
+
+The new `finance_proposal_reviews` table and `/finance/reviews` page
+are implemented in DLI development on branch
+`feature/stage-g2-finance-proposal-review`.
+
+Migration:
+- `20261105232540_stage_g2_nonbinding_finance_review_ledger.sql`.
+
+Founder, Admin and Finance Officer can read and append internal review notes.
+Only the Founder can record one non-binding planning outcome per immutable
+proposal. All review entries are append-only and audited, without
+duplicating notes in the institutional audit log. **G1 proposals remain
+pending; no fees, invoices or payment functions are approved or enabled.**
+
+**Passed rolled-back SQL tests:** Admin/Finance Officer can comment;
+Admin cannot forge a Founder outcome; Founder may record one outcome, not
+two; Student cannot read or insert even using a known proposal ID;
+DELETE is denied and audit events exist. Zero review/proposal records
+persisted and the Admin role remains unchanged.
+
+**Pending:** G2 Windows TypeScript/build, browser empty-state, permitted
+role-specific review tests, mobile/accessibility checks, and approval
+of institution-specific financial processes before any financial activation.
+See `docs/stage-g2-setup.md`.
+
+Security advisor: no new G2 warnings; two prior E4 privileged quiz RPC
+warnings and disabled Auth leaked-password protection remain.
 
 ## Remaining roadmap
 
