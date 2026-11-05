@@ -48,8 +48,8 @@ const highlights = [
 
 const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
-  { code: 'B', title: 'Identity & access', detail: 'Invite-only authentication and database-enforced roles.', status: 'active' },
-  { code: 'C', title: 'User management', detail: 'Invitations, role changes, suspension and audit trail.', status: 'planned' },
+  { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
+  { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
   { code: 'D–I', title: 'Core DLI modules', detail: 'Academics, LMS, finance, communications and reporting.', status: 'planned' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage B: identity implementation</strong>
-          <span>The development database and RLS policies are deployed. Invite-only onboarding and user-management operations require administrator setup and verification.</span>
+          <strong>Stage C: user management implementation</strong>
+          <span>The User Management database migration and server function are deployed to development. Run the local build and browser checks before considering Stage C complete.</span>
         </div>
-        <span className="status-chip">Stage B</span>
+        <span className="status-chip">Stage C</span>
       </section>
 
       <section className="section-block">
@@ -161,12 +161,12 @@ export default function DashboardPage() {
             </div>
             <div className="readiness-item pending">
               <span className="readiness-icon"><CircleDashed size={17} /></span>
-              <span><strong>Authentication & RLS</strong><small>Policies deployed; role-based access testing remains</small></span>
+              <span><strong>Authentication & RLS</strong><small>Founder/Admin login tested; negative-path testing remains</small></span>
             </div>
           </div>
           <div className="readiness-footnote">
             <LockKeyhole size={14} />
-            Access stays closed until identity and permissions are enforced.
+            All user management operations remain subject to server-side permission checks.
           </div>
         </section>
       </div>
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Complete invite-only Auth configuration, bootstrap the first trusted Owner, and verify role-based access.</p>
+          <p>Test Stage C account listing, permissions, role changes, suspension, reactivation and audit, then begin Stage D academic structure.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/settings')?.path ?? '/settings'} className="text-link">
-          View settings <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/users')?.path ?? '/users'} className="text-link">
+          Open users <ArrowRight size={16} />
         </Link>
       </section>
     </div>
