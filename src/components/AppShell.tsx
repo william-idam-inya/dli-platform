@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage D2 · Academic relationships</strong>
-          <p>Cohort and course matching is enforced by database constraints.</p>
+          <strong>Stage D3 · Class membership</strong>
+          <p>Course membership is restricted by verified account role and enrolment.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
