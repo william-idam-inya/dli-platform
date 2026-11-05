@@ -25,6 +25,7 @@ or tutor assignments.
 Applied to DLI **development** Supabase only (`pbepbcdkrdqnepvcwtyw`):
 
 - `20261105075951_stage_d2_topics_cohorts_offerings.sql`
+- `20261105080800_stage_d2_offering_cohort_foreign_key_index.sql`
 
 All new tables have RLS enabled. Access is restricted to confirmed, active
 Owner / Admin / Academic Coordinator accounts using the existing
@@ -45,12 +46,16 @@ and preserves the previous 0 courses.
 
 - [x] Admin can insert and read a valid course/topic/cohort/offering
       relationship inside a transaction.
-- [x] An offering with a mismatched cohort academic division is rejected.
-- [x] Under an active Student role, even the temporary existing records
-      are invisible through RLS (role simulated inside transaction).
+- [x] An offering with a mismatched cohort academic division is rejected
+      by the database trigger/foreign-key relationship.
+- [x] Under an active Student role, even the temporary **populated** topic,
+      cohort and offering records are invisible through RLS (role simulated
+      inside the same transaction).
 - [x] Entire transaction rolled back, leaving all four tables empty.
 - [x] The real Admin role remains `admin` and `active`.
 - [x] Supabase security advisor shows no database-policy security finding.
+- [x] Performance advisor unindexed foreign-key warning resolved; some
+      new indexes remain unused until normal workloads develop.
 - [ ] Stage D2 TypeScript check / Vite production build on Windows.
 - [ ] Browser test of topic/cohort/offering creation and activation.
 - [ ] Measure Vite output bundle chunk sizes after vendor splitting.
