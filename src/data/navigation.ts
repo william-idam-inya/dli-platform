@@ -135,7 +135,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Finance',
         path: '/finance',
         icon: Wallet,
-        description: 'Fee settings, invoices, payment evidence, receipts and reconciliation.',
+        description: 'Restricted pending finance-policy proposals. Invoices, collections and payouts remain disabled.',
         group: 'Operations',
       },
       {
