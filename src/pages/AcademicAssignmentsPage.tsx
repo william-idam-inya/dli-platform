@@ -121,7 +121,7 @@ export default function AcademicAssignmentsPage() {
     setBusy(null);
   }
 
-  function Section({ role, rows, table }: { role: Role; rows: MemberLink[]; table: Table }) {
+  function renderSection(role: Role, rows: MemberLink[], table: Table) {
     const students = role==='student';
     const chosen = students?pickedStudent:pickedTutor;
     const selectName=students?'student':'tutor';
@@ -213,8 +213,8 @@ export default function AcademicAssignmentsPage() {
       </p>}
     </section>
     <div className="academic-columns">
-      <Section role="tutor" rows={tutors} table="tutor_assignments"/>
-      <Section role="student" rows={learners} table="student_enrolments"/>
+      {renderSection('tutor',tutors,'tutor_assignments')}
+      {renderSection('student',learners,'student_enrolments')}
     </div>
     <div className="module-footnote"><LockKeyhole size={15}/>
       Only staff administrators can manage assignments. Enrolled students and assigned tutors
