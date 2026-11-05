@@ -1,57 +1,73 @@
 # DLI Platform — build status
 
-Last updated: 4 November 2026
+Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Manual.
 
-## Governing specification
+## GitHub and branches
 
-Implementation follows the 30-page **DLI Platform Setup & Build Manual** supplied by the Founder.
+- Private source repository: `william-idam-inya/dli-platform`.
+- Stage A branch: `feature/stage-a-foundation`, draft PR #1 targeting `main`.
+- Stage B branch: `feature/stage-b-identity-rbac`, draft PR #2 targeting Stage A.
+- Stage C branch: `feature/stage-c-user-management`, stacked on Stage B.
+- Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
-## Repository
+## Stage A — Foundation
 
-- GitHub: https://github.com/william-idam-inya/dli-platform
-- Visibility: Private
-- Default branch: `main`
-- Working branch: `feature/stage-a-foundation`
+React/TypeScript/Vite app shell, responsive sidebar, module placeholders,
+development configuration and light/dark display implemented. On the
+user's Windows machine `npm.cmd install`, `npm.cmd run typecheck`,
+`npm.cmd run build`, and Vite browser render passed for Stage A.
 
-## Current implementation
+## Stage B — Identity and RBAC
 
-### Stage A — Foundation
+Supabase project `dli-platform-dev` (ref `pbepbcdkrdqnepvcwtyw`) hosts
+invite-only Auth, user registry, profiles, seven institutional roles, role
+assignment matrix, audit logs, login activity table and RLS. Founder/Owner
+and Admin accounts were created and successfully logged in by the user.
+Stage B TypeScript and production build passed on the Windows workstation,
+including the checked-in dependency lockfile. The existing Edge Function
+`admin-create-user` generates manual delivery invitation links.
 
-- [x] Private repository initialised.
-- [x] Dedicated foundation branch created.
-- [x] React + TypeScript + Vite application scaffold added.
-- [x] Responsive application shell and navigation added.
-- [x] Overview and planned module routes added.
-- [x] Light/dark appearance switch added.
-- [x] Honest unavailable/not-connected states added.
-- [x] Secret and local environment ignore rules added.
-- [ ] Generate and commit npm lockfile from a clean install.
-- [ ] Run typecheck and production build on the Windows development environment.
-- [ ] Verify mobile and desktop rendering in a browser.
-- [ ] Complete accessibility and error-state checks.
-- [ ] Create/verify Cloudflare Pages project after the first reviewed build.
+Unregistered, suspended, revoked and student negative-path browser tests
+are still outstanding. Email/provider settings must stay invite-only.
 
-### Infrastructure blockers before Stage B
+## Stage C — User management (implementation under test)
 
-Supabase account inspection shows two active projects already exist in the connected Free organisation:
+Deployed to DLI development:
 
-- `clinclerk-ng`
-- `wardwise-ng`
+- `20261105024931_stage_c_user_management.sql`
+- `20261105025910_stage_c_rls_read_policy_optimisation.sql`
+- `admin-manage-users` Edge Function (`verify_jwt = true`).
 
-The DLI manual requires isolated development and production projects. Do not reuse either unrelated app's database and do not create paid resources without explicit Founder approval. Resolve the Supabase project-slot constraint before provisioning DLI authentication, tables, RLS or storage.
+GitHub branch adds the real role-scoped user registry, invitation reuse,
+server-authorised role changes, suspend/reactivate/revoke actions, audit
+viewer, responsive styles, and Stage C setup/test checklist.
 
-### Security and operating constraints
+Executed database tests passed: privilege boundary on the mutation RPC,
+Founder/Admin RLS visibility, denied Admin->Founder operation without
+changes, allowed Owner->Admin operation plus audit **rolled back in the
+same test transaction**. Both real accounts remain active. Supabase
+security advisor reports no database policy security finding.
 
-- No real learner/staff records in this repository.
-- No secrets in browser code, `VITE_` variables, Git or issue descriptions.
-- Invite-only access is required; no public self-registration.
-- PostgreSQL RLS and trusted server functions must enforce permissions.
-- NGN/USD are separate currencies; do not silently convert.
-- Unapproved finance and academic policy values remain unset or Pending Approval.
-- Manual bank-transfer reconciliation is the production default until live gateway fees are approved.
-- Google Meet links, WhatsApp sharing and email delivery remain manual/no-cost workflows initially.
-- Gemini API remains disabled in the learner-facing app pending provider terms and privacy clearance.
+**Not yet run:** Stage C TypeScript check, production build, full browser
+interaction, dedicated test-user invitation, and negative-path end-to-end
+tests. Do not call Stage C complete until these pass. Read
+`docs/stage-c-setup.md` for exact commands.
 
-## Acceptance evidence
+## Remaining roadmap
 
-A Stage A build is not complete until the local dependency install, typecheck, production build and browser checks have actually run. This file will be updated with exact commands and outcomes; unrun checks must not be marked passed.
+D. Academic structure; E. LMS; F. Scheduling/attendance; G. Finance;
+H. Communications; I. Reports/governance; J. Gemini compliance gate;
+K. Production hardening and Cloudflare Pages release.
+
+## Constraints
+
+- No secret/service-role keys or student personal data in repo/client.
+- No unapproved fees, payout rules or payment gateway activation.
+- No automatic paid messaging or email delivery.
+- No Gemini API in the student-facing application.
+- Production Supabase project and Cloudflare Pages deployment are still pending.
+- Leaked-password protection is currently disabled in Supabase Auth; review
+  https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
+- A suspended/revoked registry record loses DLI data access immediately under
+  RLS, but an issued Auth JWT may remain valid until it expires. Forced
+  global session invalidation is not implemented.
