@@ -1,0 +1,55 @@
+/* DLI Stage E3: assignments and manual assessment workflow. */
+.assessment-page { width:100%; }
+.assessment-class-select { margin-bottom:16px; }
+.assessment-class-select > label { display:block; margin-bottom:9px;
+  color:var(--text); font-size:12px; font-weight:750; }
+.assessment-class-select > select { box-sizing:border-box; display:block; width:100%;
+  min-height:44px; padding:10px 12px; background:var(--surface-soft);
+  color:var(--text); border:1px solid var(--border); border-radius:9px; font:inherit; font-size:12px; }
+.assessment-class-select a { color:var(--purple); text-decoration:underline; }
+.assessment-create { margin-bottom:16px; }
+.assessment-form { padding-top:0; border-top:0; }
+.assessment-form-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.assessment-form-pair > label { display:flex; flex-direction:column; gap:8px; }
+.assessment-form-pair input { min-width:0; }
+.assessment-list { margin-bottom:18px; }
+.assessment-cards { display:flex; flex-direction:column; gap:15px; padding-top:12px; }
+.assessment-card { border:1px solid var(--border); border-radius:12px;
+  padding:18px; background:var(--surface-soft); overflow-wrap:anywhere; }
+.assessment-card-heading { display:flex; flex-wrap:wrap; justify-content:space-between;
+  align-items:start; gap:12px; }
+.assessment-card-heading h3 { margin:0 0 9px; color:var(--text); font-size:17px; line-height:1.4; }
+.assessment-card-heading p { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
+.assessment-instructions, .assessment-answer {
+  color:var(--text); white-space:pre-wrap; line-height:1.7; font-size:12px;
+  margin:15px 0; overflow-wrap:anywhere;
+}
+.assessment-instructions { padding:12px; border-left:3px solid var(--purple);
+  border-radius:0 8px 8px 0; }
+.assessment-actions { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:13px 0; }
+.assessment-status { color:var(--muted); font-size:11px; display:flex; gap:6px;
+  align-items:center; margin:9px 0 13px; }
+.assessment-status svg { color:var(--purple); }
+.assessment-grade-result { border:1px solid var(--border); border-radius:10px; padding:12px;
+  margin:14px 0; }
+.assessment-grade-result strong { font-size:13px; color:var(--text); }
+.assessment-grade-result p { color:var(--muted); white-space:pre-wrap; font-size:12px;
+  line-height:1.6; }
+.assessment-submissions { margin-top:18px; padding-top:13px; border-top:1px solid var(--border); }
+.assessment-submissions h4 { font-size:13px; color:var(--text); margin:0 0 10px; }
+.assessment-submission { padding:14px 0; border-top:1px solid var(--border); }
+.assessment-response-head { display:flex; align-items:flex-start; flex-wrap:wrap;
+  justify-content:space-between; gap:8px; }
+.assessment-response-head strong { color:var(--text); font-size:12px; }
+.assessment-response-head small { color:var(--muted); font-size:11px; }
+.assessment-submission .assessment-answer { max-height:260px; overflow-y:auto; }
+.assessment-page select:focus-visible, .assessment-page button:focus-visible {
+  outline:2px solid var(--purple); outline-offset:2px;
+}
+@media(max-width:680px) {
+  .assessment-form-pair { grid-template-columns:1fr; }
+  .assessment-card { padding:12px; }
+  .assessment-create .academic-submit { width:100%; }
+  .assessment-actions { align-items:stretch; }
+  .assessment-actions > button { flex:1 1 130px; }
+}
