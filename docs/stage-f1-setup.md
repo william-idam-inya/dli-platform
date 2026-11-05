@@ -99,8 +99,9 @@ Do not invent a class or student account to make the UI appear populated.
 
 ## Pending acceptance
 
-- [ ] Windows typecheck and production build, with actual output.
-- [ ] Admin desktop/mobile screenshot and empty state.
+- [x] Windows typecheck and production build passed without errors or chunk-size warnings.
+- [x] Admin desktop screenshot confirmed expected 0 offerings / 0 sessions.
+- [ ] Mobile and keyboard accessibility remain pending.
 - [ ] DLI-approved real offering: create a session draft; edit and
       publish after supplying an HTTPS meeting link / venue.
 - [ ] Confirm a Student with active enrolment sees the published
