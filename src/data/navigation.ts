@@ -139,6 +139,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Finance review',
+        path: '/finance/reviews',
+        icon: ClipboardCheck,
+        description: 'Non-binding internal review notes and Founder planning outcomes.',
+        group: 'Operations',
+      },
+      {
         label: 'Communications',
         path: '/communications',
         icon: MessageSquareText,
