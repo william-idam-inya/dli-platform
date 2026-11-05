@@ -82,8 +82,16 @@ authorised registry, profile and audit event in one transaction. Do not
 commit the populated bootstrap script (with identifiers) to GitHub.
 
 The initial Owner bootstrap is a deliberate manual privileged operation,
-**not** a published migration or endpoint. Later invitations, suspensions
-and role changes belong to Stage C and must use trusted Edge Functions.
+**not** a published migration or endpoint. Stage B also deploys the privileged
+`admin-create-user` Edge Function with JWT verification and a minimal
+`/users` invitation form. The function checks the server-side approved
+role-assignment matrix, generates a one-time link, creates the authorised
+identity/profile and records an audit event. It **never sends** emails or
+WhatsApp messages. The administrator must copy the link and deliver it
+privately. Do not post links in group chats.
+
+Stage C will expand this into user lists, role changes, suspension,
+reactivation and revocation; those operations are not implemented yet.
 
 ## Acceptance checklist (do not mark complete until tested)
 
@@ -96,6 +104,9 @@ and role changes belong to Stage C and must use trusted Edge Functions.
 - [ ] A student cannot open `/users`, even with a pasted URL.
 - [ ] The database itself rejects unauthorised writes/reads; no UI-only guard.
 - [ ] The authenticated Owner sees permitted routes and can sign out.
+- [ ] Owner/Admin/Assistant Admin generates only roles authorised by the
+      database policy; student attempts and duplicate emails fail.
+- [ ] Generated invitation link works once and is never logged or stored.
 - [ ] Password recovery and first-time password setup tested with an eligible
       project-team email address; email restrictions documented.
 - [ ] Desktop, mobile, keyboard and error-state checks pass.
@@ -103,5 +114,6 @@ and role changes belong to Stage C and must use trusted Edge Functions.
 - [ ] No `.env.local`, service key, actual Founder UID/email or passwords
       appear in any Git commit.
 
-At this stage the user-management forms, invitations/role changes and live
-student academic records are not implemented. Do not mark Stage C done.
+At this stage the full user-management list, role changes, suspensions,
+revocations, login-activity event writer and live student academic records
+are not implemented. Do not mark Stage C done.
