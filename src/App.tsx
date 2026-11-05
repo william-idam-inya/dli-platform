@@ -2,7 +2,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import { navigationItems } from './data/navigation';
 import DashboardPage from './pages/DashboardPage';
-import InviteUserPage from './auth/InviteUserPage';
+import UserManagementPage from './pages/UserManagementPage';
 import ModulePage from './pages/ModulePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './auth/AuthProvider';
@@ -33,7 +33,7 @@ function Workspace() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
-        <Route path="/users" element={<AllowedArea path="/users"><InviteUserPage /></AllowedArea>} />
+        <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         {navigationItems.filter((item) => item.path !== '/' && item.path !== '/users').map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
