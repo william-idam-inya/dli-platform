@@ -286,7 +286,7 @@ export default function SchedulePage() {
       <div><strong>Only authorised class members can view published sessions</strong>
         <p>Staff and assigned Tutors manage their class schedules. Students see published
           sessions only for their current enrolments. Cancelling retains the event and shows
-          its cancelled status. Attendance registers, reminders and external calendar syncing are not yet enabled.</p>
+          its cancelled status. Attendance is handled separately under Attendance & reports; automated reminders and external calendar syncing are not enabled.</p>
       </div>
     </div>
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -398,8 +398,8 @@ export default function SchedulePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      No Student attendance has been recorded. Stage F2 will introduce attendance
-      only after its access-control and reporting rules are independently tested.
+      Attendance records are managed separately in Stage F2 under Attendance & reports.
+      No reminders or external meeting invites are sent.
     </p>
   </div>;
 }
