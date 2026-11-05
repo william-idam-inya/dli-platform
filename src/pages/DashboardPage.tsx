@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E2 adds private lesson-file storage; approved file browser testing is still pending.', status: 'active' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E3 adds assignments, student responses and manual grading; browser tests remain.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage E2: private lesson files implementation</strong>
-          <span>Stage E1 now passes its local TypeScript/build checks and displays the approved empty lesson catalogue. Stage E2 introduces private Storage uploads and authenticated downloads; frontend/browser verification is pending.</span>
+          <strong>Stage E3: assignments and manual grading implementation</strong>
+          <span>Stage E2 passes the local TypeScript/build and displays a secure empty file panel. Stage E3 adds course assignments, student text submissions and manual marking; browser verification is pending.</span>
         </div>
-        <span className="status-chip">Stage E2</span>
+        <span className="status-chip">Stage E3</span>
       </section>
 
       <section className="section-block">
