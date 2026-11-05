@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E3 adds assignments, student responses and manual grading; browser tests remain.', status: 'active' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E4 protected MCQ quizzes and results are implemented in dev; browser and security acceptance remain.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage E3: assignments and manual grading implementation</strong>
-          <span>Stage E2 passes the local TypeScript/build and displays a secure empty file panel. Stage E3 adds course assignments, student text submissions and manual marking; browser verification is pending.</span>
+          <strong>Stage E4: quizzes and results implementation</strong>
+          <span>Stage E3 passes the local TypeScript/build and displays the verified empty assessment view. Stage E4 adds secure question banks, quiz attempts and raw results; browser verification is pending.</span>
         </div>
-        <span className="status-chip">Stage E3</span>
+        <span className="status-chip">Stage E4</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify E2 private uploads and authenticated downloads with approved content; Stage C–E1 controlled browser tests remain.</p>
+          <p>Verify the E4 quiz screen and approved quiz attempts; complete E2 file transfers and controlled Stage C–E3 user tests before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/learning')?.path ?? '/learning'} className="text-link">
-          Open courses & lessons <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/quizzes')?.path ?? '/quizzes'} className="text-link">
+          Open quizzes & results <ArrowRight size={16} />
         </Link>
       </section>
     </div>
