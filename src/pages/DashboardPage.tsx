@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Academic catalogue loads; Stage D2 cohorts and course offerings are under test.', status: 'active' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage D3 class assignments and enrolments are implemented in dev; testing pending.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage D2: academic relationships implementation</strong>
-          <span>Academic Setup now passes the local build and loads the approved catalogue. Stage D2 adds protected topics, cohorts and course offerings; browser tests are pending.</span>
+          <strong>Stage D3: class membership implementation</strong>
+          <span>Stage D2 now passes the local TypeScript/build checks and shows the approved empty catalogue. Stage D3 introduces authorised Tutor assignments and Student enrolments; browser tests remain pending.</span>
         </div>
-        <span className="status-chip">Stage D2</span>
+        <span className="status-chip">Stage D3</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify the D2 topic/cohort/offering workflows, then build tutor assignments and student enrolment. Controlled Stage C action tests remain.</p>
+          <p>Test Stage D3 tutor assignments and learner enrolment with approved accounts, then begin learning resources. Stage C action tests remain.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/cohorts')?.path ?? '/cohorts'} className="text-link">
-          Open cohorts & topics <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/assignments')?.path ?? '/assignments'} className="text-link">
+          Open class assignments <ArrowRight size={16} />
         </Link>
       </section>
     </div>
