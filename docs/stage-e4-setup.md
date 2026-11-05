@@ -92,7 +92,8 @@ Inside isolated rolled-back transactions:
       submission generated audit events without exposing answer keys.
 - [x] After rollback, zero quizzes, questions, attempts and answers
       remain. Real Founder and Admin roles are unchanged.
-- [ ] TypeScript/build on user's Windows workstation.
+- [x] TypeScript/build passed on user's Windows workstation.
+- [x] Admin screenshot confirms /quizzes with 0 offerings, quizzes and attempts.
 - [ ] Browser create/add question/publish/submit/result acceptance.
 - [ ] Negative-path tests with real separate Tutor/Student identities.
 - [ ] Independent security assessment of privileged quiz RPCs.
