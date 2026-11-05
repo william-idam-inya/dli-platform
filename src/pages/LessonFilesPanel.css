@@ -1,0 +1,37 @@
+/* Stage E2 — private lesson files. Do not use public-file previews. */
+.learning-file-panel { margin: 16px 0; min-width: 0; }
+.learning-file-panel .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.learning-file-panel .panel-heading h2 { margin: 4px 0 7px; }
+.learning-file-panel .user-caption { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.learning-file-status { color: var(--muted); font-size: 12px; }
+.learning-file-upload { margin-bottom: 22px; }
+.learning-file-upload select,.learning-file-upload input[type='file'] {
+  display:block; box-sizing:border-box; width:100%; padding:11px;
+  border:1px solid var(--border); border-radius:9px; font:inherit; font-size:12px;
+  background:var(--surface-soft); color:var(--text);
+}
+.learning-file-upload input[type='file'] { min-height:52px; }
+.learning-file-upload .academic-submit { margin-top:6px; }
+.learning-private-file-list { border-top:1px solid var(--border); }
+.learning-private-file-row {
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  flex-wrap:wrap; padding:14px 0; border-bottom:1px solid var(--border);
+}
+.learning-private-file-name { min-width:0; flex:1 1 210px;
+  display:flex; flex-direction:column; gap:5px; }
+.learning-private-file-name strong { color:var(--text); font-size:12px;
+  line-height:1.5; overflow-wrap:anywhere; }
+.learning-private-file-name small { color:var(--muted); font-size:11px;
+  line-height:1.5; }
+.learning-private-file-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.learning-file-footnote { display:flex; align-items:flex-start; gap:8px; margin:17px 0 0;
+  color:var(--muted); font-size:11px; line-height:1.65; }
+.learning-file-footnote svg { flex:0 0 15px; margin-top:2px; }
+.learning-file-panel a:focus-visible, .learning-file-panel button:focus-visible,
+.learning-file-panel input:focus-visible,.learning-file-panel select:focus-visible {
+  outline:2px solid var(--purple); outline-offset:2px;
+}
+@media(max-width:680px) {
+  .learning-private-file-actions { width:100%; }
+  .learning-file-upload .academic-submit { width:100%; }
+}
