@@ -13,6 +13,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage D3 branch: `feature/stage-d3-assignments-enrolments`, stacked on D2.
 - Stage E1 branch: `feature/stage-e1-lessons-resources`, stacked on D3.
 - Stage E2 branch: `feature/stage-e2-private-lesson-files`, stacked on E1.
+- Stage E3 branch: `feature/stage-e3-assignments-submissions-grading`, stacked on E2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -162,10 +163,35 @@ with restricted MIME types and a 5 MiB **temporary development** cap.
 Zero file objects were created. The security advisor has no new DB-policy
 finding; the existing Auth leaked-password-protection warning persists.
 
-**Still pending:** E2 Windows TypeScript/build, actual Storage API
-upload/download, negative user tests and lifecycle failure/retry review.
+**Passed:** E2 Windows TypeScript and Vite production build, with no bundle warning;
+Admin screenshot confirms the private Lesson files section with zero records and
+disabled upload. **Pending:** live Storage API transfer, browser permission-denial,
+and failed-upload retry/reconciliation tests.
 See `docs/stage-e2-setup.md`. Storage upload has not been verified
 through the browser. Do not call E2 or the wider LMS complete.
+
+## Stage E3 — Assignments, submissions and manual grading (under test)
+
+DLI development migration deployed and committed:
+- `20261105203948_stage_e3_assignments_submissions_manual_grading.sql`.
+
+The `/assessments` route now supports manual assignment creation, editing
+and publishing, text responses from enrolled Students, and manual grades
+with optional feedback from assigned Tutors/academic staff. Three new
+tables enforce role-scoped RLS, uniqueness and manual grade ceilings;
+students cannot revise graded responses.
+
+**Verified with rollback-only SQL tests:** Student saw only published
+work in enrolled offering, submitted their own response, read their
+grade/feedback, and was unable to edit graded work or forge grades.
+Owner created and graded work; excess marks were rejected. Staff
+impersonation submissions were rejected. All temporary data was
+rolled back. Security advisor reports no new DB policy finding.
+
+**Pending:** new E3 Windows TypeScript/build, full browser create/submit/grade
+testing with separately approved identities, and grading-policy review.
+No automatic marks, penalties or invented student records. See
+`docs/stage-e3-setup.md`.
 
 ## Remaining roadmap
 
