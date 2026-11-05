@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Academics, LMS, finance, communications and reporting.', status: 'planned' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Academic catalogue is under testing; cohorts, LMS and operations are still planned.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage C: user management implementation</strong>
-          <span>The User Management database migration and server function are deployed to development. Run the local build and browser checks before considering Stage C complete.</span>
+          <strong>Stage D1: academic catalogue implementation</strong>
+          <span>Academic programmes, levels, subjects and courses now have protected development database tables. Stage D1 browser testing remains; Stage C account-action tests also remain.</span>
         </div>
-        <span className="status-chip">Stage C</span>
+        <span className="status-chip">Stage D1</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Test Stage C account listing, permissions, role changes, suspension, reactivation and audit, then begin Stage D academic structure.</p>
+          <p>Verify the Stage D1 academic catalogue, then implement cohorts and enrolment. Complete controlled Stage C account-action tests before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/users')?.path ?? '/users'} className="text-link">
-          Open users <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/academics')?.path ?? '/academics'} className="text-link">
+          Open academic setup <ArrowRight size={16} />
         </Link>
       </section>
     </div>
