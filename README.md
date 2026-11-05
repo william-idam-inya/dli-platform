@@ -37,7 +37,7 @@ K. Production hardening and release
 
 ## Current status
 
-Repository initialised. Stage A foundation implementation is in progress.
+Stages A/B are implemented in the development branch, with Founder and Admin login tested. Stage C user management has been deployed to the DLI development database and its dedicated branch; local TypeScript/build and full browser acceptance tests are still pending. See `docs/BUILD_STATUS.md` and `docs/stage-c-setup.md`.
 
 See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual for acceptance criteria and operating constraints.
 
