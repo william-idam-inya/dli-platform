@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage C · User Management</strong>
-          <p>Account actions are restricted and audited in Supabase.</p>
+          <strong>Stage D1 · Academic catalogue</strong>
+          <p>Catalogue permissions are enforced through Supabase RLS.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
