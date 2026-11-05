@@ -27,6 +27,7 @@ export const roleLabels: Record<DliRole, string> = {
 const routeRoles: Record<string, readonly DliRole[]> = {
   '/': DLI_ROLES,
   '/academics': ['owner', 'admin', 'academic_coordinator'],
+  '/cohorts': ['owner', 'admin', 'academic_coordinator'],
   '/learning': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/assessments': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/schedule': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
