@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { navigationItems } from '../data/navigation';
+import { useAuth } from '../auth/AuthProvider';
+import { canAccessPath, roleLabels } from '../auth/permissions';
 
 const highlights = [
   {
@@ -45,14 +47,16 @@ const highlights = [
 ];
 
 const roadmap = [
-  { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'active' },
-  { code: 'B', title: 'Identity & access', detail: 'Invite-only authentication and database-enforced roles.', status: 'next' },
+  { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
+  { code: 'B', title: 'Identity & access', detail: 'Invite-only authentication and database-enforced roles.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Invitations, role changes, suspension and audit trail.', status: 'planned' },
   { code: 'D–I', title: 'Core DLI modules', detail: 'Academics, LMS, finance, communications and reporting.', status: 'planned' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
 export default function DashboardPage() {
+  const { account } = useAuth();
+  const accessibleHighlights = highlights.filter((item) => account && canAccessPath(account.role, item.path));
   return (
     <div className="dashboard-page">
       <section className="welcome-row">
@@ -60,7 +64,7 @@ export default function DashboardPage() {
           <div className="eyebrow"><span className="eyebrow-line" /> DETAILED LEARNING INSTITUTE</div>
           <h1>Build a better learning experience.</h1>
           <p className="welcome-copy">
-            Your institutional workspace is taking shape. The foundation is being built before learner records and staff access are enabled.
+            Welcome to your role-scoped development workspace. DLI modules will become available as their database-backed stages are completed.
           </p>
         </div>
         <div className="welcome-art" aria-hidden="true">
@@ -75,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Foundation build in progress</strong>
-          <span>No student or staff records are connected yet. Authentication and database access will be activated only after the DLI development environment is ready.</span>
+          <strong>Stage B: identity implementation</strong>
+          <span>The development database and RLS policies are deployed. Invite-only onboarding and user-management operations require administrator setup and verification.</span>
         </div>
-        <span className="status-chip">Stage A</span>
+        <span className="status-chip">Stage B</span>
       </section>
 
       <section className="section-block">
@@ -87,10 +91,10 @@ export default function DashboardPage() {
             <p className="section-kicker">DLI WORKSPACE</p>
             <h2>Institutional modules</h2>
           </div>
-          <span className="section-note">Module availability depends on implementation stage</span>
+          <span className="section-note">{account ? roleLabels[account.role] : ''} · Modules depend on build stage</span>
         </div>
         <div className="module-grid">
-          {highlights.map((item) => {
+          {accessibleHighlights.map((item) => {
             const Icon = item.icon;
             return (
               <Link to={item.path} className="module-card" key={item.title}>
@@ -119,12 +123,12 @@ export default function DashboardPage() {
             {roadmap.map((item, index) => (
               <div className={`roadmap-item ${item.status}`} key={item.code}>
                 <div className="roadmap-marker">
-                  {item.status === 'active' ? <CircleDashed size={19} /> : item.status === 'next' ? <CheckCircle2 size={19} /> : <span>{item.code}</span>}
+                  {item.status === 'active' ? <CircleDashed size={19} /> : item.status === 'done' ? <CheckCircle2 size={19} /> : <span>{item.code}</span>}
                 </div>
                 <div className="roadmap-content">
                   <div className="roadmap-title-row">
                     <strong>{item.title}</strong>
-                    <span className={`roadmap-state ${item.status}`}>{item.status === 'active' ? 'In progress' : item.status === 'next' ? 'Next' : 'Planned'}</span>
+                    <span className={`roadmap-state ${item.status}`}>{item.status === 'active' ? 'In progress' : item.status === 'done' ? 'Completed' : 'Planned'}</span>
                   </div>
                   <p>{item.detail}</p>
                 </div>
@@ -151,13 +155,13 @@ export default function DashboardPage() {
               <span className="readiness-icon"><CheckCircle2 size={17} /></span>
               <span><strong>Foundation branch</strong><small>Stage A is isolated for review</small></span>
             </div>
-            <div className="readiness-item pending">
-              <span className="readiness-icon"><CircleDashed size={17} /></span>
-              <span><strong>Supabase development</strong><small>Dedicated DLI project required</small></span>
+            <div className="readiness-item complete">
+              <span className="readiness-icon"><CheckCircle2 size={17} /></span>
+              <span><strong>Supabase development</strong><small>Dedicated DLI development project created</small></span>
             </div>
             <div className="readiness-item pending">
               <span className="readiness-icon"><CircleDashed size={17} /></span>
-              <span><strong>Authentication & RLS</strong><small>Scheduled for Stage B</small></span>
+              <span><strong>Authentication & RLS</strong><small>Policies deployed; role-based access testing remains</small></span>
             </div>
           </div>
           <div className="readiness-footnote">
@@ -171,7 +175,7 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Complete the responsive foundation, verify the production build, and prepare the isolated development database.</p>
+          <p>Complete invite-only Auth configuration, bootstrap the first trusted Owner, and verify role-based access.</p>
         </div>
         <Link to={navigationItems.find((item) => item.path === '/settings')?.path ?? '/settings'} className="text-link">
           View settings <ArrowRight size={16} />
