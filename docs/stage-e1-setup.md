@@ -61,7 +61,8 @@ leaving the real DLI development catalogue and identities untouched:
       Admin; no lessons, resources or offerings remain.
 - [x] Supabase security advisor: no DB policy findings; existing
       `auth_leaked_password_protection` Auth warning remains.
-- [ ] Windows Stage E1 `npm.cmd run typecheck` and `npm.cmd run build`.
+- [x] Windows Stage E1 `npm.cmd run typecheck` and `npm.cmd run build` passed.
+- [x] Admin browser screenshot confirms `/learning` loads the expected empty catalogue.
 - [ ] Browser author/publish/reload and restricted Student/Tutor flows.
 - [ ] Mobile, keyboard and error feedback checks.
 
@@ -105,8 +106,9 @@ When approved content and accounts are available, validate:
 
 ## Future stages
 
-- **E2:** controlled lesson file upload using private Supabase Storage,
-  signed/restricted access and upload constraints (not public buckets).
+- **E2:** implemented on the subsequent development branch with a private
+  Supabase Storage bucket and authenticated downloads; local build, actual
+  file transfer, and cross-role browser tests are still pending.
 - **E3:** assignments, student submissions and tutor feedback/grading.
 - **E4:** question banks, quizzes, attempts and results with role-scoped RLS.
 
