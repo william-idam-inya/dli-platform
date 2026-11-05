@@ -14,6 +14,7 @@ import { lazy, Suspense, type ReactNode } from 'react';
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const AcademicSetupPage = lazy(() => import('./pages/AcademicSetupPage'));
+const AcademicRelationsPage = lazy(() => import('./pages/AcademicRelationsPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -38,8 +39,9 @@ function Workspace() {
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
+        <Route path="/cohorts" element={<AllowedArea path="/cohorts"><AcademicRelationsPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics'
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
