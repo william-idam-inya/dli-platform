@@ -10,6 +10,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage C branch: `feature/stage-c-user-management`, stacked on Stage B.
 - Stage D1 branch: `feature/stage-d1-academic-catalogue`, stacked on Stage C.
 - Stage D2 branch: `feature/stage-d2-topics-cohorts-offerings`, stacked on D1.
+- Stage D3 branch: `feature/stage-d3-assignments-enrolments`, stacked on D2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -99,12 +100,40 @@ Database tests passed: permitted Admin relation inserts in a rolled-back
 transaction; a mismatched offering rejected; populated records hidden
 to a temporarily simulated Student role; transaction rolled back and
 real Admin role restored. No DB security policy findings. Vite 8
-Rolldown vendor chunk grouping has been configured to address the
-previous warning, but its effect has not yet been measured locally.
+Rolldown vendor chunk grouping was verified in the user's successful local
+build: largest chunk approximately 257 kB, with no 500 kB warning.
 
-**Pending:** Stage D2 typecheck/build; browser create/edit activation tests;
-real controlled user/tutor enrolment flows in later Stage D.
+**Passed:** local Stage D2 TypeScript/build and browser screenshot of
+`/cohorts` with 0 courses/topics/cohorts/offerings. **Pending:** create,
+deactivate/reactivate and permission-denial browser tests.
 See `docs/stage-d2-setup.md`.
+
+## Stage D3 — Tutor assignments and Student enrolments (under test)
+
+New DLI development tables `tutor_assignments` and `student_enrolments`
+are protected by role-scoped RLS and row-validation/audit triggers.
+Staff assign active verified Tutors/Students to matching active course
+offerings; only those Tutor/Student accounts can read their own linked
+classes/topics. Staff manage via `/assignments`; members use `/my-classes`.
+
+Deployed and committed migrations:
+- `20261105191811_stage_d3_tutor_student_class_membership.sql`
+- `20261105191955_stage_d3_assignment_trigger_field_fix.sql`
+- `20261105192042_stage_d3_offering_membership_correlation_fix.sql`
+- `20261105192119_stage_d3_course_cohort_membership_correlation_fix.sql`
+- `20261105192458_stage_d3_allow_deactivation_after_role_change.sql`
+
+**Verified in rolled-back DLI dev SQL tests:** Tutor sees their own assigned
+class and topics; Student sees enrolled class/topics, not tutor records;
+assignment deactivation after role change succeeds and audits; invalid
+reactivation is rejected. All temporary course/member data were rolled
+back and the real Admin role remains unchanged. No database security
+finding other than the existing Auth leaked-password-protection warning.
+
+**Still pending:** local Stage D3 TypeScript/build, browser staff/member
+flows, controlled real authorised Tutor/Student verification, mobile
+and accessibility tests. No real tutor or student accounts exist yet.
+Read `docs/stage-d3-setup.md`. Keep draft until acceptance.
 
 ## Remaining roadmap
 
