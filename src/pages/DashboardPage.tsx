@@ -50,7 +50,7 @@ const roadmap = [
   { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
   { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
   { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E1 lesson publishing and HTTPS resources are implemented in dev; browser checks pending.', status: 'active' },
+  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage E2 adds private lesson-file storage; approved file browser testing is still pending.', status: 'active' },
   { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
 ];
 
@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage E1: lessons and resources implementation</strong>
-          <span>Stage D3 now passes the local TypeScript/build checks and displays its secure empty state. Stage E1 adds role-scoped lesson drafts, publishing and resource links; frontend acceptance is pending.</span>
+          <strong>Stage E2: private lesson files implementation</strong>
+          <span>Stage E1 now passes its local TypeScript/build checks and displays the approved empty lesson catalogue. Stage E2 introduces private Storage uploads and authenticated downloads; frontend/browser verification is pending.</span>
         </div>
-        <span className="status-chip">Stage E1</span>
+        <span className="status-chip">Stage E2</span>
       </section>
 
       <section className="section-block">
@@ -175,7 +175,7 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify E1 lesson drafts, publishing and resource links against approved offerings; controlled Stage C–D3 browser mutation tests still remain.</p>
+          <p>Verify E2 private uploads and authenticated downloads with approved content; Stage C–E1 controlled browser tests remain.</p>
         </div>
         <Link to={navigationItems.find((item) => item.path === '/learning')?.path ?? '/learning'} className="text-link">
           Open courses & lessons <ArrowRight size={16} />
