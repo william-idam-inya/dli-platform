@@ -14,6 +14,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage E1 branch: `feature/stage-e1-lessons-resources`, stacked on D3.
 - Stage E2 branch: `feature/stage-e2-private-lesson-files`, stacked on E1.
 - Stage E3 branch: `feature/stage-e3-assignments-submissions-grading`, stacked on E2.
+- Stage E4 branch: `feature/stage-e4-quizzes-attempts-results`, stacked on E3.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -188,10 +189,38 @@ Owner created and graded work; excess marks were rejected. Staff
 impersonation submissions were rejected. All temporary data was
 rolled back. Security advisor reports no new DB policy finding.
 
-**Pending:** new E3 Windows TypeScript/build, full browser create/submit/grade
-testing with separately approved identities, and grading-policy review.
+**Passed:** E3 Windows TypeScript/build with no bundle warning, and Admin screenshot of /assessments showing 0 offerings, assignments, submissions and grades. **Pending:** full browser create/submit/grade tests with separately approved identities and grading-policy review.
 No automatic marks, penalties or invented student records. See
 `docs/stage-e3-setup.md`.
+
+## Stage E4 — MCQ question banks, attempts and results (under test)
+
+DLI development migrations deployed and committed:
+- `20261105210728_stage_e4_quizzes_attempts_private_answer_keys.sql`
+- `20261105211159_stage_e4_quiz_authoring_audit.sql`
+
+Four RLS-enabled quiz tables support editor-only answer keys, course-offering
+draft/published quizzes, recorded Student attempts and server-calculated
+correct/total results. `/quizzes` has an editor and Student UI. Questions
+are four-choice MCQs; one saved attempt per quiz is the current temporary
+technical limit, not a DLI-approved retake policy.
+
+**Verified through rolled-back SQL tests:** publication requires a question,
+questions cannot be added after publication, enrolled Student retrieves
+question options without answers, submits a correct response, and cannot
+resubmit. Unenrolled Students and editors are denied Student-only RPC
+access; invalid question IDs and choices are rejected; audit logs record
+authoring and submission. No real data or role changes persisted.
+
+**Important security review:** two Supabase advisor warnings now flag the
+intentional authenticated `SECURITY DEFINER` functions that return safe
+question prompts and accept quiz submissions. Their privilege boundaries
+were tested but require independent security review and rate-limit planning.
+The earlier leaked-password protection warning also remains.
+
+**Pending:** new E4 Windows TypeScript/build, UI browser acceptance, approved
+Tutor/Student lifecycle tests and quiz policy decisions. See
+`docs/stage-e4-setup.md`.
 
 ## Remaining roadmap
 
