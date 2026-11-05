@@ -37,7 +37,7 @@ K. Production hardening and release
 
 ## Current status
 
-Stages A/B are implemented, with Founder and Admin sign-in verified. Stage C User Management passed local TypeScript/build and Admin directory rendering tests; controlled account-action tests remain pending. Stage D1 academic catalogue now passes local TypeScript/build and displays the verified starting data. Stage D2 adds course topics, cohorts and matching course offerings, with RLS deployed in DLI development; Stage D2 local build/browser acceptance is pending. Read `docs/BUILD_STATUS.md`, `docs/stage-c-setup.md`, `docs/stage-d1-setup.md` and `docs/stage-d2-setup.md`.
+Stages A/B are implemented, with Founder and Admin sign-in verified. Stage C User Management passed local TypeScript/build and Admin directory rendering tests; controlled account-action tests remain pending. Stage D1 academic catalogue now passes local TypeScript/build and displays the verified starting data. Stage D2 course topics/cohorts/offerings now pass local TypeScript/build checks and display the expected empty catalogue. Stage D3 adds restricted Tutor assignments and Student enrolments, plus their private class views. Its schema and role tests passed in development; the new frontend build and real-user browser tests remain pending. See `docs/BUILD_STATUS.md`, `docs/stage-c-setup.md`, `docs/stage-d2-setup.md` and `docs/stage-d3-setup.md`.
 
 See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual for acceptance criteria and operating constraints.
 
