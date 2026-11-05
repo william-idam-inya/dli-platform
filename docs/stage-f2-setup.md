@@ -137,8 +137,9 @@ records to populate the screen.
 
 ## Acceptance still required
 
-- [ ] Verify TypeScript and production Vite build on the Windows computer.
-- [ ] Verify Admin empty-state, responsive views and keyboard navigation.
+- [x] TypeScript and production Vite build passed on Windows without errors.
+- [x] Admin desktop screenshot confirms 0 classes, sessions and attendance marks.
+- [ ] Mobile responsiveness and keyboard accessibility remain pending.
 - [ ] With **actually approved** DLI offerings, sessions and accounts,
       test manual marking and correction as assigned Tutor/Staff.
 - [ ] Student account sees only own mark and never classmates' marks.
