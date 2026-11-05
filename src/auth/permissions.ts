@@ -34,6 +34,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/assessments': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/quizzes': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/schedule': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
+  '/attendance': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/users': ['owner', 'admin', 'assistant_admin'],
   '/tutors': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/finance': ['owner', 'admin', 'finance_officer'],
