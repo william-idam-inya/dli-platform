@@ -88,6 +88,53 @@ function fillFromSession(session: ClassSession): SessionForm {
   };
 }
 
+function SessionFields({value,onChange,prefix}:{
+    value:SessionForm;onChange:(next:SessionForm)=>void;prefix:string;
+  }){
+    const patch = <K extends keyof SessionForm>(key: K, next: SessionForm[K]) =>
+      onChange({...value, [key]: next});
+    return <>
+      <label htmlFor={prefix+'-title'}>Session title</label>
+      <input id={prefix+'-title'} required minLength={2} maxLength={180}
+        value={value.title} onChange={e=>patch('title',e.target.value)}
+        placeholder="Approved class session title"/>
+      <div className="schedule-form-grid">
+        <label htmlFor={prefix+'-start'}>Start (West Africa Time)
+          <input type="datetime-local" id={prefix+'-start'} required value={value.start}
+            onChange={e=>patch('start',e.target.value)}/>
+        </label>
+        <label htmlFor={prefix+'-end'}>End (West Africa Time)
+          <input type="datetime-local" id={prefix+'-end'} required value={value.end}
+            onChange={e=>patch('end',e.target.value)}/>
+        </label>
+      </div>
+      <label htmlFor={prefix+'-mode'}>Delivery mode</label>
+      <select id={prefix+'-mode'} value={value.mode}
+        onChange={e=>patch('mode',e.target.value as Mode)}>
+        <option value="online">Online</option>
+        <option value="in_person">In person</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
+      {(value.mode==='in_person'||value.mode==='hybrid')&&<>
+        <label htmlFor={prefix+'-venue'}>Physical venue</label>
+        <input id={prefix+'-venue'} value={value.venue} maxLength={300}
+          onChange={e=>patch('venue',e.target.value)} placeholder="Approved venue"/>
+      </>}
+      {(value.mode==='online'||value.mode==='hybrid')&&<>
+        <label htmlFor={prefix+'-url'}>HTTPS joining link</label>
+        <input id={prefix+'-url'} value={value.url} type="url" maxLength={2048}
+          onChange={e=>patch('url',e.target.value)} placeholder="https://..."/>
+      </>}
+      <label htmlFor={prefix+'-notes'}>Notes (optional)</label>
+      <textarea id={prefix+'-notes'} rows={3} maxLength={3000}
+        value={value.notes} onChange={e=>patch('notes',e.target.value)}/>
+      <p className="academic-code-hint">
+        Times are entered and shown in Africa/Lagos (WAT, UTC+1).
+        A published online class requires an HTTPS link; an in-person class requires a venue.
+      </p>
+    </>;
+  }
+
 export default function SchedulePage() {
   const { account } = useAuth();
   const [params] = useSearchParams();
@@ -216,53 +263,6 @@ export default function SchedulePage() {
     setSaving(null);
   }
 
-  function SessionFields({value,onChange,prefix}:{
-    value:SessionForm;onChange:(next:SessionForm)=>void;prefix:string;
-  }){
-    const patch=<K extends keyof SessionForm>(key:K,value:SessionForm[K])=>
-      onChange({...valueOrEmpty(value),[key]:value});
-    function valueOrEmpty(current:SessionForm){return current;}
-    return <>
-      <label htmlFor={prefix+'-title'}>Session title</label>
-      <input id={prefix+'-title'} required minLength={2} maxLength={180}
-        value={value.title} onChange={e=>patch('title',e.target.value)}
-        placeholder="Approved class session title"/>
-      <div className="schedule-form-grid">
-        <label htmlFor={prefix+'-start'}>Start (West Africa Time)
-          <input type="datetime-local" id={prefix+'-start'} required value={value.start}
-            onChange={e=>patch('start',e.target.value)}/>
-        </label>
-        <label htmlFor={prefix+'-end'}>End (West Africa Time)
-          <input type="datetime-local" id={prefix+'-end'} required value={value.end}
-            onChange={e=>patch('end',e.target.value)}/>
-        </label>
-      </div>
-      <label htmlFor={prefix+'-mode'}>Delivery mode</label>
-      <select id={prefix+'-mode'} value={value.mode}
-        onChange={e=>patch('mode',e.target.value as Mode)}>
-        <option value="online">Online</option>
-        <option value="in_person">In person</option>
-        <option value="hybrid">Hybrid</option>
-      </select>
-      {(value.mode==='in_person'||value.mode==='hybrid')&&<>
-        <label htmlFor={prefix+'-venue'}>Physical venue</label>
-        <input id={prefix+'-venue'} value={value.venue} maxLength={300}
-          onChange={e=>patch('venue',e.target.value)} placeholder="Approved venue"/>
-      </>}
-      {(value.mode==='online'||value.mode==='hybrid')&&<>
-        <label htmlFor={prefix+'-url'}>HTTPS joining link</label>
-        <input id={prefix+'-url'} value={value.url} type="url" maxLength={2048}
-          onChange={e=>patch('url',e.target.value)} placeholder="https://..."/>
-      </>}
-      <label htmlFor={prefix+'-notes'}>Notes (optional)</label>
-      <textarea id={prefix+'-notes'} rows={3} maxLength={3000}
-        value={value.notes} onChange={e=>patch('notes',e.target.value)}/>
-      <p className="academic-code-hint">
-        Times are entered and shown in Africa/Lagos (WAT, UTC+1).
-        A published online class requires an HTTPS link; an in-person class requires a venue.
-      </p>
-    </>;
-  }
 
   return <div className="module-page schedule-page">
     <div className="module-page-hero">
