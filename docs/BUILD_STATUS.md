@@ -15,6 +15,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage E2 branch: `feature/stage-e2-private-lesson-files`, stacked on E1.
 - Stage E3 branch: `feature/stage-e3-assignments-submissions-grading`, stacked on E2.
 - Stage E4 branch: `feature/stage-e4-quizzes-attempts-results`, stacked on E3.
+- Stage F1 branch: `feature/stage-f1-class-scheduling`, stacked on E4.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -218,9 +219,33 @@ question prompts and accept quiz submissions. Their privilege boundaries
 were tested but require independent security review and rate-limit planning.
 The earlier leaked-password protection warning also remains.
 
-**Pending:** new E4 Windows TypeScript/build, UI browser acceptance, approved
-Tutor/Student lifecycle tests and quiz policy decisions. See
+**Passed:** E4 Windows TypeScript and production Vite build; Admin screenshot shows /quizzes with 0 offerings, quizzes and attempts. **Pending:** controlled Tutor/Student quiz workflows, accessible UI review and quiz policy decisions. See
 `docs/stage-e4-setup.md`.
+
+## Stage F1 — Timetable and class scheduling (under test)
+
+Development migration applied and committed:
+- `20261105221711_stage_f1_role_scoped_class_scheduling.sql`.
+
+One RLS-enabled `class_sessions` table and protected `/schedule` page
+support draft session creation/editing, WAT start/end dates, online/in-person/
+hybrid class details, controlled publication, rescheduling and cancellation.
+Students can see only their own published class timetable and cancellations.
+No attendance records, automatic reminders, invites or calendar integrations
+are implemented in F1.
+
+**Passed rolled-back SQL tests:** Owner created/audited three test sessions;
+invalid times, unsafe links and incomplete publication rejected; Tutor saw
+only their own class sessions and cancelled one; Student saw only a published
+own-class session and its cancellation notice, not drafts or unrelated
+classes. Student could not create a session; the Owner verified the audit.
+All temporary class data rolled back and Admin account restored unchanged.
+
+**Pending:** F1 local frontend TypeScript/build, Admin browser empty-state,
+controlled Tutor/Student browser tests, mobile/accessibility and production
+policy review. See `docs/stage-f1-setup.md`.
+Two E4 privileged quiz RPC warnings and disabled Auth leaked-password
+protection remain outstanding; no new F1-specific advisor warning.
 
 ## Remaining roadmap
 
