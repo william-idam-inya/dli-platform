@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Banknote, Clock3, FileText, LockKeyhole,
   Plus, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -230,7 +231,7 @@ export default function FinancePage() {
       <div className="panel-heading"><div>
         <p className="section-kicker">02 · REVIEW QUEUE</p>
         <h2>Pending finance policies</h2>
-        <p className="user-caption">These proposals do not authorise a charge or bank transfer.</p>
+        <p className="user-caption">These proposals do not authorise a charge or bank transfer. Review notes are recorded separately in <Link to="/finance/reviews">Finance review</Link>.</p>
       </div></div>
       {!loading && proposals.length === 0 && <p className="academic-empty">
         No finance-policy proposals have been submitted yet. The institution has no
