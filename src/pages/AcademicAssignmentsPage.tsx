@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, LockKeyhole, Plus, RefreshCw, ShieldCheck, Users } from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, LockKeyhole, Plus, RefreshCw, ShieldCheck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -79,10 +79,15 @@ export default function AcademicAssignmentsPage() {
   async function addLink(table: Table, userId: string) {
     if (!supabase || busy || !pickedOffering || !userId) return;
     setBusy(table); setError(null); setNotice(null);
-    const payload = table==='tutor_assignments'
-      ? { offering_id:pickedOffering,tutor_id:userId }
-      : { offering_id:pickedOffering,student_id:userId };
-    const { error: writeError } = await supabase.from(table).insert(payload);
+    const { error: writeError } = table === 'tutor_assignments'
+      ? await supabase.from('tutor_assignments').insert({
+          offering_id: pickedOffering,
+          tutor_id: userId,
+        })
+      : await supabase.from('student_enrolments').insert({
+          offering_id: pickedOffering,
+          student_id: userId,
+        });
     if (writeError) {
       setError(writeError.code==='23505'
         ? 'This person already has a record for the selected offering. Reactivate an inactive link instead.'
