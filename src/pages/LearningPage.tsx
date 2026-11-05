@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './LearningPage.css';
+import LessonFilesPanel from './LessonFilesPanel';
 
 type Offering = { id: string; course_id: string; cohort_id: string; is_active: boolean };
 type Course = { id: string; title: string };
@@ -255,7 +256,7 @@ export default function LearningPage() {
         <p>{canEdit ? 'Draft and publish lessons and resource links for authorised classes.'
           : 'Read published lessons and links for classes you are enrolled in.'}</p>
       </div>
-      <span className="module-status"><span/> Stage E1</span>
+      <span className="module-status"><span/> Stage E2</span>
     </div>
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
@@ -264,7 +265,7 @@ export default function LearningPage() {
         <p>{canEdit
           ? 'Academic staff may manage active classes; Tutors may edit only classes assigned to them. Unpublished lessons and links remain hidden from Students.'
           : 'Only published lessons and published resource links for your active enrolments are available here.'}
-          {' '}File uploads, assignment submissions and quizzes are not yet enabled.</p>
+          {' '}Private lesson files are available in Stage E2; student assignment submissions and quizzes remain future work.</p>
       </div>
     </div>
 
@@ -367,6 +368,13 @@ export default function LearningPage() {
       </div>
     </section>
 
+    <LessonFilesPanel
+      lessons={currentLessons.map(lesson => ({
+        id: lesson.id, title: lesson.title, is_published: lesson.is_published,
+      }))}
+      canEdit={canEdit}
+    />
+
     {canEdit && <div className="academic-columns">
       <section className="panel academic-panel">
         <div className="panel-heading"><div>
@@ -425,7 +433,7 @@ export default function LearningPage() {
     </div>}
     <div className="module-footnote"><LockKeyhole size={15}/>
       Only members with current class permissions can access these lessons.
-      No automatic AI generation, external file upload, assignment grading or quiz functionality is enabled in E1.
+      Private file uploads and authenticated downloads are implemented in Stage E2. Assignment grading, submission workflows, quizzes and AI generation are still disabled.
     </div>
   </div>;
 }
