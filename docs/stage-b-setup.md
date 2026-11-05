@@ -9,6 +9,7 @@ Committed migrations exactly match the development project's migration history:
 
 - `20261105005354_stage_b_identity_rbac.sql`
 - `20261105005422_stage_b_rls_performance.sql`
+- `20261105010208_stage_b_authorisation_policy_optimisation.sql`
 
 The tables `authorised_users`, `profiles`, `role_assignment_policies`,
 `audit_logs`, and `login_activity` have RLS enabled. Only a matching,
