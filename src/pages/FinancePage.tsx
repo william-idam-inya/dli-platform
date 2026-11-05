@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banknote, ClipboardList, Clock3, FileText, LockKeyhole,
+import { Banknote, Clock3, FileText, LockKeyhole,
   Plus, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
