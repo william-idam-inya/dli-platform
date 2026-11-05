@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage G1: finance governance foundation implementation</strong>
-          <span>Stage F2 passes local TypeScript/build and its expected empty attendance view. Stage G1 adds pending-only financial policy proposals; fees, invoices, payments and payouts remain disabled. Browser verification is pending.</span>
+          <strong>Stage G2: non-binding finance proposal review implementation</strong>
+          <span>Stage G1 passes local TypeScript/build and shows the expected zero-proposal Finance Foundation. Stage G2 adds restricted review notes and Founder-only planning outcomes; no finance policy or payment can be activated. New browser verification remains pending.</span>
         </div>
-        <span className="status-chip">Stage G1</span>
+        <span className="status-chip">Stage G2</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify G1 finance proposals in the browser. Controlled finance, account, file-transfer, quiz and attendance acceptance checks remain before release.</p>
+          <p>Verify G2 finance reviews in the browser. Controlled finance roles, private file transfers, quiz functions and attendance tests remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/finance')?.path ?? '/finance'} className="text-link">
-          Open finance governance <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/finance/reviews')?.path ?? '/finance/reviews'} className="text-link">
+          Open finance review <ArrowRight size={16} />
         </Link>
       </section>
     </div>
