@@ -16,6 +16,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage E3 branch: `feature/stage-e3-assignments-submissions-grading`, stacked on E2.
 - Stage E4 branch: `feature/stage-e4-quizzes-attempts-results`, stacked on E3.
 - Stage F1 branch: `feature/stage-f1-class-scheduling`, stacked on E4.
+- Stage F2 branch: `feature/stage-f2-attendance-reporting`, stacked on F1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -241,11 +242,42 @@ own-class session and its cancellation notice, not drafts or unrelated
 classes. Student could not create a session; the Owner verified the audit.
 All temporary class data rolled back and Admin account restored unchanged.
 
-**Pending:** F1 local frontend TypeScript/build, Admin browser empty-state,
-controlled Tutor/Student browser tests, mobile/accessibility and production
-policy review. See `docs/stage-f1-setup.md`.
+**Passed:** F1 Windows TypeScript check, production Vite build with no chunk-size warning and Admin browser screenshot of /schedule showing 0 offerings and sessions. **Pending:** Tutor/Student browser editing/viewing tests, mobile/accessibility and production policy review. See `docs/stage-f1-setup.md`.
 Two E4 privileged quiz RPC warnings and disabled Auth leaked-password
 protection remain outstanding; no new F1-specific advisor warning.
+
+## Stage F2 — Attendance recording and reporting (under test)
+
+DLI development migrations applied and committed:
+- `20261105224330_stage_f2_scoped_staff_attendance.sql`
+- `20261105224532_stage_f2_non_recursive_roster_rls.sql`
+- `20261105225150_stage_f2_single_scoped_read_policies.sql`
+
+The new RLS-protected `class_attendance` table records one explicit
+Present/Absent mark per Student per class session. Started, published,
+non-cancelled sessions and active Student enrolment/role are required.
+Only current academic staff or assigned Tutors can record/correct marks;
+Students can read only their own records. "Not recorded" never implies
+absence. The `/attendance` route shows a current authorised roster,
+manual marking controls, an active-roster summary and Student-only view.
+All changes are audited without copying Student identities into the
+displayed summary cards.
+
+**Verified in rolled-back SQL tests:** Owner marks/corrects a Student's
+status with audit events; invalid future/draft/cancelled/unrelated session
+marks rejected; Student reads only own mark and cannot write;
+assigned Tutor reads only scoped roster, Student display names and
+class marks. An initial circular RLS reference was detected and fixed,
+then the read-policy performance warnings were eliminated.
+All test records rolled back and the Admin account remains unchanged.
+
+**Pending:** Windows F2 TypeScript/build, Admin /attendance screenshot,
+live approved account marking/correction tests, cross-class negative-path
+browser tests, privacy/accessibility review and attendance-policy approval.
+See `docs/stage-f2-setup.md`.
+
+The two E4 privileged quiz RPC and pre-existing Auth leaked-password
+warnings remain open. No new F2-specific security advisor findings.
 
 ## Remaining roadmap
 
