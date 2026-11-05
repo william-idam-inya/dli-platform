@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   School,
+  Layers3,
   BookOpen,
   ClipboardCheck,
   CalendarDays,
@@ -47,6 +48,13 @@ export const navigationSections: NavigationSection[] = [
         path: '/academics',
         icon: School,
         description: 'Programmes, academic levels, subjects, courses and cohorts.',
+        group: 'Academic',
+      },
+      {
+        label: 'Cohorts & topics',
+        path: '/cohorts',
+        icon: Layers3,
+        description: 'Plan topics, cohorts and matching course offerings.',
         group: 'Academic',
       },
       {
