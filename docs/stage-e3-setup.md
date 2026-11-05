@@ -106,8 +106,9 @@ a Tutor/Student only after DLI actually authorises it.
 
 ## Acceptance tests still outstanding
 
-- [ ] TypeScript check and production Vite build on Windows.
-- [ ] UI loads, navigates in desktop/mobile and handles empty records.
+- [x] TypeScript check and production Vite build passed on Windows.
+- [x] Admin screenshot confirms /assessments loads with 0 offerings, assignments, responses and grades.
+- [ ] Mobile layout and keyboard/assistive technology interaction still require tests.
 - [ ] Approved assignment draft/edit/publish/unpublish via browser.
 - [ ] Real authorised Student submission/revision and duplicate prevention.
 - [ ] Authorised Tutor grading, feedback update and Student-only result view.
