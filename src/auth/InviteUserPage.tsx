@@ -16,9 +16,9 @@ type InvitationResult = {
   invitation_url: string;
 };
 
-export default function InviteUserPage({ embedded = false, onCreated }: { embedded?: boolean; onCreated?: () => void }) {
+export default function InviteUserPage({ embedded = false, onCreated, allowedRoles }: { embedded?: boolean; onCreated?: () => void; allowedRoles?: DliRole[] }) {
   const { account } = useAuth();
-  const options = account ? permittedRoles[account.role] ?? [] : [];
+  const options = account ? (allowedRoles ?? permittedRoles[account.role] ?? []) : [];
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<DliRole>('student');
