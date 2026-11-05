@@ -11,6 +11,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage D1 branch: `feature/stage-d1-academic-catalogue`, stacked on Stage C.
 - Stage D2 branch: `feature/stage-d2-topics-cohorts-offerings`, stacked on D1.
 - Stage D3 branch: `feature/stage-d3-assignments-enrolments`, stacked on D2.
+- Stage E1 branch: `feature/stage-e1-lessons-resources`, stacked on D3.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -130,10 +131,17 @@ reactivation is rejected. All temporary course/member data were rolled
 back and the real Admin role remains unchanged. No database security
 finding other than the existing Auth leaked-password-protection warning.
 
-**Still pending:** local Stage D3 TypeScript/build, browser staff/member
-flows, controlled real authorised Tutor/Student verification, mobile
-and accessibility tests. No real tutor or student accounts exist yet.
+**Passed:** Windows Stage D3 TypeScript and production builds; browser /assignments shows 0 offerings, tutors, students and memberships. **Pending:** controlled real-user assignment/enrolment and negative-path testing. No real Tutor or Student accounts exist.
 Read `docs/stage-d3-setup.md`. Keep draft until acceptance.
+
+## Stage E1 — Lessons and external resources (development, under test)
+
+DLI development migration:
+`20261105193848_stage_e1_lessons_external_resources.sql`.
+
+The `/learning` page now handles lesson drafts, editing, publishing and HTTPS resource links. Access is enforced by class-specific Supabase RLS: enrolled Students see published content only; assigned Tutors and approved staff can edit. Rollback-only tests verified Owner creation and audit, Student and Tutor read boundaries, empty-lesson publication denial and non-HTTPS URL rejection. No test data persisted.
+
+The Stage E1 Windows typecheck/build and browser checks remain pending. Later Stage E still needs file uploads, assignments, submissions, grading, quizzes and results. Read `docs/stage-e1-setup.md`.
 
 ## Remaining roadmap
 
