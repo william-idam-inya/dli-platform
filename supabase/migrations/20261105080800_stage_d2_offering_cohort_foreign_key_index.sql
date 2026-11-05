@@ -1,0 +1,1 @@
+create index course_offerings_cohort_programme_level_idx on public.course_offerings(cohort_id,programme_id,academic_level_id);
