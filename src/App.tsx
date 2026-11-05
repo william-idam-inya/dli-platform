@@ -19,6 +19,7 @@ const AcademicAssignmentsPage = lazy(() => import('./pages/AcademicAssignmentsPa
 const MyClassesPage = lazy(() => import('./pages/MyClassesPage'));
 const LearningPage = lazy(() => import('./pages/LearningPage'));
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
+const QuizPage = lazy(() => import('./pages/QuizPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -48,8 +49,9 @@ function Workspace() {
         <Route path="/my-classes" element={<AllowedArea path="/my-classes"><MyClassesPage /></AllowedArea>} />
         <Route path="/learning" element={<AllowedArea path="/learning"><LearningPage /></AllowedArea>} />
         <Route path="/assessments" element={<AllowedArea path="/assessments"><AssessmentPage /></AllowedArea>} />
+        <Route path="/quizzes" element={<AllowedArea path="/quizzes"><QuizPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments'
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
