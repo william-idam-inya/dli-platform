@@ -82,7 +82,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Assessments',
         path: '/assessments',
         icon: ClipboardCheck,
-        description: 'Question banks, quizzes, submissions, grading and feedback.',
+        description: 'Assignments, text responses, manual marking and written feedback. Quizzes are planned.',
         group: 'Academic',
       },
       {
