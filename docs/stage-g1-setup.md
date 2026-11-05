@@ -104,8 +104,9 @@ merely to populate the interface.
 
 ## Acceptance checks outstanding
 
-- [ ] TypeScript/build passes on the user's Windows laptop.
-- [ ] Correct initial Admin screen and authoring form.
+- [x] TypeScript/build passes after unused-import fix; build successful with no chunk warning.
+- [x] Admin desktop screenshot confirms 0 pending proposals, proposal form, and disabled invoices/payments.
+- [ ] Mobile and keyboard accessibility remain untested.
 - [ ] User explicitly approves a finance-policy drafting exercise
       before any persistent test record.
 - [ ] Founder/Admin/Finance Officer can read permitted records; Student
