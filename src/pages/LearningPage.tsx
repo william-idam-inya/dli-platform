@@ -3,7 +3,7 @@ import {
   BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap,
   Link2, LockKeyhole, Pencil, Plus, RefreshCw, ShieldCheck,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -41,13 +41,14 @@ function validHttpsUrl(value: string): boolean {
 
 export default function LearningPage() {
   const { account } = useAuth();
+  const [searchParams] = useSearchParams();
   const canEdit = Boolean(account && EDIT_ROLES.has(account.role));
   const [offerings, setOfferings] = useState<Offering[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [resources, setResources] = useState<LearningResource[]>([]);
-  const [selectedOffering, setSelectedOffering] = useState('');
+  const [selectedOffering, setSelectedOffering] = useState(() => searchParams.get('offering') ?? '');
   const [resourceLessonId, setResourceLessonId] = useState('');
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonBody, setLessonBody] = useState('');
