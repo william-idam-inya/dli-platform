@@ -16,7 +16,7 @@ type InvitationResult = {
   invitation_url: string;
 };
 
-export default function InviteUserPage() {
+export default function InviteUserPage({ embedded = false, onCreated }: { embedded?: boolean; onCreated?: () => void }) {
   const { account } = useAuth();
   const options = account ? permittedRoles[account.role] ?? [] : [];
   const [email, setEmail] = useState('');
@@ -49,6 +49,7 @@ export default function InviteUserPage() {
       setError('The invitation could not be created. Check your permissions and whether this email is already registered. No invitation has been sent.');
     } else {
       setResult(data);
+      onCreated?.();
     }
     setPending(false);
   };
@@ -64,16 +65,16 @@ export default function InviteUserPage() {
   };
 
   return (
-    <div className="module-page">
-      <div className="module-page-hero">
+    <div className={embedded ? "invite-embedded" : "module-page"}>
+      {!embedded && <div className="module-page-hero">
         <span className="module-page-icon"><UserPlus size={25}/></span>
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> PEOPLE & ACCESS</div>
           <h1>Invite a DLI member</h1>
           <p>Issue a one-time invitation link for an approved institutional role.</p>
         </div>
-        <span className="module-status"><span/> Stage B</span>
-      </div>
+        <span className="module-status"><span/> Stage C</span>
+      </div>}
 
       <div className="module-notice">
         <div className="notice-icon"><ShieldCheck size={20}/></div>
@@ -119,9 +120,6 @@ export default function InviteUserPage() {
             Copy it before leaving this screen. Do not publish it in a group.</p>
         </section>
       )}
-      <section className="module-footnote"><LockKeyhole size={15}/>
-        Account lists, suspension, role changes and audit viewing will be delivered in Stage C.
-      </section>
     </div>
   );
 }
