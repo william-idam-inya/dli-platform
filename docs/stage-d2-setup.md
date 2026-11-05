@@ -16,9 +16,8 @@ or tutor assignments.
   offerings with real Supabase persistence.
 - Both sidebar navigation and Academic Setup link to this page.
 - Live catalogue counts, loading/error feedback and activation/deactivation.
-- The Vite build is configured for explicit React and Supabase vendor
-  code splitting. This change must be measured locally; it is not yet
-  confirmed to remove the previous 500 kB warning.
+- The Vite build explicitly splits React and Supabase vendor code. The
+  user verified the largest chunk was ~257 kB without the former 500 kB warning.
 
 ## Database and safety
 
@@ -56,9 +55,10 @@ and preserves the previous 0 courses.
 - [x] Supabase security advisor shows no database-policy security finding.
 - [x] Performance advisor unindexed foreign-key warning resolved; some
       new indexes remain unused until normal workloads develop.
-- [ ] Stage D2 TypeScript check / Vite production build on Windows.
+- [x] Stage D2 TypeScript check / Vite production build passed on Windows.
+- [x] Browser screenshots confirm /cohorts renders the live 0/0/0/0 empty state.
 - [ ] Browser test of topic/cohort/offering creation and activation.
-- [ ] Measure Vite output bundle chunk sizes after vendor splitting.
+- [x] Vite output measured: largest bundle ~257 kB; prior warning resolved.
 - [ ] Test mobile layout and keyboard access.
 
 Stage C and D1 have verified local build success, but their
