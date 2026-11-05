@@ -12,6 +12,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage D2 branch: `feature/stage-d2-topics-cohorts-offerings`, stacked on D1.
 - Stage D3 branch: `feature/stage-d3-assignments-enrolments`, stacked on D2.
 - Stage E1 branch: `feature/stage-e1-lessons-resources`, stacked on D3.
+- Stage E2 branch: `feature/stage-e2-private-lesson-files`, stacked on E1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -141,7 +142,30 @@ DLI development migration:
 
 The `/learning` page now handles lesson drafts, editing, publishing and HTTPS resource links. Access is enforced by class-specific Supabase RLS: enrolled Students see published content only; assigned Tutors and approved staff can edit. Rollback-only tests verified Owner creation and audit, Student and Tutor read boundaries, empty-lesson publication denial and non-HTTPS URL rejection. No test data persisted.
 
-The Stage E1 Windows typecheck/build and browser checks remain pending. Later Stage E still needs file uploads, assignments, submissions, grading, quizzes and results. Read `docs/stage-e1-setup.md`.
+Stage E1 Windows TypeScript/build passed; the Admin browser screenshot shows the expected zero-class, zero-lesson, zero-resource state. Controlled create/edit/publish and Tutor/Student negative-path browser tests remain pending. See `docs/stage-e1-setup.md`. Stage E2 now implements private file uploads; later Stage E still requires assignments, submissions, grading, quizzes and results.
+
+## Stage E2 — Private lesson files (implementation under test)
+
+Deployed to DLI development: private `dli-lesson-files` Storage bucket,
+`lesson_files` metadata, RLS-limited editor uploads and authenticated
+downloads controlled by current class enrolment and both file and parent
+lesson publication states.
+
+Migrations applied and committed:
+- `20261105200858_stage_e2_private_lesson_file_storage.sql`
+- `20261105201001_stage_e2_file_audit_multichange_fix.sql`
+
+Owner metadata reservation, file readiness/publication audit events,
+Student-only published metadata visibility and Student write-denial
+passed SQL checks in rolled-back transactions. Bucket confirmed private,
+with restricted MIME types and a 5 MiB **temporary development** cap.
+Zero file objects were created. The security advisor has no new DB-policy
+finding; the existing Auth leaked-password-protection warning persists.
+
+**Still pending:** E2 Windows TypeScript/build, actual Storage API
+upload/download, negative user tests and lifecycle failure/retry review.
+See `docs/stage-e2-setup.md`. Storage upload has not been verified
+through the browser. Do not call E2 or the wider LMS complete.
 
 ## Remaining roadmap
 
