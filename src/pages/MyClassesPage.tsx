@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './AcademicAssignmentsPage.css';
@@ -116,6 +117,9 @@ export default function MyClassesPage() {
         <span className="my-class-icon"><BookOpen size={20}/></span>
         <h2>{item.courseTitle}</h2>
         <p className="my-class-cohort"><Layers3 size={15}/> {item.cohortName}</p>
+        <Link className="user-outline-button" to={`/learning?offering=${encodeURIComponent(item.offering.id)}`}>
+          <BookOpen size={15}/> Open lessons
+        </Link>
         <div className="my-class-topics">
           <strong>Course topics ({item.topics.length})</strong>
           {item.topics.length ? <ol>
