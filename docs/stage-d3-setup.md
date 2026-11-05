@@ -1,7 +1,6 @@
 # Stage D3 — tutor assignments and student enrolments
 
-**Status:** implemented in DLI development Supabase; Windows TypeScript/build and
-real-user browser acceptance tests are still required.
+**Status:** DLI development schema, Windows TypeScript/build and Admin empty-state verified. Controlled real Tutor/Student acceptance tests remain pending.
 
 This branch is based on `feature/stage-d2-topics-cohorts-offerings` and follows
 Stage D of the governing DLI Platform Setup & Build Manual.
@@ -104,8 +103,8 @@ only after their account exists in DLI and they have approved class access.
 
 ## Remaining acceptance tasks
 
-- [ ] Local TypeScript check and production build pass.
-- [ ] Admin screen shows real empty states; no fabricated people/classes.
+- [x] Local TypeScript check and production build passed on Windows.
+- [x] Admin screenshot confirms 0 offerings, 0 Tutors, 0 Students and 0 links.
 - [ ] Invite approved Tutor and Student accounts without using test
       accounts that impersonate real people.
 - [ ] After an approved course + cohort + offering exist, assign Tutor
