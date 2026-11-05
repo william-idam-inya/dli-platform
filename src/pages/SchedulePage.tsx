@@ -110,7 +110,12 @@ function SessionFields({value,onChange,prefix}:{
       </div>
       <label htmlFor={prefix+'-mode'}>Delivery mode</label>
       <select id={prefix+'-mode'} value={value.mode}
-        onChange={e=>patch('mode',e.target.value as Mode)}>
+        onChange={e=>{
+          const nextMode=e.target.value as Mode;
+          onChange({...value,mode:nextMode,
+            venue:nextMode==='online'?'':value.venue,
+            url:nextMode==='in_person'?'':value.url});
+        }}>
         <option value="online">Online</option>
         <option value="in_person">In person</option>
         <option value="hybrid">Hybrid</option>
