@@ -61,10 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccount(null);
       setState('guest');
       // Sign out locally; an existing Auth account does not constitute DLI authorisation.
+      setNotice('This account is not authorised for DLI access. Contact your administrator.');
       await supabase.auth.signOut({ scope: 'local' });
-      if (run === verification.current) {
-        setNotice('This account is not authorised for DLI access. Contact your administrator.');
-      }
       return;
     }
 
