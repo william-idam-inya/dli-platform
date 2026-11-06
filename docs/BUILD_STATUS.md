@@ -24,6 +24,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H3 branch: `feature/stage-h3-reusable-message-templates`, stacked on H2.
 - Stage H4 branch: `feature/stage-h4-internal-reminder-planner`, stacked on H3.
 - Stage H5 branch: `feature/stage-h5-in-app-announcements`, stacked on H4.
+- Stage H6 branch: `feature/stage-h6-manual-whatsapp-email-handoff`, stacked on H5.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -488,13 +489,39 @@ write denied and Founder publication denied while the gate is off.
 Zero announcement records persist; flag remains false, Admin role
 unchanged.
 
-**Pending:** H5 Windows TypeScript/build, Admin empty-state
-screenshot, genuine role-browser acceptance, publication-control
-verification, institutional approval before enabling publication.
+**Passed:** H5 Windows TypeScript and Vite production build (2,145 modules transformed, no chunk warnings), Admin browser screenshot of 0 accessible notices, 0 published notices and 0 private drafts; the page correctly states that publication is disabled pending institutional approval. **Pending:** real draft author/reviewer role-browser acceptance, publication-control verification, mobile/keyboard tests; approval before enabling publication.
 See `docs/stage-h5-setup.md`.
 
 Existing Stage E4 privileged quiz RPC and Supabase Auth
 leaked-password-protection warnings still require remediation.
+
+## Stage H6 — Audited manual WhatsApp/email composition (under test)
+
+The H2 Communications Review page now provides manual WhatsApp or
+email compose actions ONLY for a draft revision independently
+cleared for manual copy. A new RLS table records a preparation
+action, never a sent/delivered status. The browser re-fetches the
+draft and latest review; the database independently rechecks current
+revision, matching channel, clearance and live staff authorization
+at INSERT. After explicit consent, the external composer is opened
+without preselecting or storing recipients.
+
+- `20261106062435_stage_h6_audited_manual_whatsapp_email_preparation.sql`
+
+**Passed rollback-only database tests:** Admin pre-approval attempt
+rejected; independent Founder approval enabled exact email handoff
+preparation with metadata audit; channel mismatch and fake revision
+rejected; editing a cleared WhatsApp draft invalidated both old
+and new revision preparations until new independent review.
+No test records remain, and real Admin role is unchanged.
+
+**Pending:** H6 Windows TypeScript/build, real author/reviewer
+browser workflow and external composer acceptance, responsive
+accessibility. See `docs/stage-h6-setup.md`.
+
+H5 in-app publication remains disabled. No paid service or
+automatic sending is connected. Existing Stage E4 privileged quiz
+RPC and Auth leaked-password-protection advisories persist.
 
 ## Remaining roadmap
 
