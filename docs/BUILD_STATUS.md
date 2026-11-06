@@ -21,6 +21,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage G2 branch: `feature/stage-g2-finance-proposal-review`, stacked on G1.
 - Stage H1 branch: `feature/stage-h1-private-communication-drafts`, stacked on G2.
 - Stage H2 branch: `feature/stage-h2-draft-review-manual-copy`, stacked on H1.
+- Stage H3 branch: `feature/stage-h3-reusable-message-templates`, stacked on H2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -389,14 +390,47 @@ browser; future/stale revision numbers rejected; edit increments revision;
 Student with known draft ID cannot access/insert; audit records exist.
 Zero drafts/reviews persist and Admin role remains unchanged.
 
-**Pending:** Windows TypeScript/build, Admin empty-state screenshot,
-actual independent author/reviewer browser checks, copy formatting,
-revocation, mobile/keyboard and privacy acceptance.
+**Passed:** H2 Windows TypeScript and Vite production build (2,139 modules transformed, no chunk warnings) and Admin screenshot with 0 drafts, 0 reviews and 0 cleared revisions. **Pending:** actual independent author/reviewer browser checks, copy formatting, revocation, mobile/keyboard and privacy acceptance.
 See `docs/stage-h2-setup.md`.
 
 Supabase advisor reports no new H2-specific security findings;
 the pre-existing E4 privileged quiz RPCs and Auth leaked-password
 protection warnings remain open.
+
+## Stage H3 — Reusable private message templates (under test)
+
+An audited `communication_templates` table is deployed to DLI
+development and exposed through a private
+`/communications/templates` editor, search and category-filtered
+library. Approved categories from the communications brief are
+weekend reminder, quiz reminder, weekly announcement, Monday
+motivation and Daily Excellence Pill (plus generic other).
+No fabricated official message text is seeded.
+
+Migration:
+- `20261106052544_stage_h3_private_reusable_message_templates.sql`
+
+Founder, Admin and Assistant Admin may read team templates but edit only
+their own; Coordinator and Tutor see/edit only their own; Students have
+no template access. All creation and edits are audited. A template
+can create a **brand-new, unreviewed** H1 draft belonging to the
+current caller. The new draft is not pre-cleared by H2, and nothing is
+sent, published, scheduled or addressed to any recipient.
+
+**Passed rollback-only SQL tests:** Owner template; Admin read and
+cross-author edit denied; Admin generated own status-draft revision-1
+message with no inherited clearance; Admin authored/edited own template;
+Tutor own-only access; Student read/insert denied; browser DELETE denied;
+audit events created. Zero templates/drafts/reviews remain after
+rollback and real Admin role unchanged.
+
+**Pending:** H3 Windows TypeScript/build, Admin empty-state screenshot,
+controlled template author/use lifecycle, role/browser and accessibility
+testing. See `docs/stage-h3-setup.md`.
+
+No new H3-specific security advisor findings. Two existing Stage E4
+privileged quiz RPC issues and disabled Supabase Auth leaked-password
+protection remain outstanding.
 
 ## Remaining roadmap
 
