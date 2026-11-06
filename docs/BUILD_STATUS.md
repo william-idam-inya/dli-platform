@@ -23,6 +23,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H2 branch: `feature/stage-h2-draft-review-manual-copy`, stacked on H1.
 - Stage H3 branch: `feature/stage-h3-reusable-message-templates`, stacked on H2.
 - Stage H4 branch: `feature/stage-h4-internal-reminder-planner`, stacked on H3.
+- Stage H5 branch: `feature/stage-h5-in-app-announcements`, stacked on H4.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -453,13 +454,46 @@ audit event present, Founder reminder readable but not editable by
 Admin, cross-author linked-draft creation rejected, Student read/insert
 denied. Zero reminders persist, real Admin role unchanged.
 
-**Pending:** Windows TypeScript/build, Admin empty-state screenshot,
-real reminder create/edit/acknowledge workflow and responsive/accessibility
-checks. See `docs/stage-h4-setup.md`.
+**Passed:** H4 Windows TypeScript and Vite production build (2,143 modules transformed, no chunk warning) and Admin screenshot with 0 unacknowledged/due/acknowledged reminders. **Pending:** real reminder create/edit/acknowledge and role/browser accessibility acceptance. See `docs/stage-h4-setup.md`.
 
 Supabase advisor has no new H4-specific security issues;
 the pre-existing E4 privileged quiz functions and disabled Auth
 leaked-password protection remain open.
+
+## Stage H5 — Restricted in-app announcements (under test)
+
+New `/announcements` route and `in_app_announcements` RLS table
+implement separate private announcement drafting, exact-role
+visibility for published notices and an independent Founder-only
+publication transition. Founder/Admin can preview staff drafts;
+only their authors can edit still-private text.
+
+**No real in-app publication is enabled.** Because the approved
+build notes require separate institutional permission, the
+database-enforced `communication_feature_flags.in_app_publication`
+row is **false**, and authenticated browsers cannot change it.
+The frontend also disables Founder publication accordingly.
+
+Migrations:
+- `20261106060210_stage_h5_restricted_in_app_announcements.sql`
+- `20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql`
+
+**Passed rollback-only SQL tests:** Admin private draft creation,
+Admin publication denied, independent Founder review and
+publication transition verified before the safety gate, Student
+saw only a published Student-role notice (not other-role or
+unpublished content), Student insert denied, browser feature-flag
+write denied and Founder publication denied while the gate is off.
+Zero announcement records persist; flag remains false, Admin role
+unchanged.
+
+**Pending:** H5 Windows TypeScript/build, Admin empty-state
+screenshot, genuine role-browser acceptance, publication-control
+verification, institutional approval before enabling publication.
+See `docs/stage-h5-setup.md`.
+
+Existing Stage E4 privileged quiz RPC and Supabase Auth
+leaked-password-protection warnings still require remediation.
 
 ## Remaining roadmap
 
