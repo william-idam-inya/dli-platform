@@ -22,6 +22,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H1 branch: `feature/stage-h1-private-communication-drafts`, stacked on G2.
 - Stage H2 branch: `feature/stage-h2-draft-review-manual-copy`, stacked on H1.
 - Stage H3 branch: `feature/stage-h3-reusable-message-templates`, stacked on H2.
+- Stage H4 branch: `feature/stage-h4-internal-reminder-planner`, stacked on H3.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -424,13 +425,41 @@ Tutor own-only access; Student read/insert denied; browser DELETE denied;
 audit events created. Zero templates/drafts/reviews remain after
 rollback and real Admin role unchanged.
 
-**Pending:** H3 Windows TypeScript/build, Admin empty-state screenshot,
-controlled template author/use lifecycle, role/browser and accessibility
-testing. See `docs/stage-h3-setup.md`.
+**Passed:** H3 Windows TypeScript and Vite production build (2,141 modules transformed, no chunk warning), and Admin screenshot with 0 accessible templates, 0 own templates and automatic sending disabled. **Pending:** controlled template author/use lifecycle and role/accessibility browser testing. See `docs/stage-h3-setup.md`.
 
 No new H3-specific security advisor findings. Two existing Stage E4
 privileged quiz RPC issues and disabled Supabase Auth leaked-password
 protection remain outstanding.
+
+## Stage H4 — Private internal reminder planner (under test)
+
+The `/communications/reminders` page is implemented on
+`feature/stage-h4-internal-reminder-planner` and the
+`communication_reminders` table is deployed to DLI development.
+
+Migration:
+- `20261106054324_stage_h4_private_internal_reminder_planner.sql`
+
+Owner/Admin/Assistant Admin can read team reminders; Coordinators/Tutors
+see only their own. Only authors can edit or manually acknowledge tasks.
+An optional linked private draft must belong to the reminder's author.
+Records store a West Africa Time review timestamp, intended labels,
+notes and acknowledgment metadata. **No scheduler, alarm, notification,
+message delivery, recipient lookup or automated action** exists, including
+while the application is closed.
+
+**Passed rollback-only SQL tests:** Admin create and acknowledge,
+audit event present, Founder reminder readable but not editable by
+Admin, cross-author linked-draft creation rejected, Student read/insert
+denied. Zero reminders persist, real Admin role unchanged.
+
+**Pending:** Windows TypeScript/build, Admin empty-state screenshot,
+real reminder create/edit/acknowledge workflow and responsive/accessibility
+checks. See `docs/stage-h4-setup.md`.
+
+Supabase advisor has no new H4-specific security issues;
+the pre-existing E4 privileged quiz functions and disabled Auth
+leaked-password protection remain open.
 
 ## Remaining roadmap
 
