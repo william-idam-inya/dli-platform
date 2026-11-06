@@ -1,0 +1,14 @@
+/* H6: manual external composition; no automated messaging */
+.manual-share-controls{margin-top:19px;border-top:1px solid var(--border);
+ padding-top:18px;display:flex;flex-direction:column;gap:11px;align-items:flex-start}
+.manual-share-title{display:flex;align-items:center;gap:9px;color:var(--text)}
+.manual-share-title svg{color:var(--purple)}
+.manual-share-title strong{font-size:12px}
+.manual-share-controls>p:not(.auth-feedback){font-size:12px;line-height:1.7;color:var(--muted);
+ margin:0;max-width:780px}
+.manual-share-controls>small{font-size:11px;color:var(--muted);line-height:1.6}
+.manual-share-controls>.academic-submit{display:inline-flex;gap:8px;align-items:center}
+.manual-share-controls>.auth-feedback{margin-top:4px}
+@media(max-width:700px){
+ .manual-share-controls>.academic-submit{width:100%;justify-content:center}
+}
