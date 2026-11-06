@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage H5 · In-app announcements</strong>
-          <p>Notices need independent Founder publication; no external messaging.</p>
+          <strong>Stage H6 · Manual message handoff</strong>
+          <p>Only a cleared draft revision may open WhatsApp or email composition; no sending.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
