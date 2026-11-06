@@ -206,7 +206,9 @@ export default function CommunicationDraftsPage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      Internal revision-specific clearance is available under
+      Private message starters are available under
+      <Link to="/communications/templates"> Message templates</Link>.
+      Independent revision clearance is under
       <Link to="/communications/reviews"> Communications review</Link>.
       External sending, publishing, group integration, delivery receipts,
       automated notifications and recipient lists remain disabled.
