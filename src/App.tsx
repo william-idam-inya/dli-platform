@@ -25,6 +25,7 @@ const AttendancePage = lazy(() => import('./pages/AttendancePage'));
 const FinancePage = lazy(() => import('./pages/FinancePage'));
 const FinanceReviewPage = lazy(() => import('./pages/FinanceReviewPage'));
 const CommunicationDraftsPage = lazy(() => import('./pages/CommunicationDraftsPage'));
+const CommunicationReviewPage = lazy(() => import('./pages/CommunicationReviewPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -60,8 +61,9 @@ function Workspace() {
         <Route path="/finance" element={<AllowedArea path="/finance"><FinancePage /></AllowedArea>} />
         <Route path="/finance/reviews" element={<AllowedArea path="/finance/reviews"><FinanceReviewPage /></AllowedArea>} />
         <Route path="/communications" element={<AllowedArea path="/communications"><CommunicationDraftsPage /></AllowedArea>} />
+        <Route path="/communications/reviews" element={<AllowedArea path="/communications/reviews"><CommunicationReviewPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications'
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
