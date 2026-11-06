@@ -573,9 +573,7 @@ not read the private programmes. Admin role restored after rollback.
 The dev database has 0 active offerings. Finance read restrictions
 have been inspected against existing RLS.
 
-**Pending:** Windows TypeScript/build, Admin and other role browser
-checks, counts/filter/refresh/error handling and mobile testing.
-See `docs/stage-i2-setup.md`.
+**Observed:** Admin screenshot shows `/reports` loading and 2 active programmes, with 0 active courses and cohorts. Initial Windows TypeScript/build failed on unused `Wallet` import and nullability of the Supabase client inside the report-count callback. Both source errors were patched in commit `800c9d2`; **a new Windows typecheck and build are pending**. Further role, refresh, error handling and mobile checks remain. See `docs/stage-i2-setup.md`.
 
 ## Remaining roadmap
 
