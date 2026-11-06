@@ -1,6 +1,6 @@
 # DLI Platform — build status
 
-Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Manual.
+Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Manual.
 
 ## GitHub and branches
 
@@ -19,6 +19,7 @@ Updated: 5 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage F2 branch: `feature/stage-f2-attendance-reporting`, stacked on F1.
 - Stage G1 branch: `feature/stage-g1-finance-governance`, stacked on F2.
 - Stage G2 branch: `feature/stage-g2-finance-proposal-review`, stacked on G1.
+- Stage H1 branch: `feature/stage-h1-private-communication-drafts`, stacked on G2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -327,13 +328,38 @@ two; Student cannot read or insert even using a known proposal ID;
 DELETE is denied and audit events exist. Zero review/proposal records
 persisted and the Admin role remains unchanged.
 
-**Pending:** G2 Windows TypeScript/build, browser empty-state, permitted
-role-specific review tests, mobile/accessibility checks, and approval
-of institution-specific financial processes before any financial activation.
+**Passed:** G2 Windows TypeScript and production Vite build, 2,135 modules transformed, no chunk-size warnings. Admin browser screenshot confirms 0 proposals, review notes and Founder planning outcomes. **Pending:** real Founder/Finance Officer reviews, mobile/keyboard checks, and institution policy approval before any monetary process.
 See `docs/stage-g2-setup.md`.
 
 Security advisor: no new G2 warnings; two prior E4 privileged quiz RPC
 warnings and disabled Auth leaked-password protection remain.
+
+## Stage H1 — Private communications drafts (under test)
+
+The `/communications` placeholder is replaced by a private message-drafting
+workspace on `feature/stage-h1-private-communication-drafts`.
+
+DLI development migrations:
+- `20261106024945_stage_h1_internal_draft_communications.sql`
+- `20261106025105_stage_h1_draft_editor_index.sql`
+
+Staff roles and Tutors can create and edit their own message drafts.
+Founder/Admin/Assistant Admin may read team drafts; Academic Coordinator
+and Tutor see only their own drafts. Student accounts have no access.
+Audience/channel are planning labels only. All records stay `draft`;
+there is no sending, publication, external contact lookup, recipient
+list, scheduled delivery or WhatsApp/email integration.
+
+**Passed transactionally rolled-back SQL checks:** Founder draft,
+Admin read but no cross-author edit, Admin own edit and audit,
+Tutor own-only read/edit, Student read/insert denied, browser status
+change to "sent" denied. Zero drafts persisted, Admin role unchanged.
+An initially reported missing foreign-key index was added; no
+new H1-specific advisor warning remains.
+
+**Pending:** H1 Windows TypeScript/build and browser empty state,
+controlled roles, responsive/accessibility and private draft lifecycle.
+See `docs/stage-h1-setup.md`.
 
 ## Remaining roadmap
 
