@@ -5,6 +5,7 @@ import {
   BookOpen,
   ClipboardCheck,
   CalendarDays,
+  CalendarClock,
   CalendarCheck,
   Users,
   GraduationCap,
@@ -164,6 +165,13 @@ export const navigationSections: NavigationSection[] = [
         path: '/communications/templates',
         icon: BookOpen,
         description: 'Reusable private message starters; new drafts must be reviewed separately.',
+        group: 'Operations',
+      },
+      {
+        label: 'Internal reminders',
+        path: '/communications/reminders',
+        icon: CalendarClock,
+        description: 'Stored communication preparation reminders; no automatic background scheduling or delivery.',
         group: 'Operations',
       },
       {
