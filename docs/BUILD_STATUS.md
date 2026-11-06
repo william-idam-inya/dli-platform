@@ -27,6 +27,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H6 branch: `feature/stage-h6-manual-whatsapp-email-handoff`, stacked on H5.
 - Stage I1 branch: `feature/stage-i1-audit-log-viewer`, stacked on H6.
 - Stage I2 branch: `feature/stage-i2-role-scoped-operational-overview`, stacked on I1.
+- Stage I3 branch: `feature/stage-i3-settings`, stacked on I2.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -573,7 +574,39 @@ not read the private programmes. Admin role restored after rollback.
 The dev database has 0 active offerings. Finance read restrictions
 have been inspected against existing RLS.
 
-**Observed:** Admin screenshot shows `/reports` loading and 2 active programmes, with 0 active courses and cohorts. Initial Windows TypeScript/build failed on unused `Wallet` import and nullability of the Supabase client inside the report-count callback. Both source errors were patched in commit `800c9d2`; **a new Windows typecheck and build are pending**. Further role, refresh, error handling and mobile checks remain. See `docs/stage-i2-setup.md`.
+**Passed:** After fixing the unused icon import and nullable Supabase client, Windows TypeScript and Vite production build passed (2,151 modules transformed, no warnings); Admin screenshot confirms `/reports` shows 2 active programmes, 0 active courses and 0 active cohorts. **Pending:** role/browser checks beyond Admin, Refresh/error tests, accessibility and mobile acceptance. See `docs/stage-i2-setup.md`.
+
+## Stage I3 — Owner-controlled institutional group settings (under test)
+
+New `/settings` page replaces the placeholder with two real,
+database-backed DLI–Scholars Club group-invitation records (Students
+and Tutors). The record values are deliberately **NULL** until the
+Founder configures invitations. The Admin can view settings read-only.
+PostgreSQL RLS **allows UPDATE only for active Founder/Owner**;
+browser UPDATE grant is limited to the invite_url column, and
+invalid non-WhatsApp URLs are rejected by a CHECK constraint.
+Metadata-only audit events record changes without leaking invitations.
+
+The page also shows the existing H5 `in_app_publication` flag
+as a read-only, database-checked safeguard. It remains **false**.
+No fees, payment collections, automatic delivery, student data
+exports or Gemini requests have been activated.
+
+Migration:
+- `20261106072209_stage_i3_owner_controlled_group_links.sql`
+
+**Passed rollback-only SQL tests:** Founder SELECT and valid URL
+UPDATE, metadata audit, rejection of a non-WhatsApp URL, Admin
+read-only SELECT and UPDATE rejection, Student read denial;
+all temporary changes rolled back and Admin role preserved.
+The DLI dev database has 0 configured group links.
+
+**Pending:** Windows TypeScript/build, Admin screenshot of read-only
+settings, Founder real-role browser edit/clear, responsive/error
+testing. See `docs/stage-i3-setup.md`.
+
+The pre-existing Stage E4 privileged quiz-function and
+Auth leaked-password advisories remain unresolved.
 
 ## Remaining roadmap
 
