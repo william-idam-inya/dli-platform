@@ -2,8 +2,7 @@
 
 **Status:** implemented in the private DLI development database and
 stacked feature branch. Database tests passed in rollback-only
-transactions. The local Windows TypeScript build, browser handoff
-tests and independent real-role acceptance are pending.
+transactions. The local Windows TypeScript and Vite production build and the Admin empty Communications Review screenshot have now passed; actual manual handoff and independent real-role acceptance remain pending.
 
 Branch: `feature/stage-h6-manual-whatsapp-email-handoff`
 Base: `feature/stage-h5-in-app-announcements`
@@ -125,8 +124,8 @@ function is introduced.
 
 ## Remaining browser/security acceptance
 
-- [ ] Windows `npm.cmd run typecheck`, production build.
-- [ ] Admin H2 review page renders without errors.
+- [x] Windows TypeScript and Vite production build passed, 2,147 modules transformed with no chunk warnings.
+- [x] Admin H2 review page renders its expected empty state with 0 drafts, reviews and current clearances.
 - [ ] Controlled non-sensitive real draft authored by Admin,
       independent Founder review, and current-revision approval.
 - [ ] Click consented WhatsApp/email handoff and inspect correct
