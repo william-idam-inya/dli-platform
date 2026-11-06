@@ -72,9 +72,16 @@ percentages, email/WhatsApp notifications, paid services.
 - [x] All role simulation changes rolled back; Admin role unchanged.
 - [x] Actual dev database currently contains 2 active programmes,
       0 active class offerings and no finance proposal/review entries.
-- [x] Existing RLS and table grants inspected, including finance
-      SELECT policy permitting only Owner/Admin/Finance Officer.
-- [x] No development database migration or write was necessary.
+- [x] Existing RLS and table grants inspected. A Finance Officer
+      could query planning proposal/review tables (both empty), but
+      could not read the private institutional programme catalogue.
+      An Academic Coordinator could query programmes but not
+      finance-planning records. The finance SELECT policy restricts
+      read access to Owner/Admin/Finance Officer.
+- [x] No development database migration or persistent write was necessary.
+- [x] Advisor check still reports the pre-existing 2 privileged quiz
+      RPC findings and Auth leaked-password-protection warning;
+      no new Stage I2 database security issues introduced.
 - [ ] Windows TypeScript check and Vite production build.
 - [ ] Browser: Admin, Academic Coordinator, Finance Officer and
       denied Student/Tutor route tests.
