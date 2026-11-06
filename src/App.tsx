@@ -30,6 +30,7 @@ const CommunicationTemplatesPage = lazy(() => import('./pages/CommunicationTempl
 const ReminderPlannerPage = lazy(() => import('./pages/ReminderPlannerPage'));
 const InAppAnnouncementsPage = lazy(() => import('./pages/InAppAnnouncementsPage'));
 const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
+const OperationalReportsPage = lazy(() => import('./pages/OperationalReportsPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -70,8 +71,9 @@ function Workspace() {
         <Route path="/communications/reminders" element={<AllowedArea path="/communications/reminders"><ReminderPlannerPage /></AllowedArea>} />
         <Route path="/announcements" element={<AllowedArea path="/announcements"><InAppAnnouncementsPage /></AllowedArea>} />
         <Route path="/reports/audit" element={<AllowedArea path="/reports/audit"><AuditLogPage /></AllowedArea>} />
+        <Route path="/reports" element={<AllowedArea path="/reports"><OperationalReportsPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit'
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
