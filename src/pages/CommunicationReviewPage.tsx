@@ -135,11 +135,14 @@ export default function CommunicationReviewPage() {
     setNotice(null);
     const { data, error: insertError } = await supabase
       .from('communication_draft_reviews')
-      .insert({ draft_id: draft.id, review_action: chosenAction, note: clean })
+      .insert({ draft_id: draft.id, draft_revision: draft.revision,
+        review_action: chosenAction, note: clean })
       .select('id').maybeSingle();
     if (insertError || !data) {
       setError(insertError?.code === '23505'
         ? 'This draft revision already has clearance. Refresh to see the latest reviews.'
+        : insertError?.code === '23514'
+        ? 'The draft was edited after you opened it. Refresh and review the new text.'
         : 'Review was not saved. Check your active role, current draft revision and permission.');
     } else {
       setAction('comment');
