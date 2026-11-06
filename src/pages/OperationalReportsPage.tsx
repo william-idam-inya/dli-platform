@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   BarChart3, BookOpen, CalendarDays, ClipboardCheck, FileText,
-  GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck, Users, Wallet,
+  GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck, Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -74,7 +74,8 @@ export default function OperationalReportsPage(){
   const [checkedAt,setCheckedAt] = useState<string|null>(null);
 
   const refresh = useCallback(async () => {
-    if (!supabase || !permitted) {
+    const client = supabase;
+    if (!client || !permitted) {
       setValues({});setLoading(false);
       setError('Your account cannot access this operational report.');
       return;
@@ -85,7 +86,7 @@ export default function OperationalReportsPage(){
     // the actual logged-in account's RLS context; no service role is involved.
     try {
       const entries = await Promise.all(items.map(async item => {
-        let query = supabase.from(item.id)
+        let query = client.from(item.id)
           .select('id', {count:'exact',head:true});
         if (item.active) query = query.eq('is_active',true);
         if (item.published) query = query.eq('is_published',true);
