@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Wallet,
   MessageSquareText,
+  Bell,
   ChartNoAxesCombined,
   Settings,
   type LucideIcon,
@@ -172,6 +173,13 @@ export const navigationSections: NavigationSection[] = [
         path: '/communications/reminders',
         icon: CalendarClock,
         description: 'Stored communication preparation reminders; no automatic background scheduling or delivery.',
+        group: 'Operations',
+      },
+      {
+        label: 'In-app announcements',
+        path: '/announcements',
+        icon: Bell,
+        description: 'Published role-scoped notices and restricted internal drafting; Founder-only publication.',
         group: 'Operations',
       },
       {
