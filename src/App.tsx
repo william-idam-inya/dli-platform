@@ -27,6 +27,7 @@ const FinanceReviewPage = lazy(() => import('./pages/FinanceReviewPage'));
 const CommunicationDraftsPage = lazy(() => import('./pages/CommunicationDraftsPage'));
 const CommunicationReviewPage = lazy(() => import('./pages/CommunicationReviewPage'));
 const CommunicationTemplatesPage = lazy(() => import('./pages/CommunicationTemplatesPage'));
+const ReminderPlannerPage = lazy(() => import('./pages/ReminderPlannerPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -64,8 +65,9 @@ function Workspace() {
         <Route path="/communications" element={<AllowedArea path="/communications"><CommunicationDraftsPage /></AllowedArea>} />
         <Route path="/communications/reviews" element={<AllowedArea path="/communications/reviews"><CommunicationReviewPage /></AllowedArea>} />
         <Route path="/communications/templates" element={<AllowedArea path="/communications/templates"><CommunicationTemplatesPage /></AllowedArea>} />
+        <Route path="/communications/reminders" element={<AllowedArea path="/communications/reminders"><ReminderPlannerPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates'
+          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
