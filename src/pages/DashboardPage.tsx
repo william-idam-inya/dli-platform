@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage I1: restricted database-backed audit trail</strong>
-          <span>Stage H6 passes local TypeScript/build and shows the expected empty Communications Review page. The real independent approval/handoff workflow remains untested. Stage I1 adds a read-only, paginated Founder/Admin audit history with sensitive detail fields excluded and exports disabled. I1 local verification remains pending.</span>
+          <strong>Stage I2: role-scoped operational summary reports</strong>
+          <span>Stage I1 passes local TypeScript/build and the Admin audit screenshot displays its two real development events. Stage I2 adds role-scoped academic and finance row-count reports based entirely on the existing RLS policies. No payments, financial rates or sensitive exports are activated; I2 browser verification is pending.</span>
         </div>
-        <span className="status-chip">Stage I1</span>
+        <span className="status-chip">Stage I2</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify I1 audit role restrictions and read-only event history. Previous real-role acceptance, private files, quiz-function security and attendance remain before release.</p>
+          <p>Verify I2 academic/finance counts, access isolation and refresh. Prior real-role acceptance, private files, quiz-function security and attendance remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/reports/audit')?.path ?? '/reports/audit'} className="text-link">
-          Open audit trail <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/reports')?.path ?? '/reports'} className="text-link">
+          Open operational reports <ArrowRight size={16} />
         </Link>
       </section>
     </div>
