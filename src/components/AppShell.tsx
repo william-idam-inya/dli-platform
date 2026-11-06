@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage I2 · Operational reports</strong>
-          <p>Role-scoped academic and finance counts only; no export or billing.</p>
+          <strong>Stage I3 · Institutional settings</strong>
+          <p>Founder edits DLI group links; Admin read-only. Finance and publication stay locked.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
