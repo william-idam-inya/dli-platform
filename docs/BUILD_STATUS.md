@@ -476,7 +476,8 @@ The frontend also disables Founder publication accordingly.
 
 Migrations:
 - `20261106060210_stage_h5_restricted_in_app_announcements.sql`
-- `20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql`
+- `20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql
+- `20261106061236_stage_h5_index_announcement_publisher_fk.sql``
 
 **Passed rollback-only SQL tests:** Admin private draft creation,
 Admin publication denied, independent Founder review and
