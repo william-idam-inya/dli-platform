@@ -82,9 +82,9 @@ percentages, email/WhatsApp notifications, paid services.
 - [x] Advisor check still reports the pre-existing 2 privileged quiz
       RPC findings and Auth leaked-password-protection warning;
       no new Stage I2 database security issues introduced.
-- [ ] Windows TypeScript check and Vite production build.
-- [ ] Browser: Admin, Academic Coordinator, Finance Officer and
-      denied Student/Tutor route tests.
+- [ ] Initial Windows TypeScript/build attempt failed with two source-code errors (unused `Wallet` icon import and nullable Supabase client in async callback). Both were patched in commit `800c9d2`; repeat typecheck/build after pulling this commit.
+- [x] Admin browser screenshot confirms the page loads and displays 2 active programmes, 0 active courses and 0 active cohorts.
+- [ ] Academic Coordinator, Finance Officer and denied Student/Tutor route tests.
 - [ ] Counts, Refresh, empty/error states, mobile and keyboard tests.
 
 ## Run locally on Windows
