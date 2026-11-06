@@ -1,0 +1,1 @@
+create index communication_drafts_last_edited_by_idx on public.communication_drafts(last_edited_by);
