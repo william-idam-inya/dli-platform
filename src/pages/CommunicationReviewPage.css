@@ -1,0 +1,49 @@
+/* Stage H2: internal communications review and manual-copy control. */
+.communication-review-page{width:100%}
+.communications-back-link{margin:0 0 18px}
+.communications-back-link a{display:inline-flex;align-items:center;gap:8px;
+ color:var(--muted);font-size:12px;text-decoration:none}
+.communication-review-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:16px;margin:20px 0 24px}
+.communication-review-summary>div{display:flex;flex-direction:column;gap:9px;min-width:0;
+ border:1px solid var(--border);border-radius:13px;background:var(--surface-soft);padding:18px}
+.communication-review-summary svg{color:var(--purple)}
+.communication-review-summary strong{font-size:26px;font-weight:800;color:var(--text)}
+.communication-review-summary span{font-size:12px;color:var(--muted)}
+.communication-review-select,.communication-review-history,.communication-review-editor{margin-bottom:16px}
+.communication-review-select>label{display:block;margin-bottom:8px;color:var(--text);
+ font-size:12px;font-weight:750}
+.communication-review-select>select{display:block;width:100%;box-sizing:border-box;min-height:44px;
+ padding:9px 11px;border:1px solid var(--border);border-radius:9px;
+ background:var(--surface-soft);color:var(--text);font:inherit;font-size:12px}
+.communication-review-select a{color:var(--purple);text-decoration:underline}
+.communication-review-preview,.communication-review-entry{border:1px solid var(--border);
+ border-radius:12px;background:var(--surface-soft);padding:17px;margin-top:16px}
+.communication-review-preview-top,.communication-review-entry-top{display:flex;align-items:flex-start;
+ justify-content:space-between;gap:12px;flex-wrap:wrap}
+.communication-review-preview-top h3{margin:0 0 8px;font-size:16px;color:var(--text)}
+.communication-review-preview-top p,.communication-review-entry-top small{font-size:11px;
+ color:var(--muted);margin:0;line-height:1.5}
+.communication-review-cleared,.communication-review-private{display:inline-flex;align-items:center;
+ gap:7px;padding:7px 10px;border:1px solid var(--border);border-radius:9px;
+ background:var(--surface);font-size:10px;font-weight:700;color:var(--muted)}
+.communication-review-cleared{color:var(--purple)}
+.communication-review-body,.communication-review-entry>p{font-size:12px;color:var(--text);
+ line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.communication-review-body{margin:20px 0}
+.communication-review-copy-controls{display:flex;align-items:flex-start;
+ flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--border)}
+.communication-review-copy-controls small{font-size:10px;color:var(--muted);line-height:1.6}
+.communication-review-entry-top strong{font-size:12px;color:var(--text)}
+.communication-review-entry>small{font-size:10px;color:var(--muted)}
+.communication-review-entries{display:flex;flex-direction:column;gap:12px}
+.communication-review-form{border-top:0;padding-top:0}
+.communication-review-page select:focus-visible,.communication-review-page button:focus-visible,
+.communication-review-page a:focus-visible,.communication-review-page textarea:focus-visible{
+ outline:2px solid var(--purple);outline-offset:3px
+}
+@media(max-width:730px){
+ .communication-review-summary{grid-template-columns:1fr;gap:10px}
+ .communication-review-preview,.communication-review-entry{padding:12px}
+ .communication-review-copy-controls>button{width:100%}
+}
