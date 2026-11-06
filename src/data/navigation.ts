@@ -149,7 +149,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Communications',
         path: '/communications',
         icon: MessageSquareText,
-        description: 'Announcements, notifications, message drafts and support requests.',
+        description: 'Private editable communication drafts only; no delivery or publishing enabled.',
         group: 'Operations',
       },
       {
