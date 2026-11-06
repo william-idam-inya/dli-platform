@@ -51,6 +51,7 @@ export default function InAppAnnouncementsPage(){
   const [editingId,setEditingId]=useState<string|null>(null);
   const [filter,setFilter]=useState<'all'|'published'|'draft'>('all');
   const [loading,setLoading]=useState(true);
+  const [publicationEnabled,setPublicationEnabled]=useState(false);
   const [saving,setSaving]=useState(false);
   const [publishing,setPublishing]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
@@ -59,11 +60,17 @@ export default function InAppAnnouncementsPage(){
   const refresh=useCallback(async()=>{
     if(!supabase){setError('Supabase is not configured.');setLoading(false);return;}
     setLoading(true);
-    const {data,error:readError}=await supabase.from('in_app_announcements')
-      .select('id,title,body,audience_role,status,author_id,published_by,published_at,created_at,updated_at')
-      .order('updated_at',{ascending:false});
-    if(readError) setError('Announcements could not be loaded. Check your active role and refresh.');
-    else {setItems((data??[]) as Announcement[]);setError(null);}
+    const [records,flags]=await Promise.all([
+      supabase.from('in_app_announcements')
+        .select('id,title,body,audience_role,status,author_id,published_by,published_at,created_at,updated_at')
+        .order('updated_at',{ascending:false}),
+      supabase.from('communication_feature_flags')
+        .select('enabled').eq('key','in_app_publication').maybeSingle(),
+    ]);
+    // Fail closed if flag read is unavailable.
+    setPublicationEnabled(!flags.error&&flags.data?.enabled===true);
+    if(records.error) setError('Announcements could not be loaded. Check your active role and refresh.');
+    else {setItems((records.data??[]) as Announcement[]);setError(null);}
     setLoading(false);
   },[]);
   useEffect(()=>{void refresh();},[refresh]);
@@ -105,7 +112,7 @@ export default function InAppAnnouncementsPage(){
   }
 
   async function publish(item:Announcement){
-    if(!supabase||!account||!isFounder||saving||publishing||
+    if(!supabase||!account||!isFounder||!publicationEnabled||saving||publishing||
        item.status!=='draft'||item.author_id===account.id)return;
     if(!window.confirm(
       'Publish this exact announcement INSIDE DLI to every currently authorised user with the selected role? '+
@@ -137,12 +144,13 @@ export default function InAppAnnouncementsPage(){
     </div>
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Separate drafting from publication</strong>
-        <p>Saving a draft does not notify anyone. Only a different Founder
-          can explicitly publish its unchanged text to the selected active DLI role.
-          Students see only published notices for Students.
-          Publication is an in-app record, not an email, WhatsApp, SMS, push notification
-          or external message. There is no automatic scheduler or delivery receipt.</p>
+      <div><strong>In-app publication is gated by explicit institutional approval</strong>
+        <p>Saving a draft does not notify anyone. Publication is currently
+          {publicationEnabled?' enabled for the independent Founder to review and publish.'
+            :' disabled until DLI institutional approval is recorded.'}
+          {' '}Students can see only separately published notices intended for Students.
+          No email, WhatsApp, SMS, push notification or external message is sent.
+          No background scheduler or delivery receipt exists.</p>
       </div>
     </div>
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -216,7 +224,8 @@ export default function InAppAnnouncementsPage(){
       <div className="in-app-notice-list">
         {visible.map(item=>{
           const mine=item.author_id===account?.id;
-          const canPublish=Boolean(isFounder&&!mine&&item.status==='draft');
+          const independentFounder=Boolean(isFounder&&!mine&&item.status==='draft');
+          const canPublish=independentFounder&&publicationEnabled;
           return <article className="in-app-notice-item" key={item.id}>
             <div className="in-app-notice-head">
               <div><h3>{item.title}</h3>
@@ -235,12 +244,13 @@ export default function InAppAnnouncementsPage(){
               {mine&&<button type="button" className="user-outline-button"
                 disabled={saving||Boolean(publishing)} onClick={()=>beginEdit(item)}>
                 <Pencil size={15}/> Edit my draft</button>}
-              {canPublish&&<button type="button" className="academic-submit"
-                disabled={saving||Boolean(publishing)}
+              {independentFounder&&<button type="button" className="academic-submit"
+                disabled={!canPublish||saving||Boolean(publishing)}
                 onClick={()=>{void publish(item);}}>
                 <Send size={15}/>
-                {publishing===item.id?'Publishing…':'Founder: Publish in app'}</button>}
-              {!canPublish&&!mine&&<small>Pending separate Founder publication.</small>}
+                {!publicationEnabled?'Publication disabled until DLI approval'
+                  :publishing===item.id?'Publishing…':'Founder: Publish in app'}</button>}
+              {!independentFounder&&!mine&&<small>Pending independent Founder approval and publication gate.</small>}
               {mine&&<small>Another Founder account must publish this draft.</small>}
             </div>}
           </article>;
@@ -248,7 +258,8 @@ export default function InAppAnnouncementsPage(){
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      In-app publication creates a persistent authorised notice. It does not
+      The publication feature remains disabled until institutional authorisation.
+      When enabled, publication creates a persistent authorised notice. It does not
       contact recipients outside DLI, issue push notifications or provide proof
       that any person read the notice.
     </p>
