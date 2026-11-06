@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage G2: non-binding finance proposal review implementation</strong>
-          <span>Stage G1 passes local TypeScript/build and shows the expected zero-proposal Finance Foundation. Stage G2 adds restricted review notes and Founder-only planning outcomes; no finance policy or payment can be activated. New browser verification remains pending.</span>
+          <strong>Stage H1: private communications draft implementation</strong>
+          <span>Stage G2 passes local TypeScript/build and displays the expected empty Finance Review screen. Stage H1 adds private role-scoped communications drafting; no messages, emails or notifications can be sent. Browser acceptance is pending.</span>
         </div>
-        <span className="status-chip">Stage G2</span>
+        <span className="status-chip">Stage H1</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify G2 finance reviews in the browser. Controlled finance roles, private file transfers, quiz functions and attendance tests remain before release.</p>
+          <p>Verify the H1 private communications draft page. Controlled role tests, finance review, file transfers, quiz functions and attendance workflows remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/finance/reviews')?.path ?? '/finance/reviews'} className="text-link">
-          Open finance review <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/communications')?.path ?? '/communications'} className="text-link">
+          Open communications drafts <ArrowRight size={16} />
         </Link>
       </section>
     </div>
