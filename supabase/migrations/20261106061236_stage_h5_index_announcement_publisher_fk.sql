@@ -1,0 +1,1 @@
+create index in_app_announcements_published_by_idx on public.in_app_announcements(published_by) where published_by is not null;
