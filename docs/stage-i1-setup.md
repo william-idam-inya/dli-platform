@@ -61,7 +61,7 @@ or a view that accidentally bypasses RLS.
 - [x] Simulated Student cannot insert a forged audit event.
 - [x] Rollback left the real account as Admin.
 - [x] Existing dev audit history still contains the same 2 events.
-- [ ] Controlled Finance Officer and Academic Coordinator role tests.
+- [x] Simulated Finance Officer and Academic Coordinator cannot read any audit rows.
 - [ ] Windows TypeScript and production build.
 - [ ] Browser: Admin should see existing audit metadata and filters.
 - [ ] Browser: Student and Finance Officer must be denied the route.
