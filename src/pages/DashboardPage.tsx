@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage H6: independently cleared manual WhatsApp/email composition</strong>
-          <span>Stage H5 passes local TypeScript/build and shows the expected empty in-app announcement screen; publication remains disabled pending institutional approval. Stage H6 allows an authorised user to open WhatsApp or email manually only after fresh independent draft-revision clearance. No automatic sending or delivery is enabled; H6 local verification is pending.</span>
+          <strong>Stage I1: restricted database-backed audit trail</strong>
+          <span>Stage H6 passes local TypeScript/build and shows the expected empty Communications Review page. The real independent approval/handoff workflow remains untested. Stage I1 adds a read-only, paginated Founder/Admin audit history with sensitive detail fields excluded and exports disabled. I1 local verification remains pending.</span>
         </div>
-        <span className="status-chip">Stage H6</span>
+        <span className="status-chip">Stage I1</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify H6 approval-gated WhatsApp/email manual composition, while maintaining H5's disabled publication flag. Real-role acceptance, private files, quiz security and attendance remain before release.</p>
+          <p>Verify I1 audit role restrictions and read-only event history. Previous real-role acceptance, private files, quiz-function security and attendance remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/communications/reviews')?.path ?? '/communications/reviews'} className="text-link">
-          Open communications review <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/reports/audit')?.path ?? '/reports/audit'} className="text-link">
+          Open audit trail <ArrowRight size={16} />
         </Link>
       </section>
     </div>
