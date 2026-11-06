@@ -201,7 +201,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Settings',
         path: '/settings',
         icon: Settings,
-        description: 'Institutional configuration, calendar, currency and policy settings.',
+        description: 'Founder-managed DLI Scholars Club group links; Admin read-only governance safeguards.',
         group: 'Operations',
       },
     ],
