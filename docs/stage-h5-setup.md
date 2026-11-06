@@ -50,6 +50,7 @@ Migrations:
 ```text
 supabase/migrations/20261106060210_stage_h5_restricted_in_app_announcements.sql
 supabase/migrations/20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql
+supabase/migrations/20261106061236_stage_h5_index_announcement_publisher_fk.sql
 ```
 
 New RLS table `public.in_app_announcements`:
@@ -89,7 +90,9 @@ New read-only-to-browser RLS table `public.communication_feature_flags`:
 - [x] With flag disabled, Founder publication is rejected in SQL.
 - [x] After rollback: 0 announcements remain; flag stays false;
       real Admin role unchanged.
-- [x] Supabase security advisor found no new H5 security findings.
+- [x] Supabase security advisor found no new H5 security findings;
+      publisher foreign-key index added and performance advisor has
+      no remaining missing-index warnings.
 - [ ] Windows `npm.cmd run typecheck` and Vite build.
 - [ ] Admin / Founder / Student browser route acceptance.
 - [ ] Real draft create/edit, audience privacy and audit test.
