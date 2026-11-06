@@ -1,8 +1,9 @@
 # Stage I2 — Role-scoped operational reporting (counts only)
 
 **Status:** implemented in the private DLI development branch. The
-database authorisation tests passed; the Windows TypeScript/build
-and live browser acceptance remain pending.
+database authorisation tests, Windows TypeScript/build, and initial
+Admin page screenshot have passed. Additional role and refresh
+browser acceptance remain pending.
 
 **Branch:** `feature/stage-i2-role-scoped-operational-overview`,
 stacked on Stage I1 (`feature/stage-i1-audit-log-viewer`).
@@ -82,8 +83,8 @@ percentages, email/WhatsApp notifications, paid services.
 - [x] Advisor check still reports the pre-existing 2 privileged quiz
       RPC findings and Auth leaked-password-protection warning;
       no new Stage I2 database security issues introduced.
-- [ ] Initial Windows TypeScript/build attempt failed with two source-code errors (unused `Wallet` icon import and nullable Supabase client in async callback). Both were patched in commit `800c9d2`; repeat typecheck/build after pulling this commit.
-- [x] Admin browser screenshot confirms the page loads and displays 2 active programmes, 0 active courses and 0 active cohorts.
+- [x] Initial Windows TypeScript errors (unused icon import and nullable Supabase client) were patched in commit `800c9d2`; re-run passed TypeScript and Vite production build, 2,151 modules transformed.
+- [x] Admin browser screenshot confirms the page loads and displays 2 active programmes, 0 active courses and 0 active cohorts after the corrected build.
 - [ ] Academic Coordinator, Finance Officer and denied Student/Tutor route tests.
 - [ ] Counts, Refresh, empty/error states, mobile and keyboard tests.
 
