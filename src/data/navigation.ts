@@ -13,6 +13,7 @@ import {
   MessageSquareText,
   Bell,
   ChartNoAxesCombined,
+  ScrollText,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
@@ -187,6 +188,13 @@ export const navigationSections: NavigationSection[] = [
         path: '/reports',
         icon: ChartNoAxesCombined,
         description: 'Operational reports, audit history and controlled exports.',
+        group: 'Operations',
+      },
+      {
+        label: 'Audit trail',
+        path: '/reports/audit',
+        icon: ScrollText,
+        description: 'Restricted read-only audit metadata for the Founder and Admin; exports disabled.',
         group: 'Operations',
       },
       {
