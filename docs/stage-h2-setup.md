@@ -83,6 +83,9 @@ Existing H1 change audit records remain in place.
 - [x] Audit events are generated for every saved review.
 - [x] Student with a known draft UUID cannot read private review
       history or insert a review.
+- [x] Assistant Admin can request changes but cannot clear for copy;
+      Tutor cannot read another author's draft/reviews, may comment
+      on own draft, and cannot approve it.
 - [x] All temporary test records were rolled back; zero drafts/reviews
       remain and the real Admin role is unchanged.
 - [x] Security advisor reports no new H2-specific warnings.
