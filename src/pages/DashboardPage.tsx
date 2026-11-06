@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage I2: role-scoped operational summary reports</strong>
-          <span>Stage I1 passes local TypeScript/build and the Admin audit screenshot displays its two real development events. Stage I2 adds role-scoped academic and finance row-count reports based entirely on the existing RLS policies. No payments, financial rates or sensitive exports are activated; I2 browser verification is pending.</span>
+          <strong>Stage I3: Owner-controlled group invitations and governance settings</strong>
+          <span>Stage I2 passes Windows TypeScript/build and the Admin screenshot shows two active programmes and zero active courses and cohorts. Stage I3 adds Founder-controlled WhatsApp group-link settings, Admin read-only access and database-verified governance safeguards. Finance rules and announcement publication remain locked.</span>
         </div>
-        <span className="status-chip">Stage I2</span>
+        <span className="status-chip">Stage I3</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify I2 academic/finance counts, access isolation and refresh. Prior real-role acceptance, private files, quiz-function security and attendance remain before release.</p>
+          <p>Verify I3 Admin read-only settings, Founder-only link updates and the unchanged publication lock. Real-role acceptance and quiz-function security remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/reports')?.path ?? '/reports'} className="text-link">
-          Open operational reports <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/settings')?.path ?? '/settings'} className="text-link">
+          Open institutional settings <ArrowRight size={16} />
         </Link>
       </section>
     </div>
