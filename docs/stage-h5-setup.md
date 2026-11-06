@@ -1,7 +1,7 @@
 # Stage H5 — Restricted in-app announcements (publication disabled)
 
 **Status:** implemented in DLI development, database-tested with rollback-only
-role simulations. Windows TypeScript/build and browser acceptance are pending.
+role simulations. Windows TypeScript/build and Admin empty-state screenshot now passed; live role/browser acceptance is pending.
 
 Stacked on `feature/stage-h4-internal-reminder-planner`.
 Development Supabase project: `dli-platform-dev` (`pbepbcdkrdqnepvcwtyw`).
@@ -93,8 +93,9 @@ New read-only-to-browser RLS table `public.communication_feature_flags`:
 - [x] Supabase security advisor found no new H5 security findings;
       publisher foreign-key index added and performance advisor has
       no remaining missing-index warnings.
-- [ ] Windows `npm.cmd run typecheck` and Vite build.
-- [ ] Admin / Founder / Student browser route acceptance.
+- [x] Windows `npm.cmd run typecheck` and Vite production build passed; 2,145 modules transformed without a chunk warning.
+- [x] Admin empty-state screenshot confirms 0 accessible, 0 published and 0 private announcements, with the publication-disabled notice.
+- [ ] Founder/Student browser route acceptance remains.
 - [ ] Real draft create/edit, audience privacy and audit test.
 - [ ] Founder disabled publish button verified.
 
