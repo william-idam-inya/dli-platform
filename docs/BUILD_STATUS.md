@@ -26,6 +26,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H5 branch: `feature/stage-h5-in-app-announcements`, stacked on H4.
 - Stage H6 branch: `feature/stage-h6-manual-whatsapp-email-handoff`, stacked on H5.
 - Stage I1 branch: `feature/stage-i1-audit-log-viewer`, stacked on H6.
+- Stage I2 branch: `feature/stage-i2-role-scoped-operational-overview`, stacked on I1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -535,22 +536,46 @@ contact fields and sensitive exports are not fetched.**
 No new migration is needed because Stage B `audit_logs` RLS and
 grants already enforce institutional read rights for Founder/Admin.
 The I1 UI route is restricted to Founder/Admin, while the broader
-`/reports` module remains a placeholder for later role-scoped
-operational reports.
+`/reports` module is now implemented in Stage I2 with read-only, role-scoped operational record counts.
 
 **Passed rollback-only SQL tests:** Founder and Admin audit SELECT,
 Student/Finance Officer/Academic Coordinator SELECT denial,
 Student audit INSERT denial, real Admin role preserved.
 Two original dev audit events remain unchanged.
 
-**Pending:** Windows TypeScript/build, Admin real audit-viewer
-screenshot, desktop/mobile/keyboard/accessibility and additional
-role-browser acceptance, sensitive data review. See
-`docs/stage-i1-setup.md`.
+**Passed:** Windows TypeScript and Vite production build (2,149 modules transformed, no chunk warnings) and Admin screenshot showing the two existing audit events, with raw detail export disabled. **Pending:** filter and pagination browser acceptance, mobile/keyboard/accessibility, real denied-role browser tests and sensitivity review. See `docs/stage-i1-setup.md`.
 
 Stage E4 privileged quiz RPC findings and Supabase Auth
 leaked-password protection warning remain unresolved.
 Production deployment is blocked by outstanding release gates.
+
+## Stage I2 — Role-scoped operational count reports (under test)
+
+New `/reports` route replaces its placeholder with read-only,
+Supabase-RLS-scoped counts from existing academic and finance tables.
+Owner/Admin see both report groups; Academic Coordinator sees only
+academic counts; Finance Officer sees only planning proposal/review
+counts. Tutors and Students cannot open `/reports`. All counts use
+`head:true`, exact PostgREST row counts and server filters:
+`is_active` for active catalogues/enrolments, `is_published`
+for released learning and scheduling records. An unavailable query
+is never represented as zero.
+
+**No new migrations:** the earlier authenticated grants and RLS
+policies already authorise these SELECT counts. The client
+does not request row payloads, sensitive student identities,
+financial amounts, accounts, payment data or secrets. No
+exports/fees/invoices/payments/payouts are activated.
+
+**Passed rollback-only role tests:** Admin and Academic Coordinator
+could count two live active programmes. Simulated Student could
+not read the private programmes. Admin role restored after rollback.
+The dev database has 0 active offerings. Finance read restrictions
+have been inspected against existing RLS.
+
+**Pending:** Windows TypeScript/build, Admin and other role browser
+checks, counts/filter/refresh/error handling and mobile testing.
+See `docs/stage-i2-setup.md`.
 
 ## Remaining roadmap
 
