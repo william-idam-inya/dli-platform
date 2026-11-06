@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './CommunicationReviewPage.css';
+import ManualShareControls from '../components/ManualShareControls';
 
 type Action = 'comment' | 'request_revision' | 'approved_for_manual_copy';
 type Draft = {
@@ -276,6 +277,13 @@ export default function CommunicationReviewPage() {
           <small>Copies text to your device only. You must independently decide
             where and whether to share it. The application cannot verify delivery.</small>
         </div>
+        <ManualShareControls
+          key={draft.id + ':' + draft.revision}
+          draft={draft}
+          clearedForCopy={clearedForCopy}
+          disabled={loading || saving || copying}
+          onStale={() => { void refresh(); }}
+        />
       </div>}
     </section>
 
@@ -326,8 +334,9 @@ export default function CommunicationReviewPage() {
     </section>}
     <p className="module-footnote"><Clock3 size={15}/>
       The approval relates to the current message text only. Any edit clears the
-      copy action until a different Owner/Admin reviews the new revision.
-      Automated delivery and scheduling remain disabled.
+      copy and manual WhatsApp/email composition actions until a different
+      Owner/Admin reviews the new revision. External composers require your
+      own Send action; DLI never claims delivery.
     </p>
   </div>;
 }
