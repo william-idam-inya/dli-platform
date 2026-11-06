@@ -85,6 +85,8 @@ supabase/migrations/20261106062435_stage_h6_audited_manual_whatsapp_email_prepar
   could not be prepared and the new revision required fresh
   independent clearance.
 - [x] All temporary drafts/preparations/reviews rolled back.
+- [x] Student-role simulation could not read preparation records or
+      prepare an external handoff.
 - [x] Real Admin role remains unchanged.
 - [x] Security advisor: no new warnings; prior E4 privileged quiz
   RPC findings and disabled Auth leaked-password protection remain.
