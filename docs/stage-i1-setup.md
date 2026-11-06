@@ -1,7 +1,7 @@
 # Stage I1 — Restricted read-only audit trail
 
 **Status:** implemented in the private DLI Platform repository, but
-the Windows TypeScript/build and live browser acceptance remain pending.
+the Windows TypeScript/build and Admin screenshot of two audit events have passed; filter and real-role browser acceptance remain pending.
 
 **Branch:** `feature/stage-i1-audit-log-viewer` (stacked on
 `feature/stage-h6-manual-whatsapp-email-handoff`).
@@ -30,8 +30,7 @@ exports or claiming that all Stage I reports are complete.
   metadata or secret token values.
 - No insert, edit, delete, bulk operation, export or unapproved policy
   changes are available from this page.
-- The existing broader `/reports` module remains a development
-  placeholder for separately approved role-scoped operational reports.
+- The broader `/reports` module is implemented in Stage I2 with role-scoped read-only counts; it is not yet a complete operational reporting suite.
   Finance Officers/Academic Coordinators do **not** gain access to
   the institution-wide audit trail.
 
@@ -62,8 +61,8 @@ or a view that accidentally bypasses RLS.
 - [x] Rollback left the real account as Admin.
 - [x] Existing dev audit history still contains the same 2 events.
 - [x] Simulated Finance Officer and Academic Coordinator cannot read any audit rows.
-- [ ] Windows TypeScript and production build.
-- [ ] Browser: Admin should see existing audit metadata and filters.
+- [x] Windows TypeScript and Vite production build passed; 2,149 modules transformed with no chunk warnings.
+- [x] Admin screenshot confirms 2 real audit events, report filters and export disabled.
 - [ ] Browser: Student and Finance Officer must be denied the route.
 - [ ] Keyboard, mobile, pagination and time-zone acceptance.
 
