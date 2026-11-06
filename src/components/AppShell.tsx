@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage I1 · Audit history</strong>
-          <p>Founder/Admin audit records are read-only; sensitive exports disabled.</p>
+          <strong>Stage I2 · Operational reports</strong>
+          <p>Role-scoped academic and finance counts only; no export or billing.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
