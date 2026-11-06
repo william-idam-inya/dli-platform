@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage H2: independent draft review and manual-copy clearance implementation</strong>
-          <span>Stage H1 passes local TypeScript/build and shows the expected empty Communications Drafts view. Stage H2 adds revision-bound internal reviews and local copy clearance; automatic sending and publication remain disabled. Browser acceptance is pending.</span>
+          <strong>Stage H3: reusable private message templates implementation</strong>
+          <span>Stage H2 passes local TypeScript/build and displays the expected empty Communications Review page. Stage H3 introduces private message templates and new unreviewed drafts generated from them. Sending and publication remain disabled; H3 local verification is pending.</span>
         </div>
-        <span className="status-chip">Stage H2</span>
+        <span className="status-chip">Stage H3</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify H2 internal draft review and manual clipboard copying. Controlled roles, finance review, file transfers, quiz functions and attendance workflows remain before release.</p>
+          <p>Verify H3 private templates and template-to-draft creation. Controlled role reviews, finance, private files, quiz security and attendance workflows remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/communications/reviews')?.path ?? '/communications/reviews'} className="text-link">
-          Open communications review <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/communications/templates')?.path ?? '/communications/templates'} className="text-link">
+          Open message templates <ArrowRight size={16} />
         </Link>
       </section>
     </div>
