@@ -94,8 +94,9 @@ Do not create fake fee structures, policies or records to populate it.
 
 ## Pending acceptance tests
 
-- [ ] Windows TypeScript and production build.
-- [ ] Admin empty-state screenshot, navigation from Finance and responsive UI.
+- [x] Windows TypeScript and production build passed with no chunk warnings.
+- [x] Admin desktop screenshot confirms 0 finance proposals, 0 review notes and 0 Founder outcomes.
+- [ ] Mobile and keyboard accessibility tests remain.
 - [ ] Only with real authorised internal proposals: record Admin and
       Finance Officer notes; Founder records a planning-only outcome.
 - [ ] Confirm Founder actions cannot be selected/submitted by an Admin.
