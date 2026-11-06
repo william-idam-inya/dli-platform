@@ -134,8 +134,8 @@ later for controlled browser testing.
 
 ## Remaining acceptance and roadmap
 
-- [ ] User's Windows TypeScript and production build pass.
-- [ ] Admin template screen and clear empty state.
+- [x] Windows TypeScript and production Vite build passed without errors, 2,141 modules transformed and no chunk warning.
+- [x] Admin screenshot confirms 0 accessible templates, 0 own templates and automatic sending not enabled.
 - [ ] Staff create/edit template, and click `Use as new private draft`.
 - [ ] Verify new draft is separate, unreviewed, owner-scoped and
       visible at `/communications`.
