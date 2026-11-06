@@ -160,6 +160,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Message templates',
+        path: '/communications/templates',
+        icon: BookOpen,
+        description: 'Reusable private message starters; new drafts must be reviewed separately.',
+        group: 'Operations',
+      },
+      {
         label: 'Reports & audit',
         path: '/reports',
         icon: ChartNoAxesCombined,
