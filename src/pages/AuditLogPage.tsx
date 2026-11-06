@@ -16,7 +16,7 @@ type AuditEvent = {
 };
 type WindowFilter = 'all' | '7d' | '30d';
 type EventFamily = 'all' | 'invitation' | 'bootstrap' |
-  'communications' | 'finance' | 'academic' | 'learning' | 'attendance' | 'other';
+  'communications' | 'finance' | 'academic' | 'learning' | 'attendance';
 const PAGE_SIZE = 25;
 const FAMILY_OPTIONS: {value:EventFamily;label:string;prefix:string}[] = [
   {value:'all',label:'All event types',prefix:''},
@@ -27,7 +27,6 @@ const FAMILY_OPTIONS: {value:EventFamily;label:string;prefix:string}[] = [
   {value:'academic',label:'Academic',prefix:'academic.'},
   {value:'learning',label:'Learning',prefix:'learning.'},
   {value:'attendance',label:'Attendance',prefix:'attendance.'},
-  {value:'other',label:'Other operations',prefix:'other.'},
 ];
 const FORMAT_DATE = new Intl.DateTimeFormat('en-NG', {
   timeZone:'Africa/Lagos',year:'numeric',month:'short',day:'numeric',
