@@ -1,0 +1,47 @@
+/* Stage H3: private templates, no delivery or publication. */
+.communication-templates-page{width:100%}
+.communication-templates-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0 24px}
+.communication-templates-summary>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+ border:1px solid var(--border);border-radius:13px;background:var(--surface-soft);padding:18px;min-width:0}
+.communication-templates-summary svg{color:var(--purple)}
+.communication-templates-summary strong{font-size:25px;font-weight:800;color:var(--text)}
+.communication-templates-summary span{font-size:12px;color:var(--muted)}
+.communication-templates-page .auth-feedback a,.communication-templates-page .module-footnote a{color:var(--purple);text-decoration:underline}
+.communication-templates-editor{margin-bottom:17px}
+.communication-templates-form{border-top:0;padding-top:0}
+.communication-templates-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.communication-templates-pair label{display:flex;flex-direction:column;gap:8px;min-width:0}
+.communication-templates-pair select,.communication-templates-form>select{
+ min-height:44px;width:100%;box-sizing:border-box;border:1px solid var(--border);
+ background:var(--surface-soft);color:var(--text);border-radius:9px;
+ padding:10px 12px;font:inherit;font-size:12px}
+.communication-templates-actions,.communication-template-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.communication-templates-filter{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:15px;margin:10px 0 17px}
+.communication-templates-filter label{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--text);font-size:12px;font-weight:700}
+.communication-templates-filter input,.communication-templates-filter select{
+ min-height:44px;box-sizing:border-box;width:100%;padding:10px 12px;
+ border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);
+ color:var(--text);font:inherit;font-size:12px}
+.communication-templates-list{display:flex;flex-direction:column;gap:14px;margin-top:15px}
+.communication-template-card{border:1px solid var(--border);border-radius:13px;
+ padding:18px;background:var(--surface-soft);overflow-wrap:anywhere}
+.communication-template-header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.communication-template-header h3{font-size:16px;color:var(--text);margin:0 0 8px}
+.communication-template-header p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.communication-template-private{display:inline-flex;gap:6px;align-items:center;
+ border:1px solid var(--border);border-radius:9px;background:var(--surface);
+ color:var(--muted);padding:8px 10px;font-size:10px;font-weight:750;white-space:nowrap}
+.communication-template-tags{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.communication-template-tags span{padding:7px 9px;background:var(--surface);
+ border:1px solid var(--border);border-radius:8px;font-size:10px;color:var(--muted)}
+.communication-template-text{white-space:pre-wrap;color:var(--text);
+ line-height:1.7;font-size:12px;overflow-wrap:anywhere;margin:12px 0 19px}
+.communication-templates-page select:focus-visible,.communication-templates-page textarea:focus-visible,
+.communication-templates-page input:focus-visible,.communication-templates-page button:focus-visible,
+.communication-templates-page a:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+@media(max-width:740px){
+ .communication-templates-summary{grid-template-columns:1fr;gap:10px}
+ .communication-templates-pair,.communication-templates-filter{grid-template-columns:1fr}
+ .communication-template-card{padding:13px}
+ .communication-template-actions button{flex:1 1 140px}
+}
