@@ -83,24 +83,31 @@ export default function OperationalReportsPage(){
     setError(null);
     // Read only aggregate row counts. Every database query is executed using
     // the actual logged-in account's RLS context; no service role is involved.
-    const entries = await Promise.all(items.map(async item => {
-      let query = supabase.from(item.id)
-        .select('id', {count:'exact',head:true});
-      if (item.active) query = query.eq('is_active',true);
-      if (item.published) query = query.eq('is_published',true);
-      const result = await query;
-      return [item.id, {
-        count:result.error ? null : result.count,
-        error:Boolean(result.error),
-      }] as const;
-    }));
-    const next = Object.fromEntries(entries) as Partial<Record<ReportId,ReportValue>>;
-    setValues(next);
-    if (entries.some(([,r]) => r.error || r.count === null)) {
-      setError('Some database counts were unavailable. Unavailable values are not treated as zero.');
+    try {
+      const entries = await Promise.all(items.map(async item => {
+        let query = supabase.from(item.id)
+          .select('id', {count:'exact',head:true});
+        if (item.active) query = query.eq('is_active',true);
+        if (item.published) query = query.eq('is_published',true);
+        const result = await query;
+        return [item.id, {
+          count:result.error ? null : result.count,
+          error:Boolean(result.error),
+        }] as const;
+      }));
+      const next = Object.fromEntries(entries) as Partial<Record<ReportId,ReportValue>>;
+      setValues(next);
+      if (entries.some(([,r]) => r.error || r.count === null)) {
+        setError('Some database counts were unavailable. Unavailable values are not treated as zero.');
+      }
+      setCheckedAt(new Date().toISOString());
+    } catch {
+      setValues({});
+      setCheckedAt(null);
+      setError('Could not reach the database. No report totals can be verified right now.');
+    } finally {
+      setLoading(false);
     }
-    setCheckedAt(new Date().toISOString());
-    setLoading(false);
   },[account?.role]);
   useEffect(()=>{void refresh();},[refresh]);
 
