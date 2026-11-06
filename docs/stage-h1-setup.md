@@ -97,8 +97,9 @@ fill the screen.
 
 ## Pending acceptance and later H stages
 
-- [ ] Local TypeScript check and production build pass.
-- [ ] Admin screenshot and desktop/mobile/keyboard checks.
+- [x] Windows TypeScript and production Vite build passed without errors or chunk-size warnings.
+- [x] Admin desktop screenshot confirms 0 accessible drafts, 0 own drafts and 0 messages delivered.
+- [ ] Mobile/keyboard accessibility and real draft lifecycle checks remain.
 - [ ] With authorised non-sensitive internal copy only, create a draft
       and revise it. Verify only the author can edit.
 - [ ] Owner/Admin/Assistant Admin see team drafts; Tutor sees only own;
