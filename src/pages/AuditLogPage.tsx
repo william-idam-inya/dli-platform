@@ -64,16 +64,16 @@ export default function AuditLogPage(){
     let query=supabase.from('audit_logs')
       // Purposefully exclude the JSON details and subject identifiers:
       // they may contain sensitive institutional or personal information.
-      .select('id,event_type,actor_id,created_at',{count:'exact'})
-      .order('created_at',{ascending:false})
-      .order('id',{ascending:false})
-      .range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
+      .select('id,event_type,actor_id,created_at',{count:'exact'});
     if(prefix)query=query.like('event_type',prefix+'%');
     if(windowFilter!=='all'){
       const days=windowFilter==='7d'?7:30;
       query=query.gte('created_at',new Date(Date.now()-days*86400000).toISOString());
     }
-    const result=await query;
+    const result=await query
+      .order('created_at',{ascending:false})
+      .order('id',{ascending:false})
+      .range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
     if(result.error){
       setError('Audit events could not be loaded. Confirm the current database role and refresh.');
       setEvents([]);setTotal(0);
