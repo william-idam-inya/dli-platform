@@ -187,7 +187,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Reports & audit',
         path: '/reports',
         icon: ChartNoAxesCombined,
-        description: 'Operational reports, audit history and controlled exports.',
+        description: 'Read-only academic and finance operational counts. Sensitive exports remain disabled.',
         group: 'Operations',
       },
       {
