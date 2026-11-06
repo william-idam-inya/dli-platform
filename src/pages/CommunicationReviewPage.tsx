@@ -159,8 +159,32 @@ export default function CommunicationReviewPage() {
     setError(null);
     setNotice(null);
     try {
-      // The only external integration here is local clipboard copying by
-      // the current user. No recipients or message delivery API are called.
+      if (!supabase) throw new Error('No active database');
+      // Recheck the current database revision and latest review decision.
+      // A stale browser view must never copy a superseded approval.
+      const [d, r] = await Promise.all([
+        supabase.from('communication_drafts').select('id,title,body,revision,intended_channel')
+          .eq('id', draft.id).maybeSingle(),
+        supabase.from('communication_draft_reviews')
+          .select('draft_revision,review_action,created_at,id')
+          .eq('draft_id', draft.id).order('created_at', { ascending: true })
+          .order('id', { ascending: true }),
+      ]);
+      if (d.error || r.error || !d.data) {
+        setError('The draft could not be revalidated. Refresh before copying.');
+        return;
+      }
+      const latest = (r.data ?? []).filter(item =>
+        item.draft_revision === d.data.revision && item.review_action !== 'comment'
+      ).at(-1);
+      if (d.data.revision !== draft.revision || d.data.body !== draft.body ||
+          d.data.title !== draft.title ||
+          latest?.review_action !== 'approved_for_manual_copy') {
+        setError('This draft or its clearance changed. Refresh before copying.');
+        void refresh();
+        return;
+      }
+      // Clipboard operation only; no recipients or delivery API are called.
       const text = draft.intended_channel === 'email'
         ? `Subject: ${draft.title}\n\n${draft.body}`
         : draft.body;
