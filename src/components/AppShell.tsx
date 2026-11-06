@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage H3 · Message templates</strong>
-          <p>Templates create new private drafts; none are automatically approved or sent.</p>
+          <strong>Stage H4 · Internal reminders</strong>
+          <p>Reminder dates are records only; no background scheduler or message delivery.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
