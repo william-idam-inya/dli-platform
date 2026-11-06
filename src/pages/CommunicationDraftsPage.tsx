@@ -3,6 +3,7 @@ import {
   ClipboardEdit, FileText, LockKeyhole, MessageSquareText,
   Pencil, RefreshCw, Save, ShieldCheck, Users, X,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -205,8 +206,10 @@ export default function CommunicationDraftsPage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      Message approval, external sending, group integration, delivery receipts,
-      automated notifications and recipient lists require separate development and authorisation.
+      Internal revision-specific clearance is available under
+      <Link to="/communications/reviews"> Communications review</Link>.
+      External sending, publishing, group integration, delivery receipts,
+      automated notifications and recipient lists remain disabled.
     </p>
   </div>;
 }
