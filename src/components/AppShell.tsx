@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage G2 · Finance review</strong>
-          <p>Reviews are non-binding; Founder-only planning outcomes do not activate fees.</p>
+          <strong>Stage H1 · Communications drafts</strong>
+          <p>Message drafts remain private; no sending or automatic publishing.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
