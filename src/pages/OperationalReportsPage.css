@@ -1,0 +1,37 @@
+/* Stage I2: authorised, read-only operational count cards. */
+.operational-report-page{width:100%}
+.operational-report-controls{display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:15px;padding:19px 0 22px}
+.operational-report-controls strong{font-size:13px;color:var(--text)}
+.operational-report-controls p{font-size:11px;color:var(--muted);margin:7px 0 0}
+.operational-report-section{margin-bottom:18px}
+.operational-report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:14px;margin-top:16px}
+.operational-report-card{display:flex;flex-direction:column;align-items:flex-start;
+ border:1px solid var(--border);background:var(--surface-soft);
+ padding:18px;border-radius:11px;min-width:0}
+.operational-report-card svg{color:var(--purple)}
+.operational-report-card strong{font-size:25px;font-weight:800;
+ color:var(--text);margin:12px 0 8px}
+.operational-report-card h3{font-size:13px;font-weight:750;
+ color:var(--text);margin:0 0 8px}
+.operational-report-card p{font-size:11px;color:var(--muted);
+ line-height:1.6;margin:0}
+.operational-report-audit-link{display:flex;flex-wrap:wrap;
+ align-items:center;gap:9px;padding:16px;border-radius:10px;
+ border:1px solid var(--border);background:var(--surface-soft);
+ margin-bottom:20px;font-size:12px;color:var(--muted)}
+.operational-report-audit-link svg{color:var(--purple)}
+.operational-report-audit-link a{color:var(--purple);font-weight:750;
+ text-decoration:underline}
+.operational-report-page button:focus-visible,
+.operational-report-page a:focus-visible{outline:2px solid var(--purple);
+ outline-offset:3px}
+@media(max-width:950px){
+ .operational-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ .operational-report-grid{grid-template-columns:1fr;gap:10px}
+ .operational-report-controls button{width:100%;justify-content:center}
+ .operational-report-card{padding:14px}
+}
