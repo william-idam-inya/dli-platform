@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage H1 · Communications drafts</strong>
-          <p>Message drafts remain private; no sending or automatic publishing.</p>
+          <strong>Stage H2 · Draft review</strong>
+          <p>Clearance applies to a draft revision; no sending or publishing.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
