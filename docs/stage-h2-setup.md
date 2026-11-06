@@ -125,7 +125,7 @@ Expected empty state:
 
 ## Acceptance checks still required
 
-- [ ] Local TypeScript/build passes; Admin review screen renders.
+- [x] Windows TypeScript/build passes; Admin review page renders correctly with 0 drafts/reviews/clearances.
 - [ ] Using **non-sensitive** authorised internal content, create a
       draft authored by one staff member and review it as another.
 - [ ] Verify approval/copy button is impossible for the author,
