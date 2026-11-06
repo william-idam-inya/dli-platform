@@ -123,8 +123,9 @@ Expected first view:
 
 ## Pending acceptance
 
-- [ ] Windows `npm.cmd run typecheck` and production build.
-- [ ] Admin screenshot and mobile/keyboard checks.
+- [x] Windows TypeScript and Vite production build passed, 2,143 modules transformed, no chunk warnings.
+- [x] Admin screenshot confirms 0 unacknowledged reminders, 0 due reminders and 0 acknowledged records; the form renders.
+- [ ] Mobile/keyboard accessibility remains.
 - [ ] With non-sensitive internal content: create a reminder in WAT,
       verify storage, view/reschedule/edit, acknowledge/reopen, and
       compare displayed time against input.
