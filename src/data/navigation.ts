@@ -153,6 +153,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Communications review',
+        path: '/communications/reviews',
+        icon: ClipboardCheck,
+        description: 'Independent draft-review notes and revision-specific manual copy clearance.',
+        group: 'Operations',
+      },
+      {
         label: 'Reports & audit',
         path: '/reports',
         icon: ChartNoAxesCombined,
