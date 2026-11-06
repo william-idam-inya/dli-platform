@@ -25,6 +25,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage H4 branch: `feature/stage-h4-internal-reminder-planner`, stacked on H3.
 - Stage H5 branch: `feature/stage-h5-in-app-announcements`, stacked on H4.
 - Stage H6 branch: `feature/stage-h6-manual-whatsapp-email-handoff`, stacked on H5.
+- Stage I1 branch: `feature/stage-i1-audit-log-viewer`, stacked on H6.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -515,13 +516,41 @@ rejected; editing a cleared WhatsApp draft invalidated both old
 and new revision preparations until new independent review.
 No test records remain, and real Admin role is unchanged.
 
-**Pending:** H6 Windows TypeScript/build, real author/reviewer
-browser workflow and external composer acceptance, responsive
-accessibility. See `docs/stage-h6-setup.md`.
+**Passed:** H6 Windows TypeScript and Vite production build (2,147 modules transformed, no chunk warnings) and the Admin Communications Review screenshot shows 0 drafts/reviews/clearances. **Pending:** real author/reviewer/browser handoff acceptance and responsive/accessibility checks. See `docs/stage-h6-setup.md`.
 
 H5 in-app publication remains disabled. No paid service or
 automatic sending is connected. Existing Stage E4 privileged quiz
 RPC and Auth leaked-password-protection advisories persist.
+
+## Stage I1 — Restricted read-only audit trail (under test)
+
+The new `/reports/audit` route provides a database-backed,
+newest-first, 25-entry-paginated metadata-only audit viewer.
+Event-family and date filters apply server-side, including an
+exact RLS-scoped result count. The client fetches `id`,
+`event_type`, `actor_id` and `created_at` only, showing a
+shortened actor identifier. **Raw `details` JSON, personal
+contact fields and sensitive exports are not fetched.**
+
+No new migration is needed because Stage B `audit_logs` RLS and
+grants already enforce institutional read rights for Founder/Admin.
+The I1 UI route is restricted to Founder/Admin, while the broader
+`/reports` module remains a placeholder for later role-scoped
+operational reports.
+
+**Passed rollback-only SQL tests:** Founder and Admin audit SELECT,
+Student/Finance Officer/Academic Coordinator SELECT denial,
+Student audit INSERT denial, real Admin role preserved.
+Two original dev audit events remain unchanged.
+
+**Pending:** Windows TypeScript/build, Admin real audit-viewer
+screenshot, desktop/mobile/keyboard/accessibility and additional
+role-browser acceptance, sensitive data review. See
+`docs/stage-i1-setup.md`.
+
+Stage E4 privileged quiz RPC findings and Supabase Auth
+leaked-password protection warning remain unresolved.
+Production deployment is blocked by outstanding release gates.
 
 ## Remaining roadmap
 
