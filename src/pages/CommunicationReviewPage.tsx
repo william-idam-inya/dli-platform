@@ -174,11 +174,13 @@ export default function CommunicationReviewPage() {
         setError('The draft could not be revalidated. Refresh before copying.');
         return;
       }
+      const current = d.data;
       const latest = (r.data ?? []).filter(item =>
-        item.draft_revision === d.data.revision && item.review_action !== 'comment'
+        item.draft_revision === current.revision && item.review_action !== 'comment'
       ).at(-1);
-      if (d.data.revision !== draft.revision || d.data.body !== draft.body ||
-          d.data.title !== draft.title ||
+      if (current.revision !== draft.revision || current.body !== draft.body ||
+          current.title !== draft.title ||
+          current.intended_channel !== draft.intended_channel ||
           latest?.review_action !== 'approved_for_manual_copy') {
         setError('This draft or its clearance changed. Refresh before copying.');
         void refresh();
