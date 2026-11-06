@@ -45,6 +45,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/announcements': DLI_ROLES,
   '/reports': ['owner', 'admin', 'academic_coordinator', 'finance_officer'],
+  '/reports/audit': ['owner', 'admin'],
   '/settings': ['owner'],
   '/change-password': DLI_ROLES,
 };
