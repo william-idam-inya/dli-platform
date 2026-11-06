@@ -79,10 +79,10 @@ export default function DashboardPage() {
       <section className="status-banner" aria-label="Current build status">
         <div className="status-banner-icon"><ShieldCheck size={20} /></div>
         <div className="status-banner-copy">
-          <strong>Stage H3: reusable private message templates implementation</strong>
-          <span>Stage H2 passes local TypeScript/build and displays the expected empty Communications Review page. Stage H3 introduces private message templates and new unreviewed drafts generated from them. Sending and publication remain disabled; H3 local verification is pending.</span>
+          <strong>Stage H4: internal communication reminder records implementation</strong>
+          <span>Stage H3 passes local TypeScript/build and displays the expected empty Message Templates page. Stage H4 adds internally stored reminders and manual task acknowledgement. The app does not schedule deliveries, run while closed or send messages; H4 local browser testing is pending.</span>
         </div>
-        <span className="status-chip">Stage H3</span>
+        <span className="status-chip">Stage H4</span>
       </section>
 
       <section className="section-block">
@@ -175,10 +175,10 @@ export default function DashboardPage() {
         <div className="next-step-icon"><CalendarDays size={21} /></div>
         <div>
           <strong>Next implementation milestone</strong>
-          <p>Verify H3 private templates and template-to-draft creation. Controlled role reviews, finance, private files, quiz security and attendance workflows remain before release.</p>
+          <p>Verify H4 internal reminder planning and manual acknowledgement. Real-role acceptance, finance, file transfers, quiz security and attendance remain before release.</p>
         </div>
-        <Link to={navigationItems.find((item) => item.path === '/communications/templates')?.path ?? '/communications/templates'} className="text-link">
-          Open message templates <ArrowRight size={16} />
+        <Link to={navigationItems.find((item) => item.path === '/communications/reminders')?.path ?? '/communications/reminders'} className="text-link">
+          Open internal reminders <ArrowRight size={16} />
         </Link>
       </section>
     </div>
