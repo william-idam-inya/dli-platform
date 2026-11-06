@@ -20,6 +20,7 @@ Updated: 6 November 2026. Governing specification: DLI Platform Setup & Build Ma
 - Stage G1 branch: `feature/stage-g1-finance-governance`, stacked on F2.
 - Stage G2 branch: `feature/stage-g2-finance-proposal-review`, stacked on G1.
 - Stage H1 branch: `feature/stage-h1-private-communication-drafts`, stacked on G2.
+- Stage H2 branch: `feature/stage-h2-draft-review-manual-copy`, stacked on H1.
 - Keep PRs draft until the stage acceptance checks are complete; merge in order.
 
 ## Stage A — Foundation
@@ -357,9 +358,45 @@ change to "sent" denied. Zero drafts persisted, Admin role unchanged.
 An initially reported missing foreign-key index was added; no
 new H1-specific advisor warning remains.
 
-**Pending:** H1 Windows TypeScript/build and browser empty state,
-controlled roles, responsive/accessibility and private draft lifecycle.
+**Passed:** H1 Windows TypeScript/build (2,137 modules transformed, no chunk warning) and Admin screenshot showing 0 accessible drafts, 0 authored drafts and 0 messages delivered. **Pending:** controlled role/editor browser tests, responsive/accessibility and actual private draft lifecycle.
 See `docs/stage-h1-setup.md`.
+
+## Stage H2 — Revision-bound draft review and manual-copy gate (under test)
+
+The private `/communications/reviews` page is now wired and a new
+`communication_draft_reviews` table is deployed in DLI development.
+
+Versioned migrations:
+- `20261106042804_stage_h2_internal_revision_bound_review.sql`
+- `20261106043121_stage_h2_reject_stale_review_revision.sql`
+
+Staff may record private comments; Owner/Admin/Assistant Admin may
+request revisions of another author's draft, and **only a different
+Owner/Admin** may clear an exact revision for manual copy.
+Every edit increments a draft revision and automatically makes earlier
+copy clearance stale. A late reviewer is rejected by database revision
+checking. The Copy button verifies current draft/review state before
+writing text to the user's device clipboard.
+
+**No message sending, publication, recipient lookup or scheduled
+delivery is implemented.** H2 is an editorial workflow, not a delivery
+or cryptographic distribution restriction.
+
+**Passed rollback-only SQL tests:** Creator self-clearance rejected;
+Admin comment and independent manual-copy clearance succeeds; duplicate
+same-revision clearance rejected; review records cannot be edited by the
+browser; future/stale revision numbers rejected; edit increments revision;
+Student with known draft ID cannot access/insert; audit records exist.
+Zero drafts/reviews persist and Admin role remains unchanged.
+
+**Pending:** Windows TypeScript/build, Admin empty-state screenshot,
+actual independent author/reviewer browser checks, copy formatting,
+revocation, mobile/keyboard and privacy acceptance.
+See `docs/stage-h2-setup.md`.
+
+Supabase advisor reports no new H2-specific security findings;
+the pre-existing E4 privileged quiz RPCs and Auth leaked-password
+protection warnings remain open.
 
 ## Remaining roadmap
 
