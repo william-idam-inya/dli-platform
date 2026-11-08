@@ -51,6 +51,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K6 strengthens migration and backup readiness:** all 38 recorded DLI development migrations match the repository filenames. Their reviewed Git blob hashes are now guarded by `check:migration-integrity` during CI and before every build. A local-only backup-file SHA-256 receipt verifier and read-only recovery inventory were added. **No database dump, private Storage backup, restoration or production deployment has been performed.** See `docs/stage-k6-migration-backup-readiness.md`.
 
+**Stage K7 provides secure member feedback:** verified DLI members can submit text-only bug reports, suggestions and support requests through `/feedback`; RLS limits personal history to its author, while Founder/Admin/Assistant Admin can review statuses. A database-enforced submission cap and metadata-only audit trail are included. The migration was applied to development only; SQL role tests passed and no test feedback persists. Independent browser/privacy acceptance remains before live learner rollout. See `docs/stage-k7-member-feedback.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
