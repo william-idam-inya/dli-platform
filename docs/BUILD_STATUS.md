@@ -601,9 +601,7 @@ read-only SELECT and UPDATE rejection, Student read denial;
 all temporary changes rolled back and Admin role preserved.
 The DLI dev database has 0 configured group links.
 
-**Pending:** Windows TypeScript/build, Admin screenshot of read-only
-settings, Founder real-role browser edit/clear, responsive/error
-testing. See `docs/stage-i3-setup.md`.
+**Passed:** Windows TypeScript and Vite production build (2,153 modules transformed), Admin browser screenshot of settings at `/settings` showing 0 configured invitations, read-only access and publication Disabled. **Pending:** Founder real-role browser edit/clear, individual form control review, Student/Tutor denied-route, mobile/keyboard/error testing. See `docs/stage-i3-setup.md`.
 
 The pre-existing Stage E4 privileged quiz-function and
 Auth leaked-password advisories remain unresolved.
