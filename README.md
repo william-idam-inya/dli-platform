@@ -41,6 +41,8 @@ Stages A/B are implemented, with Founder and Admin sign-in verified. Stage C Use
 
 See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual for acceptance criteria and operating constraints.
 
+**Stage K2 has begun (development-only):** additional rollback-only SQL acceptance checks passed for quiz publication gating, forged/invalid answers, deactivated enrolments, one-attempt scoring and suspension denial. Zero test records persisted. The development registry still contains no Tutor or Student accounts; real separate-account/browser/REST checks remain outstanding. See `docs/stage-k2-controlled-acceptance.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
