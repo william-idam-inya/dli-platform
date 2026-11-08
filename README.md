@@ -53,6 +53,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K7 provides secure member feedback:** verified DLI members can submit text-only bug reports, suggestions and support requests through `/feedback`; RLS limits personal history to its author, while Founder/Admin/Assistant Admin can review statuses. A database-enforced submission cap and metadata-only audit trail are included. The migration was applied to development only; SQL role tests passed and no test feedback persists. Independent browser/privacy acceptance remains before live learner rollout. See `docs/stage-k7-member-feedback.md`.
 
+**Stage K8 adds a privacy-preserving runtime error fallback:** an unexpected React rendering failure now shows a reload option instead of an entirely blank page, without sending exception details or changing user data. This does not handle async/network failures, which pages must continue to manage. The Stage K7 Admin feedback-form screenshot has also been recorded. See `docs/stage-k8-runtime-recovery.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
