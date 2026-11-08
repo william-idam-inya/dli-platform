@@ -1,0 +1,64 @@
+.dli-runtime-error {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: var(--bg, #f6f5fb);
+  color: var(--text, #27243a);
+}
+.dli-runtime-error-card {
+  width: min(100%, 35rem);
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid var(--border, #e5e1ee);
+  border-radius: 20px;
+  background: var(--surface, #fff);
+  box-shadow: var(--shadow, 0 12px 30px rgba(0,0,0,0.07));
+}
+.dli-runtime-error-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 14px;
+  background: var(--purple-soft, #f0edfb);
+  color: var(--purple, #6349bf);
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+.dli-runtime-error-eyebrow {
+  margin: 1.25rem 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--muted, #77748c);
+}
+.dli-runtime-error-card h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+.dli-runtime-error-card p {
+  line-height: 1.6;
+}
+.dli-runtime-error-card button {
+  display: inline-flex;
+  margin-top: 0.8rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  border: 0;
+  background: var(--purple, #6349bf);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dli-runtime-error-card button:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+.dli-runtime-error-hint {
+  font-size: 0.86rem;
+  color: var(--muted, #77748c);
+  margin-top: 1.4rem;
+}
