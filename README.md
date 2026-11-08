@@ -55,6 +55,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K8 adds a privacy-preserving runtime error fallback:** an unexpected React rendering failure now shows a reload option instead of an entirely blank page, without sending exception details or changing user data. This does not handle async/network failures, which pages must continue to manage. The Stage K7 Admin feedback-form screenshot has also been recorded. See `docs/stage-k8-runtime-recovery.md`.
 
+**Stage K9 hardens Auth outage recovery:** temporary Supabase/Auth query failures now block workspace access while preserving the local session for an explicit secure retry; genuinely unauthorised accounts remain denied and signed out. The development database remains unchanged (37/37 public tables RLS-protected). See `docs/stage-k9-auth-failure-recovery.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
