@@ -155,6 +155,10 @@
     {
       "file": "20261108150415_stage_k1_private_quiz_rpc_implementations.sql",
       "gitBlobSha1": "db139970bffb70e019d31d2dc5d56f6fcb0d2cee"
+    },
+    {
+      "file": "20261108212538_stage_k7_private_member_feedback.sql",
+      "gitBlobSha1": "4465d4cb204d39b54a64beb2d7e8486c4898226f"
     }
   ]
 }
