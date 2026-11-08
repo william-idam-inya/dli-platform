@@ -85,9 +85,8 @@ privacy audit or legal permission.
       the same synthetic fixture produced a nonzero failure.
 - [x] An independently invoked `npm.cmd run build` in the
       updated source will now invoke the prebuild guard.
-- [ ] Run the guard against the **actual full GitHub working tree**
-      on Windows; only the synthetic test has run so far.
-- [ ] Windows TypeScript and full Vite production build.
+- [x] Ran the guard against the full Windows project on 8 November 2026; it passed.
+- [x] Windows TypeScript and full Vite production build passed; 2,153 modules transformed.
 - [ ] Check no API keys are present in tracked files or bundle.
 - [ ] Review frontend network activity to confirm no provider calls.
 - [ ] Confirm package/lockfile consistency and inspect any future
@@ -116,7 +115,7 @@ If the branch exists locally already, use
 
 The `npm.cmd run build` command automatically runs the same
 compliance scanner first, followed by TypeScript and Vite.
-Build output is **not yet verified on Windows**.
+The **Stage J build has been verified** on Windows. Stage K1 database migration and security verification are documented separately.
 
 ## If separate adult-only authoring is proposed later
 
@@ -132,8 +131,9 @@ Even written approval for a separate adult-only workflow is
 
 ## Next release gate
 
-Stage K production hardening remains pending. Prior open
-Supabase security warnings (two privileged quiz-function findings
-and Auth leaked-password protection) must be addressed and real
-role-based acceptance tests passed before any production release.
+Stage K1 database security work has now eliminated the two prior
+public quiz-function security advisor findings. Published-quiz Student
+acceptance and the remaining Auth leaked-password-protection
+warning (a Pro-or-higher feature) require explicit release decisions.
+Real role-based and private-storage acceptance tests remain before production.
 No production Supabase or Cloudflare deployment occurred in Stage J.
