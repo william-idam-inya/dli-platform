@@ -662,6 +662,27 @@ acceptance, Auth/security, storage/private-file and other
 real-role tests. No production Cloudflare or Supabase changes.
 See `docs/stage-k1-security-hardening.md`.
 
+## Stage K2 — Controlled acceptance test preparation (under test)
+
+After the user's successful fast-forward to Stage K1 commit `f330ea9`,
+a second **rollback-only SQL** verification on DLI development passed:
+unpublished/nonexistent quiz denial, direct answer-key RLS denial,
+malformed/unknown answer rejection without persistence, deactivated
+enrolment denial, valid 1/1 score and saved attempt, duplicate denial,
+post-submission question denial, and suspension-based data denial.
+
+The test simulated one verified existing Admin identity as Student
+**inside the rolled-back transaction** with matching JWT `sub` and
+`email` claims. No institutional or test data persisted, and the real
+Admin account was restored. Database counts remained 0 courses,
+0 offerings, 0 quizzes, 0 attempts.
+
+The development registry still has **0 active Tutors and 0 active
+Students**, so real account/browser/REST and cross-user acceptance have
+**not** occurred. No user accounts were created or invited. See
+`docs/stage-k2-controlled-acceptance.md` for the bounded test matrix,
+required approvals and remaining release blockers.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
