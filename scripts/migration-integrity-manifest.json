@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Baseline of reviewed, applied migration Git blob hashes. Update only after separately reviewing and applying migrations.",
+  "verifiedDate": "2026-11-08",
+  "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
+  "entries": [
+    {
+      "file": "20261105005354_stage_b_identity_rbac.sql",
+      "gitBlobSha1": "87da506ec8a0e86be6d8e3ef74840a81dc5eb3d8"
+    },
+    {
+      "file": "20261105005422_stage_b_rls_performance.sql",
+      "gitBlobSha1": "87e5f9277501bcc8ede9e45bee1b09ead014b261"
+    },
+    {
+      "file": "20261105010208_stage_b_authorisation_policy_optimisation.sql",
+      "gitBlobSha1": "53a29753dbf44898db273ecf7cf3529a0104bf2e"
+    },
+    {
+      "file": "20261105024931_stage_c_user_management.sql",
+      "gitBlobSha1": "30c1e44cd7d0c69e819b9fe70826b569d7204e72"
+    },
+    {
+      "file": "20261105025910_stage_c_rls_read_policy_optimisation.sql",
+      "gitBlobSha1": "df2b7b7b7210123bd4d4817d5cc706e52a20c758"
+    },
+    {
+      "file": "20261105074030_stage_d1_academic_catalogue.sql",
+      "gitBlobSha1": "1dacda99f264c7e68758bcdddd703693fd6a8a9d"
+    },
+    {
+      "file": "20261105074719_stage_d1_foreign_key_indexes.sql",
+      "gitBlobSha1": "f127d0e4c4971f51acf78bb554f11517b4582a83"
+    },
+    {
+      "file": "20261105075951_stage_d2_topics_cohorts_offerings.sql",
+      "gitBlobSha1": "dcb5427f602ff40ac5dd1256c81161b99f6a4445"
+    },
+    {
+      "file": "20261105080800_stage_d2_offering_cohort_foreign_key_index.sql",
+      "gitBlobSha1": "43c75f3abf0c958209d000e854eae462a215500d"
+    },
+    {
+      "file": "20261105191811_stage_d3_tutor_student_class_membership.sql",
+      "gitBlobSha1": "6358b96f0bab37744e3dceab78b414a9222c4013"
+    },
+    {
+      "file": "20261105191955_stage_d3_assignment_trigger_field_fix.sql",
+      "gitBlobSha1": "549c70e0edbb1a590d1613d0413aeea106570a80"
+    },
+    {
+      "file": "20261105192042_stage_d3_offering_membership_correlation_fix.sql",
+      "gitBlobSha1": "32330b5f318f2b86767d73f33c52407a23418092"
+    },
+    {
+      "file": "20261105192119_stage_d3_course_cohort_membership_correlation_fix.sql",
+      "gitBlobSha1": "cb74720daf309d602d7a76198ebee3b693e0cde8"
+    },
+    {
+      "file": "20261105192458_stage_d3_allow_deactivation_after_role_change.sql",
+      "gitBlobSha1": "018a0f14e7cb1ec78518996edc20eff54bcaaf52"
+    },
+    {
+      "file": "20261105193848_stage_e1_lessons_external_resources.sql",
+      "gitBlobSha1": "15d1f928e6c7cb706cf989b22554fd88a92956b9"
+    },
+    {
+      "file": "20261105200858_stage_e2_private_lesson_file_storage.sql",
+      "gitBlobSha1": "5c07ba8816086284047abd0e12e71b7ac7400bdc"
+    },
+    {
+      "file": "20261105201001_stage_e2_file_audit_multichange_fix.sql",
+      "gitBlobSha1": "fda30aebfddfed6036dc72c658d8ef09a2009b50"
+    },
+    {
+      "file": "20261105203948_stage_e3_assignments_submissions_manual_grading.sql",
+      "gitBlobSha1": "cc4ff2eb51d58017dc4933e89ef40c63a57b451b"
+    },
+    {
+      "file": "20261105210728_stage_e4_quizzes_attempts_private_answer_keys.sql",
+      "gitBlobSha1": "b46d6e6bdf50c75df9d171f0c5bab328f4cc61f5"
+    },
+    {
+      "file": "20261105211159_stage_e4_quiz_authoring_audit.sql",
+      "gitBlobSha1": "89382b33021fab28f56a34b3d416fb72fb141807"
+    },
+    {
+      "file": "20261105221711_stage_f1_role_scoped_class_scheduling.sql",
+      "gitBlobSha1": "b1f9cc2c2b4ed18451a4ef098c76b4e5d651095b"
+    },
+    {
+      "file": "20261105224330_stage_f2_scoped_staff_attendance.sql",
+      "gitBlobSha1": "d39f021c79529eb33d14b7e25a1385eaa4de1eb3"
+    },
+    {
+      "file": "20261105224532_stage_f2_non_recursive_roster_rls.sql",
+      "gitBlobSha1": "3cea383ec4b440682f7ae964418191929dc8bd54"
+    },
+    {
+      "file": "20261105225150_stage_f2_single_scoped_read_policies.sql",
+      "gitBlobSha1": "deea811122aedc40c64dab73305241fa5f16b9bd"
+    },
+    {
+      "file": "20261105230327_stage_g1_pending_finance_policy_proposals.sql",
+      "gitBlobSha1": "0d250b17336f5484ea9944735cfdfa23dc69a23e"
+    },
+    {
+      "file": "20261105232540_stage_g2_nonbinding_finance_review_ledger.sql",
+      "gitBlobSha1": "ee23f9ba19ed7178de045c2542517b7100d7cb35"
+    },
+    {
+      "file": "20261106024945_stage_h1_internal_draft_communications.sql",
+      "gitBlobSha1": "6775bab2cbd7106d150ab43c7f86ce963679b5ac"
+    },
+    {
+      "file": "20261106025105_stage_h1_draft_editor_index.sql",
+      "gitBlobSha1": "475da1e51f786283c6862527920cbf357dbd92c2"
+    },
+    {
+      "file": "20261106042804_stage_h2_internal_revision_bound_review.sql",
+      "gitBlobSha1": "92ef803544399aca4de189d20ac7940d432131dd"
+    },
+    {
+      "file": "20261106043121_stage_h2_reject_stale_review_revision.sql",
+      "gitBlobSha1": "cea65befe2984c7c8f9d6de91c0b438e3819151e"
+    },
+    {
+      "file": "20261106052544_stage_h3_private_reusable_message_templates.sql",
+      "gitBlobSha1": "4d73a343f8d08ffa058aa03d0428983d37beb4ef"
+    },
+    {
+      "file": "20261106054324_stage_h4_private_internal_reminder_planner.sql",
+      "gitBlobSha1": "ee8cbc29eaf863136600764a09354e576b531c3e"
+    },
+    {
+      "file": "20261106060210_stage_h5_restricted_in_app_announcements.sql",
+      "gitBlobSha1": "317c12242647d92a1d3a3aef2246fc494cb00a72"
+    },
+    {
+      "file": "20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql",
+      "gitBlobSha1": "1d201007a2ae6aa65c77623dca0b72c00401c7a8"
+    },
+    {
+      "file": "20261106061236_stage_h5_index_announcement_publisher_fk.sql",
+      "gitBlobSha1": "13753728c0c7bfc109cf2a8e6cc3f7cbee3a9b89"
+    },
+    {
+      "file": "20261106062435_stage_h6_audited_manual_whatsapp_email_preparation.sql",
+      "gitBlobSha1": "859f986eb0c723fa9618c9cc50c8915722322af7"
+    },
+    {
+      "file": "20261106072209_stage_i3_owner_controlled_group_links.sql",
+      "gitBlobSha1": "2f982abd92d370ba2bd7482b9879f8bf062bd93e"
+    },
+    {
+      "file": "20261108150415_stage_k1_private_quiz_rpc_implementations.sql",
+      "gitBlobSha1": "db139970bffb70e019d31d2dc5d56f6fcb0d2cee"
+    }
+  ]
+}
