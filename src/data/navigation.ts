@@ -42,6 +42,13 @@ export const navigationSections: NavigationSection[] = [
         description: 'A central view of DLI operations and learning activity.',
         group: 'Workspace',
       },
+      {
+        label: 'Feedback & support',
+        path: '/feedback',
+        icon: MessageSquareText,
+        description: 'Send private member feedback and check review status.',
+        group: 'Workspace',
+      },
     ],
   },
   {
