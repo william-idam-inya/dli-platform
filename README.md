@@ -47,6 +47,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K4 is being prepared:** production-only builds now have an explicit approved-production Supabase/HTTPS-origin gate (`npm run build:release`), while development builds remain unchanged. Baseline Cloudflare Pages static response headers have been added. The user has confirmed Stage K3 Windows validation (2,153 modules and 59 scanned browser files). K4 Windows self-tests, TypeScript and development build **passed**; production hosting and release gate verification remain pending; there is **no production deployment**. See `docs/stage-k4-production-configuration.md`.
 
+**Stage K5 adds automated, deployment-free validation:** a read-only GitHub Actions workflow now runs exact npm installs, Stage J/K3/K4 self-tests, TypeScript, build, static header verification and an expected rejection of unapproved production configuration. Its first two full runs passed. Real-user security/privacy review, backup/recovery and separate approved production hosting remain required. See `docs/stage-k5-automated-ci-validation.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
