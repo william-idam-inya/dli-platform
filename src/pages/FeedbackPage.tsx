@@ -1,0 +1,219 @@
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { CheckCircle2, Clock3, LockKeyhole, MessageSquareText, RefreshCw, Send, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../auth/AuthProvider';
+import { roleLabels, type DliRole } from '../auth/permissions';
+import { supabase } from '../lib/supabase';
+import './FeedbackPage.css';
+
+type Category = 'bug' | 'suggestion' | 'learning_support' | 'other';
+type Status = 'new' | 'reviewing' | 'resolved';
+type Feedback = {
+  id: string;
+  submitted_by: string;
+  submitted_role: DliRole;
+  category: Category;
+  message: string;
+  status: Status;
+  created_at: string;
+  updated_at: string;
+};
+const categories: {value:Category;label:string}[] = [
+  {value:'bug',label:'Something is not working'},
+  {value:'suggestion',label:'Idea for improvement'},
+  {value:'learning_support',label:'Learning or teaching support'},
+  {value:'other',label:'Other feedback'},
+];
+const statuses: Record<Status,string> = {
+  new:'Received',reviewing:'Under review',resolved:'Marked resolved',
+};
+const reviewers = new Set<DliRole>(['owner','admin','assistant_admin']);
+const wat = new Intl.DateTimeFormat('en-NG',{
+  timeZone:'Africa/Lagos',dateStyle:'medium',timeStyle:'short',
+});
+function when(value:string):string {
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?'Date unavailable':wat.format(date)+' WAT';
+}
+function categoryName(value:Category):string {
+  return categories.find(item=>item.value===value)?.label??value;
+}
+
+export default function FeedbackPage() {
+  const {account}=useAuth();
+  const staff=Boolean(account&&reviewers.has(account.role));
+  const [items,setItems]=useState<Feedback[]>([]);
+  const [category,setCategory]=useState<Category>('bug');
+  const [message,setMessage]=useState('');
+  const [saving,setSaving]=useState(false);
+  const [changing,setChanging]=useState<string|null>(null);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState<string|null>(null);
+  const [notice,setNotice]=useState<string|null>(null);
+
+  const refresh=useCallback(async()=>{
+    const client=supabase;
+    if(!client||!account){
+      setError('Feedback is unavailable for this session.');
+      setItems([]);setLoading(false);return;
+    }
+    setLoading(true);
+    try{
+      const {data,error:loadError}=await client.from('member_feedback')
+        .select('id,submitted_by,submitted_role,category,message,status,created_at,updated_at')
+        .order('created_at',{ascending:false}).limit(100);
+      if(loadError){
+        setItems([]);
+        setError('Could not retrieve feedback. Check your account and try again.');
+      }else{
+        setItems((data??[]) as Feedback[]);
+        setError(null);
+      }
+    }catch{
+      setItems([]);
+      setError('A network error prevented the feedback list from loading.');
+    }finally{setLoading(false);}
+  },[account?.id]);
+
+  useEffect(()=>{void refresh();},[refresh]);
+
+  async function submit(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    const client=supabase, clean=message.trim();
+    if(!client||!account||saving)return;
+    if(clean.length<10||clean.length>1500){
+      setError('Enter 10 to 1,500 characters. Do not include private personal details.');
+      return;
+    }
+    setSaving(true);setNotice(null);setError(null);
+    try{
+      const {data,error:saveError}=await client.from('member_feedback')
+        .insert({category,message:clean}).select('id').single();
+      if(saveError||!data){
+        setError('Feedback was not saved. You may have reached the limit of five submissions in one hour.');
+        return;
+      }
+      setMessage('');
+      setCategory('bug');
+      setNotice('Feedback saved securely. It has not been sent by email or WhatsApp.');
+      await refresh();
+    }catch{
+      setError('Could not confirm your feedback was saved. Refresh before trying again.');
+    }finally{setSaving(false);}
+  }
+
+  async function changeStatus(item:Feedback,status:Status){
+    const client=supabase;
+    if(!client||!staff||changing||status===item.status)return;
+    setChanging(item.id);setError(null);setNotice(null);
+    try{
+      const {data,error:saveError}=await client.from('member_feedback')
+        .update({status}).eq('id',item.id).select('id,status').maybeSingle();
+      if(saveError||!data){
+        setError('The feedback status could not be updated. Nothing was confirmed.');
+      }else{
+        setNotice('Review status updated and recorded in the audit trail.');
+        await refresh();
+      }
+    }catch{
+      setError('Unable to verify the status change. Please refresh.');
+    }finally{setChanging(null);}
+  }
+
+  return <div className="module-page member-feedback-page">
+    <div className="module-page-hero">
+      <span className="module-page-icon"><MessageSquareText size={25}/></span>
+      <div className="module-page-copy">
+        <div className="eyebrow"><span className="eyebrow-line"/> MEMBER SUPPORT</div>
+        <h1>Feedback &amp; support</h1>
+        <p>Report application problems or propose improvements directly to DLI administrators.</p>
+      </div>
+      <span className="module-status"><span/> Stage K7</span>
+    </div>
+
+    <div className="module-notice">
+      <div className="notice-icon"><ShieldCheck size={20}/></div>
+      <div><strong>Private, account-linked feedback</strong>
+        <p>Only you and authorised DLI support administrators can see your report.
+          Please do not enter passwords, patient details, home addresses, phone numbers,
+          or information that identifies another student. No file attachments or automated
+          external messages are sent.</p>
+      </div>
+    </div>
+
+    {error&&<p className="auth-feedback error" role="alert">{error}</p>}
+    {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
+
+    <section className="panel member-feedback-form">
+      <div className="panel-heading"><div>
+        <p className="section-kicker">01 · SEND FEEDBACK</p>
+        <h2>Tell us what needs attention</h2>
+        <p className="user-caption">A maximum of five submissions per hour helps prevent spam.
+          This form is not an emergency support channel.</p>
+      </div></div>
+      <form onSubmit={event=>{void submit(event);}} className="feedback-form">
+        <label htmlFor="member-feedback-category">Feedback type</label>
+        <select id="member-feedback-category" value={category}
+          disabled={saving} onChange={event=>setCategory(event.target.value as Category)}>
+          {categories.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+        </select>
+        <label htmlFor="member-feedback-message">Describe the issue or idea</label>
+        <textarea id="member-feedback-message" rows={5}
+          required minLength={10} maxLength={1500} disabled={saving}
+          placeholder="Describe what happened, the page involved, and what you expected. Avoid sharing identifying or sensitive details."
+          value={message} onChange={event=>setMessage(event.target.value)}/>
+        <div className="feedback-form-footer">
+          <small>{message.length.toLocaleString('en-NG')} / 1,500 characters</small>
+          <button className="academic-submit" type="submit" disabled={saving||message.trim().length<10}>
+            <Send size={16}/>{saving?'Submitting…':'Submit feedback'}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section className="panel member-feedback-records">
+      <div className="panel-heading"><div>
+        <p className="section-kicker">02 · {staff?'ADMINISTRATIVE REVIEW':'MY REPORTS'}</p>
+        <h2>{staff?'Recent member submissions':'My feedback history'}</h2>
+        <p className="user-caption">{staff
+          ?'Recent 100 reports visible to your administrative role. Review statuses are not promises of resolution.'
+          :'Only your own reports and their review statuses are displayed. No replies are sent automatically.'}</p>
+      </div>
+        <button type="button" className="user-outline-button" disabled={loading||saving||changing!==null}
+          onClick={()=>{setNotice(null);void refresh();}}>
+          <RefreshCw size={16}/> Refresh
+        </button>
+      </div>
+      {loading?<p className="feedback-empty" role="status"><Clock3 size={17}/> Loading feedback…</p>:
+        items.length===0?<p className="feedback-empty">No feedback has been recorded in your accessible view.</p>:
+        <div className="feedback-list">
+          {items.map(item=><article className="feedback-item" key={item.id}>
+            <div className="feedback-item-top">
+              <div>
+                <strong>{categoryName(item.category)}</strong>
+                <small>Reported {when(item.created_at)}
+                  {staff?' · '+(roleLabels[item.submitted_role]??'DLI member'):''}</small>
+              </div>
+              <span className={'feedback-status feedback-status-'+item.status}>
+                {item.status==='resolved'&&<CheckCircle2 size={14}/>}
+                {statuses[item.status]}
+              </span>
+            </div>
+            <p className="feedback-message">{item.message}</p>
+            {staff&&<div className="feedback-review-actions" aria-label="Manage feedback review status">
+              {(['new','reviewing','resolved'] as Status[]).filter(value=>value!==item.status)
+                .map(value=><button type="button" key={value}
+                  disabled={changing!==null||saving}
+                  onClick={()=>{void changeStatus(item,value);}}>
+                  {changing===item.id?'Saving…':statuses[value]}
+                </button>)}
+            </div>}
+          </article>)}
+        </div>}
+    </section>
+    <p className="module-footnote"><LockKeyhole size={15}/>
+      Feedback is stored in the restricted DLI database and linked to your signed-in account.
+      A report's status does not mean an administrator has contacted you.
+      Data-retention and child privacy procedures must be approved before wider learner onboarding.
+    </p>
+  </div>;
+}
