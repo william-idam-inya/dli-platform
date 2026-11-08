@@ -799,6 +799,25 @@ lower review section and actual submission were not shown or tested.
 
 See `docs/stage-k8-runtime-recovery.md`.
 
+## Stage K9 — Fail-closed Auth outage handling (under validation)
+
+The previous frontend treated an error reading `authorised_users` as
+an unauthorised identity and signed out locally. K9 now treats
+upstream Auth/registry errors as `unavailable`, clears access to
+protected views, retains the local session for a manual verification
+retry, and displays a safe retry screen on Login, Set Password and
+workspace routes. A confirmed absent/invalid/disabled member remains
+unauthorised and is signed out as before.
+
+Read-only audit found 37/37 public application tables under RLS and
+39 applied migrations; the Security Advisor has only its existing
+leaked-password protection advisory. Low-volume development
+unused-index INFO notices are not justification for deleting indexes.
+No database writes, test users, production deployment, paid services
+or external telemetry were added.
+
+See `docs/stage-k9-auth-failure-recovery.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
