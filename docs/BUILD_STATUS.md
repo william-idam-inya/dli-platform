@@ -696,7 +696,7 @@ authenticated-callable SECURITY DEFINER functions, two private quiz
 implementations and two correct public wrappers, and in-app publication
 disabled. A source-independent postbuild browser artifact scanner for
 recognised secrets, database URI, service-role JWT and model endpoints
-has been committed; Windows self-test/build execution is pending.
+has been committed; Windows self-test, TypeScript, build, and 59-file browser scan all **passed** on 8 November 2026.
 No schema changes, test users, dev data changes, production deployment,
 payment or AI service were made.
 
@@ -717,7 +717,8 @@ remains an unchanged development build.
 Cloudflare Pages `public/_headers` now defines baseline static
 clickjacking, MIME sniffing, referrer and browser-feature controls.
 **No production project, deployment, DNS, billing, Auth user or
-database data was changed.** Stage K4 Windows validation remains
+database data was changed.** Stage K4 Windows self-tests, TypeScript
+and development build **passed**. Actual production gate and hosting remain
 pending. Free Supabase managed backups must not be assumed; a
 separate logical dump/Storage backup and restore rehearsal will be
 required before real users. See `docs/stage-k4-production-configuration.md`.
