@@ -1,7 +1,6 @@
 # Stage K4 — Production configuration guard and hosting preparation
 
-**Status:** code and runbook committed on a development feature branch; the
-new production gate has **not yet been run on the user's Windows machine**.
+**Status:** K4 Windows self-test, TypeScript and ordinary development build **passed** on 8 November 2026. The actual production gate, hosting and backup/restore acceptance remain pending.
 No live production project, Cloudflare deployment, domain, or user account
 was created. No billable resource was activated.
 
@@ -135,14 +134,16 @@ References:
 - https://developers.cloudflare.com/pages/configuration/headers/
 - https://developers.cloudflare.com/pages/configuration/serving-pages/
 
+**Windows validation evidence:** after checking out the K4 branch, the user ran `npm.cmd run check:release-env-tests`, `npm.cmd run typecheck`, `npm.cmd run build` and `npm.cmd run dev`. Each succeeded, including Stage J prebuild and K3 postbuild artifact scan. This does not verify `build:release` or production hosting.
+
 ## Stage K4 verification status
 
 - [x] Production gate and baseline Pages static headers committed.
-- [ ] Synthetic self-tests pass on user's machine.
+- [x] Synthetic production-gate self-tests passed on user's Windows machine.
 - [ ] Existing development `.env.local` is correctly rejected by
       `npm.cmd run check:release-env` (expected failure).
-- [ ] Standard `npm.cmd run typecheck` and `npm.cmd run build` pass;
-      `public/_headers` appears in build output.
+- [x] Standard `npm.cmd run typecheck` and `npm.cmd run build` passed on Windows (Vite 8.3.5, 2,153 modules, K3 scan: 59 files).
+- [ ] Confirm `dist/_headers` is present in a distributable build and that a deployed host serves those headers.
 - [ ] Actual production configuration, real hosting, real users,
       recovery rehearsal and live security headers remain pending.
 
