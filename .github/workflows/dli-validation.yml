@@ -1,0 +1,84 @@
+name: DLI validation (no deploy)
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - 'feature/**'
+  workflow_dispatch:
+
+# This is intentionally a read-only validation workflow. No production
+# environment, deployment key, database credentials or user data is used.
+permissions:
+  contents: read
+
+concurrency:
+  group: dli-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: TypeScript, source guards and browser bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+    steps:
+      - name: Check out repository without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 22 with npm cache
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install exact locked dependencies
+        run: npm ci
+
+      - name: Verify production environment gate self-tests
+        run: npm run check:release-env-tests
+
+      - name: Verify browser-bundle scanner self-tests
+        run: npm run check:bundle-scanner
+
+      - name: Verify source-side AI compliance
+        run: npm run check:ai-compliance
+
+      - name: Verify TypeScript
+        run: npm run typecheck
+
+      - name: Build and scan distributable browser files
+        run: npm run build
+
+      - name: Check that baseline Pages security headers are present
+        run: |
+          test -f dist/_headers
+          grep -Fq 'X-Frame-Options: DENY' dist/_headers
+          grep -Fq 'X-Content-Type-Options: nosniff' dist/_headers
+          grep -Fq 'Referrer-Policy: no-referrer' dist/_headers
+
+      - name: Assert unapproved production release remains blocked
+        shell: bash
+        run: |
+          set -euo pipefail
+          if npm run check:release-env > /tmp/dli-release-gate.log 2>&1; then
+            echo "ERROR: unapproved production environment passed the release guard"
+            exit 1
+          fi
+          if ! grep -Fq 'DLI K4 production configuration BLOCKED:' /tmp/dli-release-gate.log; then
+            echo "ERROR: release gate failed for an unexpected reason"
+            exit 1
+          fi
+          rm -f /tmp/dli-release-gate.log
+          echo "Unapproved production release correctly blocked"
+
+      - name: Confirm no deployment was requested
+        run: echo "Read-only CI validation complete; no release/deployment step was run."
