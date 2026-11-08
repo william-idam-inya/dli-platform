@@ -723,6 +723,23 @@ pending. Free Supabase managed backups must not be assumed; a
 separate logical dump/Storage backup and restore rehearsal will be
 required before real users. See `docs/stage-k4-production-configuration.md`.
 
+## Stage K5 — Automated GitHub Actions verification (under test)
+
+A new read-only `.github/workflows/dli-validation.yml` workflow now runs
+on feature/main pushes and pull requests, with pinned checkout/setup-node
+action revisions and a Node 22 environment. It runs `npm ci`, Stage K4
+release-gate self-tests, Stage K3 bundle scanner tests, Stage J source
+checks, TypeScript, the complete build and browser bundle scan, and
+checks that `dist/_headers` exists. An unapproved release must be
+rejected. There are no deployment credentials or deployment steps.
+
+GitHub Actions runs #1 and #2 **passed** all steps. Newer branch pushes
+require their own successful run before integration. No real users,
+production project, billing or public deployment was changed.
+Critical real-role privacy/security acceptance, backup/restore and
+production environment approval remain outstanding.
+See `docs/stage-k5-automated-ci-validation.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
