@@ -606,6 +606,32 @@ The DLI dev database has 0 configured group links.
 The pre-existing Stage E4 privileged quiz-function and
 Auth leaked-password advisories remain unresolved.
 
+## Stage J — Under-18 AI compliance source gate (under test)
+
+DLI's Primary/JSS/SS audience brings the Google Gemini API Additional
+Terms age restriction into scope. The terms were checked on 8 November
+2026 and still disallow Gemini APIs as part of an application likely
+to be accessed by minors. DLI must remain functional **without** a
+Gemini, OpenAI or other model API connection.
+
+New `scripts/verify-ai-compliance.mjs` checks source, Edge Functions,
+Vite configuration and dependencies for common direct model SDKs,
+endpoints or browser-exposed AI keys. It is run explicitly via
+`npm.cmd run check:ai-compliance` and automatically before
+`npm.cmd run build`. No AI feature, SDK, keys, database migration,
+provider account or paid service was added.
+
+**Passed synthetic local Node tests:** the guard accepted an ordinary
+Supabase import and blocked a deliberately disallowed Gemini SDK
+import. **Pending:** run it on the full Windows working tree and
+confirm the normal TypeScript/Vite build passes. Static signature
+checks are not a legal approval, network audit or proof against
+hidden/transitive model calls.
+
+See `docs/stage-j-ai-compliance.md`. Stage K production release
+remains blocked by unresolved old security advisories and
+incomplete real-role acceptance.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
