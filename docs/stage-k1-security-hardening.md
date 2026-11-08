@@ -84,9 +84,43 @@ server-side Student/enrolment rules.
       result persistence, one-attempt protection and Tutor visibility.
 - [ ] Attempt URL forgery, another Student's quiz, revoked Student,
       unpublished quiz, malformed answer, concurrent submission.
-- [ ] Repeat local TypeScript and Vite build on the K1 branch.
+- [x] Repeat local TypeScript and Vite build on the K1 branch (8 November 2026).
 - [ ] Verify actual REST RPC responses and production-equivalent
       Supabase function deployment.
+
+### Additional verification — 8 November 2026
+
+The user confirmed the K1 branch is checked out locally on Windows.
+`npm.cmd install` completed with **0 reported vulnerabilities among 39 audited packages**.
+The Stage J source guard and its automatic prebuild check both passed;
+`tsc -b` and Vite production build passed (**2,153 modules transformed**).
+Screenshots confirm the `/quizzes` Admin page renders, with 0
+accessible offerings, 0 quizzes and 0 attempts. This is an expected
+empty state, not functional Student-browser acceptance.
+
+A separate **rollback-only SQL positive-path smoke test** was executed
+against the existing DLI development database. It created temporary
+course/cohort/offering/quiz/question/enrolment rows in a transaction.
+The test temporarily changed an existing verified Admin identity to
+the Student role **inside that transaction only**, with matching JWT
+`sub`, `email` and role claims, then executed the *public* invoker
+RPCs as `authenticated`. Assertions passed:
+
+- Direct Student SELECT returned zero answer-key question rows.
+- The guarded question RPC returned the one published question.
+- The submission RPC scored the correct answer **1/1**.
+- The Student could read the attempt inside the transaction.
+- Duplicate submission and post-submission question retrieval were rejected.
+- Explicit `ROLLBACK` restored the original Admin role and removed all
+  temporary academic/test rows. Follow-up counts: **0 courses, 0 offerings,
+  0 quizzes, 0 attempts**.
+
+An initial simulation without the JWT `email` claim failed the existing
+`private.current_role()` authorization check. This was a test harness
+setup error, not evidence of an RPC defect; the corrected signed-in
+claim simulation passed. The SQL smoke test does **not** substitute for
+actual REST/PostgREST requests, separate Student accounts, browser
+network inspections, cross-student testing or concurrent submissions.
 
 **Important:** The live development database currently has no
 quiz questions or attempts and no course offerings. Therefore
