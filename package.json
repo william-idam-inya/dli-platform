@@ -12,7 +12,10 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
-    "prebuild": "node scripts/verify-ai-compliance.mjs"
+    "prebuild": "node scripts/verify-ai-compliance.mjs",
+    "check:bundle-scanner": "node scripts/verify-browser-bundle.mjs --self-test",
+    "check:browser-bundle": "node scripts/verify-browser-bundle.mjs",
+    "postbuild": "node scripts/verify-browser-bundle.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
