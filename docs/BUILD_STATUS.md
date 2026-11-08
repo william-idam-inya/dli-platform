@@ -703,6 +703,25 @@ payment or AI service were made.
 The Free-plan breached-password screening advisory remains open.
 See `docs/stage-k3-release-preflight.md`.
 
+## Stage K4 — Production environment gate (under test)
+
+After the user confirmed the Stage K3 Windows scanner/build pass
+(2,153 modules, 59 artifacts, zero detected signatures), Stage K4
+added a separate `build:release` command. It fails closed unless
+the exact **approved non-development Supabase project** and **approved
+public HTTPS origin** are provided through build-only settings,
+and the browser configuration uses the matching production URL and
+publishable (not service-role/secret) key. Plain `npm run build`
+remains an unchanged development build.
+
+Cloudflare Pages `public/_headers` now defines baseline static
+clickjacking, MIME sniffing, referrer and browser-feature controls.
+**No production project, deployment, DNS, billing, Auth user or
+database data was changed.** Stage K4 Windows validation remains
+pending. Free Supabase managed backups must not be assumed; a
+separate logical dump/Storage backup and restore rehearsal will be
+required before real users. See `docs/stage-k4-production-configuration.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
