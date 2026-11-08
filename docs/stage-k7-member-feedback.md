@@ -1,10 +1,11 @@
 # Stage K7 — Private member feedback and administrative review
 
-**Status (8 November 2026):** feature implemented in the existing
+**Status (9 November 2026):** feature implemented in the existing
 development Supabase project and React app, with rollback-only database
-permission/abuse tests passed. GitHub Actions build validation and real
-different-user browser testing must complete before marking the feature
-release-ready. No new test users, real learner submissions or production
+permission/abuse tests passed. GitHub Actions build validation passed
+on K7. An authenticated Admin screenshot confirms the route and
+feedback form load without a visible error. Different-user browser
+and actual submission/review acceptance remain open. No new test users, real learner submissions or production
 deployment were created.
 
 ## Scope delivered
@@ -101,8 +102,9 @@ load test, or proof of production readiness.
 - [x] Rollback-only SQL scope/permissions/rate-cap checks passed.
 - [x] K6 migration integrity manifest extended.
 - [x] React feedback form and Admin review page implemented.
-- [ ] GitHub CI runs TypeScript, guards and production build on K7.
-- [ ] Admin browser checks `/feedback` empty state/form/refresh.
+- [x] GitHub CI passed TypeScript, guards and build on K7 (commit `ffb6f669a`).
+- [x] Admin screenshot verifies `/feedback` route, form and privacy notice visually. The screenshot does not show the lower review list or an actual submission.
+- [ ] Empty-state after loading, refresh behavior, and status mutation are not yet visually validated.
 - [ ] Real independently authenticated Tutor and Student test their
   own feedback visibility during controlled pilot, without using
   fabricated learner identities.
@@ -110,5 +112,16 @@ load test, or proof of production readiness.
   unauthorised edits, updates status and confirms audit.
 - [ ] Accessibility, mobile, error/retry states and retention policy
   accepted before wide rollout.
+
+## Admin browser evidence — 9 November 2026
+
+The supplied screenshot at local `localhost:5173/feedback` shows an
+active Admin account, Feedback & support navigation selected, the
+Stage K7 heading, a privacy warning, the feedback-category selector
+and the beginning of the text-entry field. No error banner is visible.
+The screenshot does **not** establish that an INSERT, status change,
+review-list refresh, or user-to-user isolation worked through the
+browser. There were no real submissions or personal data in the
+supplied evidence.
 
 No production deployment or actual user collection has started.
