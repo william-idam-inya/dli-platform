@@ -43,8 +43,12 @@ exposing the application to actual students.
    secret-bearing artifact (blocked with a nonzero exit code). The test
    fixture was never uploaded and contains no real secret.
 
-   **Pending:** the new scanner and full DLI build integration must still be
-   executed on the user's Windows workstation. These are heuristic
+   **Completed on the user's Windows workstation (8 November 2026):**
+   `npm.cmd run check:bundle-scanner`, `npm.cmd run typecheck`, and
+   `npm.cmd run build` passed. Stage J prebuild and K3 postbuild passed;
+   the latter scanned **59 browser files** (0 detected signatures).
+   Vite transformed **2,153 modules**, then `npm.cmd run dev` started.
+   This does not establish production deployment or real-user acceptance. These are heuristic
    signatures, not proof of a secret-free bundle or privacy compliance.
 
 3. Development Supabase Security Advisor still reports
