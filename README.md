@@ -45,6 +45,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K3 release preflight is in progress:** the development database passed six read-only privilege and publication-gate checks (36 RLS-protected public tables), and a browser-bundle secret/API scanner has been added to `postbuild`. The new scanner has **not yet been run on Windows**. The project remains development-only; real-user onboarding, separate production infrastructure, privacy and functional acceptance are still pending. See `docs/stage-k3-release-preflight.md`.
 
+**Stage K4 is being prepared:** production-only builds now have an explicit approved-production Supabase/HTTPS-origin gate (`npm run build:release`), while development builds remain unchanged. Baseline Cloudflare Pages static response headers have been added. The user has confirmed Stage K3 Windows validation (2,153 modules and 59 scanned browser files). K4 validation and real hosting remain pending; there is **no production deployment**. See `docs/stage-k4-production-configuration.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
