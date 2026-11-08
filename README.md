@@ -49,6 +49,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K5 adds automated, deployment-free validation:** a read-only GitHub Actions workflow now runs exact npm installs, Stage J/K3/K4 self-tests, TypeScript, build, static header verification and an expected rejection of unapproved production configuration. Its first two full runs passed. Real-user security/privacy review, backup/recovery and separate approved production hosting remain required. See `docs/stage-k5-automated-ci-validation.md`.
 
+**Stage K6 strengthens migration and backup readiness:** all 38 recorded DLI development migrations match the repository filenames. Their reviewed Git blob hashes are now guarded by `check:migration-integrity` during CI and before every build. A local-only backup-file SHA-256 receipt verifier and read-only recovery inventory were added. **No database dump, private Storage backup, restoration or production deployment has been performed.** See `docs/stage-k6-migration-backup-readiness.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
