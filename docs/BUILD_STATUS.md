@@ -760,6 +760,29 @@ rehearsal has been completed.** The Supabase Free-plan breached-password
 warning remains open. See
 `docs/stage-k6-migration-backup-readiness.md`.
 
+## Stage K7 — Private member feedback (under test)
+
+The development migration `20261108212538_stage_k7_private_member_feedback.sql`
+creates a new `public.member_feedback` table, with owner-only
+report visibility (except for Founder, Admin and Assistant Admin
+reviewers), column-grant protected staff status updates, a transaction-
+locked five-submissions-per-hour abuse guard, and audit records that
+exclude the message body. The applied migration extends K6's reviewed
+integrity manifest to **39** entries.
+
+Rollback-only SQL tests passed: Student-only reads, unauthorised update
+denial, five-accepted/sixth-rejected limit, separate Founder review and
+status modification, isolated own-history view, and content-free audit.
+Zero reports persisted; original Admin permissions were restored.
+
+The React `/feedback` page provides member submission/history and
+staff review status. The feature requires GitHub CI and real
+independent-user browser acceptance before wider release, and
+institutional privacy/retention and safeguarding decisions before
+collecting real under-18 learner data.
+
+See `docs/stage-k7-member-feedback.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
