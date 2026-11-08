@@ -26,6 +26,7 @@ export const roleLabels: Record<DliRole, string> = {
 // These are navigation/UI restrictions. PostgreSQL RLS enforces data permissions.
 const routeRoles: Record<string, readonly DliRole[]> = {
   '/': DLI_ROLES,
+  '/feedback': DLI_ROLES,
   '/academics': ['owner', 'admin', 'academic_coordinator'],
   '/cohorts': ['owner', 'admin', 'academic_coordinator'],
   '/assignments': ['owner', 'admin', 'academic_coordinator'],
