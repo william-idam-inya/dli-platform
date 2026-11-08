@@ -62,6 +62,32 @@ independent real Auth sessions, actual REST traffic or a browser
 test. They cannot establish concurrent-request safety, cross-user
 identity isolation or end-to-end Tutor visibility.
 
+## K2 Admin browser screenshots — 8 November 2026
+
+Three screenshots supplied by the Admin show the live development
+`http://localhost:5173/users` view:
+
+- The authenticated Admin account is displayed as **Active**, marked
+  **You**, with the role of Admin.
+- The account registry displays **1 role-visible account**, which is
+  expected for Admin and must not be confused with the organisation-wide
+  user count. The Founder is not shown in the supplied scrolled view.
+- The embedded **New invitation** form renders with name, email, role
+  selection and the **Generate invitation link** button.
+- The **Student** role is visible as the selected choice. The role
+  dropdown was not expanded in the screenshots, so Tutor selection
+  remains to be visually checked.
+- Existing **invitation.created** and **bootstrap.owner_created**
+  audit events render. This verifies basic read display, not a new
+  successful invitation or mutation.
+- No error banner is visible in the supplied desktop screenshots.
+
+**Not yet done:** inviting anyone, verifying a Tutor selection, testing
+actual user creation, password setup, authenticating as a separate
+Tutor/Student, denied-route behavior, mobile layout or refresh/error
+states. The screenshots are visual confirmation only; no personal email,
+token, or invitation link is copied into this record.
+
 ## K2 required browser acceptance (pending)
 
 Use only human-approved, adult-operated **synthetic test accounts** for
