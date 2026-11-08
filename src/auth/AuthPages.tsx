@@ -32,6 +32,23 @@ export function AuthChecking() {
   </AuthLayout>;
 }
 
+export function AuthTemporarilyUnavailable() {
+  const { refresh } = useAuth();
+  return <AuthLayout title="Access check temporarily unavailable"
+    intro="We could not confirm your current DLI membership. Your workspace remains restricted until verification succeeds.">
+    <p role="alert" className="auth-feedback error">
+      The authentication service or account registry could not be reached.
+      This does not necessarily mean your account was removed.
+    </p>
+    <button type="button" className="auth-submit"
+      onClick={() => { void refresh(); }}>
+      Retry secure access check
+    </button>
+    <p className="auth-helper">Check your internet connection. If the problem persists,
+      contact DLI administration. Do not share passwords or invitation links.</p>
+  </AuthLayout>;
+}
+
 export function MissingConfiguration() {
   return <AuthLayout title="Setup required" intro="This deployment does not yet have the public Supabase connection settings.">
     <Feedback error message="Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to a local .env.local file, then restart Vite. Never add a service-role or secret key." />
@@ -47,6 +64,7 @@ export function LoginPage() {
   if (state === 'active') return <Navigate replace to="/" />;
   if (state === 'config-error') return <MissingConfiguration />;
   if (state === 'checking') return <AuthChecking />;
+  if (state === 'unavailable') return <AuthTemporarilyUnavailable />;
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -156,6 +174,7 @@ export function SetPasswordPage() {
 
   if (state === 'checking') return <AuthChecking />;
   if (state === 'config-error') return <MissingConfiguration />;
+  if (state === 'unavailable') return <AuthTemporarilyUnavailable />;
   if (state !== 'active') {
     return <AuthLayout title="Access verification required" intro="This password link must belong to a verified and authorised DLI account.">
       <Feedback error message="The session was not authorised. Contact the DLI administrator if this invitation was expected." />
