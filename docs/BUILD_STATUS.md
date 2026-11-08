@@ -740,6 +740,26 @@ Critical real-role privacy/security acceptance, backup/restore and
 production environment approval remain outstanding.
 See `docs/stage-k5-automated-ci-validation.md`.
 
+## Stage K6 — Reviewed migrations and backup readiness (under test)
+
+DLI development has **38 applied migrations**, matching all **38 SQL
+migration filenames** in the repository. The source Git blob hashes
+are recorded in `scripts/migration-integrity-manifest.json`, and
+`scripts/verify-migration-integrity.mjs` blocks rewritten, missing,
+duplicate or unreviewed migrations during both prebuild and GitHub CI.
+No database/schema writes were performed. This is version-history
+consistency only, not proof of the absence of live database drift.
+
+A read-only inventory confirms 36/36 public application tables have
+RLS, one private Storage bucket, zero public buckets and zero objects.
+A **local-only** backup receipt tool verifies sizes and SHA-256 hashes
+for existing roles/schema/data dumps stored outside the Git repository;
+it does not create or upload backups. Its self-tests are in CI.
+**No encrypted backup, offsite transfer, file recovery or restore
+rehearsal has been completed.** The Supabase Free-plan breached-password
+warning remains open. See
+`docs/stage-k6-migration-backup-readiness.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
