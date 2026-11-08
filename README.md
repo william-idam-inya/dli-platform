@@ -43,6 +43,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K2 has begun (development-only):** additional rollback-only SQL acceptance checks passed for quiz publication gating, forged/invalid answers, deactivated enrolments, one-attempt scoring and suspension denial. Zero test records persisted. The development registry still contains no Tutor or Student accounts; real separate-account/browser/REST checks remain outstanding. See `docs/stage-k2-controlled-acceptance.md`.
 
+**Stage K3 release preflight is in progress:** the development database passed six read-only privilege and publication-gate checks (36 RLS-protected public tables), and a browser-bundle secret/API scanner has been added to `postbuild`. The new scanner has **not yet been run on Windows**. The project remains development-only; real-user onboarding, separate production infrastructure, privacy and functional acceptance are still pending. See `docs/stage-k3-release-preflight.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
