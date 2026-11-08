@@ -10,7 +10,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
+    "prebuild": "node scripts/verify-ai-compliance.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
