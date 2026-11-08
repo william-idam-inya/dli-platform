@@ -683,6 +683,26 @@ Students**, so real account/browser/REST and cross-user acceptance have
 `docs/stage-k2-controlled-acceptance.md` for the bounded test matrix,
 required approvals and remaining release blockers.
 
+## Stage K3 — Release infrastructure preflight (under test)
+
+The Admin opted to skip creation of synthetic Tutor/Student accounts and
+complete the infrastructure before actual tutors and students provide
+feedback. Real-role security and privacy acceptance remain **required**
+before a broad release.
+
+A read-only six-check preflight passed on DLI development: all 36 public
+application tables have RLS, no anonymous table grants, no public
+authenticated-callable SECURITY DEFINER functions, two private quiz
+implementations and two correct public wrappers, and in-app publication
+disabled. A source-independent postbuild browser artifact scanner for
+recognised secrets, database URI, service-role JWT and model endpoints
+has been committed; Windows self-test/build execution is pending.
+No schema changes, test users, dev data changes, production deployment,
+payment or AI service were made.
+
+The Free-plan breached-password screening advisory remains open.
+See `docs/stage-k3-release-preflight.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
