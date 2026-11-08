@@ -6,7 +6,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './auth/AuthProvider';
 import { canAccessPath } from './auth/permissions';
 import {
-  AccessDeniedPage, AuthChecking, ChangePasswordPage, ConfirmLinkPage,
+  AccessDeniedPage, AuthChecking, AuthTemporarilyUnavailable, ChangePasswordPage, ConfirmLinkPage,
   ForgotPasswordPage, LoginPage, MissingConfiguration, SetPasswordPage,
 } from './auth/AuthPages';
 import { lazy, Suspense, type ReactNode } from 'react';
@@ -38,6 +38,7 @@ function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
   if (state === 'config-error') return <MissingConfiguration />;
   if (state === 'checking') return <AuthChecking />;
+  if (state === 'unavailable') return <AuthTemporarilyUnavailable />;
   if (state !== 'active') return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
