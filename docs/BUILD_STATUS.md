@@ -783,6 +783,22 @@ collecting real under-18 learner data.
 
 See `docs/stage-k7-member-feedback.md`.
 
+## Stage K8 — Client runtime recovery (under validation)
+
+The application entry point now uses a root-level render error boundary.
+If an unexpected React rendering/lifecycle error occurs, a private,
+accessible fallback provides a safe reload action instead of a
+blank screen. No exception stack trace is sent, persisted or displayed.
+This change adds no backend schema, user data, payments, AI calls,
+external analytics or deployment. Network, auth, async and event-handler
+errors remain the responsibility of their respective components.
+
+The supplied authenticated Admin screenshot establishes that Stage K7's
+feedback page, privacy notice and report form render correctly. The
+lower review section and actual submission were not shown or tested.
+
+See `docs/stage-k8-runtime-recovery.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
