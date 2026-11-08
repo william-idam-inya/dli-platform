@@ -12,13 +12,15 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
-    "prebuild": "node scripts/verify-ai-compliance.mjs",
+    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs",
     "check:bundle-scanner": "node scripts/verify-browser-bundle.mjs --self-test",
     "check:browser-bundle": "node scripts/verify-browser-bundle.mjs",
     "postbuild": "node scripts/verify-browser-bundle.mjs",
     "check:release-env-tests": "node scripts/verify-release-env.mjs --self-test",
     "check:release-env": "node scripts/verify-release-env.mjs",
-    "build:release": "npm run check:release-env && npm run build"
+    "build:release": "npm run check:release-env && npm run build",
+    "check:migration-integrity": "node scripts/verify-migration-integrity.mjs",
+    "check:migration-integrity-tests": "node scripts/verify-migration-integrity.mjs --self-test"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
