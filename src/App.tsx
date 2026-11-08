@@ -32,6 +32,7 @@ const InAppAnnouncementsPage = lazy(() => import('./pages/InAppAnnouncementsPage
 const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
 const OperationalReportsPage = lazy(() => import('./pages/OperationalReportsPage'));
 const InstitutionalSettingsPage = lazy(() => import('./pages/InstitutionalSettingsPage'));
+const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -54,6 +55,7 @@ function Workspace() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
         <Route path="/cohorts" element={<AllowedArea path="/cohorts"><AcademicRelationsPage /></AllowedArea>} />
@@ -75,7 +77,7 @@ function Workspace() {
         <Route path="/reports" element={<AllowedArea path="/reports"><OperationalReportsPage /></AllowedArea>} />
         <Route path="/settings" element={<AllowedArea path="/settings"><InstitutionalSettingsPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
+          item.path !== '/' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/my-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
