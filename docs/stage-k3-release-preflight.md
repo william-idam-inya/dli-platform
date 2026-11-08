@@ -38,7 +38,12 @@ exposing the application to actual students.
    `npm run check:bundle-scanner` runs scanner self-tests without an app
    build; `npm run check:browser-bundle` checks an existing `dist/`.
 
-   **Pending:** the new scanner and build integration must still be
+   **Verified in an isolated Node.js 22 validation environment:** scanner syntax,
+   self-tests, a harmless JavaScript artifact (allowed), and a synthetic
+   secret-bearing artifact (blocked with a nonzero exit code). The test
+   fixture was never uploaded and contains no real secret.
+
+   **Pending:** the new scanner and full DLI build integration must still be
    executed on the user's Windows workstation. These are heuristic
    signatures, not proof of a secret-free bundle or privacy compliance.
 
