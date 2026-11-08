@@ -20,7 +20,9 @@
     "check:release-env": "node scripts/verify-release-env.mjs",
     "build:release": "npm run check:release-env && npm run build",
     "check:migration-integrity": "node scripts/verify-migration-integrity.mjs",
-    "check:migration-integrity-tests": "node scripts/verify-migration-integrity.mjs --self-test"
+    "check:migration-integrity-tests": "node scripts/verify-migration-integrity.mjs --self-test",
+    "check:backup-file-tests": "node scripts/verify-backup-files.mjs --self-test",
+    "check:backup-files": "node scripts/verify-backup-files.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
