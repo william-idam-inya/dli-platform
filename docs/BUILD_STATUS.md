@@ -621,16 +621,46 @@ endpoints or browser-exposed AI keys. It is run explicitly via
 `npm.cmd run build`. No AI feature, SDK, keys, database migration,
 provider account or paid service was added.
 
-**Passed synthetic local Node tests:** the guard accepted an ordinary
-Supabase import and blocked a deliberately disallowed Gemini SDK
-import. **Pending:** run it on the full Windows working tree and
-confirm the normal TypeScript/Vite build passes. Static signature
-checks are not a legal approval, network audit or proof against
-hidden/transitive model calls.
+**Passed:** isolated Node synthetic tests and the actual Windows
+`npm.cmd run check:ai-compliance`. The automatic `prebuild` guard,
+TypeScript check and Vite production build passed (2,153 modules
+transformed). **Pending:** network/bundle audit and provider review.
+Static signature checks are not a legal approval or proof against
+hidden or transitive model calls.
 
 See `docs/stage-j-ai-compliance.md`. Stage K production release
 remains blocked by unresolved old security advisories and
 incomplete real-role acceptance.
+
+## Stage K1 — Quiz RPC hardening (development database applied)
+
+Two privileged `SECURITY DEFINER` quiz RPCs were in the exposed
+`public` schema. The staged, rollback-tested migration moved
+their original Student/enrolment-checked implementations to the
+private schema and installed same-signature `SECURITY INVOKER`
+public wrappers; authenticated users retain access only through
+the guarded server-side RPCs. Anonymous execution is blocked.
+
+**Supabase Security Advisor now reports zero quiz-function warnings.**
+Admin-access denial and rollback-only simulated Student/no-quiz
+denial tests passed; no live quiz attempts or answers were created,
+and the real Admin role was unchanged. Because the development
+database has no course offerings/quizzes, the successful
+Student published-quiz workflow is **not yet tested**.
+
+New migration:
+- `20261108150415_stage_k1_private_quiz_rpc_implementations.sql`
+
+**Remaining advisor:** `auth_leaked_password_protection` is
+disabled. Supabase's current documentation states this feature
+is Pro-plan-or-higher; no paid upgrade has been made. Do not
+claim it resolved. Review Free-plan password constraints,
+invite-only enrolment, and obtain a residual-risk decision.
+
+**Pending:** Windows K1 branch build, Student quiz end-to-end
+acceptance, Auth/security, storage/private-file and other
+real-role tests. No production Cloudflare or Supabase changes.
+See `docs/stage-k1-security-hardening.md`.
 
 ## Remaining roadmap
 
