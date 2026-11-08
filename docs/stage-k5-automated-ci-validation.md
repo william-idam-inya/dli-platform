@@ -1,7 +1,6 @@
 # Stage K5 — Automated build and security validation
 
-**Status:** GitHub Actions workflow committed and triggered on the K5 branch.
-The build checks must finish successfully before marking this stage validated.
+**Status:** GitHub Actions workflow committed and its first two full execution runs **passed** on the K5 branch; no production deployment occurred.
 No production deployment or new paid service is involved.
 
 ## Objective
@@ -50,6 +49,16 @@ On 8 November 2026, the Admin's local PowerShell output showed:
 The production-only `npm.cmd run check:release-env` rejection test,
 actual Cloudflare headers and any production release remain pending.
 
+## GitHub-hosted validation evidence
+
+The first and second K5 CI runs ended in success. The second job's complete
+step list was inspected: all dependency, source, TypeScript, build,
+artifact scan, static-header and release-denial steps passed.
+Subsequent documentation-only pushes can start new runs (earlier runs
+may be cancelled by the configured concurrency policy). Treat only a
+completed successful run on the **current head commit** as current
+validation for a future release, not an older branch run.
+
 ## Required before any real learner launch
 
 - Confirm CI passes on the branch and protect the eventual release
@@ -71,7 +80,7 @@ actual Cloudflare headers and any production release remain pending.
 ## Validation status
 
 - [x] Workflow committed to Stage K5 feature branch.
-- [ ] Workflow completed successfully on GitHub.
+- [x] The workflow completed successfully on GitHub in full runs [#1](https://github.com/william-idam-inya/dli-platform/actions/runs/42500674829) and [#2](https://github.com/william-idam-inya/dli-platform/actions/runs/42500750540). All steps, including `dist/_headers` and deliberate rejection of an unapproved production release, passed.
 - [ ] Actual permitted production origin and Supabase project approved.
 - [ ] Production deployment and Auth/Storage acceptance verified.
 - [ ] Real accounts and learner privacy launch requirements accepted.
