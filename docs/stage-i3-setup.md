@@ -1,8 +1,6 @@
 # Stage I3 — Founder-controlled institutional group-link settings
 
-**Status:** implemented and database-tested in the private DLI
-development project. Windows TypeScript/build, Admin page screenshot
-and full Founder-browser acceptance remain pending.
+**Status:** implemented and database-tested in the private DLI development project. **Windows TypeScript and Vite production build passed** on 8 November 2026 (2,153 modules transformed); Admin Settings screenshots show 0 configured links, read-only Admin access, and disabled publication. Real Founder browser and alternate-role acceptance remain pending.
 
 **Branch:** `feature/stage-i3-settings`, stacked on
 `feature/stage-i2-role-scoped-operational-overview`.
@@ -86,8 +84,8 @@ All role-edit tests ran inside rollback-only transactions:
 - [x] Real Admin role remained unchanged.
 - [x] Publication feature flag remains false.
 - [x] Security advisor did not report new I3 findings.
-- [ ] Windows TypeScript and Vite production build.
-- [ ] Admin browser view with two unconfigured links.
+- [x] Windows TypeScript and Vite production build, 2,153 modules transformed, no errors or warnings.
+- [x] Admin browser overview and safeguard screenshots show 0 configured links, read-only Admin status and publication Disabled. Individual link-input visibility is below the first screenshot fold and remains to be separately reviewed.
 - [ ] Actual Founder save/clear test with a non-sensitive,
       institutionally approved invitation.
 - [ ] Real Student/Tutor/Finance Officer route-denial checks.
