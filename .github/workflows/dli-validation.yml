@@ -55,6 +55,9 @@ jobs:
       - name: Verify reviewed migration file integrity
         run: npm run check:migration-integrity
 
+      - name: Verify backup-receipt script self-tests (no backup files)
+        run: npm run check:backup-file-tests
+
       - name: Verify TypeScript
         run: npm run typecheck
 
