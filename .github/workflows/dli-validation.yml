@@ -52,6 +52,9 @@ jobs:
       - name: Verify source-side AI compliance
         run: npm run check:ai-compliance
 
+      - name: Verify reviewed migration file integrity
+        run: npm run check:migration-integrity
+
       - name: Verify TypeScript
         run: npm run typecheck
 
