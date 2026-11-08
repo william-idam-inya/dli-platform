@@ -5,7 +5,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { isDliRole, type Account } from './permissions';
 
-export type AuthState = 'checking' | 'guest' | 'active' | 'config-error';
+export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
 type AuthContextValue = {
   state: AuthState;
   account: Account | null;
@@ -31,26 +31,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setState('checking');
 
-    // getUser revalidates the session with Supabase Auth. Do not trust local session storage as an authority.
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (run !== verification.current) return;
+    // Always revalidate the session and role before exposing the workspace.
+    // Temporary network/API errors are NOT proof of revoked DLI membership.
+    // Fail closed until verification succeeds, but do not destroy the local
+    // session solely because Supabase was unreachable.
+    let user;
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (run !== verification.current) return;
 
-    const user = authData.user;
-    if (authError || !user) {
+      if (authError) {
+        setAccount(null);
+        setState('unavailable');
+        return;
+      }
+      user = authData.user;
+      if (!user) {
+        setAccount(null);
+        setState('guest');
+        return;
+      }
+    } catch {
+      if (run !== verification.current) return;
       setAccount(null);
-      setState('guest');
+      setState('unavailable');
       return;
     }
 
-    const { data: record, error: recordError } = await supabase
-      .from('authorised_users')
-      .select('id,email,full_name,role,status')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
+    let record;
+    try {
+      const { data, error: recordError } = await supabase
+        .from('authorised_users')
+        .select('id,email,full_name,role,status')
+        .eq('auth_user_id', user.id)
+        .maybeSingle();
+      if (run !== verification.current) return;
 
-    if (run !== verification.current) return;
+      if (recordError) {
+        setAccount(null);
+        setState('unavailable');
+        return;
+      }
+      record = data;
+    } catch {
+      if (run !== verification.current) return;
+      setAccount(null);
+      setState('unavailable');
+      return;
+    }
 
-    const authorised = !recordError && record &&
+    const authorised = record &&
       record.status === 'active' &&
       isDliRole(record.role) &&
       !!user.email_confirmed_at &&
