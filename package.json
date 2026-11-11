@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
-    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs",
+    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs && node scripts/verify-paid-learning-plans.mjs",
     "check:bundle-scanner": "node scripts/verify-browser-bundle.mjs --self-test",
     "check:browser-bundle": "node scripts/verify-browser-bundle.mjs",
     "postbuild": "node scripts/verify-browser-bundle.mjs",
@@ -22,7 +22,8 @@
     "check:migration-integrity": "node scripts/verify-migration-integrity.mjs",
     "check:migration-integrity-tests": "node scripts/verify-migration-integrity.mjs --self-test",
     "check:backup-file-tests": "node scripts/verify-backup-files.mjs --self-test",
-    "check:backup-files": "node scripts/verify-backup-files.mjs"
+    "check:backup-files": "node scripts/verify-backup-files.mjs",
+    "check:paid-learning-plans": "node scripts/verify-paid-learning-plans.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
