@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourceTitle": "DLI Paid Learning Plans",
+  "sourceOrganisation": "Detailed Learning Institute – Online",
+  "sourcePages": 2,
+  "currency": "NGN",
+  "state": "internal_reference_only",
+  "effectiveForBilling": false,
+  "automaticCollectionsEnabled": false,
+  "tutorPayoutsEnabled": false,
+  "groupFeeInterpretation": "Student's fee, monthly, as labelled by the document; no payment charge has been activated.",
+  "notes": [
+    "The document does not specify payment due dates, refunds, discounts beyond the named group rate, or invoicing/collection procedures.",
+    "The private plan describes six subjects in the introductory text but its teaching mode specifies two selected subjects. The inconsistency requires a decision before operational use.",
+    "This general DLI paid learning schedule does not silently supersede separately documented programmes such as the JAMB bootcamp."
+  ],
+  "plans": [
+    {
+      "id": "group_5_science",
+      "name": "Group of 5 (Science)",
+      "teachingModel": "Five students in the same class or preparing for the same exam.",
+      "studentCount": 5,
+      "tutors": 3,
+      "subjectsInTeachingMode": 6,
+      "subjectsPerTutor": 2,
+      "learningHoursPerWeek": 6,
+      "teachingHoursPerTutorPerWeek": 2,
+      "studentFeeMonthlyNgn": 25000,
+      "tutorPaymentMonthlyNgn": 20000,
+      "tutorDataAllowanceMonthlyNgn": 2000,
+      "rateLabel": "Group Rate",
+      "ambiguity": null
+    },
+    {
+      "id": "group_10",
+      "name": "Group of 10 Students",
+      "teachingModel": "Ten students in the same class or preparing for the same exam.",
+      "studentCount": 10,
+      "tutors": 3,
+      "subjectsInTeachingMode": 6,
+      "subjectsPerTutor": 2,
+      "learningHoursPerWeek": 6,
+      "teachingHoursPerTutorPerWeek": 2,
+      "studentFeeMonthlyNgn": 15000,
+      "tutorPaymentMonthlyNgn": 20000,
+      "tutorDataAllowanceMonthlyNgn": 2000,
+      "rateLabel": "Discounted Group Rate",
+      "ambiguity": null
+    },
+    {
+      "id": "private_one_to_one",
+      "name": "Completely Private – One Student to One Tutor",
+      "teachingModel": "One tutor teaches two selected subjects; the document's introductory sentence separately says six subjects.",
+      "studentCount": 1,
+      "tutors": 1,
+      "subjectsInTeachingMode": 2,
+      "subjectsPerTutor": 2,
+      "learningHoursPerWeek": 4,
+      "teachingHoursPerTutorPerWeek": 4,
+      "studentFeeMonthlyNgn": 35000,
+      "tutorPaymentMonthlyNgn": 25000,
+      "tutorDataAllowanceMonthlyNgn": null,
+      "rateLabel": "Private 1-on-1 Rate",
+      "ambiguity": "The introduction says six subjects, while the teaching mode says two selected subjects. This has not been resolved.",
+      "originalSchedulingWording": "Each subject 2 hours per day in two days."
+    }
+  ]
+}
