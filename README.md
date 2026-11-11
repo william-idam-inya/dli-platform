@@ -57,6 +57,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K9 hardens Auth outage recovery:** temporary Supabase/Auth query failures now block workspace access while preserving the local session for an explicit secure retry; genuinely unauthorised accounts remain denied and signed out. The development database remains unchanged (37/37 public tables RLS-protected). See `docs/stage-k9-auth-failure-recovery.md`.
 
+**Stage K10 records the supplied DLI Paid Learning Plans as an internal Finance reference:** Group of 5 Science (₦25,000/student-month), Group of 10 (₦15,000/student-month), and Private 1-to-1 (₦35,000/student-month) with corresponding documented tutor compensation. The ambiguous private-plan subject count remains flagged. A build/CI guard checks the rates, and payment activation remains disabled. See `docs/stage-k10-paid-learning-plans.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
