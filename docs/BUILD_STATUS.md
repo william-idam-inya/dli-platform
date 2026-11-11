@@ -818,6 +818,28 @@ or external telemetry were added.
 
 See `docs/stage-k9-auth-failure-recovery.md`.
 
+## Stage K10 — Document-backed DLI Paid Learning Plans (under validation)
+
+The uploaded two-page *DLI Paid Learning Plans* document is recorded
+as a **restricted, read-only Finance reference** with three source-
+matched monthly student rates and associated tutor compensation:
+Group of 5 Science, Group of 10, and Private 1-to-1.
+This does not implement an active subscription or invoice/payment
+system and does not supersede separately documented JAMB bootcamp fees.
+
+The private plan's introduction says six subjects, while its
+teaching mode says two selected subjects. Both are preserved
+and marked unresolved, not silently reconciled. No fee due date,
+refund rule, payment channel or tutor allowance beyond the source
+has been invented.
+
+The values live in `src/data/paidLearningPlans.json` and display
+under existing Finance access restrictions. An automated
+`check:paid-learning-plans` guard verifies figures, flags and
+inactive billing/collection/payout settings in prebuild and CI.
+No production account, fee policy activation or database change
+occurred. See `docs/stage-k10-paid-learning-plans.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
