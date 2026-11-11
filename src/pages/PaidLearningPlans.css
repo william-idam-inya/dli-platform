@@ -1,0 +1,59 @@
+.finance-source-plans { margin: 1.25rem 0; }
+.source-plan-locked {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background: var(--surface-soft, #faf9fd);
+  border: 1px solid var(--border, #ebe9f2);
+  color: var(--text, #27243a);
+  font-size: 0.9rem;
+}
+.source-plan-locked svg { flex-shrink: 0; margin-top: 0.1rem; }
+.source-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr));
+  align-items: stretch;
+  gap: 1rem;
+}
+.source-plan-card {
+  border: 1px solid var(--border, #ebe9f2);
+  border-radius: 14px;
+  background: var(--surface-soft, #faf9fd);
+  padding: 1.15rem;
+  min-width: 0;
+}
+.source-plan-head { display:flex; align-items:start; gap:0.6rem; justify-content:space-between; flex-wrap:wrap; }
+.source-plan-head h3 { margin:0; font-size:1.04rem; }
+.source-plan-head span {
+  display:inline-block;
+  padding:0.3rem 0.5rem;
+  font-size:0.72rem;
+  border-radius:6px;
+  background:var(--purple-soft,#f0edfb);
+  color:var(--purple-dark,#4f38a5);
+}
+.source-plan-description {
+  font-size:0.85rem;
+  color:var(--muted,#77748c);
+  line-height:1.5;
+  min-height:3.5em;
+}
+.source-plan-fee { padding: 0.9rem 0; display:grid; gap:0.35rem; border-top:1px solid var(--border,#ebe9f2); }
+.source-plan-fee span { font-size:0.8rem; color:var(--muted,#77748c); }
+.source-plan-fee strong { font-size:1.5rem; color:var(--text,#27243a); }
+.source-plan-details { margin:0; display:grid; gap:0.65rem; }
+.source-plan-details div { display:grid; gap:0.25rem; padding-top:0.6rem; border-top:1px solid var(--border,#ebe9f2); }
+.source-plan-details dt { font-size:0.78rem; color:var(--muted,#77748c); }
+.source-plan-details dd { margin:0; font-weight:650; overflow-wrap:anywhere; font-size:0.87rem; }
+.source-plan-ambiguity {
+  border-left:3px solid #c48a2c;
+  padding:0.7rem 0.85rem;
+  margin:1rem 0 0;
+  line-height:1.5;
+  font-size:0.83rem;
+  background:var(--surface,#fff);
+}
+.source-plan-footer { margin:1rem 0 0; font-size:0.81rem; line-height:1.55; color:var(--muted,#77748c); }
