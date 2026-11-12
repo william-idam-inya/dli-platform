@@ -302,7 +302,7 @@ export default function DliClassCommunication(){
                 <small>{m.sender_id===uid?'You':m.sender_id===active.student_id?'Student':'Tutor'} · {fmt(m.created_at)}</small>
                 <p>{m.body}</p>
                 {!moderator&&<button type="button" className="dli-report-message" disabled={saving}
-                  onClick={()=>void reportMessage(m)}>Report message</button>
+                  onClick={()=>void reportMessage(m)}>Report message</button>}
               </article>)}
           </div>
           {!moderator&&<form onSubmit={e=>void sendMessage(e)} className="dli-chat-send">
