@@ -7,7 +7,6 @@ import { supabase } from '../lib/supabase';
 const permittedRoles: Partial<Record<DliRole, DliRole[]>> = {
   owner: ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'finance_officer', 'tutor', 'student'],
   admin: ['assistant_admin', 'academic_coordinator', 'finance_officer', 'tutor', 'student'],
-  assistant_admin: ['tutor', 'student'],
 };
 
 type InvitationResult = {
@@ -79,7 +78,7 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
       <div className="module-notice">
         <div className="notice-icon"><ShieldCheck size={20}/></div>
         <div>
-          <strong>Administrator-only invitation workflow</strong>
+          <strong>Founder / Admin invitation workflow</strong>
           <p>Your account is checked against the DLI database before the server generates a link.
             Only the server can create authorised registry entries. This page does not email or
             message a recipient automatically.</p>
@@ -88,7 +87,7 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
 
       <section className="panel invite-panel">
         <h2>New invitation</h2>
-        <p className="auth-intro">The email and role must be approved. An invitation is created in the development environment only.</p>
+        <p className="auth-intro">The Founder or Admin must approve each email and assign its role before the person can enter DLI. The recipient then verifies the invitation and completes their personal profile.</p>
         {error && <p className="auth-feedback error" role="alert">{error}</p>}
         <form className="auth-form" onSubmit={submit}>
           <label htmlFor="invite-name">Full name</label>
