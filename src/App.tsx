@@ -18,6 +18,7 @@ const AcademicRelationsPage = lazy(() => import('./pages/AcademicRelationsPage')
 const AcademicAssignmentsPage = lazy(() => import('./pages/AcademicAssignmentsPage'));
 const ClassesWorkspacePage = lazy(() => import('./pages/ClassesWorkspacePage'));
 const LearningPage = lazy(() => import('./pages/LearningPage'));
+const LearningHubPage = lazy(() => import('./pages/LearningHubPage'));
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
 const QuizPage = lazy(() => import('./pages/QuizPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
@@ -65,6 +66,7 @@ function Workspace() {
         <Route path="/classes" element={<AllowedArea path="/classes"><ClassesWorkspacePage /></AllowedArea>} />
         <Route path="/my-classes" element={<Navigate to="/classes" replace />} />
         <Route path="/private-classes" element={<Navigate to="/classes?tab=payments" replace />} />
+        <Route path="/study" element={<AllowedArea path="/study"><LearningHubPage /></AllowedArea>} />
         <Route path="/learning" element={<AllowedArea path="/learning"><LearningPage /></AllowedArea>} />
         <Route path="/assessments" element={<AllowedArea path="/assessments"><AssessmentPage /></AllowedArea>} />
         <Route path="/quizzes" element={<AllowedArea path="/quizzes"><QuizPage /></AllowedArea>} />
@@ -82,7 +84,7 @@ function Workspace() {
         <Route path="/reports" element={<AllowedArea path="/reports"><OperationalReportsPage /></AllowedArea>} />
         <Route path="/settings" element={<AllowedArea path="/settings"><InstitutionalSettingsPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/classes' && item.path !== '/my-classes' && item.path !== '/private-classes' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/drafts' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
+          item.path !== '/' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/classes' && item.path !== '/my-classes' && item.path !== '/private-classes' && item.path !== '/study' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/drafts' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
