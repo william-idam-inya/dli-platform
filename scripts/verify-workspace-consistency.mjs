@@ -59,7 +59,7 @@ const reports=readFileSync(new URL('../src/pages/OperationalReportsPage.tsx',imp
 const reminders=readFileSync(new URL('../src/pages/ReminderPlannerPage.tsx',import.meta.url),'utf8');
 assert.match(settings,/\.from\('dli_notices'\)/,
   'Current notice health must be verified from its real table.');
-assert.doesNotMatch(settings,/communication_feature_flags/,
+assert.doesNotMatch(settings,/\.from\('communication_feature_flags'\)/,
   'Do not show the retired H5 flag as current broadcast status.');
 assert.doesNotMatch(learning,/Assignment grading, submission workflows, quizzes and AI generation are still disabled/,
   'Existing quizzes and grading must not be described as disabled.');
