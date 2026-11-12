@@ -13,7 +13,7 @@ existing pre-authorised accounts and prior data.
 | Strict Founder/Admin/Assistant Admin/Tutor/Free/Paid Student access | Implemented with a shared `student` role and database `free/paid` entitlement; legacy Finance Officer and Academic Coordinator role values still exist for migration compatibility | RLS + client route checks; independent real-role negative tests outstanding |
 | Invite-only login and mandatory profile | Implemented in Q1 | Supabase invitation/auth registry checks, verified email, name, birthdate, required image; no working production SMTP configured |
 | Free-to-Paid subject request and approval | Implemented in Q1, hardened in Q2 | Receipt evidence requires manual bank-credit verification; Q2 broadcasts entitlement changes for client revalidation; no bank transfer automatically confirmed |
-| Admin/Assistant Admin class assignments | Implemented in Q1 | Weekday, time, tutor, start date, class type, class grouping, subjects and Google Meet; client roster updates use multiple writes and can partially complete if interrupted |
+| Admin/Assistant Admin class assignments | Implemented in Q1, made transactional in Q2 | Weekday, time, tutor, start date, class type, class grouping, subjects and Google Meet; the class and membership changes now commit or fail as one authenticated database transaction |
 | Start-date tutor payroll | Implemented in Q1, hardened in Q2 | Live assignment snapshot, documented reference rates, overrides, due/overdue/paid, due-date calculation and independent recorded payment confirmation; Q2 adds durable history for archived classes and periodically refreshes statuses |
 | Settings dashboard | Implemented in part, improved in Q2 | Q2 adds **paid-enrolment applications open/paused** operational switch, with database-enforced control available to Founder/Admin/Assistant Admin. Additional settings need individual operational definitions |
 | Role-specific feedback | Implemented in P2/Q1 | Founder/Admin/Assistant Admin review-only inbox; Tutors/Students report categories and class issues |
@@ -48,6 +48,14 @@ existing pre-authorised accounts and prior data.
   role/tier refresh. This is a **notification**, never an
   independent source of role authority. Focus/reopen still
   triggers the existing access recheck.
+- `20261112064750_stage_q2e_atomic_class_rosters.sql` exposes
+  `dli_save_teaching_class` as a **SECURITY INVOKER** RPC requiring
+  active Admin or Assistant Admin permission. It saves the teaching
+  class and its complete, validated Student roster in one database
+  transaction, preserving existing RLS, scheduling and roster
+  triggers. A failed roster operation rolls back the entire edit.
+  Publishing a newly-created Free Demo remains a separate
+  deliberate operation, with a saved draft if publication fails.
 - Q2 frontend fixes restore cleanup of a failed enrolment
   receipt registration using the already-scoped private
   Storage policy; reflect the live admission setting in the
@@ -59,7 +67,7 @@ existing pre-authorised accounts and prior data.
 - [x] Existing Q1 CI passed at its latest commit.
 - [x] All Q2 migration SQL was validated in rollback-only
       transactions before application to development.
-- [x] 73 migrations applied and mirrored with reviewed hashes
+- [x] 74 migrations applied and mirrored with reviewed hashes
       in the GitHub integrity manifest.
 - [x] Payroll cycle function verified:
       11/12/13 November 2026 → 11/12/13 December 2026;
@@ -117,7 +125,7 @@ separately authorised production project.
 Recommended deployment after gates:
 1. Allocate production Supabase project and encrypted backup
    and restore procedure.
-2. Apply the 73 reviewed migrations in order, then compare
+2. Apply the 74 reviewed migrations in order, then compare
    schema/RLS and storage buckets.
 3. Configure email templates, production SMTP, Supabase Auth
    Site URL and allowed redirects, secret management and
