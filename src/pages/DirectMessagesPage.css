@@ -42,3 +42,7 @@
 .dli-direct-oversight-note{display:flex;gap:.5rem;align-items:center;padding:1rem;margin:0;font-size:.82rem;color:var(--muted)}
 .dli-direct-page button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:750px){.dli-direct-layout{grid-template-columns:1fr}.dli-direct-sidebar{max-height:320px}.dli-direct-message-list{max-height:360px}.dli-direct-thread{min-height:420px}}
+
+.dli-direct-section-tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+.dli-direct-section-tabs button{font:inherit;font-size:.87rem;font-weight:750;padding:.7rem 1rem;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);cursor:pointer}
+.dli-direct-section-tabs button.selected{background:var(--purple);color:#fff;border-color:var(--purple)}
