@@ -44,7 +44,8 @@ function updatedLabel(value:string):string{
 export default function InstitutionalSettingsPage(){
   const {account}=useAuth();
   const isFounder=account?.role==='owner';
-  const canView=account?.role==='owner'||account?.role==='admin';
+  const mayViewGroupLinks=account?.role==='owner'||account?.role==='admin';
+  const canView=mayViewGroupLinks||account?.role==='assistant_admin';
   const [links,setLinks]=useState<GroupSetting[]>([]);
   const [inputs,setInputs]=useState<Record<SettingKey,string>>(EMPTY);
   const [publicationFlag,setPublicationFlag]=useState<ApprovalFlag|null>(null);
@@ -66,9 +67,9 @@ export default function InstitutionalSettingsPage(){
     setNotice(null);
     try{
       const [groupResult,flagResult]=await Promise.all([
-        client.from('institutional_group_links')
+        mayViewGroupLinks?client.from('institutional_group_links')
           .select('setting_key,display_label,invite_url,updated_at')
-          .order('setting_key'),
+          .order('setting_key'):Promise.resolve({data:[] as GroupSetting[],error:null}),
         client.from('communication_feature_flags')
           .select('key,enabled,reason')
           .eq('key','in_app_publication').maybeSingle(),
@@ -90,7 +91,7 @@ export default function InstitutionalSettingsPage(){
       setLinks([]);setPublicationFlag(null);setFlagUnverified(true);
       setError('Unable to reach Supabase. Governance status cannot be verified.');
     }finally{setLoading(false);}
-  },[canView]);
+  },[canView,mayViewGroupLinks]);
 
   useEffect(()=>{void refresh();},[refresh]);
 
@@ -149,7 +150,7 @@ export default function InstitutionalSettingsPage(){
       <div className="notice-icon"><ShieldCheck size={20}/></div>
       <div>
         <strong>Only the Founder can change institutional group links</strong>
-        <p>The Admin may inspect existing configuration without changing it.
+        <p>The Admin may inspect existing configuration without changing it. Assistant Admin can inspect read-only release safeguards, but not private group invitations.
           Links are kept in PostgreSQL under role-based access policies.
           Saving a group invitation does not invite or enrol anyone,
           publish announcements, authorise fees or send a message.</p>
@@ -159,8 +160,8 @@ export default function InstitutionalSettingsPage(){
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
     <div className="institutional-settings-summary">
-      <div><Users size={20}/><strong>{loading?'…':configuredCount}</strong>
-        <span>Group invitations configured</span></div>
+      {mayViewGroupLinks&&<div><Users size={20}/><strong>{loading?'…':configuredCount}</strong>
+        <span>Group invitations configured</span></div>}
       <div><LockKeyhole size={20}/>
         <strong>{isFounder?'Founder':'Read only'}</strong>
         <span>Your setting access</span></div>
@@ -170,13 +171,13 @@ export default function InstitutionalSettingsPage(){
     </div>
 
     <div className="institutional-settings-actions">
-      <p>Institutional links are not publicly exposed by this settings page.</p>
+      <p>Institutional links are not publicly exposed here. Settings shown depend on your authorised DLI role.</p>
       <button type="button" className="user-outline-button"
         disabled={loading||saving!==null}
         onClick={()=>{void refresh();}}><RefreshCw size={16}/> Refresh settings</button>
     </div>
 
-    <section className="panel institutional-settings-links">
+    {mayViewGroupLinks&&<section className="panel institutional-settings-links">
       <div className="panel-heading">
         <div><p className="section-kicker">01 · OWNER-CONTROLLED LINKS</p>
           <h2>DLI–Scholars Club group invitations</h2>
@@ -216,7 +217,7 @@ export default function InstitutionalSettingsPage(){
       {!isFounder&&<p className="institutional-settings-readonly">
         <LockKeyhole size={15}/> Your Admin account has read-only access.
         A separate Founder account must configure or clear these links.</p>}
-    </section>
+    </section>}
 
     <section className="panel institutional-settings-governance">
       <div className="panel-heading"><div>
