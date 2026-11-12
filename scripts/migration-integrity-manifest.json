@@ -295,6 +295,10 @@
     {
       "file": "20261112064031_stage_q2d_student_entitlement_realtime.sql",
       "gitBlobSha1": "02e191d7cd86123b26d50b7979c4d628cfaddf4f"
+    },
+    {
+      "file": "20261112064750_stage_q2e_atomic_class_rosters.sql",
+      "gitBlobSha1": "a2eafeb8599c9542064d5fdfa151ca5c71296d22"
     }
   ]
 }
