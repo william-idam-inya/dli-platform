@@ -239,6 +239,10 @@
     {
       "file": "20261112040338_stage_n2a_message_report_thread_links.sql",
       "gitBlobSha1": "b230202d849317f5cb001c093a7fd1209f7d1bcf"
+    },
+    {
+      "file": "20261112041420_stage_p1_peer_messaging_and_class_support_categories.sql",
+      "gitBlobSha1": "29250800c489e19b6da7c0d88c68ba8a849a82d9"
     }
   ]
 }
