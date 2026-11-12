@@ -10,6 +10,7 @@ type MemberRow={class_id:string;student_id:string;student_name:string;is_active:
 type Contact={user_id:string;phone_e164:string;share_with_assigned:boolean;student_contact_approved:boolean;student_messaging_approved:boolean;member_role:'student'|'tutor'};
 type Message={id:string;class_id:string;student_id:string;sender_id:string;body:string;created_at:string};
 type Seen={class_id:string;student_id:string;seen_at:string};
+type ChatReport={id:string;message_id:string;class_id:string;student_id:string;reason:string;details:string;status:'open'|'reviewed';created_at:string};
 type Thread={key:string;class_id:string;student_id:string;student_name:string;subject:string;tutor_name:string;tutor_id:string};
 const canModerate=(role:string)=>role==='owner'||role==='admin';
 const fmt=(value:string)=>new Intl.DateTimeFormat('en-NG',{
@@ -30,6 +31,7 @@ export default function DliClassCommunication(){
   const [seen,setSeen]=useState<Seen[]>([]);
   const [messageHeads,setMessageHeads]=useState<Omit<Message,'body'>[]>([]);
   const [conversation,setConversation]=useState<Message[]>([]);
+  const [reports,setReports]=useState<ChatReport[]>([]);
   const [selected,setSelected]=useState('');
   const [draft,setDraft]=useState('');
   const [phone,setPhone]=useState('');
@@ -42,7 +44,7 @@ export default function DliClassCommunication(){
   const refresh=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [identity,cs,ms,ct,rd,heads]=await Promise.all([
+      const [identity,cs,ms,ct,rd,heads,flagged]=await Promise.all([
         supabase.auth.getUser(),
         supabase.from('teaching_classes').select('id,subject_name,tutor_id,tutor_name,state').eq('state','published').limit(300),
         supabase.from('teaching_class_members').select('class_id,student_id,student_name,is_active,class_is_published').eq('is_active',true).limit(2000),
@@ -51,9 +53,12 @@ export default function DliClassCommunication(){
         supabase.from('dli_chat_reads').select('class_id,student_id,seen_at').limit(500),
         supabase.from('dli_class_messages')
           .select('id,class_id,student_id,sender_id,created_at')
-          .order('created_at',{ascending:false}).limit(500)
+          .order('created_at',{ascending:false}).limit(500),
+        supabase.from('dli_message_reports')
+          .select('id,message_id,class_id,student_id,reason,details,status,created_at')
+          .order('created_at',{ascending:false}).limit(150),
       ]);
-      if(identity.error||!identity.data.user||[cs,ms,ct,rd,heads].some(x=>x.error)){
+      if(identity.error||!identity.data.user||[cs,ms,ct,rd,heads,flagged].some(x=>x.error)){
         setError('Could not load the authorised communication directory. Please retry.');return;
       }
       setUid(identity.data.user.id);
@@ -62,6 +67,7 @@ export default function DliClassCommunication(){
       setContacts((ct.data??[]) as Contact[]);
       setSeen((rd.data??[]) as Seen[]);
       setMessageHeads((heads.data??[]) as Omit<Message,'body'>[]);
+      setReports((flagged.data??[]) as ChatReport[]);
       const own=(ct.data??[] as Contact[]).find(c=>c.user_id===identity.data.user.id);
       if(own){setPhone(own.phone_e164);setShare(own.share_with_assigned);}
       setError(null);
@@ -162,6 +168,36 @@ export default function DliClassCommunication(){
     else{setNotice('Safeguarding permission updated. Changes affect subsequent protected requests.');await refresh();}
     setSaving(false);
   }
+  async function reportMessage(message:Message){
+    if(!supabase||moderator||saving||!active)return;
+    const reason=window.prompt('Explain briefly why this subject message needs an administrator’s attention. Do not include passwords or unrelated private details.','');
+    if(reason===null)return;
+    if(!reason.trim()||reason.trim().length>500){setError('Enter a reason of 1–500 characters.');return;}
+    setSaving(true);setError(null);setNotice(null);
+    try{
+      const res=await supabase.from('dli_message_reports').insert({
+        message_id:message.id,class_id:active.class_id,student_id:active.student_id,
+        reason:'other',details:reason.trim(),
+      }).select('id').maybeSingle();
+      if(res.error||!res.data){setError('Report not accepted, or the message was already reported from your account.');return;}
+      setNotice('Your concern is stored for restricted administrative review. For immediate safety risks, contact DLI administration directly.');
+      await refresh();
+    }catch{setError('Could not verify that the report was submitted.');}
+    finally{setSaving(false);}
+  }
+  async function markReportReviewed(report:ChatReport){
+    if(!supabase||!moderator||saving)return;
+    if(!window.confirm('Mark this message report reviewed? The original message remains on record.'))return;
+    setSaving(true);setError(null);setNotice(null);
+    try{
+      const res=await supabase.from('dli_message_reports').update({status:'reviewed'})
+        .eq('id',report.id).select('id').maybeSingle();
+      if(res.error||!res.data){setError('The report could not be marked reviewed.');return;}
+      setNotice('Report review recorded in the audit trail.');await refresh();
+    }catch{setError('Could not confirm the report status.');}
+    finally{setSaving(false);}
+  }
+
   async function sendMessage(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(!supabase||!active||!uid||saving||!approved||moderator)return;
@@ -218,6 +254,23 @@ export default function DliClassCommunication(){
         {!contacts.some(c=>c.member_role==='student')&&<p>No student contact cards submitted yet.</p>}
       </div>
     </section>}
+    {moderator&&<section className="dli-approval-section">
+      <h3><ShieldCheck size={17}/> Reported messages ({reports.filter(r=>r.status==='open').length} open)</h3>
+      <p>Reports are restricted to authorised staff. Review the original class thread;
+        reporting does not delete evidence or automatically suspend a participant.</p>
+      <div className="dli-approval-list">
+        {reports.map(r=><div className="dli-approval-card" key={r.id}>
+          <strong>{r.status==='open'?'Needs review':'Reviewed'}</strong>
+          <small>{roster.find(m=>m.student_id===r.student_id)?.student_name??'Student'}
+            {' · '+r.reason+' · '+fmt(r.created_at)}</small>
+          <span>{r.details}</span>
+          <button type="button" onClick={()=>setSelected(r.class_id+'|'+r.student_id)}>Open thread</button>
+          {r.status==='open'&&<button type="button" disabled={saving}
+            onClick={()=>void markReportReviewed(r)}>Mark reviewed</button>}
+        </div>)}
+        {!reports.length&&<p>No message reports have been submitted.</p>}
+      </div>
+    </section>}
     <div className="dli-chat-layout">
       <div className="dli-thread-list" aria-label="Subject conversations">
         <h3><MessageCircle size={16}/> Subject threads {totalUnread>0?'('+totalUnread+' unread)':''}</h3>
@@ -248,6 +301,8 @@ export default function DliClassCommunication(){
               conversation.map(m=><article className={m.sender_id===uid?'mine':'theirs'} key={m.id}>
                 <small>{m.sender_id===uid?'You':m.sender_id===active.student_id?'Student':'Tutor'} · {fmt(m.created_at)}</small>
                 <p>{m.body}</p>
+                {!moderator&&<button type="button" className="dli-report-message" disabled={saving}
+                  onClick={()=>void reportMessage(m)}>Report message</button>
               </article>)}
           </div>
           {!moderator&&<form onSubmit={e=>void sendMessage(e)} className="dli-chat-send">
