@@ -1,17 +1,19 @@
 // Stage Q3: local-only role navigation regressions. No database, login or payment activity.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import ts from 'typescript';
+import { stripTypeScriptTypes } from 'node:module';
 
+// TypeScript 7 no longer exposes the JavaScript compiler API. Node 22's
+// erasable-type stripping evaluates the *actual* permission implementation
+// without a second dependency or a hand-maintained copy of the role matrix.
+// npm run typecheck separately checks the TypeScript source.
 const tsSource = readFileSync(new URL('../src/auth/permissions.ts', import.meta.url), 'utf8');
-const compiled = ts.transpileModule(tsSource, {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-  reportDiagnostics: true,
+const executableSource = stripTypeScriptTypes(tsSource, {
+  mode: 'strip',
+  sourceUrl: 'permissions.ts',
 });
-const errors = (compiled.diagnostics ?? []).filter(d => d.category === ts.DiagnosticCategory.Error);
-assert.equal(errors.length, 0, 'permissions.ts must transpile cleanly');
 const { DLI_ROLES, isDliRole, canAccessPath, accountRoleLabel } = await import(
-  'data:text/javascript;base64,' + Buffer.from(compiled.outputText).toString('base64')
+  'data:text/javascript;base64,' + Buffer.from(executableSource).toString('base64')
 );
 assert.equal(new Set(DLI_ROLES).size, DLI_ROLES.length, 'unique registry roles');
 for (const role of DLI_ROLES) {
