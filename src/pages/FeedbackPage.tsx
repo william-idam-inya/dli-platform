@@ -3,6 +3,7 @@ import { CheckCircle2, Clock3, LockKeyhole, MessageSquareText, RefreshCw, Send, 
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { useSearchParams } from 'react-router-dom';
 import './FeedbackPage.css';
 
 type Category = 'bug' | 'suggestion' | 'learning_support' | 'other'
@@ -58,6 +59,7 @@ function categoryName(value:Category):string {
 
 export default function FeedbackPage() {
   const {account}=useAuth();
+  const [params]=useSearchParams();
   const staff=Boolean(account&&reviewers.has(account.role));
   const [items,setItems]=useState<Feedback[]>([]);
   const [category,setCategory]=useState<Category>('bug');
@@ -80,7 +82,10 @@ export default function FeedbackPage() {
     try{
       const classResponse=await client.from('teaching_classes')
         .select('id,subject_name,weekday,starts_at').order('subject_name').limit(200);
-      setClasses(classResponse.error?[]:(classResponse.data??[]));
+      const available=classResponse.error?[]:(classResponse.data??[]);
+      setClasses(available);
+      const requested=params.get('class')??'';
+      if(requested&&available.some(c=>c.id===requested))setClassId(old=>old||requested);
       const {data,error:loadError}=await client.from('member_feedback')
         .select('id,submitted_by,submitted_role,category,class_id,message,status,created_at,updated_at')
         .order('created_at',{ascending:false}).limit(100);
@@ -95,7 +100,7 @@ export default function FeedbackPage() {
       setItems([]);
       setError('A network error prevented the feedback list from loading.');
     }finally{setLoading(false);}
-  },[account?.id]);
+  },[account?.id,params]);
 
   useEffect(()=>{void refresh();},[refresh]);
 
@@ -221,7 +226,7 @@ export default function FeedbackPage() {
                 <strong>{categoryName(item.category)}</strong>
                 <small>Reported {when(item.created_at)}
                   {staff?' · '+(roleLabels[item.submitted_role]??'DLI member'):''}
-                  {item.class_id?' · Linked class report':''}</small>
+                  {item.class_id?' · '+(classes.find(c=>c.id===item.class_id)?.subject_name??'Linked class'):''}</small>
               </div>
               <span className={'feedback-status feedback-status-'+item.status}>
                 {item.status==='resolved'&&<CheckCircle2 size={14}/>}
