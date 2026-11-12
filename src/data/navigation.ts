@@ -76,6 +76,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Academic',
       },
       {
+        label: 'Private 1-to-1 classes',
+        path: '/private-classes',
+        icon: CalendarClock,
+        description: 'Individual student fees, verified transfer proofs and tutor-linked recurring subject sessions.',
+        group: 'Academic',
+      },
+      {
         label: 'My classes',
         path: '/my-classes',
         icon: GraduationCap,
