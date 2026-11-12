@@ -67,6 +67,9 @@ jobs:
       - name: Verify programme, academic level and unique subject selection (no network)
         run: npm run check:enrolment-catalogue
 
+      - name: Verify all role dashboards, navigation and learning-area consistency (no network)
+        run: npm run check:workspace-consistency
+
       - name: Verify TypeScript
         run: npm run typecheck
 
