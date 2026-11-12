@@ -51,6 +51,23 @@ for(const role of DLI_ROLES){
   configurations++;
  }
 }
+// Stale "disabled" descriptions are a product defect: the active broadcast
+// centre uses M1 dli_notices, not the obsolete H5 approval switch.
+const settings=readFileSync(new URL('../src/pages/InstitutionalSettingsPage.tsx',import.meta.url),'utf8');
+const learning=readFileSync(new URL('../src/pages/LearningPage.tsx',import.meta.url),'utf8');
+const reports=readFileSync(new URL('../src/pages/OperationalReportsPage.tsx',import.meta.url),'utf8');
+const reminders=readFileSync(new URL('../src/pages/ReminderPlannerPage.tsx',import.meta.url),'utf8');
+assert.match(settings,/\.from\('dli_notices'\)/,
+  'Current notice health must be verified from its real table.');
+assert.doesNotMatch(settings,/communication_feature_flags/,
+  'Do not show the retired H5 flag as current broadcast status.');
+assert.doesNotMatch(learning,/Assignment grading, submission workflows, quizzes and AI generation are still disabled/,
+  'Existing quizzes and grading must not be described as disabled.');
+assert.match(dashboard,/learning_quizzes/,'Academic dashboard should query visible quiz records.');
+assert.match(reports,/createAggregateCsv/,'Authorised aggregate reporting must remain accessible.');
+assert.match(reminders,/createPersonalReminderIcs/,
+  'Internal reminders must offer private calendar export.');
+
 // Audit literal internal links across every client component and page.
 // This catches a new route-linked UI feature that was never registered in App.
 const routePaths=new Set([...app.matchAll(/<Route path="([^"]+)"/g)].map(m=>m[1]));
