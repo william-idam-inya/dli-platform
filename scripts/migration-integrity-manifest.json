@@ -299,6 +299,10 @@
     {
       "file": "20261112064750_stage_q2e_atomic_class_rosters.sql",
       "gitBlobSha1": "a2eafeb8599c9542064d5fdfa151ca5c71296d22"
+    },
+    {
+      "file": "20261112120651_stage_q3_programme_level_subject_enrolment.sql",
+      "gitBlobSha1": "90a3c602e9a69ce7d575ca16e64442b8864e7f65"
     }
   ]
 }
