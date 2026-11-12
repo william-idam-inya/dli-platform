@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, BookOpen, CalendarClock, ClipboardCheck, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarClock, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, roleLabels } from '../auth/permissions';
@@ -8,13 +8,13 @@ import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
 import './UnifiedDashboard.css';
 
 const actions=[
-  {title:'Classes & timetable',description:'Individual and group subjects, students, tutors and joining links.',path:'/classes',icon:CalendarClock},
-  {title:'Academic catalogue',description:'Approved programmes, levels, subjects and course definitions.',path:'/academics',icon:BookOpen},
-  {title:'People & access',description:'Manage registered accounts, invitations and role permissions.',path:'/users',icon:Users},
-  {title:'Courses & lessons',description:'Course resources, lesson materials and learning activities.',path:'/learning',icon:GraduationCap},
-  {title:'Quizzes & results',description:'Secure class quizzes and saved learning outcomes.',path:'/quizzes',icon:ClipboardCheck},
-  {title:'Finance',description:'Approved rate references and internal finance governance.',path:'/finance',icon:Wallet},
-  {title:'Feedback & support',description:'Report a problem, make a suggestion or review member reports.',path:'/feedback',icon:MessageSquareText},
+  {title:'Classes & timetable',description:'Individual and group classes, tutors, students and joining links.',path:'/classes',icon:CalendarClock},
+  {title:'Academic setup',description:'Institutional programmes, subjects and approved academic structure.',path:'/academics',icon:BookOpen},
+  {title:'Learning & results',description:'Lessons, assignments, quizzes, attendance and learning progress in one place.',path:'/study',icon:GraduationCap},
+  {title:'People & access',description:'Authorised accounts, invitations and delegated role permissions.',path:'/users',icon:Users},
+  {title:'Messages',description:'Direct and subject conversations with safeguarded member contact.',path:'/communications',icon:MessageSquareText},
+  {title:'Finance',description:'Documented rates and internal financial governance.',path:'/finance',icon:Wallet},
+  {title:'Feedback & support',description:'Member reports, support requests and feedback review.',path:'/feedback',icon:MessageSquareText},
 ];
 type TeachingClass={id:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer'};
 
@@ -24,7 +24,10 @@ export default function DashboardPage(){
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
   const isManager=account?.role==='owner'||account?.role==='admin'||account?.role==='academic_coordinator';
-  const available=actions.filter(action=>account&&canAccessPath(account.role,action.path));
+  const available=actions.filter(action=>account&&canAccessPath(account.role,action.path))
+    .map(action=>action.path==='/feedback'&&account&&['owner','admin','assistant_admin'].includes(account.role)
+      ? {...action,title:'Support inbox & reports',description:'Review learner and tutor reports, prioritise concerns and track review status.'}
+      : action);
   const refresh=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);setError(true);return;}
     setLoading(true);
