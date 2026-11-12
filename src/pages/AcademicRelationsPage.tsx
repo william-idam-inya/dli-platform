@@ -186,7 +186,7 @@ export default function AcademicRelationsPage() {
       course_id: currentOfferingCourse,
       programme_id: selectedCohort.programme_id,
       academic_level_id: selectedCohort.academic_level_id,
-    }, 'Course offering saved. Tutor and student assignment are not enabled yet.',
+    }, 'Course offering saved. Open Academic assignments to connect authorised tutors and students.',
     () => setOfferingCourse(''));
   }
 
