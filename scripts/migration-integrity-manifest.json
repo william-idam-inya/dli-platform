@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "purpose": "Baseline of reviewed, applied migration Git blob hashes. Update only after separately reviewing and applying migrations.",
-  "verifiedDate": "2026-11-08",
+  "verifiedDate": "2026-11-12",
   "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
   "entries": [
     {
@@ -159,6 +159,10 @@
     {
       "file": "20261108212538_stage_k7_private_member_feedback.sql",
       "gitBlobSha1": "4465d4cb204d39b54a64beb2d7e8486c4898226f"
+    },
+    {
+      "file": "20261112000214_stage_l1_private_learning_workflow.sql",
+      "gitBlobSha1": "d2a071a84f665559bba078e17a2aab427450f4cd"
     }
   ]
 }
