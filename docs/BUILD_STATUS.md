@@ -974,6 +974,30 @@ linkage is still separately outstanding.
 
 See `docs/stage-p1-academic-simplification-peer-support.md`.
 
+## Stage P3 — Vite parse regression and runtime stability
+
+An unclosed JSX conditional in the P1 class-card report link
+caused the screenshot's `ClassesWorkspacePage.tsx:293:15` Vite
+failure. The affected P1 branch was fixed and GitHub CI passed.
+The newer P2 branch had already carried that correction.
+
+The P3 branch improves several related integration issues: required
+profiles now revalidate on save and unlock without reloading,
+account display themes load from the user's private cloud profile
+and top-bar choices are persisted, the date-of-birth validation
+no longer expires after 12 November 2026, and Assistant Admin sees
+the permitted read-only release safeguards without gaining access
+to protected institutional invitation links. The dashboard now
+links to the consolidated Academic workspaces and an Admin-specific
+Support inbox. **No server-side role delegation was changed.**
+
+This work contains **no database migration** beyond P2's existing
+reviewed history. Static build success does not demonstrate
+authenticated Student/Tutor actions, successful payment receipts,
+real-time messaging or production readiness.
+
+See `docs/stage-p3-runtime-stability.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
