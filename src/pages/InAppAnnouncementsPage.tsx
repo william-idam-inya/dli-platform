@@ -69,7 +69,6 @@ export default function InAppAnnouncementsPage(){
 
   const options=useMemo(()=>people.filter(p=>p.role===target&&p.full_name.toLowerCase().includes(search.trim().toLowerCase())),[people,target,search]);
   const selectable=selection.filter(id=>people.some(p=>p.auth_user_id===id&&p.role===target));
-  const visible=records.filter(active);
   function chooseRole(value:Audience){setTarget(value);setSelection([]);setSearch('');}
   function toggle(id:string,checked:boolean){setSelection(prev=>checked?[...new Set([...prev,id])]:prev.filter(x=>x!==id));}
   async function publish(event:FormEvent<HTMLFormElement>){
@@ -80,10 +79,15 @@ export default function InAppAnnouncementsPage(){
       setError('Use a title of 3–160 characters and a message of 10–3,500 characters.');return;
     }
     if(mode==='selected'&&!selectable.length){setError('Select at least one active Student or Tutor.');return;}
+    if((when==='later'&&!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(postAt))||
+      (expiration==='date'&&!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(expires))){
+      setError('Enter a complete date and time in West Africa Time.');return;
+    }
     const published=when==='now'?new Date():new Date(toUtc(postAt));
     const expiry=expiration==='date'?new Date(toUtc(expires)):null;
     if(!Number.isFinite(published.getTime())||(when==='later'&&published.getTime()<=Date.now())||
-      (expiry&&(!Number.isFinite(expiry.getTime())||expiry.getTime()<=published.getTime()))){
+      (expiration==='date'&&(!expiry||!Number.isFinite(expiry.getTime())))||
+      (expiry&&expiry.getTime()<=published.getTime())){
       setError('Enter a valid future publication time and an optional expiry after that time (WAT).');return;
     }
     if(!window.confirm(mode==='all'
