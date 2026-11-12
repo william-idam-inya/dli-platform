@@ -82,6 +82,9 @@ jobs:
       - name: Verify Q8 approved production staff bootstrap guardrails
         run: npm run check:q8-staff-bootstrap
 
+      - name: Verify Q9 QA-approved academic catalogue mappings
+        run: npm run check:q9-academic-catalogue
+
       - name: Verify TypeScript
         run: npm run typecheck
 
