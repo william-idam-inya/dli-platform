@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Baseline of reviewed, applied migration Git blob hashes. Update only after separately reviewing and applying migrations.",
+  "purpose": "Baseline of reviewed migration Git blob hashes. Initial 74 reviewed/applied on development and production; Q5 entry is production-only, verified via provider-applied migration (requires empty account registry).",
   "verifiedDate": "2026-11-12",
   "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
   "entries": [
@@ -299,6 +299,10 @@
     {
       "file": "20261112064750_stage_q2e_atomic_class_rosters.sql",
       "gitBlobSha1": "a2eafeb8599c9542064d5fdfa151ca5c71296d22"
+    },
+    {
+      "file": "20261112121339_stage_q5_production_admission_closed.sql",
+      "gitBlobSha1": "38f83768c18a8ed9f41ecdc006535be80f45c09d"
     }
   ]
 }
