@@ -162,7 +162,13 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       if(upload.error){setError('Receipt file upload failed. Check its format and your permissions.');return;}
       const {error:e}=await supabase!.from('private_payment_receipts').insert({fee_id:fee.id,object_path:path});
       if(e){
-        setError('The receipt uploaded but its review record was not saved. Contact DLI administration before uploading again.');
+        // Only this student's still-unattached receipt can be removed.
+        // The Storage policy prevents deleting a file when its database
+        // receipt record was committed despite a failed client response.
+        const cleanup=await supabase!.storage.from('dli-payment-proofs').remove([path]);
+        setError(cleanup.error
+          ? 'The receipt record could not be confirmed and the uploaded file could not be cleaned up. Refresh your status and contact DLI administration.'
+          : 'Receipt confirmation failed. An unattached upload was cleaned up where permitted. Refresh your fee status before retrying.');
         return;
       }
       setReceiptFiles(v=>({...v,[fee.id]:null}));setNotice('Receipt submitted for manual verification. This is not confirmation of payment.');
