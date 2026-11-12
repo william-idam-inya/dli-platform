@@ -207,6 +207,10 @@
     {
       "file": "20261112011856_stage_m1g_rls_helper_execution_grants.sql",
       "gitBlobSha1": "b537f82bcc18a8f048f06ca2b0fa6c41453a4645"
+    },
+    {
+      "file": "20261112012213_stage_m1h_student_contact_permission_audit.sql",
+      "gitBlobSha1": "0c265a4b1fcc2f27cb8326ee19efbcbc3e885bfe"
     }
   ]
 }
