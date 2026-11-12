@@ -60,6 +60,12 @@ Development migrations:
   grants the protected relationship predicate the narrow EXECUTE
   permission needed for RLS and makes moderation decisions
   one-way and audit-logged.
+- `20261112035656_stage_n1b_private_messaging_rpc_implementations.sql`:
+  moves the elevated directory and moderation functions to the
+  non-exposed `private` schema; exposed `public` RPCs remain
+  SECURITY INVOKER wrappers. After this correction the only
+  remaining Security Advisor warning is the pre-existing
+  disabled leaked-password protection option.
 
 Existing `dli_class_messages` and consent policies remain in use.
 Existing internal draft records are untouched. The two message data
@@ -86,13 +92,13 @@ notifications and future retention decisions.
 ## Verification and release limits
 
 - [x] N1 migrations applied to development and immutable hashes
-  recorded in the migration-integrity manifest (56 files).
+  recorded in the migration-integrity manifest (57 files).
 - [x] Role-scoped read, insert and reporting policies present.
 - [x] Frontend switches to Messages while drafts remain accessible.
 - [x] Subject chats and direct messages appear under the same
   navigation entry.
 - [x] Automated TypeScript, build and migration integrity CI passed
-  on the N1 code version before this documentation update.
+  on the N1 code with private RPC implementation correction.
 - [ ] Independent signed-in Student/Tutor send, deny, rate-cap,
   suspension, consent, report and moderation tests.
 - [ ] Verifiable notice/guardian protections, moderation operating
