@@ -198,6 +198,10 @@ export default function ClassesWorkspacePage(){
             <input type="search" placeholder="Search students by name…" value={search}
               onChange={e=>setSearch(e.target.value)} aria-label="Search active students"/>
             <p className="classes-selection">{kind(chosen.length)}</p>
+            {chosen.length>0&&<p className="classes-selected-names" aria-live="polite">
+              Selected: {chosen.map(id=>students.find(s=>s.auth_user_id===id)?.full_name??'Unavailable student')
+                .slice(0,8).join(' · ')}{chosen.length>8?' and '+(chosen.length-8)+' more':''}
+            </p>}
             <div className="classes-selection-actions">
               <button type="button" onClick={()=>setChosen(v=>[...new Set([...v,...studentOptions.map(s=>s.auth_user_id)])])}
                 disabled={!studentOptions.length}>Select matching</button>
