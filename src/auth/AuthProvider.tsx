@@ -3,6 +3,7 @@ import {
   type ReactNode,
 } from 'react';
 import { supabase } from '../lib/supabase';
+import { isFilePickerFocused } from './filePickerFocus';
 import { isDliRole, type Account } from './permissions';
 
 export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
@@ -128,7 +129,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const recheck = () => { void refresh(); };
+    const recheck = () => {
+      // The OS file-selection dialog returns focus before React processes
+      // the selected File. Do not unmount the editor at that instant.
+      // All other focus checks, Auth events, and server RLS remain active.
+      if (isFilePickerFocused(document.activeElement)) return;
+      void refresh();
+    };
     const onVisibility = () => {
       if (document.visibilityState === 'visible') recheck();
     };
