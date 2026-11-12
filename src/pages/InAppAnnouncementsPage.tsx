@@ -1,267 +1,237 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  Bell, CheckCircle2, Eye, FileText, LockKeyhole, Pencil,
-  RefreshCw, Send, ShieldCheck, X,
-} from 'lucide-react';
+import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, ShieldCheck, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import type { DliNotice } from '../components/DliNoticeCenter';
 import './AcademicSetupPage.css';
 import './InAppAnnouncementsPage.css';
+import './DliBroadcastComposer.css';
 
-type AudienceRole =
-  | 'student' | 'tutor' | 'academic_coordinator'
-  | 'assistant_admin' | 'finance_officer' | 'admin' | 'owner';
-type Announcement = {
-  id: string; title: string; body: string; audience_role: AudienceRole;
-  status: 'draft' | 'published'; author_id: string;
-  published_by: string | null; published_at: string | null;
-  created_at: string; updated_at: string;
+type Person={auth_user_id:string;full_name:string;role:'student'|'tutor'};
+type Audience='student'|'tutor';
+type Mode='all'|'selected';
+const writers=new Set(['owner','admin','assistant_admin']);
+const fmt=(value:string)=>new Intl.DateTimeFormat('en-NG',{
+  timeZone:'Africa/Lagos',dateStyle:'medium',timeStyle:'short',
+}).format(new Date(value))+' WAT';
+const nowWAT=()=>{
+ const date=new Date(Date.now()+60*60*1000);
+ return date.toISOString().slice(0,16);
 };
-type Editor = { title: string; body: string; audience: AudienceRole };
-const EMPTY: Editor = { title: '', body: '', audience: 'student' };
-const AUTHORS = new Set([
-  'owner','admin','assistant_admin','academic_coordinator','tutor',
-]);
-const ROLES: { value: AudienceRole; label: string }[] = [
-  { value:'student', label:'Students (active Student role only)' },
-  { value:'tutor', label:'Tutors (active Tutor role only)' },
-  { value:'academic_coordinator', label:'Academic Coordinators' },
-  { value:'assistant_admin', label:'Assistant Admins' },
-  { value:'finance_officer', label:'Finance Officers' },
-  { value:'admin', label:'Admins' },
-  { value:'owner', label:'Founder / Owner' },
-];
-const WAT = new Intl.DateTimeFormat('en-NG', {
-  timeZone:'Africa/Lagos', day:'numeric', month:'short', year:'numeric',
-  hour:'2-digit',minute:'2-digit',hour12:true,
-});
-function formatDate(value:string):string{
-  const date=new Date(value);
-  return Number.isNaN(date.getTime())?'Date unavailable':WAT.format(date)+' WAT';
-}
-function roleName(value:AudienceRole):string{
-  return ROLES.find(x=>x.value===value)?.label??value;
-}
+const toUtc=(s:string)=>new Date(s+':00+01:00').toISOString();
+function active(n:DliNotice){return n.status==='live'&&new Date(n.publish_at).getTime()<=Date.now()&&
+ (!n.expires_at||new Date(n.expires_at).getTime()>Date.now());}
+
 export default function InAppAnnouncementsPage(){
   const {account}=useAuth();
-  const authorCanWrite=Boolean(account&&AUTHORS.has(account.role));
-  const isFounder=account?.role==='owner';
-  const [items,setItems]=useState<Announcement[]>([]);
-  const [form,setForm]=useState<Editor>(EMPTY);
-  const [editingId,setEditingId]=useState<string|null>(null);
-  const [filter,setFilter]=useState<'all'|'published'|'draft'>('all');
+  const staff=Boolean(account&&writers.has(account.role));
+  const [records,setRecords]=useState<DliNotice[]>([]);
+  const [people,setPeople]=useState<Person[]>([]);
+  const [target,setTarget]=useState<Audience>('student');
+  const [mode,setMode]=useState<Mode>('all');
+  const [selection,setSelection]=useState<string[]>([]);
+  const [search,setSearch]=useState('');
+  const [title,setTitle]=useState('');
+  const [body,setBody]=useState('');
+  const [when,setWhen]=useState<'now'|'later'>('now');
+  const [postAt,setPostAt]=useState(nowWAT);
+  const [expiration,setExpiration]=useState<'manual'|'date'>('manual');
+  const [expires,setExpires]=useState('');
   const [loading,setLoading]=useState(true);
-  const [publicationEnabled,setPublicationEnabled]=useState(false);
   const [saving,setSaving]=useState(false);
-  const [publishing,setPublishing]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
-
   const refresh=useCallback(async()=>{
-    if(!supabase){setError('Supabase is not configured.');setLoading(false);return;}
+    if(!supabase||!account){setLoading(false);return;}
     setLoading(true);
-    const [records,flags]=await Promise.all([
-      supabase.from('in_app_announcements')
-        .select('id,title,body,audience_role,status,author_id,published_by,published_at,created_at,updated_at')
-        .order('updated_at',{ascending:false}),
-      supabase.from('communication_feature_flags')
-        .select('enabled').eq('key','in_app_publication').maybeSingle(),
-    ]);
-    // Fail closed if flag read is unavailable.
-    setPublicationEnabled(!flags.error&&flags.data?.enabled===true);
-    if(records.error) setError('Announcements could not be loaded. Check your active role and refresh.');
-    else {setItems((records.data??[]) as Announcement[]);setError(null);}
-    setLoading(false);
-  },[]);
-  useEffect(()=>{void refresh();},[refresh]);
+    try{
+      const [notices,members]=await Promise.all([
+        supabase.from('dli_notices')
+          .select('id,title,body,target_role,audience_mode,status,publish_at,expires_at,author_id,created_at')
+          .order('created_at',{ascending:false}).limit(200),
+        staff?supabase.from('authorised_users')
+          .select('auth_user_id,full_name,role').eq('status','active')
+          .in('role',['student','tutor']).order('full_name')
+          :Promise.resolve({data:[],error:null}),
+      ]);
+      if(notices.error||members.error){setError('Could not load authorised announcements or the account list.');return;}
+      setRecords((notices.data??[]) as DliNotice[]);
+      setPeople((members.data??[]) as Person[]);
+      setError(null);
+    }catch{setError('An announcement request failed. Retry after checking your connection.');}
+    finally{setLoading(false);}
+  },[account?.id,staff]);
+  useEffect(()=>{
+    void refresh();
+    const timer=window.setInterval(()=>{void refresh();},30000);
+    return ()=>window.clearInterval(timer);
+  },[refresh]);
 
-  const published=items.filter(x=>x.status==='published');
-  const drafts=items.filter(x=>x.status==='draft');
-  const visible=useMemo(()=>items.filter(x=>filter==='all'||x.status===filter),[items,filter]);
-
-  function beginEdit(item:Announcement){
-    if(!account||item.author_id!==account.id||item.status!=='draft')return;
-    setEditingId(item.id);
-    setForm({title:item.title,body:item.body,audience:item.audience_role});
-    setError(null);setNotice(null);
-  }
-  function cancel(){setEditingId(null);setForm(EMPTY);}
-  async function saveDraft(event:FormEvent<HTMLFormElement>){
+  const options=useMemo(()=>people.filter(p=>p.role===target&&p.full_name.toLowerCase().includes(search.trim().toLowerCase())),[people,target,search]);
+  const selectable=selection.filter(id=>people.some(p=>p.auth_user_id===id&&p.role===target));
+  const visible=records.filter(active);
+  function chooseRole(value:Audience){setTarget(value);setSelection([]);setSearch('');}
+  function toggle(id:string,checked:boolean){setSelection(prev=>checked?[...new Set([...prev,id])]:prev.filter(x=>x!==id));}
+  async function publish(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
-    if(!supabase||!account||!authorCanWrite||saving||publishing)return;
-    const title=form.title.trim(),body=form.body.trim();
-    if(title.length<3||title.length>160||body.length<10||body.length>5000){
-      setError('Enter a title of 3–160 characters and message text of 10–5,000 characters.');
-      return;
+    if(!supabase||!staff||saving)return;
+    const cleanTitle=title.trim(),cleanBody=body.trim();
+    if(cleanTitle.length<3||cleanTitle.length>160||cleanBody.length<10||cleanBody.length>3500){
+      setError('Use a title of 3–160 characters and a message of 10–3,500 characters.');return;
     }
+    if(mode==='selected'&&!selectable.length){setError('Select at least one active Student or Tutor.');return;}
+    const published=when==='now'?new Date():new Date(toUtc(postAt));
+    const expiry=expiration==='date'?new Date(toUtc(expires)):null;
+    if(!Number.isFinite(published.getTime())||(when==='later'&&published.getTime()<=Date.now())||
+      (expiry&&(!Number.isFinite(expiry.getTime())||expiry.getTime()<=published.getTime()))){
+      setError('Enter a valid future publication time and an optional expiry after that time (WAT).');return;
+    }
+    if(!window.confirm(mode==='all'
+      ?'Create this in-app announcement for all active '+target+' accounts?'
+      :'Create this in-app announcement for '+selectable.length+' selected '+target+' account(s)?'))return;
     setSaving(true);setError(null);setNotice(null);
-    const payload={title,body,audience_role:form.audience};
-    const result=editingId
-      ?await supabase.from('in_app_announcements')
-        .update(payload).eq('id',editingId).eq('author_id',account.id).eq('status','draft')
-        .select('id').maybeSingle()
-      :await supabase.from('in_app_announcements')
-        .insert(payload).select('id').maybeSingle();
-    if(result.error||!result.data){
-      setError('Draft was not saved. Check your current role and author-only editing rights.');
-    }else{
-      cancel();setNotice('Private announcement draft saved. Nothing was published or sent.');
+    try{
+      const result=await supabase.from('dli_notices').insert({
+        title:cleanTitle,body:cleanBody,target_role:target,audience_mode:mode,
+        publish_at:published.toISOString(),expires_at:expiry?.toISOString()??null,
+      }).select('id').single();
+      if(result.error||!result.data){setError('Announcement draft could not be saved.');return;}
+      const id=result.data.id;
+      if(mode==='selected'){
+        const batch=await supabase.from('dli_notice_recipients').insert(
+          selectable.map(user_id=>({notice_id:id,user_id})));
+        if(batch.error){setError('Draft saved but recipients were not attached. Nothing was published. Please review the draft before retrying.');await refresh();return;}
+      }
+      const activated=await supabase.from('dli_notices').update({status:'live'}).eq('id',id)
+        .select('id').maybeSingle();
+      if(activated.error||!activated.data){
+        setError('Notice saved as a draft but could not be activated. No audience has been notified.');
+        await refresh();return;
+      }
+      setNotice(when==='now'?'The in-app announcement is now available to its audience.':
+        'Announcement scheduled. It will appear automatically at its WAT publication time while the app is open or upon next login.');
+      setTitle('');setBody('');setSelection([]);setMode('all');setWhen('now');setExpiration('manual');setExpires('');
       await refresh();
-    }
-    setSaving(false);
+    }catch{setError('The request was interrupted. Refresh the drafts before submitting again.');}
+    finally{setSaving(false);}
   }
-
-  async function publish(item:Announcement){
-    if(!supabase||!account||!isFounder||!publicationEnabled||saving||publishing||
-       item.status!=='draft'||item.author_id===account.id)return;
-    if(!window.confirm(
-      'Publish this exact announcement INSIDE DLI to every currently authorised user with the selected role? '+
-      'This action is not reversible in Stage H5 and cannot be interpreted as sending an email, WhatsApp, SMS or push notification.'
-    ))return;
-    setPublishing(item.id);setError(null);setNotice(null);
-    const {data,error:writeError}=await supabase.from('in_app_announcements')
-      .update({status:'published'})
-      .eq('id',item.id).eq('status','draft').neq('author_id',account.id)
-      .select('id').maybeSingle();
-    if(writeError||!data){
-      setError('Publication was not accepted. Only the independent Founder can publish an unchanged draft.');
-    }else{
-      setNotice('Announcement published inside DLI to its authorised role. No email, WhatsApp or push message was sent.');
+  async function changeStatus(n:DliNotice,status:'live'|'withdrawn'){
+    if(!supabase||!staff||saving)return;
+    if(!window.confirm(status==='withdrawn'?'Withdraw this notice from the audience?':
+      'Activate this saved draft using its original audience and schedule?'))return;
+    setSaving(true);setError(null);setNotice(null);
+    try{
+      const response=await supabase.from('dli_notices').update({status}).eq('id',n.id)
+        .select('id').maybeSingle();
+      if(response.error||!response.data){setError('The status change was not accepted; check its recipients and dates.');return;}
+      setNotice(status==='withdrawn'?'Notice withdrawn. It will disappear from active member feeds.':'Draft activated with its existing audience.');
       await refresh();
-    }
-    setPublishing(null);
+    }catch{setError('Could not confirm the notice status change. Refresh.');}
+    finally{setSaving(false);}
   }
-
-  return <div className="module-page in-app-notice-page">
+  return <div className="module-page dli-broadcast-page">
     <div className="module-page-hero">
       <span className="module-page-icon"><Bell size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
-        <h1>In-app announcements</h1>
-        <p>View approved DLI notices and prepare new role-scoped drafts.</p>
-      </div>
-      <span className="module-status"><span/> Stage H5</span>
-    </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>In-app publication is gated by explicit institutional approval</strong>
-        <p>Saving a draft does not notify anyone. Publication is currently
-          {publicationEnabled?' enabled for the independent Founder to review and publish.'
-            :' disabled until DLI institutional approval is recorded.'}
-          {' '}Students can see only separately published notices intended for Students.
-          No email, WhatsApp, SMS, push notification or external message is sent.
-          No background scheduler or delivery receipt exists.</p>
+        <div className="eyebrow"><span className="eyebrow-line"/> DLI COMMUNICATION</div>
+        <h1>Announcements</h1>
+        <p>{staff?'Broadcast to all or selected Tutors/Students, immediately or on a schedule.':
+          'Read the announcements currently intended for your DLI account.'}</p>
       </div>
     </div>
+    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
+      <strong>Targeted internal notices, with administrative oversight</strong>
+      <p>Only the Founder, Admin and Assistant Admin can publish or withdraw notices.
+        All three can review notices regardless of the selected audience. The Student/Tutor audience
+        sees only announcements addressed to them and active within their scheduled dates.
+        No SMS, email, WhatsApp or device push is sent.</p>
+    </div></div>
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
-    <div className="in-app-notice-summary">
-      <div><Eye size={19}/><strong>{items.length}</strong><span>Notices accessible to your role</span></div>
-      <div><CheckCircle2 size={19}/><strong>{published.length}</strong><span>Visible published notices</span></div>
-      <div><LockKeyhole size={19}/><strong>{drafts.length}</strong><span>Private drafts accessible to your role</span></div>
-    </div>
-    <div className="academic-top-actions">
-      <p role="status">{loading?'Loading authorised in-app notices…'
-        :'Live DLI development notice records · no external delivery'}</p>
-      <button className="user-outline-button" type="button"
-        disabled={loading||saving||Boolean(publishing)}
-        onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
-    </div>
-    {authorCanWrite&&<section className="panel in-app-notice-editor">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">01 · DRAFT PREPARATION</p>
-        <h2>{editingId?'Edit your unpublished draft':'Prepare a private announcement'}</h2>
-        <p className="user-caption">No public audience is contacted by saving this form.
-          A separate Founder account must approve publication.</p>
+    {staff&&<section className="panel dli-broadcast-composer">
+      <div className="panel-heading"><div><p className="section-kicker">NEW IN-APP ANNOUNCEMENT</p>
+        <h2>Choose the audience and posting window</h2>
+        <p className="user-caption">Create one announcement at a time. Scheduled notices are not visible before their publication time.</p>
       </div></div>
-      <form className="academic-form in-app-notice-form"
-        onSubmit={event=>{void saveDraft(event);}}>
-        <label htmlFor="h5-title">Announcement title</label>
-        <input id="h5-title" required minLength={3} maxLength={160}
-          value={form.title} placeholder="A factual institutional notice title"
-          onChange={event=>setForm({...form,title:event.target.value})}/>
-        <label htmlFor="h5-role">One intended DLI role</label>
-        <select id="h5-role" value={form.audience}
-          onChange={event=>setForm({...form,audience:event.target.value as AudienceRole})}>
-          {ROLES.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
+      <form onSubmit={e=>void publish(e)} className="broadcast-form">
+        <label htmlFor="bc-role">1. Who should receive it?</label>
+        <select id="bc-role" value={target} onChange={e=>chooseRole(e.target.value as Audience)}>
+          <option value="student">Students</option><option value="tutor">Tutors</option>
         </select>
-        <label htmlFor="h5-body">Notice text</label>
-        <textarea id="h5-body" required minLength={10} maxLength={5000} rows={6}
-          value={form.body}
-          placeholder="Enter only authorised DLI content. Avoid individual student information and confidential records."
-          onChange={event=>setForm({...form,body:event.target.value})}/>
-        <p className="academic-code-hint">{form.body.length}/5000 characters.
-          Choose exactly one role. The Founder cannot publish their own draft.
-          Once published, the announcement is immutable in Stage H5.</p>
-        <div className="in-app-notice-actions">
-          <button type="submit" className="academic-submit"
-            disabled={loading||saving||Boolean(publishing)}>
-            <FileText size={15}/>{saving?'Saving…':editingId?'Save draft changes':'Save private draft'}
-          </button>
-          {editingId&&<button type="button" className="user-outline-button"
-            disabled={saving} onClick={cancel}><X size={15}/> Cancel editing</button>}
-        </div>
+        <label htmlFor="bc-mode">2. All or specific recipients?</label>
+        <select id="bc-mode" value={mode} onChange={e=>setMode(e.target.value as Mode)}>
+          <option value="all">All active {target}s</option>
+          <option value="selected">Choose particular {target}s</option>
+        </select>
+        {mode==='selected'&&<fieldset className="broadcast-recipient-chooser">
+          <legend>Choose members ({selectable.length} selected)</legend>
+          <input type="search" value={search} placeholder={'Search '+target+' names'}
+            aria-label="Search members" onChange={e=>setSearch(e.target.value)}/>
+          <div className="broadcast-recipient-actions">
+            <button type="button" onClick={()=>setSelection(prev=>[...new Set([...prev,...options.map(p=>p.auth_user_id)])])}>Select matching</button>
+            <button type="button" onClick={()=>setSelection([])}>Clear</button>
+          </div>
+          <div className="broadcast-recipient-list">
+            {options.map(p=><label key={p.auth_user_id}>
+              <input type="checkbox" checked={selectable.includes(p.auth_user_id)}
+                onChange={e=>toggle(p.auth_user_id,e.target.checked)}/>
+              {p.full_name}
+            </label>)}
+            {!options.length&&<p>No active members matched. Invite members first.</p>}
+          </div>
+        </fieldset>}
+        <label htmlFor="bc-title">3. Announcement title</label>
+        <input id="bc-title" required minLength={3} maxLength={160} value={title} onChange={e=>setTitle(e.target.value)}/>
+        <label htmlFor="bc-message">4. Announcement message</label>
+        <textarea id="bc-message" required rows={5} minLength={10} maxLength={3500}
+          value={body} onChange={e=>setBody(e.target.value)}/>
+        <label htmlFor="bc-when">5. Publish</label>
+        <select id="bc-when" value={when} onChange={e=>setWhen(e.target.value as 'now'|'later')}>
+          <option value="now">Immediately</option><option value="later">At a scheduled date and time</option>
+        </select>
+        {when==='later'&&<label htmlFor="bc-postat">Publication date/time (West Africa Time)
+          <input id="bc-postat" type="datetime-local" value={postAt} required
+            onChange={e=>setPostAt(e.target.value)}/>
+        </label>}
+        <label htmlFor="bc-expire-mode">6. Remove automatically?</label>
+        <select id="bc-expire-mode" value={expiration} onChange={e=>setExpiration(e.target.value as 'manual'|'date')}>
+          <option value="manual">Remain until withdrawn by an administrator</option>
+          <option value="date">Disappear at a specified date/time</option>
+        </select>
+        {expiration==='date'&&<label htmlFor="bc-expire">Expiry (West Africa Time)
+          <input id="bc-expire" type="datetime-local" value={expires} required
+            onChange={e=>setExpires(e.target.value)}/>
+        </label>}
+        <button className="academic-submit" type="submit" disabled={saving}>
+          {when==='now'?<Send size={16}/>:<CalendarClock size={16}/>}
+          {saving?'Saving…':when==='now'?'Publish to selected audience':'Schedule announcement'}
+        </button>
       </form>
     </section>}
-    <section className="panel in-app-notice-register">
+    <section className="panel">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · ROLE-RESTRICTED NOTICE REGISTER</p>
-        <h2>Available announcements</h2>
-        <p className="user-caption">Active users can see published notices
-          addressed to their role. Founder/Admin also see private team drafts for review.</p>
-      </div></div>
-      <div className="in-app-notice-filter" role="group" aria-label="Filter announcements">
-        {([['all','All available'],['published','Published'],['draft','Private drafts']] as const)
-          .map(([v,label])=><button type="button" key={v}
-          className={filter===v?'active':''} aria-pressed={filter===v}
-          onClick={()=>setFilter(v)}>{label}</button>)}
-      </div>
-      {!loading&&!items.length&&<p className="academic-empty">
-        No announcements are accessible yet. Authorised staff can prepare private drafts.
-        Published notices become visible only after independent Founder publication.</p>}
-      {!loading&&items.length>0&&!visible.length&&<p className="academic-empty">
-        No announcements match this filter.</p>}
-      <div className="in-app-notice-list">
-        {visible.map(item=>{
-          const mine=item.author_id===account?.id;
-          const independentFounder=Boolean(isFounder&&!mine&&item.status==='draft');
-          const canPublish=independentFounder&&publicationEnabled;
-          return <article className="in-app-notice-item" key={item.id}>
-            <div className="in-app-notice-head">
-              <div><h3>{item.title}</h3>
-                <p>Target role: {roleName(item.audience_role)}
-                  {' · '}{item.status==='published'&&item.published_at
-                    ?'Published '+formatDate(item.published_at)
-                    :'Updated '+formatDate(item.updated_at)}</p></div>
-              <span className={item.status==='published'
-                ?'in-app-notice-status published':'in-app-notice-status'}>
-                {item.status==='published'?<CheckCircle2 size={14}/>:<LockKeyhole size={14}/>}
-                {item.status==='published'?'Published in app':'Private draft'}
-              </span>
-            </div>
-            <p className="in-app-notice-body">{item.body}</p>
-            {item.status==='draft'&&<div className="in-app-notice-actions">
-              {mine&&<button type="button" className="user-outline-button"
-                disabled={saving||Boolean(publishing)} onClick={()=>beginEdit(item)}>
-                <Pencil size={15}/> Edit my draft</button>}
-              {independentFounder&&<button type="button" className="academic-submit"
-                disabled={!canPublish||saving||Boolean(publishing)}
-                onClick={()=>{void publish(item);}}>
-                <Send size={15}/>
-                {!publicationEnabled?'Publication disabled until DLI approval'
-                  :publishing===item.id?'Publishing…':'Founder: Publish in app'}</button>}
-              {!independentFounder&&!mine&&<small>Pending independent Founder approval and publication gate.</small>}
-              {mine&&<small>Another Founder account must publish this draft.</small>}
+        <p className="section-kicker">{staff?'ANNOUNCEMENT REGISTER':'CURRENT ANNOUNCEMENTS'}</p>
+        <h2>{staff?'Published, scheduled and draft notices':'Notices for you'}</h2>
+      </div><button type="button" className="user-outline-button" disabled={loading||saving}
+        onClick={()=>void refresh()}><RefreshCw size={15}/> Refresh</button></div>
+      {loading?<p role="status">Loading notices…</p>:!records.length?
+        <p className="academic-empty">No announcements are available to your account.</p>:
+        <div className="broadcast-record-list">
+          {records.filter(n=>staff||active(n)).map(n=><article key={n.id} className="broadcast-record">
+            <div className="broadcast-record-title"><h3>{n.title}</h3>
+              <span>{n.status==='withdrawn'?'Withdrawn':n.status==='draft'?'Draft':
+                active(n)?'Visible':new Date(n.publish_at)>new Date()?'Scheduled':'Expired'}</span></div>
+            <p>{n.body}</p><small><Clock3 size={13}/> Publishes {fmt(n.publish_at)}
+              {n.expires_at?' · Expires '+fmt(n.expires_at):' · Until manually withdrawn'}</small>
+            {staff&&<div className="broadcast-record-actions">
+              <small><Users size={14}/> {n.audience_mode==='all'?'All':'Selected'} {n.target_role}s</small>
+              {n.status==='draft'&&<button type="button" disabled={saving} onClick={()=>void changeStatus(n,'live')}>
+                <CheckCircle2 size={14}/> Activate draft</button>}
+              {n.status!=='withdrawn'&&<button type="button" disabled={saving}
+                onClick={()=>void changeStatus(n,'withdrawn')}><X size={14}/> Withdraw</button>}
             </div>}
-          </article>;
-        })}
-      </div>
+          </article>)}
+        </div>}
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      The publication feature remains disabled until institutional authorisation.
-      When enabled, publication creates a persistent authorised notice. It does not
-      contact recipients outside DLI, issue push notifications or provide proof
-      that any person read the notice.
-    </p>
   </div>;
 }
