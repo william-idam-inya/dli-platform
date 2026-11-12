@@ -209,7 +209,7 @@ export default function CommunicationDraftsPage() {
       Private message starters are available under
       <Link to="/communications/templates"> Message templates</Link>.
       Independent revision clearance is under
-      <Link to="/communications/reviews"> Communications review</Link>.
+      <Link to="/communications/reviews"> Communications review</Link>, and planned follow-ups remain under <Link to="/communications/reminders"> Internal reminders</Link>.
       External sending, publishing, group integration, delivery receipts,
       automated notifications and recipient lists remain disabled.
     </p>
