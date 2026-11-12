@@ -21,7 +21,7 @@ function inspect({ url = '', key = '', approvedRef = '', publicOrigin = '' }) {
     failures.push('An explicitly approved 20-character production project reference is required.');
   } else if (ref === DEVELOPMENT_REF) {
     failures.push('The DLI development Supabase project cannot be used for release.');
-   else if (ref !== PRODUCTION_REF) {
+  } else if (ref !== PRODUCTION_REF) {
     failures.push('Production release is permitted only for the separately approved DLI production project.');
   }
 
