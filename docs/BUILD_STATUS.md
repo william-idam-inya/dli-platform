@@ -851,7 +851,7 @@ their authorised class/payment records.
 
 The versioned `20261112000214_stage_l1_private_learning_workflow.sql`
 migration was applied to DLI development only and added to the
-reviewed 40-migration integrity manifest. It creates
+reviewed 41-migration integrity manifest. It creates
 four RLS-protected tables and a non-public payment-proof bucket.
 No finance user accounts, bank instructions, monthly fees, uploaded
 proofs, or individual slots were inserted during deployment.
