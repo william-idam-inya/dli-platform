@@ -154,7 +154,15 @@ export default function PrivateClassesPage(){
       if(upload.error){setError('Receipt file upload failed. Check its format and your permissions.');return;}
       const {error:e}=await supabase!.from('private_payment_receipts').insert({fee_id:fee.id,object_path:path});
       if(e){
-        setError('The receipt uploaded but its review record was not saved. Contact DLI administration before uploading again.');
+        // Only the student's *own unattached* file can be removed by the
+        // L2 Storage RLS policy. If the INSERT committed but the response
+        // failed, the file is protected by its receipt metadata.
+        const cleanup=await supabase!.storage.from('dli-payment-proofs').remove([path]);
+        if(cleanup.error){
+          setError('Receipt confirmation failed and the uploaded file could not be cleaned up. Refresh your fee status and contact DLI administration before retrying.');
+        }else{
+          setError('Receipt confirmation failed. An unattached upload was cleaned up where permitted. Refresh the fee status before trying again.');
+        }
         return;
       }
       setReceiptFiles(v=>({...v,[fee.id]:null}));setNotice('Receipt submitted for manual verification. This is not confirmation of payment.');
