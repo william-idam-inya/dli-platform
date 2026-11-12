@@ -73,6 +73,9 @@ jobs:
       - name: Verify cross-role dashboard and internal link consistency (offline)
         run: npm run check:workspace-consistency
 
+      - name: Verify local-only calendar reminders and aggregate exports
+        run: npm run check:operational-tools
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
