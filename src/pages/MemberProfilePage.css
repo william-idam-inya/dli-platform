@@ -1,0 +1,14 @@
+.member-profile-main{max-width:920px}.member-profile-form{display:grid;gap:.65rem;max-width:640px}
+.member-profile-form>label{font-size:.88rem;font-weight:750;margin-top:.45rem}
+.member-profile-form>input,.member-profile-form>select{width:100%;box-sizing:border-box;min-height:45px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);padding:.7rem;font:inherit}
+.member-profile-form>.academic-submit{justify-self:start;margin-top:.7rem}
+.member-profile-photo{display:flex;align-items:center;flex-wrap:wrap;gap:1rem;margin:.6rem 0 1rem}
+.member-profile-photo>img,.member-profile-photo>span{height:86px;width:86px;border-radius:50%;object-fit:cover;border:1px solid var(--border)}
+.member-profile-photo>span{display:flex;align-items:center;justify-content:center;background:var(--surface-soft)}
+.member-profile-photo>div{display:grid;gap:.45rem;max-width:100%}
+.member-profile-photo label{font-weight:750;display:flex;align-items:center;gap:.4rem}
+.member-profile-photo input{max-width:100%}
+.member-profile-photo small{color:var(--muted)}
+.member-profile-identity{max-width:920px}
+.member-profile-identity p{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;overflow-wrap:anywhere}
+.member-profile-identity a{color:var(--purple);font-weight:750}
