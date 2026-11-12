@@ -31,7 +31,8 @@
     "check:auth-activation": "node scripts/verify-auth-activation.mjs",
     "check:invitation-recovery": "node scripts/verify-invitation-recovery.mjs",
     "check:invitation-handler": "node scripts/verify-invitation-handler.mjs",
-    "check:password-policy": "node scripts/verify-password-policy.mjs"
+    "check:password-policy": "node scripts/verify-password-policy.mjs",
+    "check:scoped-enrolment": "node scripts/verify-scoped-enrolment.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
