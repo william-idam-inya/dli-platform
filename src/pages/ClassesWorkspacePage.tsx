@@ -174,7 +174,7 @@ export default function ClassesWorkspacePage(){
       <button className={tab==='classes'?'selected':''} type="button" onClick={()=>setParams({tab:'classes'})}>
         <CalendarClock size={15}/> Classes & schedule
       </button>
-      <button className={tab==='payments'?'selected':''} type="button" onClick={()=>setParams({tab:'payments'})}>
+      <button className={tab==='payments'?'selected':''} type="button" onClick={()=>setParams(requested?{tab:'payments',registry:requested}:{tab:'payments'})}>
         <Wallet size={15}/> Fees & payment evidence
       </button>
     </nav>}
