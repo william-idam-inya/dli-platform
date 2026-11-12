@@ -13,10 +13,11 @@ const money=(v:string|number)=>new Intl.NumberFormat('en-NG',{
  style:'currency',currency:'NGN',maximumFractionDigits:0,
 }).format(Number(v));
 function periodStart(offset:number){
- const dt=new Date();const wat=new Intl.DateTimeFormat('en-CA',{
+ const parts=new Intl.DateTimeFormat('en-GB',{
   timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',
- }).format(dt);
- const [year,month]=wat.split('-').map(Number);
+ }).formatToParts(new Date());
+ const year=Number(parts.find(p=>p.type==='year')?.value);
+ const month=Number(parts.find(p=>p.type==='month')?.value);
  return new Date(Date.UTC(year,month-1+offset,1)).toISOString().slice(0,7);
 }
 const dates=(d:string)=>new Intl.DateTimeFormat('en-NG',{
