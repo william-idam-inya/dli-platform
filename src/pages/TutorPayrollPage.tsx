@@ -9,6 +9,7 @@ type Cycle={engagement_key:string;tutor_id:string;tutor_name:string;engagement_n
  cycle_number:number;due_on:string;standard_monthly_ngn:number|string;
  proposed_monthly_ngn:number|string;allocation_review:boolean;
  payout_status:'paid'|'scheduled'|'due_today'|'overdue';confirmed_on:string|null};
+type PayoutHistory={id:string;engagement_key:string;tutor_id:string;tutor_name:string;cycle_number:number;due_on:string;amount_ngn:number|string;confirmed_on:string};
 const money=(v:string|number)=>new Intl.NumberFormat('en-NG',{
  style:'currency',currency:'NGN',maximumFractionDigits:0,
 }).format(Number(v));
@@ -31,6 +32,7 @@ export default function TutorPayrollPage(){
  const staff=account?.role==='owner'||account?.role==='admin';
  const [month,setMonth]=useState(()=>periodStart(1));
  const [rows,setRows]=useState<Cycle[]>([]);
+ const [history,setHistory]=useState<PayoutHistory[]>([]);
  const [tutor,setTutor]=useState('');
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
@@ -45,9 +47,15 @@ export default function TutorPayrollPage(){
   if(!supabase||!account){setLoading(false);return;}
   setLoading(true);
   try{
-   const result=await supabase.rpc('dli_payroll_snapshot',{p_month:month+'-01'});
-   if(result.error){setError('Payroll could not be verified. Check your account and the month selected.');return;}
-   setRows((result.data??[]) as Cycle[]);setError(null);
+   const [result,archived]=await Promise.all([
+     supabase.rpc('dli_payroll_snapshot',{p_month:month+'-01'}),
+     supabase.rpc('dli_payroll_history',{p_month:month+'-01'}),
+   ]);
+   if(result.error||archived.error){
+     setError('Payroll or confirmed payout history could not be verified. Check your access and refresh.');return;
+   }
+   setRows((result.data??[]) as Cycle[]);
+   setHistory((archived.data??[]) as PayoutHistory[]);setError(null);
   }catch{setError('The payroll service is temporarily unreachable.');}
   finally{setLoading(false);}
  },[account?.id,month]);
@@ -57,6 +65,7 @@ export default function TutorPayrollPage(){
  const total=filtered.reduce((s,r)=>s+Number(r.proposed_monthly_ngn),0);
  const outstanding=filtered.filter(r=>r.payout_status!=='paid').reduce((s,r)=>s+Number(r.proposed_monthly_ngn),0);
  const report=filtered.some(r=>r.allocation_review);
+ const filteredHistory=history.filter(h=>!staff||!tutor||h.tutor_id===tutor);
  async function override(c:Cycle){
   if(!supabase||!staff||busy)return;
   const value=overrideAmount[c.engagement_key]??String(c.proposed_monthly_ngn);
@@ -153,6 +162,25 @@ export default function TutorPayrollPage(){
       </details>}
      </div>}
    </article>)}
+  </section>
+  <section className="panel">
+    <div className="panel-heading"><div>
+      <p className="section-kicker">CONFIRMED PAYMENT HISTORY</p>
+      <h2>Recorded payouts for {month}</h2>
+      <p className="user-caption">Confirmed transfers remain visible even if their original teaching class has ended or been archived.
+        Payment references and unrelated tutors' information are not shown to Tutors.</p>
+    </div></div>
+    {!filteredHistory.length&&!loading&&<p className="academic-empty">No confirmed payouts were recorded for this due month.</p>}
+    <div className="payroll-cycles">{filteredHistory.map(h=><article key={h.id} className="payroll-cycle">
+      <div className="payroll-cycle-head"><strong>{h.tutor_name}</strong>
+        <span className="payroll-status payroll-paid">Paid</span>
+      </div>
+      <div className="payroll-cycle-info">
+        <p><CalendarClock size={15}/> Due {dates(h.due_on)} · cycle {h.cycle_number}</p>
+        <p><CheckCircle2 size={15}/> Confirmed {dates(h.confirmed_on)}</p>
+        <p><Wallet size={15}/> Amount <strong>{money(h.amount_ngn)}</strong></p>
+      </div>
+    </article>)}</div>
   </section>
   <p className="module-footnote">Standard reference rates: group tutor ₦20,000 plus ₦2,000 data per month; private tutor ₦25,000. Payouts recur monthly from each engagement's start date (e.g., started 11 November → first due 11 December). Extra allocation is not automatically priced.</p>
  </div>;
