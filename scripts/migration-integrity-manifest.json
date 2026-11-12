@@ -167,6 +167,10 @@
     {
       "file": "20261112001910_stage_l1a_private_audit_correlation.sql",
       "gitBlobSha1": "281a1741ab9efedd416cfdffb650dbd3366737ac"
+    },
+    {
+      "file": "20261112002954_stage_l2_unified_teaching_classes.sql",
+      "gitBlobSha1": "7151b002ed13ae0552748f56d0e988a413034d0e"
     }
   ]
 }
