@@ -28,7 +28,9 @@
     "check:recovery-bundle-tests": "node scripts/verify-recovery-bundle.mjs --self-test",
     "check:recovery-bundle": "node scripts/verify-recovery-bundle.mjs",
     "check:file-picker-focus": "node scripts/verify-file-picker-focus.mjs",
-    "check:q5-release-safety": "node scripts/verify-q5-release-safety.mjs"
+    "check:q5-release-safety": "node scripts/verify-q5-release-safety.mjs",
+    "check:recovery-receipt-tests": "node scripts/create-recovery-manifest.mjs --self-test",
+    "prepare:recovery-receipt": "node scripts/create-recovery-manifest.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
