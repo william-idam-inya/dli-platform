@@ -149,7 +149,7 @@ export default function FinancePage() {
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
       <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Only the Founder, Admin and Finance Officer may view or submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate <Link to="/private-classes">Private 1-to-1 classes</Link> area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
+        <p>Only the Founder, Admin and Finance Officer may view or submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate <Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link> area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
       </div>
     </div>
 
