@@ -21,15 +21,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<Account | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const verification = useRef(0);
+  // A confirmed auth user can remain mounted during non-destructive rechecks.
+  // File pickers trigger focus/visibility events: re-entering 'checking' on
+  // every such event unmounts forms and loses an unsaved selected File.
+  const verifiedUserId = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     const run = ++verification.current;
     if (!supabase) {
+      verifiedUserId.current = null;
       setState('config-error');
       setAccount(null);
       return;
     }
-    setState('checking');
+    // Initial verification (or a user switch) must block the workspace.
+    // A recheck of the already verified user keeps forms mounted; a failed
+    // recheck still removes access immediately when the result is known.
+    if (!verifiedUserId.current) setState('checking');
 
     // Always revalidate the session and role before exposing the workspace.
     // Temporary network/API errors are NOT proof of revoked DLI membership.
@@ -41,18 +49,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (run !== verification.current) return;
 
       if (authError) {
+        verifiedUserId.current = null;
         setAccount(null);
         setState('unavailable');
         return;
       }
       user = authData.user;
+      if (user && verifiedUserId.current && verifiedUserId.current !== user.id) {
+        // Never show the previous user's workspace while authorising a new user.
+        verifiedUserId.current = null;
+        setAccount(null);
+        setState('checking');
+      }
       if (!user) {
+        verifiedUserId.current = null;
         setAccount(null);
         setState('guest');
         return;
       }
     } catch {
       if (run !== verification.current) return;
+      verifiedUserId.current = null;
       setAccount(null);
       setState('unavailable');
       return;
@@ -68,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (run !== verification.current) return;
 
       if (recordError) {
+        verifiedUserId.current = null;
         setAccount(null);
         setState('unavailable');
         return;
@@ -75,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       record = data;
     } catch {
       if (run !== verification.current) return;
+      verifiedUserId.current = null;
       setAccount(null);
       setState('unavailable');
       return;
@@ -88,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       record.email === user.email.toLowerCase();
 
     if (!authorised) {
+      verifiedUserId.current = null;
       setAccount(null);
       setState('guest');
       // Sign out locally; an existing Auth account does not constitute DLI authorisation.
@@ -101,9 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const entitlement=await supabase.from('dli_student_entitlements')
         .select('tier').eq('student_id',user.id).maybeSingle();
       if(run!==verification.current)return;
-      if(entitlement.error){setAccount(null);setState('unavailable');return;}
+      if(entitlement.error){verifiedUserId.current=null;setAccount(null);setState('unavailable');return;}
       studentTier=entitlement.data?.tier==='paid'?'paid':'free';
     }
+    verifiedUserId.current = user.id;
     setAccount({...record,studentTier} as Account);
     setNotice(null);
     setState('active');
@@ -113,9 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return;
     void refresh();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         ++verification.current;
+        verifiedUserId.current = null;
         setAccount(null);
         setState('guest');
       } else if (
@@ -123,7 +145,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY' ||
         event === 'INITIAL_SESSION'
       ) {
-        // Defer calls that use Supabase Auth until after the auth-event callback returns.
+        // SIGNED_IN also fires when an existing session is reconfirmed on
+        // tab focus. Only replace the workspace on an actual user switch.
+        if (session?.user && verifiedUserId.current &&
+            session.user.id !== verifiedUserId.current) {
+          verifiedUserId.current = null;
+          setAccount(null);
+          setState('checking');
+        }
+        // Defer calls that use Supabase Auth until after the callback returns.
         void Promise.resolve().then(refresh);
       }
     });
