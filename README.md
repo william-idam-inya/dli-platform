@@ -69,6 +69,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage P1 reduces the Academic sidebar to three workspaces:** Academic setup; Classes & timetable; Learning & results (tabs for lessons, assignments, quizzes and attendance). Approved students in the same published group class may initiate direct messages, and Feedback & support now offers class-specific reporting categories and an optional class link. Earlier routes/data remain intact. See `docs/stage-p1-academic-simplification-peer-support.md`.
 
+**Stage P3 stability update:** Corrected the P1 Vite JSX parse error (also fixed on its original branch), repaired first-login profile gate refresh, synchronised display preferences to the private member profile, removed a hardcoded birth-date limit, aligned Assistant Admin's read-only Settings view without modifying their invitation authority, and simplified dashboard shortcuts to match the new Academic layout. See `docs/stage-p3-runtime-stability.md` for checks and outstanding real-role testing.
+
 ## Local development
 
 Use a supported Node.js LTS release.
