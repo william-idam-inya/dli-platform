@@ -998,6 +998,43 @@ real-time messaging or production readiness.
 
 See `docs/stage-p3-runtime-stability.md`.
 
+## Stage Q2 — Integrated release integrity and operational safeguards
+
+The Q1 branch already included Free/Paid Student entitlements,
+pre-authorised onboarding, manually verified upgrade, Admin/
+Assistant Admin class assignment, date-anchored tutor payroll,
+role-specific feedback and a private profile. Q2 builds upon that
+implementation rather than introducing competing systems.
+
+Q2 restores the Q1f applied RLS migration missing from GitHub and
+tightens paid Course/Cohort metadata reads to the actual assigned
+Tutor or enrolled Paid Student. New RLS-protected institutional
+admission control lets Founder/Admin/Assistant Admin **open or
+pause NEW paid applications** with an audit trail. Confirmed tutor
+payout history remains visible even after a class is archived;
+live due statuses refresh on visible payroll pages. New entitlement
+events request a verified Free-to-Paid UI refresh through Supabase
+Realtime, and failed unregistered receipt uploads are cleaned up
+where the existing Storage policy permits.
+
+There are **73 reviewed applied migrations** on the development
+database. No Student/Tutor test accounts, paid transactions,
+class records or external hosting resources were created.
+A rollback-only authenticated Admin test confirmed the admission
+toggle updates and audits correctly without changing its active
+state. Supabase's pre-existing leaked-password protection warning
+remains.
+
+**Not yet production-ready:** real six-role acceptance and security
+negative tests; backup/restore drill; verified SMTP, institutional
+bank handling and under-18 privacy governance; separately approved
+production Supabase/Cloudflare configuration; and individual-member
+Google OAuth consent/configuration for optional Drive backup.
+Existing secure cloud account data is synchronized by Supabase,
+not by Google Drive.
+
+See `docs/stage-q2-release-integrity.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
