@@ -167,6 +167,10 @@
     {
       "file": "20261112001910_stage_l1a_private_audit_correlation.sql",
       "gitBlobSha1": "281a1741ab9efedd416cfdffb650dbd3366737ac"
+    },
+    {
+      "file": "20261112031536_stage_l2_orphan_receipt_cleanup.sql",
+      "gitBlobSha1": "f40f33f69a47ad3f71aa55b5920e17d97f9f2032"
     }
   ]
 }
