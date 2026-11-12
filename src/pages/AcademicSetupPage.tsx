@@ -423,8 +423,11 @@ export default function AcademicSetupPage() {
         <ShieldCheck size={15}/> Subjects and courses form the reusable learning catalogue.
         Enrol one or multiple students and allocate a tutor through
         <Link to="/classes" className="text-link"> Classes &amp; timetable</Link>.
-        Existing course-specific topics and cohort offerings remain available under
-        <Link to="/cohorts" className="text-link"> Advanced curriculum tools</Link>.
+        For existing lesson-based courses, specialist setup remains under
+        <Link to="/cohorts" className="text-link"> Topics &amp; cohorts</Link>,
+        <Link to="/assignments" className="text-link"> Legacy offering assignments</Link>,
+        and <Link to="/schedule" className="text-link"> One-off sessions</Link>.
+        These are advanced curriculum tools, not a second individual/group class register.
       </div>
     </div>
   );
