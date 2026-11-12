@@ -5,7 +5,7 @@
 `20261112000214_stage_l1_private_learning_workflow.sql`.
 No production deployment, student charge, transfer, payout, bank account,
 fake learner, or receipt was created. The K6 migration manifest now has
-**40 reviewed migrations**.
+**41 reviewed migrations**.
 
 ## Why a separate workflow
 
@@ -75,8 +75,11 @@ collection, receipt issuance or payouts were activated.
   whose assigned fee matches the object path, and authenticated
   file downloads to that Student or authorised Owner/Admin **after**
   a matching receipt metadata record exists.
-- Metadata-only audits record an action, not sensitive document
-  contents or account credentials.
+- Metadata-only audits record the relevant fee, receipt or class-slot IDs,
+  payment-review outcome and non-sensitive timetable changes; they never
+  include receipt contents, Google Meet URLs or bank-account numbers.
+- The follow-up migration \`20261112001910_stage_l1a_private_audit_correlation.sql\`
+  improves audit correlation without modifying applied migration files.
 
 ## Verification completed
 
