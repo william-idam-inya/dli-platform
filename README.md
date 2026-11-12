@@ -59,6 +59,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage K10 records the supplied DLI Paid Learning Plans as an internal Finance reference:** Group of 5 Science (₦25,000/student-month), Group of 10 (₦15,000/student-month), and Private 1-to-1 (₦35,000/student-month) with corresponding documented tutor compensation. The ambiguous private-plan subject count remains flagged. A build/CI guard checks the rates, and payment activation remains disabled. See `docs/stage-k10-paid-learning-plans.md`.
 
+**Stage L1 implements personal 1-to-1 class administration:** a protected `/private-classes` page assigns each learner a monthly fee, enables manually reviewed bank-transfer proofs, and links each approved student to subjects, weekly day/time, assigned tutor and Google Meet URL. Tutor and Student views show only their permitted records. The development-only schema includes four new RLS tables and a private receipt bucket. No bank account, fee, student, payment or class record was seeded. Controlled real-role tests, payment operating policy, production infrastructure and backups remain required. See `docs/stage-l1-private-learning-workflow.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
