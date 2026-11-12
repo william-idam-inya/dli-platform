@@ -1,0 +1,35 @@
+.dli-broadcast-page .panel{margin-bottom:1.2rem}
+.broadcast-form{display:grid;gap:.7rem;max-width:740px}
+.broadcast-form>label{font-size:.85rem;font-weight:700;display:grid;gap:.45rem}
+.broadcast-form input,.broadcast-form select,.broadcast-form textarea{width:100%;min-width:0;
+padding:.7rem .85rem;border:1px solid var(--border,#dad7e4);border-radius:9px;background:var(--surface,#fff);
+color:var(--text,#29253b);font:inherit}
+.broadcast-form textarea{resize:vertical;line-height:1.55}
+.broadcast-form .academic-submit{justify-self:start;margin-top:.45rem}
+.broadcast-recipient-chooser{border:1px solid var(--border,#dad7e4);border-radius:12px;padding:1rem;min-width:0;display:grid;gap:.7rem}
+.broadcast-recipient-chooser legend{padding:0 .35rem;font-weight:700}
+.broadcast-recipient-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.broadcast-recipient-actions button,.broadcast-record-actions button{font:inherit;font-size:.82rem;font-weight:650;
+display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .65rem;border:1px solid var(--border,#dad7e4);
+background:var(--surface,#fff);color:var(--text,#29253b);border-radius:8px;cursor:pointer}
+.broadcast-recipient-list{max-height:235px;overflow-y:auto;display:grid;
+grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:.45rem}
+.broadcast-recipient-list label{display:flex;gap:.55rem;align-items:center;border:1px solid var(--border,#dad7e4);
+border-radius:8px;padding:.65rem;cursor:pointer;font-size:.82rem}
+.broadcast-recipient-list label input{width:17px;min-width:17px}
+.broadcast-record-list{display:grid;gap:1rem}
+.broadcast-record{border:1px solid var(--border,#dad7e4);border-radius:12px;padding:1rem;
+background:var(--surface-soft,#f9f8fc)}
+.broadcast-record-title{display:flex;justify-content:space-between;gap:.65rem;align-items:start;flex-wrap:wrap}
+.broadcast-record-title h3{margin:0;font-size:1.06rem}
+.broadcast-record-title span{border:1px solid var(--border,#dad7e4);border-radius:30px;
+padding:.25rem .55rem;font-size:.75rem;font-weight:650}
+.broadcast-record>p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+.broadcast-record>small,.broadcast-record-actions>small{display:inline-flex;align-items:center;gap:.35rem;
+color:var(--muted,#77718c);line-height:1.4}
+.broadcast-record-actions{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap;
+border-top:1px solid var(--border,#dad7e4);padding-top:.75rem;margin-top:.8rem}
+.broadcast-record-actions>small{margin-right:auto}
+.dli-broadcast-page button:disabled{opacity:.6;cursor:not-allowed}
+.dli-broadcast-page :is(button,input,select,textarea):focus-visible{outline:2px solid var(--purple,#6744c1);outline-offset:2px}
+@media(max-width:650px){.broadcast-recipient-list{grid-template-columns:1fr}.broadcast-form .academic-submit{width:100%;justify-content:center}}
