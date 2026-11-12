@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import { navigationItems } from './data/navigation';
 import ModulePage from './pages/ModulePage';
@@ -9,7 +9,8 @@ import {
   AccessDeniedPage, AuthChecking, AuthTemporarilyUnavailable, ChangePasswordPage, ConfirmLinkPage,
   ForgotPasswordPage, LoginPage, MissingConfiguration, SetPasswordPage,
 } from './auth/AuthPages';
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { supabase } from './lib/supabase';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const MemberProfilePage = lazy(() => import('./pages/MemberProfilePage'));
@@ -52,9 +53,45 @@ function AllowedArea({ path, children }: { path: string; children: ReactNode }) 
   return <>{children}</>;
 }
 
+function ProfileSetupGate({children}:{children:ReactNode}){
+  const {account}=useAuth();
+  const location=useLocation();
+  const [checked,setChecked]=useState<'checking'|'ready'|'missing'|'unavailable'>('checking');
+  useEffect(()=>{
+    if(!account||!supabase){setChecked('checking');return;}
+    let active=true;
+    setChecked('checking');
+    const client=supabase;
+    void (async()=>{
+      try{
+        const auth=await client.auth.getUser();
+        if(!active)return;
+        if(auth.error||!auth.data.user){setChecked('unavailable');return;}
+        const result=await client.from('dli_member_profiles')
+          .select('user_id').eq('user_id',auth.data.user.id).maybeSingle();
+        if(!active)return;
+        if(result.error){setChecked('unavailable');return;}
+        setChecked(result.data?'ready':'missing');
+      }catch{if(active)setChecked('unavailable');}
+    })();
+    return()=>{active=false;};
+  },[account?.id]);
+  // The account owner can always complete the profile or recover their password.
+  if(location.pathname==='/profile'||location.pathname==='/change-password')return <>{children}</>;
+  if(checked==='checking')return <p className="module-page" role="status">Verifying your DLI profile…</p>;
+  if(checked==='unavailable')return <section className="module-page" role="alert">
+    <h1>Profile verification unavailable</h1>
+    <p>We could not confirm your account profile. Your workspace remains restricted until the verification service responds.</p>
+    <button className="user-outline-button" type="button" onClick={()=>window.location.reload()}>Retry verification</button>
+  </section>;
+  if(checked==='missing')return <Navigate to="/profile" replace/>;
+  return <>{children}</>;
+}
+
 function Workspace() {
   return <RequireWorkspace>
     <AppShell>
+      <ProfileSetupGate>
       <Suspense fallback={<p role="status" className="module-page">Loading workspace view…</p>}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
@@ -94,6 +131,7 @@ function Workspace() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </Suspense>
+      </ProfileSetupGate>
     </AppShell>
   </RequireWorkspace>;
 }
