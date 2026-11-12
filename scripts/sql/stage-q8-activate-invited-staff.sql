@@ -15,8 +15,8 @@
 -- WARNING: production project ref thoinmwqxmqxrnywjuxq only.
 DO $dli_q8_bootstrap$
 DECLARE
-  expected_email text := lower(btrim('detailedlearningonline@gmail.com'));
-  expected_uid_text text := 'cc1e7ae4-927f-4169-ba7a-45b8b2d6f167';
+  expected_email text := lower(btrim('williamidaminya@gmail.com'));
+  expected_uid_text text := '98d757a3-b9ab-4700-b4cf-5c358f8bf45a';
   expected_uid uuid;
   target public.authorised_users%rowtype;
   actual auth.users%rowtype;
