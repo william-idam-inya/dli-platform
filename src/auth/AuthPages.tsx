@@ -150,10 +150,14 @@ export function ConfirmLinkPage() {
     let live = true;
     const client = supabase;
     void (async () => {
-      const { error: verifyError } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
-      if (!live) return;
-      if (verifyError) setError('This link is invalid or expired. Request a new one from DLI administration.');
-      else navigate('/set-password', { replace: true });
+      try {
+        const { error: verifyError } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+        if (!live) return;
+        if (verifyError) setError('This link is invalid or expired. Request a new one from DLI administration.');
+        else navigate('/set-password', { replace: true });
+      } catch {
+        if (live) setError('Verification is temporarily unavailable. Check your connection and reopen the secure link.');
+      }
     })();
     return () => { live = false; };
   }, [navigate]);
