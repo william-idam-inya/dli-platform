@@ -9,8 +9,9 @@ import './PrivateClassesPage.css';
 
 type Member = {id:string;auth_user_id:string;full_name:string;role:'student'|'tutor';status:'active'};
 type Subject = {id:string;name:string;is_active:boolean};
-type Fee = {id:string;student_id:string;student_name:string;billing_month:string;plan_label:string;amount_ngn:string|number;payment_status:'assigned'|'submitted'|'verified'|'rejected';created_at:string};
-type Receipt = {id:string;fee_id:string;student_id:string;object_path:string;status:'submitted'|'verified'|'rejected';review_note:string;submitted_at:string};
+type Fee = {id:string;student_id:string;student_name:string;billing_month:string;plan_label:string;amount_ngn:string|number;payment_status:'assigned'|'submitted'|'verified'|'rejected';created_at:string;period_starts_on:string|null;next_due_on:string|null};
+type Receipt = {id:string;fee_id:string;student_id:string;object_path:string;status:'submitted'|'verified'|'rejected';review_note:string;submitted_at:string;confirmed_credit_on:string|null};
+type Renewal = {student_id:string;last_fee_id:string;last_credit_on:string;next_due_on:string;plan_label:string;monthly_amount_ngn:string|number;state:'active'|'paused'|'completed'};
 type Slot = {id:string;student_id:string;student_name:string;subject_id:string;subject_name:string;weekday:number;starts_at:string;ends_at:string;tutor_id:string;tutor_name:string;meeting_url:string;is_active:boolean};
 type Bank = {id:boolean;bank_name:string;account_name:string;account_number:string;is_active:boolean};
 const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -37,6 +38,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
   const [subjects,setSubjects]=useState<Subject[]>([]);
   const [fees,setFees]=useState<Fee[]>([]);
   const [receipts,setReceipts]=useState<Receipt[]>([]);
+  const [renewals,setRenewals]=useState<Renewal[]>([]);
   const [slots,setSlots]=useState<Slot[]>([]);
   const [bank,setBank]=useState<Bank|null>(null);
   const [bankDraft,setBankDraft]=useState({bank_name:'',account_name:'',account_number:'',is_active:false});
@@ -52,6 +54,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
   const [meet,setMeet]=useState('');
   const [receiptFiles,setReceiptFiles]=useState<Record<string,File|null>>({});
   const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
+  const [creditDates,setCreditDates]=useState<Record<string,string>>({});
   const [tutorFilter,setTutorFilter]=useState('');
   const [editingSlotId,setEditingSlotId]=useState<string|null>(null);
   const [adminStep,setAdminStep]=useState<'bank'|'fee'|'verify'|'schedule'|'roster'>('fee');
@@ -64,19 +67,21 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     if(!supabase||!account){setLoading(false);setError('You need a verified DLI session.');return;}
     setLoading(true);
     try {
-      const [f,r,s,b,people,topics]=await Promise.all([
-        supabase.from('private_student_fees').select('id,student_id,student_name,billing_month,plan_label,amount_ngn,payment_status,created_at').order('billing_month',{ascending:false}),
-        supabase.from('private_payment_receipts').select('id,fee_id,student_id,object_path,status,review_note,submitted_at').order('submitted_at',{ascending:false}),
+      const [f,r,s,b,people,topics,contracts]=await Promise.all([
+        supabase.from('private_student_fees').select('id,student_id,student_name,billing_month,plan_label,amount_ngn,payment_status,created_at,period_starts_on,next_due_on').order('billing_month',{ascending:false}),
+        supabase.from('private_payment_receipts').select('id,fee_id,student_id,object_path,status,review_note,submitted_at,confirmed_credit_on').order('submitted_at',{ascending:false}),
         supabase.from('private_class_slots').select('id,student_id,student_name,subject_id,subject_name,weekday,starts_at,ends_at,tutor_id,tutor_name,meeting_url,is_active').order('weekday').order('starts_at'),
         supabase.from('private_bank_details').select('id,bank_name,account_name,account_number,is_active').maybeSingle(),
         isStaff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role,status').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         isStaff?supabase.from('subjects').select('id,name,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
+        supabase.from('dli_tuition_renewals').select('student_id,last_fee_id,last_credit_on,next_due_on,plan_label,monthly_amount_ngn,state').order('next_due_on'),
       ]);
-      if([f,r,s,b,people,topics].some(x=>x.error)){
+      if([f,r,s,b,people,topics,contracts].some(x=>x.error)){
         setError('Some private-class data could not be read. Check your connection and current permissions.');
       }else{
         setFees((f.data??[]) as Fee[]);
         setReceipts((r.data??[]) as Receipt[]);
+        setRenewals((contracts.data??[]) as Renewal[]);
         setSlots((s.data??[]) as Slot[]);
         setBank((b.data??null) as Bank|null);
         if(b.data)setBankDraft({bank_name:b.data.bank_name,account_name:b.data.account_name,account_number:b.data.account_number,is_active:b.data.is_active});
@@ -100,6 +105,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
   const chosenSubject=subjects.some(s=>s.id===subject)?subject:(subjects[0]?.id??'');
   const selectedFees=fees.filter(f=>!isStaff||f.student_id===chosenStudent);
   const verifiedStudents=new Set(fees.filter(f=>f.payment_status==='verified').map(f=>f.student_id));
+  const selectedRenewal=renewals.find(r=>r.student_id===chosenStudent);
   const visibleSlots=useMemo(()=>slots.filter(s=>!isStaff ? s.is_active : (tutorFilter
     ? s.tutor_id===tutorFilter
     : (!chosenStudent || s.student_id===chosenStudent))),[slots,isStaff,chosenStudent,tutorFilter]);
@@ -182,11 +188,18 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       ?'Confirm that the actual bank credit was independently checked? Uploading proof alone is not evidence of receipt.'
       :'Reject this receipt and allow the student to submit another?'))return;
     void execute('review-'+receipt.id,async()=>{
+      const confirmed=creditDates[receipt.id]??'';
+      if(status==='verified'&&(!/^\d{4}-\d{2}-\d{2}$/.test(confirmed)||
+         !Number.isFinite(new Date(confirmed).getTime())||
+         new Date(confirmed).getTime()>Date.now())){
+        setError('Enter the actual date the bank received the money before verifying.');return;
+      }
       const {data,error:e}=await supabase!.from('private_payment_receipts')
-        .update({status,review_note:(reviewNotes[receipt.id]??'').trim()})
+        .update({status,review_note:(reviewNotes[receipt.id]??'').trim(),
+          confirmed_credit_on:status==='verified'?confirmed:null})
         .eq('id',receipt.id).select('id,status').maybeSingle();
       if(e||!data){setError(feedback(e));return;}
-      setNotice(status==='verified'?'Bank transfer manually verified; private subject assignment is now available.':'Receipt rejected; student may upload another.');
+      setNotice(status==='verified'?'Actual bank credit confirmed. The next tuition due date is now calculated from that credit date.':'Receipt rejected; student may upload another.');
       await refresh();
     });
   }
@@ -298,6 +311,29 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       <div className="panel-heading"><div><p className="section-kicker">03 · ASSIGN MONTHLY FEE</p><h2>Student's individual billing record</h2>
         <p className="user-caption">Choose the approved general DLI rate for this student. Individual and group classes share this billing form. A fee is assigned, never automatically collected; one record per Student per billing month.</p>
       </div></div>
+      {selectedRenewal&&<div className="private-bank-card">
+        <strong>Existing monthly tuition cycle</strong>
+        <p>Last confirmed bank credit: {selectedRenewal.last_credit_on}</p>
+        <p>Next due: <strong>{selectedRenewal.next_due_on}</strong></p>
+        <p>Plan: {selectedRenewal.plan_label} · {formatNGN(selectedRenewal.monthly_amount_ngn)} per month</p>
+        <p>Enrolment status: {selectedRenewal.state}</p>
+        <button type="button" className="user-outline-button" onClick={()=>{
+          setMonth(selectedRenewal.next_due_on.slice(0,7));
+          setAmount(String(selectedRenewal.monthly_amount_ngn));
+          const found=paidLearningPlans.plans.find(p=>p.name===selectedRenewal.plan_label);
+          if(found)setPlanId(found.id);
+        }}>Prepare next renewal fee</button>
+        <div className="private-review">
+          {(['active','paused','completed'] as const).filter(s=>s!==selectedRenewal.state).map(state=>
+            <button type="button" key={state} disabled={!!busy} onClick={()=>{void execute('renewal',async()=>{
+              const result=await supabase!.from('dli_tuition_renewals')
+                .update({state}).eq('student_id',chosenStudent).select('student_id').maybeSingle();
+              if(result.error||!result.data){setError('Could not update the student’s renewal status.');return;}
+              setNotice('Tuition status recorded. This action does not delete or automatically deactivate the Student’s DLI account.');
+              await refresh();
+            });}}>{state==='active'?'Resume renewal':state==='paused'?'Pause renewal':'Mark programme completed'}</button>)}
+        </div>
+      </div>}
       <form className="academic-form private-form" onSubmit={assignFee}>
         <label htmlFor="l1-plan">Approved paid-learning plan reference</label>
         <select id="l1-plan" value={planId} onChange={e=>{
@@ -326,13 +362,22 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
         <small>Confirm recipient name in your banking app. Never pay into an account not displayed in your signed-in DLI workspace.</small>
       </div>}
       {isStudent&&!bank?.is_active&&<p className="academic-empty">DLI has not published verified bank-transfer instructions. Do not transfer money until they are available.</p>}
+      {(isStudent?renewals:renewals.filter(r=>r.student_id===chosenStudent)).map(r=>
+        <div className="private-bank-card" key={r.student_id}>
+          <strong>Current tuition renewal</strong>
+          <p>Last confirmed bank credit: {r.last_credit_on}</p>
+          <p>Next payment due: <strong>{r.next_due_on}</strong></p>
+          <p>Cycle status: {r.state}{r.state==='active'&&new Date(r.next_due_on+'T23:59:59+01:00')<new Date()?' · Overdue for review':''}</p>
+          <small>An overdue date does not automatically revoke admission. DLI administration determines continuation or completion.</small>
+        </div>)}
       {!selectedFees.length&&!loading&&<p className="academic-empty">No individual monthly fee has been assigned yet.</p>}
       <div className="private-fee-list">
         {selectedFees.map(f=><article className="private-fee-item" key={f.id}>
           <div className="private-fee-header"><div><strong>{isStaff?f.student_name+' · ':''}{f.plan_label}</strong>
-            <small>Billing month: {f.billing_month.slice(0,7)}</small></div>
+            <small>Reference month: {f.billing_month.slice(0,7)}</small></div>
             <span className={'private-pill private-'+f.payment_status}>{billingStatus[f.payment_status]}</span></div>
           <p className="private-fee-amount">{formatNGN(f.amount_ngn)}</p>
+          {f.period_starts_on&&f.next_due_on&&<p className="academic-code-hint">Actual bank credit: {f.period_starts_on} · Next monthly due: <strong>{f.next_due_on}</strong></p>}
           {isStudent&&['assigned','rejected'].includes(f.payment_status)&&<div className="private-upload">
             <label htmlFor={'l1-proof-'+f.id}>Payment evidence (PDF, JPEG or PNG; maximum 5 MB)</label>
             <input id={'l1-proof-'+f.id} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
@@ -347,6 +392,10 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
             </button>
             {r.review_note&&<small>Review note: {r.review_note}</small>}
             {isStaff&&r.status==='submitted'&&<div className="private-review">
+              <label htmlFor={'credit-'+r.id}>Actual bank credit date (required for verification)</label>
+              <input id={'credit-'+r.id} type="date" value={creditDates[r.id]??''}
+                max={new Date(Date.now()+3600000).toISOString().slice(0,10)}
+                onChange={e=>setCreditDates(v=>({...v,[r.id]:e.target.value}))}/>
               <label htmlFor={'review-'+r.id}>Review note (optional)</label>
               <input id={'review-'+r.id} maxLength={500} value={reviewNotes[r.id]??''}
                 onChange={e=>setReviewNotes(v=>({...v,[r.id]:e.target.value}))}/>
