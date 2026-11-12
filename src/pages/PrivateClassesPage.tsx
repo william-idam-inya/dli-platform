@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Banknote, CalendarClock, CheckCircle2, Clock3, Download, LockKeyhole, Plus, RefreshCw, ShieldCheck, Upload, Users, Video } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './PrivateClassesPage.css';
 
-type Member = {auth_user_id:string;full_name:string;role:'student'|'tutor';status:'active'};
+type Member = {id:string;auth_user_id:string;full_name:string;role:'student'|'tutor';status:'active'};
 type Subject = {id:string;name:string;is_active:boolean};
 type Fee = {id:string;student_id:string;student_name:string;billing_month:string;plan_label:string;amount_ngn:string|number;payment_status:'assigned'|'submitted'|'verified'|'rejected';created_at:string};
 type Receipt = {id:string;fee_id:string;student_id:string;object_path:string;status:'submitted'|'verified'|'rejected';review_note:string;submitted_at:string};
@@ -27,6 +27,8 @@ function feedback(error:unknown):string {
 
 export default function PrivateClassesPage(){
   const {account}=useAuth();
+  const [params]=useSearchParams();
+  const requestedRegistry=params.get('registry')??'';
   const isStaff=Boolean(account&&roleStaff.has(account.role));
   const isStudent=account?.role==='student';
   const isTutor=account?.role==='tutor';
@@ -65,7 +67,7 @@ export default function PrivateClassesPage(){
         supabase.from('private_payment_receipts').select('id,fee_id,student_id,object_path,status,review_note,submitted_at').order('submitted_at',{ascending:false}),
         supabase.from('private_class_slots').select('id,student_id,student_name,subject_id,subject_name,weekday,starts_at,ends_at,tutor_id,tutor_name,meeting_url,is_active').order('weekday').order('starts_at'),
         supabase.from('private_bank_details').select('id,bank_name,account_name,account_number,is_active').maybeSingle(),
-        isStaff?supabase.from('authorised_users').select('auth_user_id,full_name,role,status').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
+        isStaff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role,status').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         isStaff?supabase.from('subjects').select('id,name,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
       ]);
       if([f,r,s,b,people,topics].some(x=>x.error)){
@@ -76,14 +78,17 @@ export default function PrivateClassesPage(){
         setSlots((s.data??[]) as Slot[]);
         setBank((b.data??null) as Bank|null);
         if(b.data)setBankDraft({bank_name:b.data.bank_name,account_name:b.data.account_name,account_number:b.data.account_number,is_active:b.data.is_active});
-        setMembers((people.data??[]) as Member[]);
+        const directory=(people.data??[]) as Member[];
+        setMembers(directory);
+        const linkedStudent=directory.find(m=>m.id===requestedRegistry&&m.role==='student');
+        if(linkedStudent)setStudent(previous=>previous||linkedStudent.auth_user_id);
         setSubjects((topics.data??[]) as Subject[]);
         setError(null);
       }
     }catch{
       setError('The private-class service could not be reached. Refresh after checking the connection.');
     }finally{setLoading(false);}
-  },[account?.id,isStaff]);
+  },[account?.id,isStaff,requestedRegistry]);
   useEffect(()=>{void refresh();},[refresh]);
 
   const students=members.filter(m=>m.role==='student');
