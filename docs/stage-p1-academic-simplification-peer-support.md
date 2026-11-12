@@ -16,6 +16,12 @@ Six main Academic sidebar links are reduced to **three**:
    with **Lessons**, **Assignments**, **Quizzes & results** and
    **Attendance** tabs.
 
+**Subject conversations now open in the single Messages workspace.** The
+Classes screen has a Subject chat link that opens that section directly,
+and old `/classes?tab=messages` bookmarks redirect to Messages instead
+of rendering a second copy of the chat. This change shares the original
+chat records and permissions; no conversation is copied or deleted.
+
 The new `LearningHubPage` reuses the existing feature components
 without copying their business logic or moving the records into new
 tables. Existing direct routes `/learning`, `/assessments`,
