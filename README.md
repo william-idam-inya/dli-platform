@@ -2,6 +2,16 @@
 
 A secure, responsive learning and institutional operations platform for Detailed Learning Institute.
 
+
+## Cloudflare-hosted environments (12 November 2026)
+
+- **Internal QA:** https://feature-stage-q5-production.dli-platform-qa.pages.dev/login — uses development Supabase. Commits to the active Q5 branch are built automatically as controlled **previews**, not as production releases.
+- **Production-hosted site:** https://dli-platform-prod.pages.dev/login — uses dedicated production Supabase; hosted successfully but **not open for real-user operations**. Production has no Founder/Student accounts, Auth email settings remain incomplete, and paid admissions are disabled.
+- Cloudflare Pages serves the frontend; Supabase hosts Auth/PostgreSQL/private file storage/on-demand Edge Functions. **Neither environment needs a developer's laptop or a local Vite server to stay online.**
+- Production auto-deploy is disabled. Promotion from QA requires GitHub CI, an explicit manual guarded production build and release checks. Never publish a build pointing at the QA database.
+- Full setup, constraints and next steps: [Cloudflare cutover runbook](docs/stage-q7-cloudflare-hosting-cutover.md).
+
+
 ## Technology
 
 - React + TypeScript + Vite
