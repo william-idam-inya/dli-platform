@@ -60,3 +60,7 @@
  .private-slot-actions {width:100%;}
  .private-slot-actions a {flex:1;justify-content:center;}
 }
+
+.private-step-nav {display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.9rem 0 1.2rem;}
+.private-step-nav button {padding:0.65rem 0.85rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;font:inherit;font-weight:650;font-size:0.8rem;cursor:pointer;}
+.private-step-nav button.selected {background:var(--purple);color:#fff;border-color:var(--purple);}
