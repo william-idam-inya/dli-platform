@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // Stage C account management. All mutations are performed by one audited
 // database transaction; raw service keys never reach browser code.
-const origins = (Deno.env.get('DLI_APP_ORIGINS') || 'http://localhost:5173')
+const origins = (Deno.env.get('DLI_APP_ORIGINS') || '')
   .split(',').map(value => value.trim()).filter(Boolean);
 const roles = new Set([
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
