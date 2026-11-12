@@ -1,3 +1,10 @@
+> **Historical Q5 record.** Stage Q6 has since reconciled the 74 production
+> migration version/name pairs, installed the scoped academic enrolment contract
+> in QA and production, and deployed a new QA preview. The older Q5 "pending"
+> items about migration history and missing enrolment functions below are
+> superseded. Read **docs/stage-q6-integrated-readiness.md** for the current
+> verified state and outstanding authentication/backup release hold.
+>
 # Stage Q5 — Dedicated production database bootstrap and release hold
 
 **Date:** 12 November 2026. **Status:** production backend prepared, **not publicly launched**.
