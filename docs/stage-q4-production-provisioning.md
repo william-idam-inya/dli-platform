@@ -1,3 +1,17 @@
+# Production provisioning — status update (12 November 2026)
+
+**Created successfully:** `dli-platform-prod` (ref `thoinmwqxmqxrnywjuxq`), Supabase region `eu-west-2`, organisation `zaisjitvumhtjtmevhbc`.
+
+- Supabase quoted USD **$0/month** for creating the Free-plan project; no paid subscription upgrade was requested.
+- Following the owner's explicit approval, the **pause request** for `clinclerk-ng` (ref `efnhpdpswdnyandytadz`) returned success; Supabase subsequently reported its state as **PAUSING**. Its application backend will be unavailable during/after pausing; do not present the app as operational.
+- `dli-platform-dev` (`pbepbcdkrdqnepvcwtyw`) remains **ACTIVE_HEALTHY** and continues to serve controlled QA.
+- The new production project is **ACTIVE_HEALTHY**. Its baseline is empty: **0 public application tables, 0 application migrations, 0 Auth users and 0 Storage buckets**. Security and health advisors returned no findings for this empty state.
+- **No development data copied.** No schema changes, application invitations, billing upgrades, payment intake or Cloudflare production launch performed.
+- The new database is not ready for real users. Next: perform a controlled migration from the reviewed SQL chain, deploy audited Edge Functions, set up private Storage/RLS policies, lock paid admissions **OFF**, configure SMTP/allowed origins, perform role-accurate negative tests and encrypted backup + isolated restore, then release signoff.
+- The previous Free-project-limit failure is retained below as historical context only; **it has been resolved through the approved pause request and new project creation**.
+
+---
+
 # DLI Production Supabase — provision blocked, no project created
 **Recorded:** 12 November 2026
 **Requested production project:** `dli-platform-prod`
