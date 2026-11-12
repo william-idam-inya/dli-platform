@@ -370,6 +370,9 @@ export default function AcademicSetupPage() {
           <div className="panel-heading"><div>
             <p className="section-kicker">04 · COURSES</p>
             <h2>Course catalogue</h2>
+            <p className="user-caption">Student enrolment uses the active courses configured here.
+              Each course links a Programme, Academic Level and Subject.
+              Until a link is saved and active, that subject is not offered in the student's enrolment form.</p>
           </div></div>
           <form className="academic-form academic-course-form" onSubmit={submitCourse}>
             <label htmlFor="course-programme">Programme</label>
