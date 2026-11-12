@@ -37,6 +37,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Workspace',
       },
       {
+        label: 'My profile',
+        path: '/profile',
+        icon: Users,
+        description: 'Private account details, verified email and device-independent preferences.',
+        group: 'Workspace',
+      },
+      {
         label: 'Feedback & support',
         path: '/feedback',
         icon: MessageSquareText,
