@@ -47,7 +47,7 @@ const AUDIENCES: {value: Audience; label: string}[] = [
 ];
 const CHANNELS: {value: Channel; label: string}[] = [
   {value:'whatsapp',label:'WhatsApp draft (manual sharing)'},
-  {value:'email',label:'Email draft (not connected)'},
+  {value:'email',label:'Email draft (manual sharing)'},
   {value:'in_app',label:'In-app draft (not published)'},
 ];
 const STAFF = new Set([
