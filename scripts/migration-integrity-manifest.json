@@ -255,6 +255,22 @@
     {
       "file": "20261112043615_stage_p2b_restore_assistant_admin_invite_delegation.sql",
       "gitBlobSha1": "4cf9b26eb57c1cbe3da4d7a6ea2aeb0cb26e8205"
+    },
+    {
+      "file": "20261112050728_stage_q1a_free_paid_enrolment_and_entitlements.sql",
+      "gitBlobSha1": "d17d382022c732a4aa4a2b60eb402480ac5d245c"
+    },
+    {
+      "file": "20261112051417_stage_q1b_class_structure_and_select_policies.sql",
+      "gitBlobSha1": "e85088376540b44567f8263c98be36dd4527536a"
+    },
+    {
+      "file": "20261112051538_stage_q1c_operational_role_and_paid_class_guards.sql",
+      "gitBlobSha1": "afc62fe15b719f4ddd44ed3510e3a0152c1ceae6"
+    },
+    {
+      "file": "20261112051801_stage_q1d_assignment_driven_tutor_payroll.sql",
+      "gitBlobSha1": "c998bdc49170d46838a5b6f52258aefcf24f0214"
     }
   ]
 }
