@@ -24,7 +24,8 @@
     "check:backup-file-tests": "node scripts/verify-backup-files.mjs --self-test",
     "check:backup-files": "node scripts/verify-backup-files.mjs",
     "check:paid-learning-plans": "node scripts/verify-paid-learning-plans.mjs",
-    "check:role-matrix": "node scripts/verify-role-matrix.mjs"
+    "check:role-matrix": "node scripts/verify-role-matrix.mjs",
+    "check:auth-activation": "node scripts/verify-auth-activation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
