@@ -4,6 +4,7 @@ import {
   ShieldAlert, ShieldCheck, UserRoundCog, Users,
 } from 'lucide-react';
 import InviteUserPage from '../auth/InviteUserPage';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -269,6 +270,12 @@ export default function UserManagementPage() {
                         <ShieldAlert size={15}/> Revoke
                       </button>
                     )}
+                    {user.role==='student' && user.status==='active' &&
+                      (account?.role==='owner'||account?.role==='admin') &&
+                      <Link className="user-outline-button"
+                        to={'/private-classes?registry='+encodeURIComponent(user.id)}>
+                        Manage private fee &amp; subjects
+                      </Link>}
                     {saving === user.id && <span className="user-busy" role="status">Applying authorised change…</span>}
                   </div>
                 )}
