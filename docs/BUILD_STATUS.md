@@ -1016,8 +1016,10 @@ live due statuses refresh on visible payroll pages. New entitlement
 events request a verified Free-to-Paid UI refresh through Supabase
 Realtime, and failed unregistered receipt uploads are cleaned up
 where the existing Storage policy permits.
+Class setup and enrolment changes now use a single authenticated
+SQL transaction, preventing partial class-roster saves.
 
-There are **73 reviewed applied migrations** on the development
+There are **74 reviewed applied migrations** on the development
 database. No Student/Tutor test accounts, paid transactions,
 class records or external hosting resources were created.
 A rollback-only authenticated Admin test confirmed the admission
