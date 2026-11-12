@@ -33,19 +33,46 @@ export function AuthChecking() {
 }
 
 export function AuthTemporarilyUnavailable() {
-  const { refresh } = useAuth();
+  const { refresh, failure } = useAuth();
+  const [leaving, setLeaving] = useState(false);
+  const message = failure === 'identity-session'
+    ? 'Your sign-in session could not be authenticated. It may have expired or been revoked.'
+    : failure === 'identity-service'
+    ? 'The sign-in identity service did not complete its verification request.'
+    : failure === 'account-registry'
+    ? 'Your identity check was attempted, but the DLI account registry could not be verified.'
+    : 'DLI could not complete its secure access check.';
+  const stage = failure === 'identity-session' ? 'AUTH-SESSION'
+    : failure === 'identity-service' ? 'AUTH-SERVICE'
+    : failure === 'account-registry' ? 'ACCOUNT-REGISTRY' : 'ACCESS-UNAVAILABLE';
+  async function signInAgain() {
+    if (!supabase || leaving) return;
+    setLeaving(true);
+    try {
+      // Voluntary local sign-out only. No workspace is displayed if this fails.
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) setLeaving(false);
+    } catch {
+      setLeaving(false);
+    }
+  }
   return <AuthLayout title="Access check temporarily unavailable"
-    intro="We could not confirm your current DLI membership. Your workspace remains restricted until verification succeeds.">
-    <p role="alert" className="auth-feedback error">
-      The authentication service or account registry could not be reached.
-      This does not necessarily mean your account was removed.
-    </p>
-    <button type="button" className="auth-submit"
+    intro="DLI cannot confirm your authorisation. Your workspace remains restricted until verification succeeds.">
+    <p role="alert" className="auth-feedback error">{message}</p>
+    <p className="auth-helper">Check stage: <strong>{stage}</strong>.
+      This safe status contains no email, session token or private account details.
+      It does not establish that your DLI account was removed.</p>
+    <button type="button" className="auth-submit" disabled={leaving}
       onClick={() => { void refresh(); }}>
       Retry secure access check
     </button>
-    <p className="auth-helper">Check your internet connection. If the problem persists,
-      contact DLI administration. Do not share passwords or invitation links.</p>
+    <button type="button" className="auth-submit" disabled={leaving}
+      onClick={() => { void signInAgain(); }}>
+      {leaving ? 'Ending local session…' : 'Sign in again on this device'}
+    </button>
+    <p className="auth-helper">If Retry keeps failing, report only the check-stage label
+      to DLI administration. Do not share passwords, session tokens or invitation links.
+      Signing in again ends only this device's current local session.</p>
   </AuthLayout>;
 }
 
