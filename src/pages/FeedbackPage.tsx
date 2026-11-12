@@ -152,16 +152,16 @@ export default function FeedbackPage() {
       <span className="module-page-icon"><MessageSquareText size={25}/></span>
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> MEMBER SUPPORT</div>
-        <h1>Feedback &amp; support</h1>
-        <p>Report class problems, missing tutors, attendance issues, safety concerns or application errors to DLI administrators.</p>
+        <h1>{staff?'Support inbox &amp; reports':'Feedback &amp; support'}</h1>
+        <p>{staff?'Review concerns submitted by learners and tutors, prioritise incidents and update their progress.':'Report class problems, missed lessons, conduct concerns and application errors privately to DLI support.'}</p>
       </div>
       <span className="module-status"><span/> Stage K7</span>
     </div>
 
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Private, account-linked feedback</strong>
-        <p>Only you and authorised DLI support administrators can see your report.
+      <div><strong>{staff?'Restricted institutional reports':'Private, account-linked feedback'}</strong>
+        <p>{staff?'These reports are submitted by authorised DLI members for administrative review.':'Only you and authorised DLI support administrators can see your report.'}
           Please do not enter passwords, patient details, home addresses, phone numbers,
           or information that identifies another student. No file attachments or automated
           external messages are sent.</p>
@@ -171,7 +171,7 @@ export default function FeedbackPage() {
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
-    <section className="panel member-feedback-form">
+    {!staff&&<section className="panel member-feedback-form">
       <div className="panel-heading"><div>
         <p className="section-kicker">01 · SEND FEEDBACK</p>
         <h2>Tell us what needs attention</h2>
@@ -202,14 +202,14 @@ export default function FeedbackPage() {
           </button>
         </div>
       </form>
-    </section>
+    </section>}
 
     <section className="panel member-feedback-records">
       <div className="panel-heading"><div>
         <p className="section-kicker">02 · {staff?'ADMINISTRATIVE REVIEW':'MY REPORTS'}</p>
         <h2>{staff?'Recent member submissions':'My feedback history'}</h2>
         <p className="user-caption">{staff
-          ?'Recent 100 reports visible to your administrative role. Review statuses are not promises of resolution.'
+          ?'Up to 100 recent reports, ordered newest first. Open reports requiring action before marking them resolved.'
           :'Only your own reports and their review statuses are displayed. No replies are sent automatically.'}</p>
       </div>
         <button type="button" className="user-outline-button" disabled={loading||saving||changing!==null}
@@ -225,7 +225,7 @@ export default function FeedbackPage() {
               <div>
                 <strong>{categoryName(item.category)}</strong>
                 <small>Reported {when(item.created_at)}
-                  {staff?' · '+(roleLabels[item.submitted_role]??'DLI member'):''}
+                  {staff?' · '+(roleLabels[item.submitted_role]??'DLI member')+' · Member '+item.submitted_by.slice(0,8):''}
                   {item.class_id?' · '+(classes.find(c=>c.id===item.class_id)?.subject_name??'Linked class'):''}</small>
               </div>
               <span className={'feedback-status feedback-status-'+item.status}>
@@ -234,6 +234,7 @@ export default function FeedbackPage() {
               </span>
             </div>
             <p className="feedback-message">{item.message}</p>
+          {staff&&<small className="feedback-reporter-id">Report ID: {item.id} · Reporter: {item.submitted_by}</small>
             {staff&&<div className="feedback-review-actions" aria-label="Manage feedback review status">
               {(['new','reviewing','resolved'] as Status[]).filter(value=>value!==item.status)
                 .map(value=><button type="button" key={value}
