@@ -14,6 +14,6 @@ assert.equal(confirmedInvitationActivation({ id }, null), false);
 const edge = readFileSync(new URL('../supabase/functions/admin-create-user/index.ts', import.meta.url), 'utf8');
 assert.ok(edge.includes('confirmedInvitationActivation(activated, created.id)'),
   'Edge Function must check its persisted registry ID before returning a one-time link');
-assert.ok(edge.includes(\".eq('status', 'pending')\") && edge.includes(\".select('id')\"),
+assert.ok(edge.includes(".eq('status', 'pending')") && edge.includes(".select('id')"),
   'activation check must retrieve the updated row');
 console.log('Invitation activation offline guard checks passed (no accounts or database accessed).');
