@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import paidLearningReference from '../data/paidLearningPlans.json';
+import DliTutorCompensation from './DliTutorCompensation';
 import './PaidLearningPlans.css';
 import './FinancePage.css';
 
@@ -274,6 +275,8 @@ export default function FinancePage() {
       </form>
     </section>}
 
+    <DliTutorCompensation/>
+
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
         <p className="section-kicker">02 · REVIEW QUEUE</p>
@@ -301,8 +304,9 @@ export default function FinancePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      This Finance foundation page stores internal policy proposals only. The separate
-      Private 1-to-1 classes module handles manual transfer evidence for individual fees.
-      Automated invoices, payments, payouts and reconciliation remain unconfigured.</p>
+      DLI’s finance workspace includes document rate references, planned tutor compensation
+      and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
+      and credit-date verification are handled in <Link to="/classes?tab=payments"> Classes &amp; timetable · Fees</Link>.
+      No automatic debit, tutor payout or bank reconciliation is enabled.</p>
   </div>;
 }
