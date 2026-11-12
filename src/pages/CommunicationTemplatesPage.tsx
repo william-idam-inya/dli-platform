@@ -46,7 +46,7 @@ const AUDIENCES: {value: Audience; label: string}[] = [
   {value:'all_members',label:'All community members (intended only)'},
 ];
 const CHANNELS: {value: Channel; label: string}[] = [
-  {value:'whatsapp',label:'WhatsApp draft (not connected)'},
+  {value:'whatsapp',label:'WhatsApp draft (manual sharing)'},
   {value:'email',label:'Email draft (not connected)'},
   {value:'in_app',label:'In-app draft (not published)'},
 ];
