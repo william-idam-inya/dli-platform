@@ -54,3 +54,6 @@
 .dli-direct-file-review{display:grid;gap:.5rem;border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem}
 .dli-direct-file-review strong{font-size:.78rem}
 .dli-direct-file-review button{justify-self:start}
+
+.dli-direct-drafts-link{font-size:.78rem;color:var(--muted);margin:.65rem 0}
+.dli-direct-drafts-link a{color:var(--purple);font-weight:750}
