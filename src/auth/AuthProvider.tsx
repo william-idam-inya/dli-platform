@@ -4,6 +4,7 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase';
 import { isFilePickerFocused } from './filePickerFocus';
+import { sessionPresence } from './sessionPresence';
 import { isDliRole, type Account } from './permissions';
 
 export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
@@ -31,6 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setState('checking');
+
+    // A fresh phone or an incognito browser has no stored session.
+    // Its correct destination is sign-in, not the temporary outage screen.
+    // This local state is NEVER sufficient to grant access: users with a
+    // session still need verified getUser(), registry and RLS checks.
+    const presence = await sessionPresence(supabase.auth);
+    if (run !== verification.current) return;
+    if (presence === 'guest') {
+      setAccount(null);
+      setState('guest');
+      return;
+    }
+    if (presence === 'unavailable') {
+      setAccount(null);
+      setState('unavailable');
+      return;
+    }
 
     // Always revalidate the session and role before exposing the workspace.
     // Temporary network/API errors are NOT proof of revoked DLI membership.
