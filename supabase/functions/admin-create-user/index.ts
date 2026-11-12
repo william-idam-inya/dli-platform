@@ -149,13 +149,21 @@ Deno.serve(async (request: Request) => {
     return response(500, { error: 'Audit logging failed. Account remains pending.' }, origin);
   }
 
-  const { error: activateError } = await admin
+  // An UPDATE that matches zero rows is not an error in PostgREST.
+  // Verify the pending record really transitioned before returning the
+  // one-time link; otherwise an invitation could be reported as usable
+  // while the intended account has no active DLI membership.
+  const { data: activated, error: activateError } = await admin
     .from('authorised_users')
     .update({ status: 'active' })
     .eq('id', created.id)
-    .eq('status', 'pending');
-  if (activateError) {
-    return response(500, { error: 'Could not activate the invitation record.' }, origin);
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle();
+  if (activateError || activated?.id !== created.id) {
+    return response(409, {
+      error: 'Invitation activation was not confirmed. Ask DLI administration to review the pending account. Do not reuse this link.',
+    }, origin);
   }
 
   // Return the one-time URL only in this response to this verified administrator.
