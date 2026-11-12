@@ -61,7 +61,7 @@ for(const dir of sourceDirs){
   for(const file of readdirSync(absolute).filter(name=>name.endsWith('.tsx'))){
     const source=readFileSync(new URL(file,absolute),'utf8');
     checkedFiles++;
-    for(const match of source.matchAll(/\\bto=["'](\\/[^"']+)["']/g)){
+    for(const match of source.matchAll(/\bto=["'](\/[^"']+)["']/g)){
       const path=match[1].split(/[?#]/)[0];
       // SPA navigation can be explicitly routed or intentionally served by
       // navigationItems' registered fallback; unsupported literals fail.
