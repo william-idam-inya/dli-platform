@@ -10,3 +10,10 @@
 .unified-overview-footnote {display:flex;align-items:flex-start;gap:.45rem;font-size:.78rem;line-height:1.5;color:var(--muted);margin-top:1.4rem;}
 .unified-overview-footnote svg {flex-shrink:0;}
 @media(max-width:540px){.unified-overview-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.unified-overview-metrics>div {min-width:0;padding:.85rem;}}
+
+.unified-learning-section{margin:1.5rem 0}
+.unified-learning-restricted{display:inline-flex;align-items:center;gap:.35rem;margin-top:.55rem;color:var(--muted);font-size:.73rem;line-height:1.4}
+.unified-learning-restricted svg{flex-shrink:0}
+.unified-module-group{margin:1.25rem 0 1.75rem}
+.unified-module-group-label{font-size:.92rem;font-weight:750;color:var(--muted);margin:0 0:.65rem}
+.unified-module-group .module-grid{margin-top:0}
