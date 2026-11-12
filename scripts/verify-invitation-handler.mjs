@@ -160,7 +160,7 @@ assert.equal(result.status,409);
 assert.ok(!result.data.invitation_url);
 assert.equal(state.registry[0].status,'pending');
 assert.equal(state.registry[0].auth_user_id,null);
-result=await invoke({action:'inspect_pending',registry_id});
+result=await invoke({action:'inspect_pending',registry_id: registryId});
 assert.equal(result.status,409);
 assert.equal(result.data.recovery_status,'unbound_identity');
 
@@ -172,16 +172,16 @@ for(const failedStep of ['profiles:insert','audit_logs:insert','authorised_users
   assert.ok(!result.data.invitation_url,'no link on failed '+failedStep);
   assert.equal(state.registry[0].status,'pending');
   assert.equal(state.registry[0].auth_user_id,guestId);
-  const inspect=await invoke({action:'inspect_pending',registry_id});
+  const inspect=await invoke({action:'inspect_pending',registry_id: registryId});
   assert.equal(inspect.status,200,failedStep);
   assert.equal(inspect.data.recovery_status,'pending_linked');
-  const recovered=await invoke({action:'recover_pending',registry_id});
+  const recovered=await invoke({action:'recover_pending',registry_id: registryId});
   assert.equal(recovered.status,200,failedStep);
   assert.equal(recovered.data.recovery_status,'recovered');
   assert.equal(recovered.data.invitation_url,null);
   assert.equal(state.registry[0].status,'active');
   assert.ok(state.audits.some(a=>a.event_type==='invitation.recovery_attempt'));
-  assert.equal((await invoke({action:'recover_pending',registry_id})).status,409,
+  assert.equal((await invoke({action:'recover_pending',registry_id: registryId})).status,409,
     'recovery must not reactivate an already active record');
 }
 
@@ -189,7 +189,7 @@ state=fresh();
 state.fail='profiles:insert';
 await invoke(requestBody());
 state.identities[0].email='mismatch@example.invalid';
-assert.equal((await invoke({action:'recover_pending',registry_id})).status,409);
+assert.equal((await invoke({action:'recover_pending',registry_id: registryId})).status,409);
 assert.equal(state.registry[0].status,'pending');
 
 state=fresh();
