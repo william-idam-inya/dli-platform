@@ -275,6 +275,10 @@
     {
       "file": "20261112053132_stage_q1e_rls_free_demo_and_assistant_directory.sql",
       "gitBlobSha1": "f07c38e688a0874e66c4c38b2d79ac6785865065"
+    },
+    {
+      "file": "20261112053814_stage_q1f_catalogue_access_and_paid_isolation.sql",
+      "gitBlobSha1": "2f3ab9324cab4ff3922521eedc080ac97dfdbb90"
     }
   ]
 }
