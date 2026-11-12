@@ -43,3 +43,34 @@ Development and offline regression testing **only**. No real student/tutor invit
 5. Open development UI only with already authorised test credentials. No real-user invitation, enrolment, finance or deployment steps.
 
 **Status:** Stage Q3 offline role-matrix tests added; CI outcome must be checked on the latest Q3 commit. All real-session and deployment signoffs remain pending.
+
+## Independent pre-launch audit hardening (12 November 2026)
+
+- **Node runtime:** Node 22.18+ is required by the Q3 role-matrix
+  test because it imports the real TypeScript permissions module
+  directly. This minimum is now declared in both package manifests.
+- **Cloudflare Pages build trap:** Pages generally runs `npm run build`,
+  not `npm run build:release`. The ordinary build now runs
+  `verify-release-env.mjs --when-pages` before TypeScript/Vite if
+  Cloudflare's `CF_PAGES` or build metadata is detected. Without an
+  explicitly approved **non-development** Supabase project, publishable
+  browser key, and HTTPS release origin, that build stops nonzero.
+  This intentionally also blocks unapproved Pages previews.
+- **Browser response headers:** Pages now sends a baseline
+  Content-Security-Policy restricting script loading, frames, object
+  embedding, network connections, images and fonts. Google Fonts and
+  authenticated Supabase HTTP/WebSocket endpoints are allowlisted.
+  These headers affect the Pages site, not the local Vite development
+  server.
+- **CI negative test:** Simulates Pages metadata and confirms the
+  standard `npm run build` is blocked before compilation; a separate
+  build still checks that the CSP is emitted.
+
+**Not a deployment approval.** A direct upload of locally built output
+can bypass the Pages build hook, so release permissions and human signoff
+are still required. Before enabling any public origin, conduct an actual
+browser security-header/CSP smoke test for login, realtime, private file
+download, profile picture, Google Fonts and all approved modules.
+Confirm whether Cloudflare Pages is the actual hosting environment.
+Retain Q3's outstanding cross-role RLS tests, isolated restore rehearsal,
+child-safeguarding/retention policies and payment verification controls.
