@@ -169,8 +169,8 @@ export default function FinancePage() {
       </div>
       <div className="finance-summary-card">
         <FileText size={20}/>
-        <strong>Disabled</strong>
-        <span>Automated invoices</span>
+        <strong>Manual workflow</strong>
+        <span>Fee assignments and evidence review</span>
       </div>
       <div className="finance-summary-card">
         <Banknote size={20}/>
