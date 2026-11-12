@@ -79,6 +79,9 @@ jobs:
       - name: Verify fresh-browser guest login remains accessible
         run: npm run check:guest-login
 
+      - name: Verify Q8 approved production staff bootstrap guardrails
+        run: npm run check:q8-staff-bootstrap
+
       - name: Verify TypeScript
         run: npm run typecheck
 
