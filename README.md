@@ -63,6 +63,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage L2 unifies weekly class assignment:** `/classes` is the primary role-based space for individual learners **and** groups. Select one or more authorised students, then subject, weekday/time, tutor and Google Meet; a class automatically becomes individual or group according to its active membership. Fees, bank instructions and manual receipt review are in the same workspace as a tab. The academic catalogue and content/quiz modules remain distinct, while legacy duplicate scheduling routes are removed from main navigation but retained for compatibility. No public deployment or live learner account was created. See `docs/stage-l2-unified-class-workspace.md` for details, database safeguards and pending content/payment-policy integration.
 
+**Stage N1 introduces the DLI Messages workspace:** authorised direct member conversations, message reports, audited Founder/Admin oversight and a separate Subject conversations tab using the existing class chat. The old draft editor remains available at `/communications/drafts`. This development-only stage supports **text**; private file attachments, independent role tests and a secure production release are still pending. See `docs/stage-n1-direct-messaging.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
