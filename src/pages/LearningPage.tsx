@@ -433,7 +433,7 @@ export default function LearningPage() {
     </div>}
     <div className="module-footnote"><LockKeyhole size={15}/>
       Only members with current class permissions can access these lessons.
-      Private file uploads and authenticated downloads are implemented in Stage E2. Assignment grading, submission workflows, quizzes and AI generation are still disabled.
+      Private file uploads and authenticated downloads are available. <Link to="/study?tab=assignments">Assignments and grading</Link>, <Link to="/study?tab=quizzes">quizzes and results</Link>, and <Link to="/study?tab=attendance">attendance</Link> are accessible through this learning workspace, subject to your active course membership. AI generation is not connected.
     </div>
   </div>;
 }
