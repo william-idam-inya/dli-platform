@@ -3,7 +3,16 @@
 **Branch:** `feature/stage-q3-internal-acceptance` (based on Q2 commit `61cba8ab3e62`).
 
 ## Scope / authorisation
-Development and offline regression testing **only**. No real student/tutor invitations, production deployment, payment collection, bank-transfer confirmation, paid entitlements, actual tutor payouts, live teaching records, or irreversible database mutations. Keep the existing development accounts and records.
+Development and internal regression testing **only**. A reviewed, additive catalogue/enrolment schema migration was applied to the isolated development database; no existing enrolment records were changed. No real student/tutor invitations, production deployment, payment collection, bank-transfer confirmation, paid entitlements, actual tutor payouts, live teaching records or destructive database operations. Keep the existing development accounts and records.
+
+## Internal UX corrections (12 November 2026)
+- Replaced the slow browser date-picker with Day / Month / numeric Year controls; birth-date validation remains strict.
+- Student enrolment now follows **Programme → configured Academic Level → deduplicated active Subjects**. It obtains names/IDs through a narrowly scoped student catalogue RPC; no private course content is exposed.
+- Only active Admin-created courses link a programme, level and subject. As of this change, the development catalogue has **no active courses**, so an Admin must configure them before subject choices appear. Do not fabricate course mappings.
+- The applied **development-only** additive migration `20261112120651_stage_q3_programme_level_subject_enrolment.sql` records programme and level on applications and rejects forged programme/level/subject combinations at the database. Historical rows are preserved; the development project had zero applications at migration time.
+- Legacy two-argument paid application RPC execution was revoked from authenticated users. New client uses the four-argument v2 RPC. Existing server-side paid-admission control remains **false**; do not open it for UX testing.
+- `npm run check:enrolment-catalogue` tests cascading and duplicate removal entirely offline.
+- Browser and authenticated-RLS verification of these changes is **pending** until the updated frontend is built and approved synthetic sessions are available.
 
 ## Automated acceptance introduced
 - `npm run check:role-matrix` imports the **actual** `src/auth/permissions.ts` using Node 22.18+ built-in type stripping; does not connect to Supabase or external networks.
