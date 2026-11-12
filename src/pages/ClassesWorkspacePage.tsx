@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BookOpen, CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil, Plus, RefreshCw, Users, Video, Wallet, MessageCircle } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
-import DliClassCommunication from './DliClassCommunication';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
 
@@ -157,6 +156,8 @@ export default function ClassesWorkspacePage(){
     }catch{setError('Class state could not be confirmed. Please refresh.');}
     finally{setBusy(false);}
   }
+  if(params.get('tab')==='messages'&&communicating)
+    return <Navigate to={'/communications?section=class'+(params.get('class')?'&class='+encodeURIComponent(params.get('class')!):'')} replace/>;
   return <div className="module-page classes-workspace">
     <div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
@@ -182,12 +183,8 @@ export default function ClassesWorkspacePage(){
         onClick={()=>setParams(requested?{tab:'payments',registry:requested}:{tab:'payments'})}>
         <Wallet size={15}/> Fees &amp; payment evidence
       </button>}
-      {communicating&&<button className={tab==='messages'?'selected':''} type="button"
-        onClick={()=>setParams({tab:'messages'})}>
-        <MessageCircle size={15}/> Messages &amp; contacts
-      </button>}
     </nav>}
-    {tab==='payments'&&paying?<PrivateClassesPage billingOnly embedded/>:tab==='messages'&&communicating?<DliClassCommunication/>:<>
+    {tab==='payments'&&paying?<PrivateClassesPage billingOnly embedded/>:<>
       {error&&<p className="auth-feedback error" role="alert">{error}</p>}
       {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
       <div className="academic-top-actions">
@@ -289,10 +286,9 @@ export default function ClassesWorkspacePage(){
             <p><LockKeyhole size={15}/>{c.billing_mode==='free'?'Free':'Paid / manual verification'}</p>
             <div className="classes-card-actions">
               {c.state==='published'&&<a href={c.meeting_url} target="_blank" rel="noopener noreferrer"><Video size={15}/> Google Meet</a>}
-              {communicating&&c.state==='published'&&<button type="button" disabled={busy}
-                onClick={()=>setParams({tab:'messages',class:c.id})}>
+              {communicating&&c.state==='published'&&<Link to={'/communications?section=class&class='+encodeURIComponent(c.id)}>
                 <MessageCircle size={14}/> Subject chat
-              </button>}
+              </Link>}
               {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>
               {staff&&c.state!=='archived'&&<>
                 <button type="button" disabled={busy} onClick={()=>editClass(c)}><Pencil size={14}/> Edit</button>
