@@ -251,6 +251,10 @@
     {
       "file": "20261112043340_stage_p2a_role_assignment_owner_admin_only.sql",
       "gitBlobSha1": "f5cdea014409940d7b147f5ac56fa63f5262d790"
+    },
+    {
+      "file": "20261112043615_stage_p2b_restore_assistant_admin_invite_delegation.sql",
+      "gitBlobSha1": "4cf9b26eb57c1cbe3da4d7a6ea2aeb0cb26e8205"
     }
   ]
 }
