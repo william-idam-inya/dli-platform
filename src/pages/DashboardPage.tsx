@@ -23,7 +23,7 @@ export default function DashboardPage(){
   const [classes,setClasses]=useState<TeachingClass[]>([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
-  const isManager=account?.role==='owner'||account?.role==='admin'||account?.role==='academic_coordinator';
+  const isManager=account?.role==='admin'||account?.role==='assistant_admin';
   const available=actions.filter(action=>account&&canAccessPath(account.role,action.path,account.studentTier))
     .map(action=>action.path==='/feedback'&&account&&['owner','admin','assistant_admin'].includes(account.role)
       ? {...action,title:'Support inbox & reports',description:'Review learner and tutor reports, prioritise concerns and track review status.'}
