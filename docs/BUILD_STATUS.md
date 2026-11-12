@@ -866,6 +866,39 @@ account verification, backups and a separate production environment
 are still outstanding. See
 `docs/stage-l1-private-learning-workflow.md`.
 
+## Stage L2 — Unified teaching workspace (under acceptance)
+
+The fragmented L1 individual/private, D3 cohort assignments and legacy
+“My classes” navigation has been consolidated into one `/classes`
+work area with role-restricted views. Admin staff select one or
+multiple active registered students, then subject, recurring WAT
+day/time, tutor and Google Meet. The member count determines the
+individual/group class format. Free classes may publish after
+students are saved; paid classes require manual fee verification
+before publishing. Students see only their own class links; Tutors
+see the student roster for their published classes. Owner/Admin
+can review fee assignments and bank receipts in the same workspace.
+
+The **academic catalogue, courses, topics, lessons, assignments and
+quizzes** remain in place because they are distinct curriculum
+records, not duplicate timetables. Old course-offering assignments,
+cohort configuration and dated sessions remain accessible via
+advanced academic links, but their old dashboard links are no
+longer separate main-menu entries. Redundant operations submenus
+were likewise moved behind their parent pages; no data was deleted.
+The old Stage I3 build-roadmap content has been removed from Home.
+
+Three dev-only migrations introduce two RLS-backed class and member
+tables plus safety fixes; all **44 applied migrations** are recorded
+in the integrity manifest. The new tables have no anonymous grants
+or authenticated DELETE permissions. No classes or new group
+members were created during implementation. Authenticated
+cross-role browser testing, monthly fee policy, course-content
+offering integration, atomic class saves, backup/restore and
+production deployment remain open.
+
+See `docs/stage-l2-unified-class-workspace.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
