@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { CheckCheck, Flag, LockKeyhole, MessageCircle, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import DliClassCommunication from './DliClassCommunication';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
@@ -24,6 +25,7 @@ export default function DirectMessagesPage(){
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
   const [mode,setMode]=useState<'inbox'|'oversight'>('inbox');
+  const [section,setSection]=useState<'direct'|'class'>('direct');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
@@ -159,6 +161,13 @@ export default function DirectMessagesPage(){
         Their oversight openings are audited. Only approved Student–Tutor class relationships can initiate direct conversations.
         Contact DLI staff directly for urgent safeguarding concerns.</p>
     </div></div>
+    <nav className="dli-direct-section-tabs" aria-label="Messaging sections">
+      <button type="button" className={section==='direct'?'selected':''}
+        onClick={()=>setSection('direct')}>Direct messages</button>
+      <button type="button" className={section==='class'?'selected':''}
+        onClick={()=>setSection('class')}>Subject conversations</button>
+    </nav>
+    {section==='class'?<DliClassCommunication/>:<>
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="dli-direct-controls">
@@ -234,6 +243,7 @@ export default function DirectMessagesPage(){
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Text messaging and restricted moderation are included in N1. Attachments, true push notifications, message delivery/read receipts and group conversations are not yet enabled.</p>
+    </>}
+    <p className="module-footnote"><Users size={14}/> Direct and subject text conversations are accessible here. Attachments, true push notifications, message delivery/read receipts and group conversations are not yet enabled.</p>
   </div>;
 }
