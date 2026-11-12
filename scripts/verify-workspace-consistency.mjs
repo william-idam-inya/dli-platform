@@ -1,6 +1,6 @@
 // Shared navigation contract: offline, read-only, across every DLI role/tier.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { DLI_ROLES, canAccessPath } from '../src/auth/permissions.ts';
 import { navigationItems, permittedNavigation } from '../src/data/navigation.ts';
 import { learningAreas, learningAreaUrl } from '../src/data/learningAreas.ts';
@@ -51,5 +51,26 @@ for(const role of DLI_ROLES){
   configurations++;
  }
 }
+// Audit literal internal links across every client component and page.
+// This catches a new route-linked UI feature that was never registered in App.
+const routePaths=new Set([...app.matchAll(/<Route path="([^"]+)"/g)].map(m=>m[1]));
+const sourceDirs=['../src/pages','../src/components','../src/auth'];
+let checkedFiles=0,checkedLinks=0;
+for(const dir of sourceDirs){
+  const absolute=new URL(dir+'/',import.meta.url);
+  for(const file of readdirSync(absolute).filter(name=>name.endsWith('.tsx'))){
+    const source=readFileSync(new URL(file,absolute),'utf8');
+    checkedFiles++;
+    for(const match of source.matchAll(/\\bto=["'](\\/[^"']+)["']/g)){
+      const path=match[1].split(/[?#]/)[0];
+      // SPA navigation can be explicitly routed or intentionally served by
+      // navigationItems' registered fallback; unsupported literals fail.
+      assert.ok(routePaths.has(path)||paths.includes(path),
+        file+' links to missing route '+path);
+      checkedLinks++;
+    }
+  }
+}
+console.log('Q3 literal internal links checked: '+checkedLinks+' across '+checkedFiles+' source files.');
 console.log('Q3 workspace consistency passed: '+paths.length+' navigable modules, '+
   configurations+' role/tier configurations and 4 learning areas.');
