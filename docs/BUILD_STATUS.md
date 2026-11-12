@@ -899,6 +899,29 @@ production deployment remain open.
 
 See `docs/stage-l2-unified-class-workspace.md`.
 
+## Stage N1 — Messages and safeguarding oversight (development only)
+
+The Communications landing page now opens **Messages** rather than
+a private drafting form. It contains two sections: direct chats
+between authorised members, and the existing Student–Tutor subject
+conversations. Founder/Admin can inspect all direct conversations
+via an audited, read-only moderation RPC and review reports.
+Students and tutors can initiate direct contact according to their
+approved DLI relationships; all members can contact Owner/Admin
+when authorised. Unicode text supports different languages.
+
+Development migrations
+`20261112034550_stage_n1_direct_messaging.sql` and
+`20261112034941_stage_n1a_messaging_policy_execution_and_review_audit.sql`
+are recorded in the 56-file integrity manifest. No real
+messages, users or payment changes were introduced. File
+attachments, true push notifications and fully unified
+cross-channel backend search are **not yet implemented**.
+Independent authenticated role tests and safeguarding/retention
+approval are required before enabling messaging for minors.
+
+See `docs/stage-n1-direct-messaging.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
