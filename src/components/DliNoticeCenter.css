@@ -34,3 +34,5 @@ background:var(--surface-soft,#f9f8fc);border-radius:11px}
 .dli-dashboard-notice-list article small{color:var(--muted,#77718c);margin-top:.3rem;font-size:.74rem}
 .dli-dashboard-notice-list article p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;margin:.75rem 0 0}
 @media(max-width:620px){.dli-notification-panel{position:fixed;top:65px;right:.7rem}}
+
+.dli-message-link{position:relative;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit}
