@@ -5,7 +5,7 @@ import { navigationSections } from '../data/navigation';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, roleLabels } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
-import { DliNotificationBell } from './DliNoticeCenter';
+import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
@@ -146,6 +146,7 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
           <div className="topbar-actions">
+            <DliMessageBadge/>
             <DliNotificationBell/>
             <span className="preview-label"><span className="preview-dot" /> Development access</span>
             <button
