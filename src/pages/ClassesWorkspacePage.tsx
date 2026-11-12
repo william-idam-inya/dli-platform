@@ -101,63 +101,53 @@ export default function ClassesWorkspacePage(){
   async function save(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(!supabase||!staff||busy)return;
-    const fields={...form,subject_id:subjectId,tutor_id:tutorId,programme_id:programmeId,
-      billing_mode:form.class_type==='free_demo'?'free' as const:'manual_transfer' as const,
-      meeting_url:form.meeting_url.trim()};
-    const payload={...fields,...(!fields.class_group_id?{class_group_id:undefined}:{})};
-    if((!chosen.length&&fields.class_type!=='free_demo')||!fields.class_start_date||!fields.programme_id||
-      (fields.class_type==='private_1_to_1'&&chosen.length!==1)||
-      (fields.class_type==='group_5_science'&&chosen.length>5)||
-      (fields.class_type==='group_10'&&chosen.length>10)||
-      !fields.subject_id||!fields.tutor_id||
-      fields.starts_at>=fields.ends_at||!validMeet(fields.meeting_url)){
+    const url=form.meeting_url.trim();
+    if((!chosen.length&&form.class_type!=='free_demo')||
+      !form.class_start_date||!programmeId||!subjectId||!tutorId||
+      (form.class_type==='private_1_to_1'&&chosen.length!==1)||
+      (form.class_type==='group_5_science'&&chosen.length>5)||
+      (form.class_type==='group_10'&&chosen.length>10)||
+      form.starts_at>=form.ends_at||!validMeet(url)){
       setError('Choose a valid class type, programme, start date, eligible students, subject, tutor, time and Google Meet URL.');return;
     }
     setBusy(true);setError(null);setNotice(null);
     try{
-      let id=editing;
-      if(editing){
-        const {data,error:e}=await supabase.from('teaching_classes').update(payload).eq('id',editing).select('id').maybeSingle();
-        if(e||!data){setError(errorMessage(e));return;}
+      // One authenticated SQL function preserves all existing trigger/RLS
+      // safeguards and commits the class plus roster together.
+      const res=await supabase.rpc('dli_save_teaching_class',{
+        p_id:editing,
+        p_programme_id:programmeId,
+        p_subject_id:subjectId,
+        p_tutor_id:tutorId,
+        p_class_type:form.class_type,
+        p_class_start_date:form.class_start_date,
+        p_group_id:form.class_group_id||null,
+        p_group_name:form.class_group_name,
+        p_weekday:form.weekday,
+        p_starts_at:form.starts_at,
+        p_ends_at:form.ends_at,
+        p_meeting_url:url,
+        p_students:chosen,
+      });
+      if(res.error||!res.data){
+        setError(errorMessage(res.error));return;
+      }
+      const id=res.data as string;
+      if(!editing&&form.class_type==='free_demo'){
+        const published=await supabase.from('teaching_classes')
+          .update({state:'published'}).eq('id',id).select('id').maybeSingle();
+        setNotice(published.error||!published.data
+          ?'Demo saved with its roster as a draft. Review the schedule and publish when ready.'
+          :'Free Demo published; all its roster changes were saved together.');
       }else{
-        const {data,error:e}=await supabase.from('teaching_classes').insert(payload).select('id').single();
-        if(e||!data){setError(errorMessage(e));return;}
-        id=data.id;
-      }
-      if(!id){setError('A class ID could not be confirmed. Refresh before retrying.');return;}
-      const existing=members.filter(m=>m.class_id===id);
-      const alreadyActive=new Set(existing.filter(m=>m.is_active).map(m=>m.student_id));
-      let partial:string|null=null;
-      for(const student_id of chosen){
-        if(alreadyActive.has(student_id))continue;
-        const old=existing.find(m=>m.student_id===student_id);
-        const result=old
-          ?await supabase.from('teaching_class_members').update({is_active:true}).eq('id',old.id).select('id').maybeSingle()
-          :await supabase.from('teaching_class_members').insert({class_id:id,student_id}).select('id').maybeSingle();
-        if(result.error||!result.data){partial=errorMessage(result.error);break;}
-      }
-      if(!partial){
-        for(const m of existing.filter(m=>m.is_active&&!chosen.includes(m.student_id))){
-          const result=await supabase.from('teaching_class_members').update({is_active:false}).eq('id',m.id).select('id').maybeSingle();
-          if(result.error||!result.data){partial=errorMessage(result.error);break;}
-        }
-      }
-      if(partial){
-        setError('The class was saved, but membership changes may be incomplete: '+partial+
-          ' Review the saved roster before publishing.');
-        await refresh();return;
-      }
-      if(!editing&&fields.class_type==='free_demo'){
-        const result=await supabase.from('teaching_classes').update({state:'published'}).eq('id',id).select('id').maybeSingle();
-        setNotice(result.error||!result.data?'Class saved as draft. Resolve any conflicts before publishing.':
-          'Class published to its enrolled learners and tutor.');
-      }else{
-        setNotice(editing?'Class details and student membership updated.':
-          'Class saved as a draft. Paid classes require manual payment verification before publishing.');
+        setNotice(editing
+          ?'Class details and enrolled students saved together successfully.'
+          :'Class and student roster saved as one draft. Publish after confirming the required student approvals.');
       }
       cancelEdit();await refresh();
-    }catch{setError('Save was interrupted. A draft may exist. Refresh before retrying.');}
-    finally{setBusy(false);}
+    }catch{
+      setError('Class save could not be confirmed. Refresh the register before retrying.');
+    }finally{setBusy(false);}
   }
   async function changeState(c:ClassRow,state:'published'|'archived'){
     if(!supabase||!staff||busy)return;
