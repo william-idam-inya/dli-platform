@@ -9,7 +9,9 @@ import { tmpdir } from 'node:os';
 import { join, resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PROJECT = 'pbepbcdkrdqnepvcwtyw';
+const DEV_PROJECT = 'pbepbcdkrdqnepvcwtyw';
+const PROD_PROJECT = 'thoinmwqxmqxrnywjuxq';
+const APPROVED_PROJECTS = new Set([DEV_PROJECT, PROD_PROJECT]);
 const REQUIRED_SQL = ['roles.sql', 'schema.sql', 'data.sql'];
 const PRIVATE_BUCKETS = [
   'dli-chat-files', 'dli-enrolment-proofs', 'dli-lesson-files',
@@ -24,7 +26,7 @@ function inside(parent, child) {
 }
 function checkPath(name) {
   if (typeof name !== 'string' || !name || name.includes('\\') ||
-      name.includes('\\0') || isAbsolute(name) || name.split('/').some(x => x === '..' || x === '.' || x === '')) {
+      name.includes(String.fromCharCode(0)) || isAbsolute(name) || name.split('/').some(x => x === '..' || x === '.' || x === '')) {
     throw Error('Recovery manifest contains an unsafe relative path');
   }
 }
@@ -60,13 +62,14 @@ function objectList(manifest, bucket) {
   if (!Array.isArray(items)) throw Error('Missing private Storage bucket inventory');
   return items;
 }
-async function verifyBundle(dir) {
+async function verifyBundle(dir, expectedProjectRef) {
+  if (!APPROVED_PROJECTS.has(expectedProjectRef)) throw Error('Specify an approved DLI project reference explicitly');
   if (!isAbsolute(dir)) throw Error('DLI_RECOVERY_BUNDLE_DIRECTORY must be absolute');
   const root = await realpath(dir);
   if (inside(repoRoot, root)) throw Error('Never store recovery bundles inside the source repository');
   const { path:manifestPath } = await regularFile(root, 'recovery-manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  if (manifest.schemaVersion !== 1 || manifest.projectRef !== PROJECT ||
+  if (manifest.schemaVersion !== 1 || manifest.projectRef !== expectedProjectRef ||
       !Number.isFinite(Date.parse(manifest.capturedAt || '')) ||
       !manifest.sql || typeof manifest.sql !== 'object') {
     throw Error('Recovery manifest has an invalid schema, timestamp or project reference');
@@ -104,7 +107,7 @@ async function selfTest() {
   const root = await mkdtemp(join(tmpdir(),'dli-q4-recovery-'));
   try {
     const manifest = {
-      schemaVersion:1, projectRef:PROJECT, capturedAt:'2026-11-12T12:00:00Z',
+      schemaVersion:1, projectRef:DEV_PROJECT, capturedAt:'2026-11-12T12:00:00Z',
       sql:{}, storage:Object.fromEntries(PRIVATE_BUCKETS.map(b=>[b,[]])),
       storageObjectCounts:Object.fromEntries(PRIVATE_BUCKETS.map(b=>[b,0])),
     };
@@ -120,18 +123,19 @@ async function selfTest() {
     manifest.storageObjectCounts['dli-chat-files']=1;
     const save=()=>writeFile(join(root,'recovery-manifest.json'),JSON.stringify(manifest));
     await save();
-    assert.deepEqual(await verifyBundle(root),{sqlFiles:3,bucketCount:5,objectCount:1});
+    assert.deepEqual(await verifyBundle(root, DEV_PROJECT),{sqlFiles:3,bucketCount:5,objectCount:1});
+    await assert.rejects(verifyBundle(root, PROD_PROJECT),/project reference/);
     manifest.storageObjectCounts['dli-chat-files']=0;
     await save();
-    await assert.rejects(verifyBundle(root),/count/);
+    await assert.rejects(verifyBundle(root, DEV_PROJECT),/count/);
     manifest.storageObjectCounts['dli-chat-files']=1;
     manifest.storage['dli-chat-files'][0].path='../unsafe.txt';
     await save();
-    await assert.rejects(verifyBundle(root),/unsafe/);
+    await assert.rejects(verifyBundle(root, DEV_PROJECT),/unsafe/);
     manifest.storage['dli-chat-files'][0].path='example.txt';
     await save();
     await writeFile(join(root,'storage','dli-chat-files','example.txt'),'tampered');
-    await assert.rejects(verifyBundle(root),/match/);
+    await assert.rejects(verifyBundle(root, DEV_PROJECT),/match/);
     process.stdout.write('Q4 recovery-bundle self-tests passed (integrity, count, traversal, tampering).\\n');
   } finally { await rm(root,{recursive:true,force:true}); }
 }
@@ -141,7 +145,9 @@ if (process.argv.includes('--self-test')) {
 } else {
   const root=process.env.DLI_RECOVERY_BUNDLE_DIRECTORY;
   if (!root) throw Error('Specify an encrypted/offline private recovery bundle via DLI_RECOVERY_BUNDLE_DIRECTORY');
-  const result=await verifyBundle(root);
+  const projectRef=process.env.DLI_RECOVERY_EXPECTED_PROJECT_REF;
+  if (!APPROVED_PROJECTS.has(projectRef)) throw Error('Set DLI_RECOVERY_EXPECTED_PROJECT_REF to the exact approved DLI project ref');
+  const result=await verifyBundle(root, projectRef);
   process.stdout.write('Q4 offline recovery receipt passed: '+result.sqlFiles+' SQL dumps, '+
     result.bucketCount+' private buckets, '+result.objectCount+' checked Storage files.\\n');
   process.stdout.write('NOT VERIFIED: database restore, external inventory accuracy, Auth config, encryption, off-site replication or recovery time.\\n');
