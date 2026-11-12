@@ -171,6 +171,10 @@
     {
       "file": "20261112002954_stage_l2_unified_teaching_classes.sql",
       "gitBlobSha1": "7151b002ed13ae0552748f56d0e988a413034d0e"
+    },
+    {
+      "file": "20261112003138_stage_l2a_membership_archive_recovery.sql",
+      "gitBlobSha1": "e2905ccd7754fbece2ad4388fadeed33804953f7"
     }
   ]
 }
