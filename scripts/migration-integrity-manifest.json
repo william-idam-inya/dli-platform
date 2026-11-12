@@ -283,6 +283,10 @@
     {
       "file": "20261112062833_stage_q2_assigned_catalogue_visibility.sql",
       "gitBlobSha1": "d00a1f8e8a330f59a8b3b298af24edb260ee6618"
+    },
+    {
+      "file": "20261112063127_stage_q2b_operational_enrolment_switch.sql",
+      "gitBlobSha1": "4e4c12b09c1e073bdfa5cd9f854a1eef8aef8eef"
     }
   ]
 }
