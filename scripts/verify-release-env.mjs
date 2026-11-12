@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEVELOPMENT_REF = 'pbepbcdkrdqnepvcwtyw';
+const PRODUCTION_REF = 'thoinmwqxmqxrnywjuxq';
 
 function inspect({ url = '', key = '', approvedRef = '', publicOrigin = '' }) {
   const failures = [];
@@ -20,6 +21,8 @@ function inspect({ url = '', key = '', approvedRef = '', publicOrigin = '' }) {
     failures.push('An explicitly approved 20-character production project reference is required.');
   } else if (ref === DEVELOPMENT_REF) {
     failures.push('The DLI development Supabase project cannot be used for release.');
+   else if (ref !== PRODUCTION_REF) {
+    failures.push('Production release is permitted only for the separately approved DLI production project.');
   }
 
   const match = /^https:\/\/([a-z0-9]{20})\.supabase\.co\/?$/.exec(rawUrl);
@@ -56,15 +59,16 @@ function inspect({ url = '', key = '', approvedRef = '', publicOrigin = '' }) {
 
 function selfTest() {
   const good = {
-    url: 'https://abcdefghijklmnopqrst.supabase.co',
+    url: 'https://thoinmwqxmqxrnywjuxq.supabase.co',
     key: 'sb_publishable_' + 'safeplaceholder'.repeat(3),
-    approvedRef: 'abcdefghijklmnopqrst',
+    approvedRef: PRODUCTION_REF,
     publicOrigin: 'https://dli.example.org',
   };
   assert.deepEqual(inspect(good), []);
   assert.ok(inspect({ ...good, url: 'https://' + DEVELOPMENT_REF + '.supabase.co' }).length > 0);
   assert.ok(inspect({ ...good, approvedRef: DEVELOPMENT_REF }).length > 0);
   assert.ok(inspect({ ...good, approvedRef: '' }).length > 0);
+  assert.ok(inspect({ ...good, approvedRef: 'abcdefghijklmnopqrst' }).length > 0);
   assert.ok(inspect({ ...good, key: 'sb_secret_notalloweddummyexamplekey123' }).length > 0);
   assert.ok(inspect({ ...good, publicOrigin: 'http://localhost:5173' }).length > 0);
   assert.ok(inspect({ ...good, url: 'https://otherprojectref123.supabase.co' }).length > 0);
