@@ -273,8 +273,8 @@ export default function UserManagementPage() {
                     {user.role==='student' && user.status==='active' &&
                       (account?.role==='owner'||account?.role==='admin') &&
                       <Link className="user-outline-button"
-                        to={'/private-classes?registry='+encodeURIComponent(user.id)}>
-                        Manage private fee &amp; subjects
+                        to={'/classes?registry='+encodeURIComponent(user.id)}>
+                        Manage classes &amp; fees
                       </Link>}
                     {saving === user.id && <span className="user-busy" role="status">Applying authorised change…</span>}
                   </div>
