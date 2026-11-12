@@ -211,14 +211,43 @@ export default function ClassesWorkspacePage(){
       {staff&&<section className="panel classes-builder">
         <div className="panel-heading"><div><p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit class and student membership':'Assign one or more students'}</h2>
-          <p className="user-caption">The number selected determines Individual or Group. The form follows: students → subject → weekday and time → tutor → Google Meet.</p>
+          <p className="user-caption">Choose the class type, start date and group first, followed by eligible students, a subject, weekly time, tutor and Google Meet link.</p>
         </div></div>
         <form className="academic-form classes-form" onSubmit={e=>void save(e)}>
+          <label htmlFor="classes-type">1. Class type</label>
+          <select id="classes-type" value={form.class_type}
+           onChange={e=>{setChosen([]);setForm(v=>({...v,class_type:e.target.value as ClassType,class_group_id:''}));}}>
+            <option value="free_demo">Free Demo · DLI-Scholars Club</option>
+            <option value="group_5_science">Group of 5 · Science</option>
+            <option value="group_10">Group of 10 Students</option>
+            <option value="private_1_to_1">Completely Private · One Student</option>
+          </select>
+          <p className="academic-code-hint">Programme: <strong>{programmes.find(p=>p.id===programmeId)?.name??'Unavailable — configure programme'}</strong>.
+            A paid class requires an approved Paid Student account.</p>
+          <label htmlFor="classes-start-date">2. Class start date (WAT)</label>
+          <input id="classes-start-date" type="date" required value={form.class_start_date}
+           onChange={e=>setForm(v=>({...v,class_start_date:e.target.value}))}/>
+          <label htmlFor="classes-group">3. Group (reuse when adding subjects to the same group)</label>
+          <select id="classes-group" value={form.class_group_id}
+           onChange={e=>{
+            const existing=classes.find(c=>c.class_group_id===e.target.value);
+            setForm(v=>existing?{...v,class_group_id:existing.class_group_id,class_group_name:existing.class_group_name,
+              class_type:existing.class_type,class_start_date:existing.class_start_date}
+              :{...v,class_group_id:''});
+           }}>
+           <option value="">New class/group</option>
+           {Array.from(new Map(classes.filter(c=>c.state!=='archived')
+             .map(c=>[c.class_group_id,c])).values()).map(c=><option key={c.class_group_id}
+               value={c.class_group_id}>{c.class_group_name||c.subject_name+' · '+c.class_type} ({c.class_start_date})</option>)}
+          </select>
+          <label htmlFor="classes-group-name">Class or group name</label>
+          <input id="classes-group-name" maxLength={120} placeholder="Example: SS2 Science Group A"
+            value={form.class_group_name} onChange={e=>setForm(v=>({...v,class_group_name:e.target.value}))}/>
           <fieldset className="classes-student-picker">
-            <legend>1. Select enrolled student accounts</legend>
+            <legend>4. Select eligible students</legend>
             <input type="search" placeholder="Search students by name…" value={search}
               onChange={e=>setSearch(e.target.value)} aria-label="Search active students"/>
-            <p className="classes-selection">{kind(chosen.length)}</p>
+            <p className="classes-selection">{form.class_type==='free_demo'?'Free Demo · available to Free Students':kind(chosen.length)}</p>
             {chosen.length>0&&<p className="classes-selected-names" aria-live="polite">
               Selected: {chosen.map(id=>students.find(s=>s.auth_user_id===id)?.full_name??'Unavailable student')
                 .slice(0,8).join(' · ')}{chosen.length>8?' and '+(chosen.length-8)+' more':''}
@@ -233,15 +262,15 @@ export default function ClassesWorkspacePage(){
                 <input type="checkbox" checked={chosenSet.has(s.auth_user_id)} onChange={e=>setStudent(s.auth_user_id,e.target.checked)}/>
                 <span>{s.full_name}</span>
               </label>)}
-              {!studentOptions.length&&<p className="academic-empty">No active students. <Link to="/users">Open Users &amp; access</Link>.</p>}
+              {!studentOptions.length&&<p className="academic-empty">No eligible students. Paid classes require approved enrolment; Free Demos can be published without individual enrolment.</p>}
             </div>
           </fieldset>
-          <label htmlFor="classes-subject">2. Subject</label>
+          <label htmlFor="classes-subject">5. Subject</label>
           <select id="classes-subject" required value={subjectId} onChange={e=>setForm(v=>({...v,subject_id:e.target.value}))}>
             {topics.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           {!topics.length&&<p className="academic-code-hint">Add approved subjects in <Link to="/academics">Academic catalogue</Link>.</p>}
-          <label htmlFor="classes-weekday">3. Weekly day and class time (WAT)</label>
+          <label htmlFor="classes-weekday">6. Weekly day and class time (WAT)</label>
           <select id="classes-weekday" value={form.weekday} onChange={e=>setForm(v=>({...v,weekday:Number(e.target.value)}))}>
             {WEEKDAYS.map((day,i)=><option key={day} value={i}>{day}</option>)}
           </select>
@@ -249,23 +278,18 @@ export default function ClassesWorkspacePage(){
             <label>Start<input type="time" required value={form.starts_at} onChange={e=>setForm(v=>({...v,starts_at:e.target.value}))}/></label>
             <label>End<input type="time" required value={form.ends_at} onChange={e=>setForm(v=>({...v,ends_at:e.target.value}))}/></label>
           </div>
-          <label htmlFor="classes-tutor">4. Tutor</label>
+          <label htmlFor="classes-tutor">7. Tutor</label>
           <select id="classes-tutor" required value={tutorId} onChange={e=>setForm(v=>({...v,tutor_id:e.target.value}))}>
             {tutors.map(t=><option key={t.id} value={t.auth_user_id}>{t.full_name}</option>)}
           </select>
           {!tutors.length&&<p className="academic-code-hint">Authorise tutors through <Link to="/users">Users &amp; access</Link>.</p>}
-          <label htmlFor="classes-meet">5. Google Meet link</label>
+          <label htmlFor="classes-meet">8. Google Meet link</label>
           <input id="classes-meet" type="url" required maxLength={2048} value={form.meeting_url}
             placeholder="https://meet.google.com/abc-defg-hij" onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
-          <label htmlFor="classes-billing">6. Class arrangement</label>
-          <select id="classes-billing" value={form.billing_mode}
-            onChange={e=>setForm(v=>({...v,billing_mode:e.target.value as FormData['billing_mode']}))}>
-            <option value="manual_transfer">Paid — verified transfer required before publishing</option>
-            <option value="free">Free — no payment required</option>
-          </select>
+          <p className="academic-code-hint">Class type determines the learning programme, fee requirement and payroll tier. Add other subjects to the same Group to share the group identity.</p>
           <p className="academic-code-hint">Paid classes are saved as drafts until the students' transfers are manually verified. No receipt automatically marks payment as received.</p>
           <div className="classes-form-actions">
-            <button className="academic-submit" type="submit" disabled={busy||loading||!chosen.length||!subjectId||!tutorId}>
+            <button className="academic-submit" type="submit" disabled={busy||loading||(!chosen.length&&form.class_type!=='free_demo')||!subjectId||!tutorId||!form.class_start_date||!programmeId}>
               {editing?<Pencil size={15}/>:<Plus size={15}/>}
               {busy?'Saving…':editing?'Save class changes':'Create class'}
             </button>
@@ -295,10 +319,10 @@ export default function ClassesWorkspacePage(){
               </div>
               <span className={'classes-state '+c.state}>{c.state}</span>
             </div>
-            <p><CalendarClock size={15}/>{WEEKDAYS[c.weekday]} · {c.starts_at.slice(0,5)}–{c.ends_at.slice(0,5)} WAT</p>
+            <p><CalendarClock size={15}/>Starts {c.class_start_date} · {WEEKDAYS[c.weekday]} · {c.starts_at.slice(0,5)}–{c.ends_at.slice(0,5)} WAT</p>
             <p><GraduationCap size={15}/>Tutor: {c.tutor_name}</p>
             {(staff||account?.role==='tutor')&&<p><Users size={15}/>Students: {roster.map(m=>m.student_name).join(', ')||'None yet'}</p>}
-            <p><LockKeyhole size={15}/>{c.billing_mode==='free'?'Free':'Paid / manual verification'}</p>
+            <p><LockKeyhole size={15}/>{c.class_type.replaceAll('_',' ')} · {c.billing_mode==='free'?'Free':'Paid / verified enrolment'}</p>
             <div className="classes-card-actions">
               {c.state==='published'&&<a href={c.meeting_url} target="_blank" rel="noopener noreferrer"><Video size={15}/> Google Meet</a>}
               {communicating&&c.state==='published'&&<Link to={'/communications?section=class&class='+encodeURIComponent(c.id)}>
