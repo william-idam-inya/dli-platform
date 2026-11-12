@@ -54,6 +54,14 @@ function inspect({ url = '', key = '', approvedRef = '', publicOrigin = '' }) {
   return failures;
 }
 
+// Cloudflare Pages executes the standard "npm run build" command. Without this
+// gate, Pages could publish development output while bypassing build:release.
+// Detect both the documented CF_PAGES flag and its accompanying build metadata.
+function isCloudflarePagesBuild(environment) {
+  return environment.CF_PAGES === '1' ||
+    Boolean(environment.CF_PAGES_BRANCH || environment.CF_PAGES_COMMIT_SHA);
+}
+
 function selfTest() {
   const good = {
     url: 'https://abcdefghijklmnopqrst.supabase.co',
@@ -62,6 +70,10 @@ function selfTest() {
     publicOrigin: 'https://dli.example.org',
   };
   assert.deepEqual(inspect(good), []);
+  assert.equal(isCloudflarePagesBuild({}), false);
+  assert.equal(isCloudflarePagesBuild({ CF_PAGES: '1' }), true);
+  assert.equal(isCloudflarePagesBuild({ CF_PAGES_BRANCH: 'main' }), true);
+  assert.equal(isCloudflarePagesBuild({ CF_PAGES_COMMIT_SHA: 'abc123' }), true);
   assert.ok(inspect({ ...good, url: 'https://' + DEVELOPMENT_REF + '.supabase.co' }).length > 0);
   assert.ok(inspect({ ...good, approvedRef: DEVELOPMENT_REF }).length > 0);
   assert.ok(inspect({ ...good, approvedRef: '' }).length > 0);
@@ -73,6 +85,8 @@ function selfTest() {
 
 if (process.argv.includes('--self-test')) {
   selfTest();
+} else if (process.argv.includes('--when-pages') && !isCloudflarePagesBuild(process.env)) {
+  process.stdout.write('DLI K4 Cloudflare Pages release gate skipped outside Pages.\\n');
 } else {
   // Vite's actual loader honours process.env and .env production file precedence.
   // This is intentionally checked independently from any client bundle output.
