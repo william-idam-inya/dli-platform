@@ -1,17 +1,12 @@
 // Stage Q3: local-only role navigation regressions. No database, login or payment activity.
+// Use Node 22.18+ for built-in .ts import support.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import ts from 'typescript';
 
-const tsSource = readFileSync(new URL('../src/auth/permissions.ts', import.meta.url), 'utf8');
-const compiled = ts.transpileModule(tsSource, {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-  reportDiagnostics: true,
-});
-const errors = (compiled.diagnostics ?? []).filter(d => d.category === ts.DiagnosticCategory.Error);
-assert.equal(errors.length, 0, 'permissions.ts must transpile cleanly');
+// GitHub CI runs Node 22 with built-in TypeScript type stripping.
+// Import the actual pure permissions module, with no mocks or network calls.
 const { DLI_ROLES, isDliRole, canAccessPath, accountRoleLabel } = await import(
-  'data:text/javascript;base64,' + Buffer.from(compiled.outputText).toString('base64')
+  new URL('../src/auth/permissions.ts', import.meta.url).href
 );
 assert.equal(new Set(DLI_ROLES).size, DLI_ROLES.length, 'unique registry roles');
 for (const role of DLI_ROLES) {
