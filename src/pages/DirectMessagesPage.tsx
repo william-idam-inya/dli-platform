@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { CheckCheck, Flag, LockKeyhole, MessageCircle, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
+import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DliClassCommunication from './DliClassCommunication';
@@ -7,7 +7,16 @@ import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
-type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string};
+type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null};
+type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
+const fileSuffix:Record<string,string>={
+  'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp',
+  'text/plain':'txt',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xlsx',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
+};
+const maxFileBytes=10*1024*1024;
 type Report={id:string;message_id:string;reason:string;status:'open'|'reviewed';created_at:string};
 const stamp=(value:string)=>new Intl.DateTimeFormat('en-NG',{
   dateStyle:'short',timeStyle:'short',timeZone:'Africa/Lagos',
@@ -22,6 +31,8 @@ export default function DirectMessagesPage(){
   const [reports,setReports]=useState<Report[]>([]);
   const [activeId,setActiveId]=useState('');
   const [messages,setMessages]=useState<DirectMessage[]>([]);
+  const [files,setFiles]=useState<DirectFile[]>([]);
+  const [attachment,setAttachment]=useState<File|null>(null);
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
   const [mode,setMode]=useState<'inbox'|'oversight'>('inbox');
@@ -70,21 +81,24 @@ export default function DirectMessagesPage(){
     if(!supabase||!id)return;
     try{
       if(mode==='oversight'&&moderator){
-        // Only this dedicated RPC permits moderation reads; the invocation
-        // writes an oversight audit event with the thread identifier.
         const result=await supabase.rpc('dli_direct_moderation_messages',{p_thread:id});
         if(result.error){setError('This oversight view was denied or unavailable.');return;}
         setMessages(((result.data??[]) as DirectMessage[]).reverse());
       }else{
         const result=await supabase.from('dli_direct_messages')
-          .select('id,thread_id,sender_id,body,created_at')
+          .select('id,thread_id,sender_id,body,created_at,file_id')
           .eq('thread_id',id).order('created_at',{ascending:true}).limit(100);
         if(result.error){setError('This conversation cannot be opened with your current permissions.');return;}
         setMessages((result.data??[]) as DirectMessage[]);
       }
+      const attachments=await supabase.from('dli_direct_files')
+        .select('id,thread_id,original_name,object_path,mime_type,size_bytes,is_ready')
+        .eq('thread_id',id).eq('is_ready',true).limit(100);
+      if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
+      setFiles((attachments.data??[]) as DirectFile[]);
     }catch{setError('Could not confirm that messages were loaded.');}
   },[mode,moderator]);
-  useEffect(()=>{setMessages([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
+  useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
   async function openContact(c:Contact){
@@ -107,19 +121,78 @@ export default function DirectMessagesPage(){
     }catch{setError('Could not create a verified conversation.');}
     finally{setBusy(false);}
   }
+  async function cleanupFile(path:string,id:string){
+    if(!supabase)return;
+    // Cleanup is permitted only for the uploader's still-unlinked file.
+    // If the message committed despite a failed browser response, RLS
+    // rejects deletion of its attached evidence.
+    await supabase.storage.from('dli-chat-files').remove([path]);
+    await supabase.from('dli_direct_files').delete().eq('id',id);
+  }
   async function send(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(!supabase||!current||busy||mode==='oversight'||!uid)return;
     const body=draft.trim();
-    if(body.length<1||body.length>2000){setError('Write a message of up to 2,000 characters.');return;}
+    if((!body&&!attachment)||body.length>2000){setError('Enter a message or attach a permitted file.');return;}
     setBusy(true);setError(null);setNotice(null);
+    let fileId:string|undefined;
+    let path:string|undefined;
     try{
-      const res=await supabase.from('dli_direct_messages').insert({thread_id:current.id,body}).select('id').maybeSingle();
-      if(res.error||!res.data){
-        setError('Message was not confirmed. Check the contact permissions or hourly rate limit before resending.');return;
+      if(attachment){
+        const file=attachment;
+        const extension=fileSuffix[file.type];
+        if(!extension||file.size<1||file.size>maxFileBytes||file.name.length>140){
+          setError('Use a PDF, image, TXT, DOCX, XLSX or PPTX file up to 10 MB (filename max 140 characters).');return;
+        }
+        fileId=crypto.randomUUID();
+        path=current.id+'/'+uid+'/'+fileId+'.'+extension;
+        const init=await supabase.from('dli_direct_files').insert({
+          id:fileId,thread_id:current.id,object_path:path,original_name:file.name,
+          mime_type:file.type,size_bytes:file.size,
+        }).select('id').maybeSingle();
+        if(init.error||!init.data){setError('The private attachment record was rejected. Check your role and daily file limit.');return;}
+        const upload=await supabase.storage.from('dli-chat-files').upload(path,file,{contentType:file.type,upsert:false});
+        if(upload.error){
+          await cleanupFile(path,fileId);
+          setError('File upload failed. No message was sent.');return;
+        }
+        const ready=await supabase.from('dli_direct_files').update({is_ready:true})
+          .eq('id',fileId).select('id').maybeSingle();
+        if(ready.error||!ready.data){
+          await cleanupFile(path,fileId);
+          setError('The file could not be verified after upload. Refresh before trying again.');return;
+        }
       }
-      setDraft('');await loadThread(current.id);
-    }catch{setError('Message delivery could not be confirmed. Refresh before resending.');}
+      const messageBody=body||'📎 '+attachment!.name;
+      const payload={thread_id:current.id,body:messageBody,...(fileId?{file_id:fileId}:{})};
+      const result=await supabase.from('dli_direct_messages').insert(payload).select('id').maybeSingle();
+      if(result.error||!result.data){
+        if(fileId&&path)await cleanupFile(path,fileId);
+        setError('Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.');return;
+      }
+      setDraft('');setAttachment(null);await loadThread(current.id);
+    }catch{
+      if(fileId&&path)await cleanupFile(path,fileId);
+      setError('The message request was interrupted. Refresh to confirm its status before retrying.');
+    }finally{setBusy(false);}
+  }
+  async function downloadFile(file:DirectFile){
+    if(!supabase||busy)return;
+    setBusy(true);setError(null);
+    try{
+      if(mode==='oversight'){
+        const ticket=await supabase.rpc('dli_direct_authorise_file_review',{p_file:file.id});
+        if(ticket.error||ticket.data!==true){
+          setError('Audited file-review permission was not granted.');return;
+        }
+      }
+      const response=await supabase.storage.from('dli-chat-files').download(file.object_path);
+      if(response.error||!response.data){setError('The private attachment is not available to your role.');return;}
+      const url=URL.createObjectURL(response.data);
+      const link=document.createElement('a');link.href=url;link.download=file.original_name;
+      document.body.appendChild(link);link.click();link.remove();
+      window.setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }catch{setError('Could not confirm file download access.');}
     finally{setBusy(false);}
   }
   async function reportMessage(message:DirectMessage){
@@ -228,22 +301,37 @@ export default function DirectMessagesPage(){
             {messages.map(m=><article key={m.id} className={m.sender_id===uid&&mode!=='oversight'?'mine':''}>
               <small>{memberName(m.sender_id)} · {stamp(m.created_at)}</small>
               <p>{m.body}</p>
+              {m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
+                <button type="button" className="dli-direct-file-link" key={f.id} disabled={busy}
+                  onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
               {mode!=='oversight'&&m.sender_id!==uid&&<button type="button" disabled={busy}
                 onClick={()=>void reportMessage(m)}><Flag size={13}/> Report</button>}
             </article>)}
             {!messages.length&&<p className="dli-direct-empty">No messages in this conversation.</p>}
+            {mode==='oversight'&&files.length>0&&<aside className="dli-direct-file-review">
+              <strong>Conversation attachments · audited download access</strong>
+              {files.map(f=><button key={f.id} type="button" disabled={busy}
+                onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
+            </aside>}
           </div>
           {mode==='inbox'?<form className="dli-direct-compose" onSubmit={e=>void send(e)}>
             <label htmlFor="direct-draft">Your message</label>
             <textarea id="direct-draft" maxLength={2000} rows={2} value={draft}
               placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
-            <div><small>{draft.length}/2,000 · 30 messages per hour</small>
-              <button type="submit" disabled={busy||!draft.trim()}><Send size={16}/> Send</button></div>
+            <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
+              Optional file (PDF, image, TXT, DOCX, XLSX, PPTX; up to 10 MB)
+            </label>
+            <input id="direct-attachment" type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx"
+              onChange={e=>setAttachment(e.target.files?.[0]??null)}/>
+            {attachment&&<small className="dli-direct-selected-file">{attachment.name} · {(attachment.size/1024/1024).toFixed(2)} MB</small>}
+            <div><small>{draft.length}/2,000 · 30 messages/hour · 20 files/day</small>
+              <button type="submit" disabled={busy||(!draft.trim()&&!attachment)}><Send size={16}/> Send</button></div>
           </form>:<p className="dli-direct-oversight-note"><CheckCheck size={16}/> Read-only oversight. You cannot send on someone else's behalf.</p>}
         </>}
       </section>
     </div>
     </>}
-    <p className="module-footnote"><Users size={14}/> Direct and subject text conversations are accessible here. Attachments, true push notifications, message delivery/read receipts and group conversations are not yet enabled.</p>
+    <p className="module-footnote"><Users size={14}/> Direct and subject conversations appear here. Direct-chat files use private download rules. Push notifications, delivery/read receipts and group conversations are not yet enabled.</p>
   </div>;
 }
