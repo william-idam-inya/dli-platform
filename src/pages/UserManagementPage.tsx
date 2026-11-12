@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { invitationEndpoint } from '../auth/invitationEndpoint';
 
 type UserStatus = 'pending' | 'active' | 'suspended' | 'revoked';
 type UserRecord = {
@@ -187,7 +188,7 @@ export default function UserManagementPage() {
     try {
       const { data, error: inspectError } = await supabase.functions.invoke<{
         recovery_status: string; profile_exists: boolean;
-      }>('admin-create-user', { body: { action: 'inspect_pending', registry_id: user.id } });
+      }>(invitationEndpoint, { body: { action: 'inspect_pending', registry_id: user.id } });
       if (inspectError || data?.recovery_status !== 'pending_linked') {
         setError('This pending invitation cannot be safely repaired automatically. Ask the Founder to review the Auth identity and registry records.');
       } else {
@@ -212,7 +213,7 @@ export default function UserManagementPage() {
     try {
       const { data, error: recoveryError } = await supabase.functions.invoke<{
         recovery_status: string;
-      }>('admin-create-user', { body: { action: 'recover_pending', registry_id: user.id } });
+      }>(invitationEndpoint, { body: { action: 'recover_pending', registry_id: user.id } });
       if (recoveryError || data?.recovery_status !== 'recovered') {
         setError('Recovery was not confirmed. Refresh the registry before retrying; an Owner may need to inspect the identity manually.');
       } else {
