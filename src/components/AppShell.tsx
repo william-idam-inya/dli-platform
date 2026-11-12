@@ -157,7 +157,7 @@ export default function AppShell({ children }: AppShellProps) {
             >
               {darkMode ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <NavLink to="/change-password" className="account-mini" title="Account security">
+            <NavLink to="/profile" className="account-mini" title="My profile and settings">
               <span className="profile-placeholder">{account?.full_name?.charAt(0).toUpperCase() || 'D'}</span>
               <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? roleLabels[account.role] : ''}</small></span>
             </NavLink>
