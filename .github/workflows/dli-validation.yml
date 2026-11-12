@@ -63,6 +63,11 @@ jobs:
 
       - name: Verify invitation activation fail-closed behavior (offline)
         run: npm run check:auth-activation
+      - name: Verify guarded pending invitation recovery (offline)
+        run: npm run check:invitation-recovery
+
+      - name: Check Deno Edge Function TypeScript syntax with Node 22
+        run: node --experimental-strip-types --check supabase/functions/admin-create-user/index.ts
 
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
