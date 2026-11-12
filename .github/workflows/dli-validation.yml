@@ -70,6 +70,9 @@ jobs:
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
+      - name: Verify Q5 production admission, edge origins and pinned release project
+        run: npm run check:q5-release-safety
+
       - name: Verify TypeScript
         run: npm run typecheck
 
