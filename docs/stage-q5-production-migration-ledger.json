@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "projectRef": "thoinmwqxmqxrnywjuxq",
   "capturedDate": "2026-11-12",
-  "purpose": "Audit receipt: reviewed SQL source names and Git blob hashes paired with Supabase MCP-generated migration versions. Do not run CLI db push until history is reconciled.",
+  "purpose": "Historical before/after audit ledger for Q5 migration history; not a list of remaining mismatches. Q6 supersedes this source set.",
   "migrationCount": 75,
   "versionRemappingCount": 74,
   "migrations": [
@@ -456,5 +456,11 @@
       "recorded_version": "20261112121339",
       "recorded_name": "stage_q5_production_admission_closed"
     }
-  ]
+  ],
+  "reconciliation": {
+    "status": "verified",
+    "date": "2026-11-12",
+    "description": "All original 74 provider-assigned production version/name pairs replaced in one guarded transaction with the exact canonical source filename versions/names. Historical old mappings retained above for audit.",
+    "postcondition": "75 out of 75 canonical Q5 migration versions/names matched by Supabase list_migrations; Q6 subsequently added as canonical version 20261112160000."
+  }
 }
