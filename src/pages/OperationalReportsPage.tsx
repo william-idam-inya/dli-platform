@@ -13,7 +13,8 @@ type ReportId =
   | 'programmes' | 'courses' | 'cohorts' | 'course_offerings'
   | 'tutor_assignments' | 'student_enrolments' | 'lessons'
   | 'learning_assignments' | 'learning_quizzes' | 'class_sessions'
-  | 'finance_policy_proposals' | 'finance_proposal_reviews';
+  | 'finance_policy_proposals' | 'finance_proposal_reviews'
+  | 'teaching_classes' | 'teaching_class_members' | 'private_student_fees' | 'private_payment_receipts';
 type ReportCategory = 'academic' | 'finance';
 type ReportItem = {
   id: ReportId;
@@ -22,6 +23,9 @@ type ReportItem = {
   meaning: string;
   active?: boolean;
   published?: boolean;
+  state?: string;
+  paymentStatus?: string;
+  classPublished?: boolean;
   icon: typeof BookOpen;
 };
 type ReportValue = {count: number | null; error: boolean};
@@ -29,18 +33,29 @@ const ACADEMIC_ROLES = ['owner','admin','academic_coordinator'];
 const FINANCE_ROLES = ['owner','admin','finance_officer'];
 
 const ITEMS: ReportItem[] = [
+  {id:'teaching_classes',category:'academic',label:'Published individual & group classes',
+    meaning:'Current weekly subject/tutor arrangements',state:'published',icon:CalendarDays},
+  {id:'teaching_class_members',category:'academic',label:'Active class seats',
+    meaning:'Enrolled student-to-class links in published classes; not unique students',
+    active:true,classPublished:true,icon:Users},
+  {id:'private_student_fees',category:'finance',label:'Fees awaiting proof review',
+    meaning:'Assigned monthly fees whose uploaded evidence has not yet been verified',
+    paymentStatus:'submitted',icon:FileText},
+  {id:'private_payment_receipts',category:'finance',label:'Reviewed receipt evidence',
+    meaning:'Evidence marked verified by an authorised operator after a bank-credit check',
+    paymentStatus:'verified',icon:ClipboardCheck},
   {id:'programmes',category:'academic',label:'Active programmes',
     meaning:'Current active programme records',active:true,icon:Layers3},
   {id:'courses',category:'academic',label:'Active courses',
     meaning:'Courses marked active in the catalogue',active:true,icon:BookOpen},
   {id:'cohorts',category:'academic',label:'Active cohorts',
-    meaning:'Active teaching-group records',active:true,icon:GraduationCap},
+    meaning:'Legacy course-cohort records (advanced curriculum)',active:true,icon:GraduationCap},
   {id:'course_offerings',category:'academic',label:'Active course offerings',
-    meaning:'Approved offerings currently active',active:true,icon:Layers3},
+    meaning:'Legacy curriculum offerings, not unified weekly classes',active:true,icon:Layers3},
   {id:'tutor_assignments',category:'academic',label:'Active tutor links',
-    meaning:'Active tutor-to-offering assignments',active:true,icon:Users},
+    meaning:'Legacy tutor-to-course links (not unified weekly class roster)',active:true,icon:Users},
   {id:'student_enrolments',category:'academic',label:'Active enrolments',
-    meaning:'Active student-to-offering links; not unique students',active:true,icon:Users},
+    meaning:'Legacy course enrolments, not unique students',active:true,icon:Users},
   {id:'lessons',category:'academic',label:'Published lessons',
     meaning:'Lessons visible under the existing class access rules',published:true,icon:BookOpen},
   {id:'learning_assignments',category:'academic',label:'Published assignments',
@@ -67,7 +82,9 @@ export default function OperationalReportsPage(){
   const permitted = academic || finance;
   const items = ITEMS.filter(item =>
     (item.category === 'academic' && academic)
-    || (item.category === 'finance' && finance));
+    || (item.category === 'finance' && finance &&
+      (!['private_student_fees','private_payment_receipts'].includes(item.id)
+        || account?.role==='owner'||account?.role==='admin')));
   const [values,setValues] = useState<Partial<Record<ReportId,ReportValue>>>({});
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState<string|null>(null);
@@ -90,6 +107,9 @@ export default function OperationalReportsPage(){
           .select('id', {count:'exact',head:true});
         if (item.active) query = query.eq('is_active',true);
         if (item.published) query = query.eq('is_published',true);
+        if (item.state) query=query.eq('state',item.state);
+        if (item.paymentStatus) query=query.eq(item.id==='private_student_fees'?'payment_status':'status',item.paymentStatus);
+        if (item.classPublished) query=query.eq('class_is_published',true);
         const result = await query;
         return [item.id, {
           count:result.error ? null : result.count,
@@ -150,9 +170,9 @@ export default function OperationalReportsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Operational reports</h1>
-        <p>Live, role-scoped counts from the existing DLI academic and finance records.</p>
+        <p>Live, role-scoped counts covering unified classes, course content, and authorised manual payment review.</p>
       </div>
-      <span className="module-status"><span/> Stage I2</span>
+      <span className="module-status"><span/> Linked operations</span>
     </div>
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
@@ -174,8 +194,8 @@ export default function OperationalReportsPage(){
         <RefreshCw size={15}/> Refresh counts
       </button>
     </div>
-    {section('academic','Academic activity','Catalogue, enrolment and teaching records marked active or published. Enrolments and tutor links are records, not unique people.')}
-    {section('finance','Finance planning activity','Proposals and internal reviews only. No fee, invoice, receipt, payment or payout is authorised by this report.')}
+    {section('academic','Classes & academic content','Unified weekly teaching appears first; legacy course/cohort records are retained for learning resources and existing assessments. Student-to-class links are records, not unique people.')}
+    {section('finance','Finance & manual payment review','Founder/Admin see receipt-review counts; finance-planning proposals remain non-binding. No report proves funds were received or authorises automated collection/payouts.')}
     {(account?.role==='owner'||account?.role==='admin')&&
       <div className="operational-report-audit-link">
         <LockKeyhole size={15}/>
