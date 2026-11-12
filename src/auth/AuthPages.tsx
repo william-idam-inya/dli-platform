@@ -3,6 +3,7 @@ import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
+import { isPasswordPolicyRejection, passwordPolicyError, passwordRequirementText } from './passwordPolicy';
 
 function AuthLayout({ title, intro, children }: {
   title: string; intro: string; children: ReactNode;
@@ -199,15 +200,18 @@ export function SetPasswordPage() {
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!supabase || pending) return;
-    if (password.length < 12 || password !== repeat) {
-      setError('Use at least 12 characters and make sure both passwords match.');
+    const policyError = passwordPolicyError(password);
+    if (policyError || password !== repeat) {
+      setError(policyError ?? 'The two passwords must match.');
       return;
     }
     setPending(true);
     setError(null);
     try {
       const { error: saveError } = await supabase.auth.updateUser({ password });
-      if (saveError) setError('Could not set the password. Please request another secure link.');
+      if (saveError) setError(isPasswordPolicyRejection(saveError)
+        ? 'Supabase rejected that password. Choose a different strong password that meets every requirement.'
+        : 'Password update could not be confirmed. Check that your secure link is valid and retry.');
       else navigate('/', { replace: true });
     } catch {
       setError('Password update service could not be reached. Check your connection and retry.');
@@ -220,6 +224,7 @@ export function SetPasswordPage() {
     <form className="auth-form" onSubmit={save}>
       <Feedback error message={error} />
       <label htmlFor="set-password">New password</label>
+      <p className="auth-helper">{passwordRequirementText}</p>
       <input id="set-password" type="password" required minLength={12}
         autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} />
       <label htmlFor="set-password-again">Confirm new password</label>
@@ -243,8 +248,9 @@ export function ChangePasswordPage() {
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!supabase || pending) return;
-    if (password.length < 12 || password !== repeat) {
-      setError('Use at least 12 characters and ensure passwords match.');
+    const policyError = passwordPolicyError(password);
+    if (policyError || password !== repeat) {
+      setError(policyError ?? 'The two passwords must match.');
       return;
     }
     setPending(true);
@@ -254,7 +260,9 @@ export function ChangePasswordPage() {
       const { error: changeError } = await supabase.auth.updateUser({
         password, current_password: current,
       });
-      if (changeError) setError('Password change failed. Check your current password.');
+      if (changeError) setError(isPasswordPolicyRejection(changeError)
+        ? 'Supabase rejected that password. Choose a different strong password that meets every requirement.'
+        : 'Password change failed. Verify your current password and session.');
       else {
         setMessage('Your password was changed.');
         setCurrent(''); setPassword(''); setRepeat('');
@@ -277,6 +285,7 @@ export function ChangePasswordPage() {
       <input id="current-password" type="password" required autoComplete="current-password"
         value={current} onChange={event => setCurrent(event.target.value)} />
       <label htmlFor="change-password">New password</label>
+      <p className="auth-helper">{passwordRequirementText}</p>
       <input id="change-password" type="password" required minLength={12} autoComplete="new-password"
         value={password} onChange={event => setPassword(event.target.value)} />
       <label htmlFor="change-repeat">Confirm new password</label>
