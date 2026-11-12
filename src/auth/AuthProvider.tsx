@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     let studentTier:'free'|'paid'|undefined;
-    if(record.role==='student'){
+    if(record?.role==='student'){
       const entitlement=await supabase.from('dli_student_entitlements')
         .select('tier').eq('student_id',user.id).maybeSingle();
       if(run!==verification.current)return;
