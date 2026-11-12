@@ -32,7 +32,8 @@
     "check:recovery-receipt-tests": "node scripts/create-recovery-manifest.mjs --self-test",
     "prepare:recovery-receipt": "node scripts/create-recovery-manifest.mjs",
     "check:enrolment-catalogue": "node scripts/verify-enrolment-catalogue.mjs",
-    "check:workspace-consistency": "node scripts/verify-workspace-consistency.mjs"
+    "check:workspace-consistency": "node scripts/verify-workspace-consistency.mjs",
+    "check:operational-tools": "node scripts/verify-operational-tools.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
