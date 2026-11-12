@@ -1,0 +1,15 @@
+.learning-hub{min-width:0}
+.learning-hub-header{display:flex;align-items:center;gap:1rem;padding:1rem 0 1.2rem}
+.learning-hub-header h1{margin:.25rem 0;font-size:clamp(1.5rem,2.5vw,2rem)}
+.learning-hub-header p{margin:.25rem 0;color:var(--muted);line-height:1.45}
+.learning-hub-symbol{display:flex;align-items:center;justify-content:center;width:52px;height:52px;flex-shrink:0;border-radius:14px;color:var(--purple);background:var(--surface-soft)}
+.learning-hub-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem;margin:.25rem 0 1.15rem}
+.learning-hub-tabs button{display:flex;align-items:flex-start;gap:.6rem;text-align:left;min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);padding:.85rem;font:inherit;cursor:pointer}
+.learning-hub-tabs button.active{border:2px solid var(--purple);background:var(--surface-soft)}
+.learning-hub-tabs button svg{flex-shrink:0}
+.learning-hub-tabs button span{min-width:0;display:grid;gap:.2rem}
+.learning-hub-tabs strong{font-size:.85rem}
+.learning-hub-tabs small{line-height:1.4;color:var(--muted);font-size:.74rem}
+.learning-hub-loading{padding:2rem;color:var(--muted)}
+@media(max-width:950px){.learning-hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:510px){.learning-hub-tabs{grid-template-columns:1fr}.learning-hub-header{align-items:flex-start}}
