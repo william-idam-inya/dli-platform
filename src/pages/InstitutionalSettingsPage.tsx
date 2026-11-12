@@ -50,6 +50,8 @@ export default function InstitutionalSettingsPage(){
   const [inputs,setInputs]=useState<Record<SettingKey,string>>(EMPTY);
   const [publicationFlag,setPublicationFlag]=useState<ApprovalFlag|null>(null);
   const [flagUnverified,setFlagUnverified]=useState(true);
+  const [enrolmentOpen,setEnrolmentOpen]=useState<boolean|null>(null);
+  const [enrolmentSaving,setEnrolmentSaving]=useState(false);
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState<SettingKey|null>(null);
   const [error,setError]=useState<string|null>(null);
@@ -66,13 +68,14 @@ export default function InstitutionalSettingsPage(){
     setLoading(true);
     setNotice(null);
     try{
-      const [groupResult,flagResult]=await Promise.all([
+      const [groupResult,flagResult,enrolmentResult]=await Promise.all([
         mayViewGroupLinks?client.from('institutional_group_links')
           .select('setting_key,display_label,invite_url,updated_at')
           .order('setting_key'):Promise.resolve({data:[] as GroupSetting[],error:null}),
         client.from('communication_feature_flags')
           .select('key,enabled,reason')
           .eq('key','in_app_publication').maybeSingle(),
+        client.from('dli_operational_controls').select('is_enabled').eq('setting_key','paid_enrolment_open').maybeSingle(),
       ]);
       if(groupResult.error){
         setLinks([]);setError('Could not load institutional group settings. Refresh or check your account permissions.');
@@ -87,8 +90,9 @@ export default function InstitutionalSettingsPage(){
       }
       setPublicationFlag(flagResult.error?null:(flagResult.data as ApprovalFlag|null));
       setFlagUnverified(Boolean(flagResult.error)||!flagResult.data);
+      setEnrolmentOpen(enrolmentResult.error||!enrolmentResult.data?null:Boolean(enrolmentResult.data.is_enabled));
     }catch{
-      setLinks([]);setPublicationFlag(null);setFlagUnverified(true);
+      setLinks([]);setPublicationFlag(null);setFlagUnverified(true);setEnrolmentOpen(null);
       setError('Unable to reach Supabase. Governance status cannot be verified.');
     }finally{setLoading(false);}
   },[canView,mayViewGroupLinks]);
@@ -132,6 +136,26 @@ export default function InstitutionalSettingsPage(){
     }finally{setSaving(null);}
   }
 
+  async function changeEnrolmentStatus(){
+    if(!supabase||!canView||enrolmentSaving||enrolmentOpen===null)return;
+    const next=!enrolmentOpen;
+    if(!window.confirm(next
+      ?'Reopen new Paid Student applications? Existing approved payments remain unchanged.'
+      :'Pause NEW Paid Student applications? Existing applications remain available for review.'))return;
+    setEnrolmentSaving(true);setError(null);setNotice(null);
+    try{
+      const result=await supabase.from('dli_operational_controls')
+        .update({is_enabled:next}).eq('setting_key','paid_enrolment_open')
+        .select('is_enabled').maybeSingle();
+      if(result.error||!result.data){
+        setError('Could not confirm this admission setting. Refresh before trying again.');return;
+      }
+      setEnrolmentOpen(Boolean(result.data.is_enabled));
+      setNotice(next?'New paid enrolment applications are open.':'New applications paused; existing requests can still be reviewed.');
+    }catch{setError('The admission-setting change could not be verified.');}
+    finally{setEnrolmentSaving(false);}
+  }
+
   const configuredCount=links.filter(item=>item.invite_url!==null).length;
   const publicationStatus=flagUnverified?'Unavailable':publicationFlag?.enabled?'Enabled':'Disabled';
 
@@ -141,7 +165,7 @@ export default function InstitutionalSettingsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL GOVERNANCE</div>
         <h1>Institutional settings</h1>
-        <p>Founder-controlled group invitations and read-only development safeguard status.</p>
+        <p>Live admission controls, role-scoped group invitations and release safeguards.</p>
       </div>
       <span className="module-status"><span/> Stage I3</span>
     </div>
@@ -163,7 +187,7 @@ export default function InstitutionalSettingsPage(){
       {mayViewGroupLinks&&<div><Users size={20}/><strong>{loading?'…':configuredCount}</strong>
         <span>Group invitations configured</span></div>}
       <div><LockKeyhole size={20}/>
-        <strong>{isFounder?'Founder':'Read only'}</strong>
+        <strong>{account?.role==='owner'?'Founder':account?.role==='assistant_admin'?'Assistant Admin':'Admin'}</strong>
         <span>Your setting access</span></div>
       <div><CalendarClock size={20}/>
         <strong>{publicationStatus}</strong>
@@ -221,7 +245,27 @@ export default function InstitutionalSettingsPage(){
 
     <section className="panel institutional-settings-governance">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · RELEASE SAFEGUARDS</p>
+        <p className="section-kicker">02 · LIVE OPERATIONAL CONTROL</p>
+        <h2>Paid Student application window</h2>
+        <p className="user-caption">Founder, Admin and Assistant Admin may pause or resume NEW paid-enrolment applications.
+          Existing submitted applications and previously approved students are not cancelled.</p>
+      </div></div>
+      <div className="institutional-settings-safeguards">
+        <div><strong>New applications</strong>
+          <span>{enrolmentOpen===null?'Verification unavailable':enrolmentOpen?'Open':'Paused'}</span>
+          <p>This is enforced when a learner submits an application in the database, not just in the browser.</p>
+          <button type="button" className="user-outline-button"
+            disabled={loading||enrolmentSaving||enrolmentOpen===null}
+            onClick={()=>{void changeEnrolmentStatus();}}>
+            {enrolmentSaving?'Saving…':enrolmentOpen?'Pause new applications':'Reopen applications'}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section className="panel institutional-settings-governance">
+      <div className="panel-heading"><div>
+        <p className="section-kicker">03 · RELEASE SAFEGUARDS</p>
         <h2>Existing governance restrictions</h2>
         <p className="user-caption">Information only. This stage does not provide controls
           to lift these restrictions.</p>
