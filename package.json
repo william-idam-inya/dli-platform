@@ -25,6 +25,7 @@
     "check:backup-files": "node scripts/verify-backup-files.mjs",
     "check:paid-learning-plans": "node scripts/verify-paid-learning-plans.mjs",
     "check:role-matrix": "node scripts/verify-role-matrix.mjs",
+    "check:workspace-consistency": "node scripts/verify-workspace-consistency.mjs",
     "check:enrolment-catalogue": "node scripts/verify-enrolment-catalogue.mjs"
   },
   "dependencies": {
