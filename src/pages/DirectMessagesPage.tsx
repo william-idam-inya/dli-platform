@@ -3,6 +3,7 @@ import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, Refr
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DliClassCommunication from './DliClassCommunication';
+import { Link } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
@@ -17,7 +18,7 @@ const fileSuffix:Record<string,string>={
   'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
 };
 const maxFileBytes=10*1024*1024;
-type Report={id:string;message_id:string;reason:string;status:'open'|'reviewed';created_at:string};
+type Report={id:string;message_id:string;thread_id:string;reason:string;status:'open'|'reviewed';created_at:string};
 const stamp=(value:string)=>new Intl.DateTimeFormat('en-NG',{
   dateStyle:'short',timeStyle:'short',timeZone:'Africa/Lagos',
 }).format(new Date(value));
@@ -54,7 +55,7 @@ export default function DirectMessagesPage(){
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
-        moderator?supabase.from('dli_direct_reports').select('id,message_id,reason,status,created_at').order('created_at',{ascending:false}).limit(100):
+        moderator?supabase.from('dli_direct_reports').select('id,message_id,thread_id,reason,status,created_at').order('created_at',{ascending:false}).limit(100):
           Promise.resolve({data:[],error:null}),
       ]);
       if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error){
@@ -234,6 +235,9 @@ export default function DirectMessagesPage(){
         Their oversight openings are audited. Only approved Student–Tutor class relationships can initiate direct conversations.
         Contact DLI staff directly for urgent safeguarding concerns.</p>
     </div></div>
+    {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
+      Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
+    </p>}
     <nav className="dli-direct-section-tabs" aria-label="Messaging sections">
       <button type="button" className={section==='direct'?'selected':''}
         onClick={()=>setSection('direct')}>Direct messages</button>
@@ -282,6 +286,9 @@ export default function DirectMessagesPage(){
           {reports.filter(r=>r.status==='open').map(r=><div key={r.id}>
             <strong>Reported message</strong><p>{r.reason}</p>
             <small>{stamp(r.created_at)}</small>
+            <button type="button" onClick={()=>{setMode('oversight');setActiveId(r.thread_id);}}>
+              Open reported conversation
+            </button>
             <button type="button" disabled={busy} onClick={()=>void reviewReport(r)}>Mark reviewed</button>
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
