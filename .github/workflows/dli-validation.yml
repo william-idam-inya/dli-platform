@@ -67,6 +67,9 @@ jobs:
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
+      - name: Verify file-dialog focus preserves unsaved upload state
+        run: npm run check:file-picker-focus
+
       - name: Verify TypeScript
         run: npm run typecheck
 
