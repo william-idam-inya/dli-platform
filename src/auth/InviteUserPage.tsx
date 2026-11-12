@@ -47,7 +47,14 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
         { body: { email: email.trim().toLowerCase(), full_name: fullName.trim(), role } },
       );
       if (invokeError || !data?.invitation_url) {
-        setError('The invitation could not be confirmed. Check your permissions and whether this email is already registered. Ask DLI administration to review the account before retrying.');
+        const status = (invokeError as { context?: { status?: number } } | null)?.context?.status;
+        if (status === 409) {
+          setError('An account for this address already exists (including revoked or pending accounts), or an earlier invitation requires review. Check the exact email in User Management; do not blindly retry.');
+        } else if (status === 403) {
+          setError('This role or application origin is not authorised for invitations. Check your staff permissions and the QA origin settings.');
+        } else {
+          setError('The invitation could not be confirmed. Refresh the account registry before retrying; a partially created account may require administrator review.');
+        }
         return;
       }
       setResult(data);
