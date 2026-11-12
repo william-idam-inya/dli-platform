@@ -303,6 +303,10 @@
     {
       "file": "20261112121339_stage_q5_production_admission_closed.sql",
       "gitBlobSha1": "38f83768c18a8ed9f41ecdc006535be80f45c09d"
+    },
+    {
+      "file": "20261112160000_stage_q6_scoped_paid_enrolment.sql",
+      "gitBlobSha1": "b1523ade448a0f32a18e2c00cf1a268777c6da29"
     }
   ]
 }
