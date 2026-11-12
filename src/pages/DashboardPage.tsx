@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
-import { learningAreas, learningAreaUrl } from '../data/learningAreas';
+import { learningAreas, learningAreaUrl, type LearningTab } from '../data/learningAreas';
 import { supabase } from '../lib/supabase';
 import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
 import './UnifiedDashboard.css';
@@ -16,6 +16,8 @@ export default function DashboardPage(){
   const [classes,setClasses]=useState<TeachingClass[]>([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
+  const [academicCounts,setAcademicCounts]=useState<Partial<Record<LearningTab,number|null>>|null>(null);
+  const [academicLoading,setAcademicLoading]=useState(false);
   const isManager=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin';
   const canViewClasses=Boolean(account&&canAccessPath(account.role,'/classes',account.studentTier));
   const canOpenLearning=Boolean(account&&canAccessPath(account.role,'/study',account.studentTier));
@@ -42,6 +44,36 @@ export default function DashboardPage(){
     finally{setLoading(false);}
   },[account?.id,account?.role,account?.studentTier]);
   useEffect(()=>{void refresh();},[refresh]);
+
+  // Counts come from the signed-in person's RLS-protected catalogue, not from
+  // administrator-wide totals or hardcoded sample content. The Free tier never
+  // queries protected lesson, quiz, assignment or attendance resources.
+  const refreshAcademic=useCallback(async()=>{
+    if(!supabase||!account||!canAccessPath(account.role,'/study',account.studentTier)
+      ||(account.role==='student'&&account.studentTier!=='paid')){
+      setAcademicCounts(null);setAcademicLoading(false);return;
+    }
+    setAcademicLoading(true);
+    const targets=[
+      {id:'lessons',table:'lessons',published:true},
+      {id:'assignments',table:'learning_assignments',published:true},
+      {id:'quizzes',table:'learning_quizzes',published:true},
+      {id:'attendance',table:'class_attendance',published:false},
+    ] as const;
+    try{
+      const records=await Promise.all(targets.map(async target=>{
+        let request=supabase!.from(target.table).select('id',{head:true,count:'exact'});
+        if(target.published)request=request.eq('is_published',true);
+        const result=await request;
+        return [target.id,result.error?null:result.count] as const;
+      }));
+      setAcademicCounts(Object.fromEntries(records) as Partial<Record<LearningTab,number|null>>);
+    }catch{
+      setAcademicCounts(Object.fromEntries(targets.map(t=>[t.id,null]))
+        as Partial<Record<LearningTab,number|null>>);
+    }finally{setAcademicLoading(false);}
+  },[account?.id,account?.role,account?.studentTier]);
+  useEffect(()=>{void refreshAcademic();},[refreshAcademic]);
   const published=classes.filter(c=>c.state==='published').length;
   const drafts=classes.filter(c=>c.state==='draft').length;
   const headline=account?.role==='student'?'Your learning workspace.':
@@ -97,8 +129,12 @@ export default function DashboardPage(){
           <h2>Lessons, assignments, quizzes &amp; attendance</h2>
           <p className="user-caption">{isFreeStudent
             ?'All four learning areas are visible. Paid coursework and results remain locked until your enrolment is approved.'
-            :'Open an academic area to view your assigned resources and results.'}</p>
+            :'Open an academic area to view your assigned resources and results. Counters reflect only records visible to this account.'}</p>
         </div>
+        {!isFreeStudent&&<button type="button" className="user-outline-button"
+          disabled={academicLoading} onClick={()=>void refreshAcademic()}>
+          <RefreshCw size={15}/> Refresh learning counts
+        </button>}
       </div>
       <div className="module-grid">
         {learningAreas.map(item=><Link key={item.id} to={learningAreaUrl(item.id)}
@@ -106,7 +142,13 @@ export default function DashboardPage(){
           <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
           <div className="module-card-body">
             <h3>{item.label}</h3><p>{item.description}</p>
-            {isFreeStudent&&<small className="unified-learning-restricted"><LockKeyhole size={13}/> Preview only · enrolled access required</small>}
+            {isFreeStudent
+              ?<small className="unified-learning-restricted"><LockKeyhole size={13}/> Preview only · enrolled access required</small>
+              :<small className="unified-learning-metric" role="status">
+                {academicLoading?'Checking visible records…':
+                  academicCounts?.[item.id]===null||academicCounts?.[item.id]===undefined
+                    ?'Count unavailable':academicCounts[item.id]+' visible records'}
+              </small>}
           </div>
           <span className="module-arrow"><ArrowRight size={17}/></span>
         </Link>)}
