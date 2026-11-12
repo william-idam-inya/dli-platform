@@ -34,7 +34,7 @@ const AUDIENCES: {value: Audience; label: string}[] = [
 ];
 const CHANNELS: {value: Channel; label: string}[] = [
   {value: 'whatsapp', label: 'WhatsApp (copy manually later)'},
-  {value: 'email', label: 'Email (not connected)'},
+  {value: 'email', label: 'Email (manual preparation)'},
   {value: 'in_app', label: 'In-app (not published)'},
 ];
 const DATE = new Intl.DateTimeFormat('en-NG', {
