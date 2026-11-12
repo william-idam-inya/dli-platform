@@ -275,7 +275,7 @@ export default function FinancePage() {
       </form>
     </section>}
 
-    <TutorPayrollPage/>
+    {(account?.role==='owner'||account?.role==='admin')&&<TutorPayrollPage/>}
 
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
