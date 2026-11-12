@@ -6,10 +6,12 @@ import { supabase } from '../lib/supabase';
 import { isDliRole, type Account } from './permissions';
 
 export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
+export type AuthCheckFailure = 'identity-service' | 'identity-session' | 'account-registry' | null;
 type AuthContextValue = {
   state: AuthState;
   account: Account | null;
   notice: string | null;
+  failure: AuthCheckFailure;
   refresh: () => Promise<void>;
   clearNotice: () => void;
 };
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(supabase ? 'checking' : 'config-error');
   const [account, setAccount] = useState<Account | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [failure, setFailure] = useState<AuthCheckFailure>(null);
   const verification = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -29,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccount(null);
       return;
     }
+    setFailure(null);
     setState('checking');
 
     // Always revalidate the session and role before exposing the workspace.
@@ -42,18 +46,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (authError) {
         setAccount(null);
+        // Only a safe category is exposed, never raw Auth error content,
+        // credentials, session tokens, user IDs or API keys.
+        setFailure('status' in authError && authError.status === 401
+          ? 'identity-session' : 'identity-service');
         setState('unavailable');
         return;
       }
       user = authData.user;
       if (!user) {
         setAccount(null);
+        setFailure(null);
         setState('guest');
         return;
       }
     } catch {
       if (run !== verification.current) return;
       setAccount(null);
+      setFailure('identity-service');
       setState('unavailable');
       return;
     }
@@ -69,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (recordError) {
         setAccount(null);
+        setFailure('account-registry');
         setState('unavailable');
         return;
       }
@@ -76,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       if (run !== verification.current) return;
       setAccount(null);
+      setFailure('account-registry');
       setState('unavailable');
       return;
     }
@@ -97,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setAccount(record as Account);
+    setFailure(null);
     setNotice(null);
     setState('active');
   }, []);
@@ -109,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         ++verification.current;
         setAccount(null);
+        setFailure(null);
         setState('guest');
       } else if (
         event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' ||
@@ -136,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      state, account, notice, refresh, clearNotice: () => setNotice(null),
+      state, account, notice, failure, refresh, clearNotice: () => setNotice(null),
     }}>
       {children}
     </AuthContext.Provider>
