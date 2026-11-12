@@ -60,9 +60,9 @@ function ProfileSetupGate({children}:{children:ReactNode}){
   useEffect(()=>{
     if(!account||!supabase){setChecked('checking');return;}
     let active=true;
-    setChecked('checking');
     const client=supabase;
-    void (async()=>{
+    const verifyProfile=async()=>{
+      setChecked('checking');
       try{
         const auth=await client.auth.getUser();
         if(!active)return;
@@ -73,8 +73,16 @@ function ProfileSetupGate({children}:{children:ReactNode}){
         if(result.error){setChecked('unavailable');return;}
         setChecked(result.data?'ready':'missing');
       }catch{if(active)setChecked('unavailable');}
-    })();
-    return()=>{active=false;};
+    };
+    void verifyProfile();
+    // Completing a required profile should unlock the workspace immediately;
+    // never trust the event alone — revalidate the saved row with Supabase.
+    const onProfileChanged=()=>{void verifyProfile();};
+    window.addEventListener('dli-profile-changed',onProfileChanged);
+    return()=>{
+      active=false;
+      window.removeEventListener('dli-profile-changed',onProfileChanged);
+    };
   },[account?.id]);
   // The account owner can always complete the profile or recover their password.
   if(location.pathname==='/profile'||location.pathname==='/change-password')return <>{children}</>;
