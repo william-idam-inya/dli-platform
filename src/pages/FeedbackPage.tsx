@@ -5,13 +5,18 @@ import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './FeedbackPage.css';
 
-type Category = 'bug' | 'suggestion' | 'learning_support' | 'other';
+type Category = 'bug' | 'suggestion' | 'learning_support' | 'other'
+ | 'tutor_absent' | 'tutor_late' | 'class_cancelled' | 'class_schedule'
+ | 'lesson_quality' | 'lesson_not_understood' | 'attendance_error'
+ | 'student_conduct' | 'tutor_conduct' | 'harassment_safety'
+ | 'payment_issue' | 'resource_missing' | 'video_meet_issue';
 type Status = 'new' | 'reviewing' | 'resolved';
 type Feedback = {
   id: string;
   submitted_by: string;
   submitted_role: DliRole;
   category: Category;
+  class_id: string|null;
   message: string;
   status: Status;
   created_at: string;
@@ -20,7 +25,20 @@ type Feedback = {
 const categories: {value:Category;label:string}[] = [
   {value:'bug',label:'Something is not working'},
   {value:'suggestion',label:'Idea for improvement'},
-  {value:'learning_support',label:'Learning or teaching support'},
+  {value:'learning_support',label:'General learning or teaching support'},
+  {value:'tutor_absent',label:'Tutor did not attend class'},
+  {value:'tutor_late',label:'Tutor joined late'},
+  {value:'class_cancelled',label:'Missed or cancelled class'},
+  {value:'class_schedule',label:'Wrong class time or schedule'},
+  {value:'lesson_quality',label:'Teaching quality concern'},
+  {value:'lesson_not_understood',label:'I need an explanation of the lesson'},
+  {value:'attendance_error',label:'Attendance not recorded correctly'},
+  {value:'resource_missing',label:'Lesson notes or resources missing'},
+  {value:'video_meet_issue',label:'Google Meet or video problem'},
+  {value:'student_conduct',label:'Student conduct or classroom disruption'},
+  {value:'tutor_conduct',label:'Tutor conduct or professionalism'},
+  {value:'harassment_safety',label:'Harassment, bullying or safety concern'},
+  {value:'payment_issue',label:'Fee, receipt or payment review issue'},
   {value:'other',label:'Other feedback'},
 ];
 const statuses: Record<Status,string> = {
@@ -43,6 +61,8 @@ export default function FeedbackPage() {
   const staff=Boolean(account&&reviewers.has(account.role));
   const [items,setItems]=useState<Feedback[]>([]);
   const [category,setCategory]=useState<Category>('bug');
+  const [classId,setClassId]=useState('');
+  const [classes,setClasses]=useState<{id:string;subject_name:string;weekday:number;starts_at:string}[]>([]);
   const [message,setMessage]=useState('');
   const [saving,setSaving]=useState(false);
   const [changing,setChanging]=useState<string|null>(null);
@@ -58,8 +78,11 @@ export default function FeedbackPage() {
     }
     setLoading(true);
     try{
+      const classResponse=await client.from('teaching_classes')
+        .select('id,subject_name,weekday,starts_at').order('subject_name').limit(200);
+      setClasses(classResponse.error?[]:(classResponse.data??[]));
       const {data,error:loadError}=await client.from('member_feedback')
-        .select('id,submitted_by,submitted_role,category,message,status,created_at,updated_at')
+        .select('id,submitted_by,submitted_role,category,class_id,message,status,created_at,updated_at')
         .order('created_at',{ascending:false}).limit(100);
       if(loadError){
         setItems([]);
@@ -87,13 +110,13 @@ export default function FeedbackPage() {
     setSaving(true);setNotice(null);setError(null);
     try{
       const {data,error:saveError}=await client.from('member_feedback')
-        .insert({category,message:clean}).select('id').single();
+        .insert({category,message:clean,...(classId?{class_id:classId}:{})}).select('id').single();
       if(saveError||!data){
         setError('Feedback was not saved. You may have reached the limit of five submissions in one hour.');
         return;
       }
       setMessage('');
-      setCategory('bug');
+      setCategory('bug');setClassId('');
       setNotice('Feedback saved securely. It has not been sent by email or WhatsApp.');
       await refresh();
     }catch{
@@ -125,7 +148,7 @@ export default function FeedbackPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> MEMBER SUPPORT</div>
         <h1>Feedback &amp; support</h1>
-        <p>Report application problems or propose improvements directly to DLI administrators.</p>
+        <p>Report class problems, missing tutors, attendance issues, safety concerns or application errors to DLI administrators.</p>
       </div>
       <span className="module-status"><span/> Stage K7</span>
     </div>
@@ -155,6 +178,12 @@ export default function FeedbackPage() {
         <select id="member-feedback-category" value={category}
           disabled={saving} onChange={event=>setCategory(event.target.value as Category)}>
           {categories.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+        </select>
+        <label htmlFor="member-feedback-class">Related class (optional)</label>
+        <select id="member-feedback-class" value={classId} disabled={saving}
+          onChange={event=>setClassId(event.target.value)}>
+          <option value="">General support — not about a particular class</option>
+          {classes.map(item=><option key={item.id} value={item.id}>{item.subject_name} · {item.starts_at.slice(0,5)} WAT</option>)}
         </select>
         <label htmlFor="member-feedback-message">Describe the issue or idea</label>
         <textarea id="member-feedback-message" rows={5}
@@ -191,7 +220,8 @@ export default function FeedbackPage() {
               <div>
                 <strong>{categoryName(item.category)}</strong>
                 <small>Reported {when(item.created_at)}
-                  {staff?' · '+(roleLabels[item.submitted_role]??'DLI member'):''}</small>
+                  {staff?' · '+(roleLabels[item.submitted_role]??'DLI member'):''}
+                  {item.class_id?' · Linked class report':''}</small>
               </div>
               <span className={'feedback-status feedback-status-'+item.status}>
                 {item.status==='resolved'&&<CheckCircle2 size={14}/>}
