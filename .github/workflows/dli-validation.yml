@@ -58,6 +58,9 @@ jobs:
       - name: Verify backup-receipt script self-tests (no backup files)
         run: npm run check:backup-file-tests
 
+      - name: Verify Q4 offline recovery-bundle self-tests (synthetic files only)
+        run: npm run check:recovery-bundle-tests
+
       - name: Verify document-backed paid learning rates remain finance-inactive
         run: npm run check:paid-learning-plans
 
