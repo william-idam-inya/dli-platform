@@ -243,6 +243,10 @@
     {
       "file": "20261112041420_stage_p1_peer_messaging_and_class_support_categories.sql",
       "gitBlobSha1": "29250800c489e19b6da7c0d88c68ba8a849a82d9"
+    },
+    {
+      "file": "20261112042920_stage_p2_private_member_profiles.sql",
+      "gitBlobSha1": "08325955a53ea2b4a545cf4bc52458cf1debff82"
     }
   ]
 }
