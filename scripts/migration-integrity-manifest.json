@@ -287,6 +287,10 @@
     {
       "file": "20261112063127_stage_q2b_operational_enrolment_switch.sql",
       "gitBlobSha1": "4e4c12b09c1e073bdfa5cd9f854a1eef8aef8eef"
+    },
+    {
+      "file": "20261112063538_stage_q2c_archived_payroll_history.sql",
+      "gitBlobSha1": "7a7a8990f89ba2542c9900b74a3b7ba2a3caff46"
     }
   ]
 }
