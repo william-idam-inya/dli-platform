@@ -60,6 +60,14 @@ export default function TutorPayrollPage(){
   finally{setLoading(false);}
  },[account?.id,month]);
  useEffect(()=>{void refresh();},[refresh]);
+ // A payroll page left open overnight must not display yesterday's due status.
+ // The database remains the authoritative source of Paid/Due/Overdue.
+ useEffect(()=>{
+   const tick=()=>{if(document.visibilityState==='visible')void refresh();};
+   const interval=window.setInterval(tick,60000);
+   document.addEventListener('visibilitychange',tick);
+   return()=>{window.clearInterval(interval);document.removeEventListener('visibilitychange',tick);};
+ },[refresh]);
  const tutors=useMemo(()=>Array.from(new Map(rows.map(r=>[r.tutor_id,r.tutor_name])).entries()),[rows]);
  const filtered=rows.filter(r=>!staff||!tutor||r.tutor_id===tutor);
  const total=filtered.reduce((s,r)=>s+Number(r.proposed_monthly_ngn),0);
