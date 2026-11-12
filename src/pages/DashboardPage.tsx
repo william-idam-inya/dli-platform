@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, BookOpen, CalendarClock, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath, roleLabels } from '../auth/permissions';
+import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
 import './UnifiedDashboard.css';
@@ -24,7 +24,7 @@ export default function DashboardPage(){
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
   const isManager=account?.role==='owner'||account?.role==='admin'||account?.role==='academic_coordinator';
-  const available=actions.filter(action=>account&&canAccessPath(account.role,action.path))
+  const available=actions.filter(action=>account&&canAccessPath(account.role,action.path,account.studentTier))
     .map(action=>action.path==='/feedback'&&account&&['owner','admin','assistant_admin'].includes(account.role)
       ? {...action,title:'Support inbox & reports',description:'Review learner and tutor reports, prioritise concerns and track review status.'}
       : action);
@@ -49,7 +49,7 @@ export default function DashboardPage(){
         <h1>{isManager?'Manage learning in one place.':account?.role==='tutor'?'Your teaching workspace.':
           account?.role==='student'?'Your learning workspace.':'Your DLI workspace.'}</h1>
         <p className="welcome-copy">
-          {account?roleLabels[account.role]:''} · One connected register for individual and group classes,
+          {account?accountRoleLabel(account):''} · One connected register for individual and group classes,
           academic resources and authorised member operations.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function DashboardPage(){
           Transfer receipts require manual bank-credit verification. The development platform is not yet a live payment or production service.</span>
       </div>
     </section>
-    {canAccessPath(account?.role??'student','/classes')&&<section className="panel unified-overview-snapshot">
+    {canAccessPath(account?.role??'student','/classes',account?.studentTier)&&<section className="panel unified-overview-snapshot">
       <div className="panel-heading"><div><p className="section-kicker">CURRENT CLASSES</p>
         <h2>{isManager?'Your authorised class register':'Your assigned classes'}</h2>
         <p className="user-caption">Counts reflect records visible to your role, not the entire DLI organisation.</p>
