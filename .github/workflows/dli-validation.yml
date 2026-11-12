@@ -64,6 +64,9 @@ jobs:
       - name: Verify document-backed paid learning rates remain finance-inactive
         run: npm run check:paid-learning-plans
 
+      - name: Verify programme-level enrolment scoping and subject deduplication (offline)
+        run: npm run check:scoped-enrolment
+
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
