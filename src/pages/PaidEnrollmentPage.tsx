@@ -109,7 +109,15 @@ export default function PaidEnrollmentPage(){
    const uploaded=await supabase.storage.from('dli-enrolment-proofs').upload(path,file,{contentType:mime,upsert:false});
    if(uploaded.error){setError('Private receipt upload failed.');return;}
    const written=await supabase.from('dli_enrollment_proofs').insert({request_id:request.id,object_path:path}).select('id').maybeSingle();
-   if(written.error||!written.data){setError('Receipt uploaded but review status could not be confirmed. Refresh and contact DLI support before uploading again.');return;}
+   if(written.error||!written.data){
+     // The database permits removal only for the uploader's unattached file.
+     // A committed proof is protected from deletion, even if its response was lost.
+     const cleanup=await supabase.storage.from('dli-enrolment-proofs').remove([path]);
+     setError(cleanup.error
+       ?'Receipt confirmation was uncertain and the file could not be cleaned up. Refresh your application status, then contact DLI support before trying again.'
+       :'Receipt confirmation failed. Any still-unattached file was cleaned up where permitted. Refresh your application before retrying.');
+     return;
+   }
    setFile(null);setNotice('Evidence submitted. Only an authorised bank-credit review can approve your paid access.');
    await load();
   }catch{setError('Receipt submission was interrupted. Refresh before trying again.');}
