@@ -840,6 +840,32 @@ inactive billing/collection/payout settings in prebuild and CI.
 No production account, fee policy activation or database change
 occurred. See `docs/stage-k10-paid-learning-plans.md`.
 
+## Stage L1 — Individual private classes and payment review (development)
+
+An explicit Student → assigned monthly fee → published bank
+instructions → Student-uploaded PDF/image proof → Admin-reviewed
+bank credit → subject/day/time/tutor/Google Meet workflow has been
+implemented. The Admin view has numbered steps, with a tutor roster
+across students; linked Tutor and Student dashboards expose only
+their authorised class/payment records.
+
+The versioned `20261112000214_stage_l1_private_learning_workflow.sql`
+migration was applied to DLI development only and added to the
+reviewed 40-migration integrity manifest. It creates
+four RLS-protected tables and a non-public payment-proof bucket.
+No finance user accounts, bank instructions, monthly fees, uploaded
+proofs, or individual slots were inserted during deployment.
+The admin must manually verify actual bank credit; there is no
+payment gateway or auto-payment confirmation.
+
+The source PDF's private-plan subject count conflicts
+(six in its introductory description, two in its teaching mode).
+L1 does not silently hard-code an unapproved count. Independent
+real-role acceptance, proper financial/privacy governance, bank
+account verification, backups and a separate production environment
+are still outstanding. See
+`docs/stage-l1-private-learning-workflow.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
