@@ -46,9 +46,10 @@ export default function PrivateClassesPage(){
   const [end,setEnd]=useState('17:00');
   const [tutor,setTutor]=useState('');
   const [meet,setMeet]=useState('');
-  const [receiptFile,setReceiptFile]=useState<File|null>(null);
+  const [receiptFiles,setReceiptFiles]=useState<Record<string,File|null>>({});
   const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
   const [tutorFilter,setTutorFilter]=useState('');
+  const [editingSlotId,setEditingSlotId]=useState<string|null>(null);
   const [adminStep,setAdminStep]=useState<'bank'|'fee'|'verify'|'schedule'|'roster'>('fee');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState<string|null>(null);
@@ -92,10 +93,9 @@ export default function PrivateClassesPage(){
   const chosenSubject=subjects.some(s=>s.id===subject)?subject:(subjects[0]?.id??'');
   const selectedFees=fees.filter(f=>!isStaff||f.student_id===chosenStudent);
   const verifiedStudents=new Set(fees.filter(f=>f.payment_status==='verified').map(f=>f.student_id));
-  const assignedSlots=useMemo(()=>slots.filter(x=>x.is_active),[slots]);
-  const visibleSlots=assignedSlots.filter(s=>!isStaff || (tutorFilter
+  const visibleSlots=useMemo(()=>slots.filter(s=>!isStaff ? s.is_active : (tutorFilter
     ? s.tutor_id===tutorFilter
-    : (!chosenStudent || s.student_id===chosenStudent)));
+    : (!chosenStudent || s.student_id===chosenStudent))),[slots,isStaff,chosenStudent,tutorFilter]);
   const pending=receipts.filter(r=>r.status==='submitted');
 
   async function execute(key:string,action:()=>Promise<void>){
@@ -135,9 +135,9 @@ export default function PrivateClassesPage(){
   }
 
   async function uploadReceipt(fee:Fee){
-    if(!supabase||!account||!isStudent||!receiptFile)return;
+    if(!supabase||!account||!isStudent||!receiptFiles[fee.id])return;
     await execute('upload-'+fee.id,async()=>{
-      const file=receiptFile;
+      const file=receiptFiles[fee.id]!;
       if(file.size===0||file.size>5*1024*1024||!['application/pdf','image/jpeg','image/png'].includes(file.type)){
         setError('Upload a PDF, PNG or JPEG receipt no larger than 5 MB.');return;
       }
@@ -152,7 +152,7 @@ export default function PrivateClassesPage(){
         setError('The receipt uploaded but its review record was not saved. Contact DLI administration before uploading again.');
         return;
       }
-      setReceiptFile(null);setNotice('Receipt submitted for manual verification. This is not confirmation of payment.');
+      setReceiptFiles(v=>({...v,[fee.id]:null}));setNotice('Receipt submitted for manual verification. This is not confirmation of payment.');
       await refresh();
     });
   }
@@ -191,13 +191,26 @@ export default function PrivateClassesPage(){
       if(!chosenStudent||!chosenSubject||!chosenTutor||start>=end||!validMeet(link)){
         setError('Choose a student, subject, weekday, valid time range, tutor and Google Meet URL.');return;
       }
-      const {error:e}=await supabase!.from('private_class_slots').insert({
-        student_id:chosenStudent,subject_id:chosenSubject,weekday,starts_at:start,
-        ends_at:end,tutor_id:chosenTutor,meeting_url:link});
-      if(e){setError(feedback(e));return;}
-      setMeet('');setNotice('Subject, recurring day/time, tutor and Google Meet link saved together.');
+      const updates={subject_id:chosenSubject,weekday,starts_at:start,
+        ends_at:end,tutor_id:chosenTutor,meeting_url:link};
+      const response=editingSlotId
+        ? await supabase!.from('private_class_slots').update(updates).eq('id',editingSlotId).select('id').maybeSingle()
+        : await supabase!.from('private_class_slots').insert({student_id:chosenStudent,...updates}).select('id').maybeSingle();
+      if(response.error||!response.data){setError(feedback(response.error));return;}
+      setEditingSlotId(null);setMeet('');
+      setNotice('Subject, recurring day/time, tutor and Google Meet link saved together.');
       await refresh();
     });
+  }
+
+  function editSlot(slot:Slot){
+    if(!isStaff)return;
+    setStudent(slot.student_id);
+    setSubject(slot.subject_id);
+    setWeekday(slot.weekday);setStart(slot.starts_at.slice(0,5));
+    setEnd(slot.ends_at.slice(0,5));setTutor(slot.tutor_id);
+    setMeet(slot.meeting_url);setEditingSlotId(slot.id);
+    setAdminStep('schedule');setError(null);setNotice(null);
   }
 
   function toggleSlot(slot:Slot){
@@ -307,8 +320,8 @@ export default function PrivateClassesPage(){
           {isStudent&&['assigned','rejected'].includes(f.payment_status)&&<div className="private-upload">
             <label htmlFor={'l1-proof-'+f.id}>Payment evidence (PDF, JPEG or PNG; maximum 5 MB)</label>
             <input id={'l1-proof-'+f.id} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-              onChange={e=>setReceiptFile(e.target.files?.[0]??null)}/>
-            <button type="button" className="academic-submit" disabled={!!busy||!receiptFile||!bank?.is_active}
+              onChange={e=>setReceiptFiles(v=>({...v,[f.id]:e.target.files?.[0]??null}))}/>
+            <button type="button" className="academic-submit" disabled={!!busy||!receiptFiles[f.id]||!bank?.is_active}
               onClick={()=>void uploadReceipt(f)}><Upload size={15}/> Submit transfer proof</button>
           </div>}
           {receipts.filter(r=>r.fee_id===f.id).map(r=><div key={r.id} className="private-receipt">
@@ -355,8 +368,9 @@ export default function PrivateClassesPage(){
         <input id="l1-meet" type="url" required maxLength={2048} placeholder="https://meet.google.com/abc-defg-hij" value={meet}
           onChange={e=>setMeet(e.target.value)}/>
         <button type="submit" className="academic-submit" disabled={!!busy||!chosenStudent||!chosenSubject||!chosenTutor||!verifiedStudents.has(chosenStudent)}>
-          <Plus size={15}/> Save subject assignment
+          <Plus size={15}/> {editingSlotId?'Save edited subject assignment':'Save subject assignment'}
         </button>
+        {editingSlotId&&<button type="button" className="user-outline-button" onClick={()=>{setEditingSlotId(null);setMeet('');}}>Cancel editing</button>}
         {!verifiedStudents.has(chosenStudent)&&<p className="academic-code-hint">Student payment must be verified first; the subject form is locked until then.</p>}
         {!subjects.length&&<p className="academic-empty">Add approved subjects in <Link to="/academics">Academic setup</Link>.</p>}
         {!tutors.length&&<p className="academic-empty">Invite authorised tutors through <Link to="/users">Users &amp; access</Link>.</p>}
@@ -377,11 +391,12 @@ export default function PrivateClassesPage(){
       {!loading&&visibleSlots.length===0&&<p className="academic-empty">No active individual subject assignments found for this view.</p>}
       <div className="private-slot-list">
         {visibleSlots.map(s=><article key={s.id} className="private-slot-card">
-          <div><strong>{s.subject_name}</strong><p><CalendarClock size={14}/> {days[s.weekday]} · {s.starts_at.slice(0,5)}–{s.ends_at.slice(0,5)} WAT</p>
+          <div><strong>{s.subject_name}{!s.is_active?' · Inactive':''}</strong><p><CalendarClock size={14}/> {days[s.weekday]} · {s.starts_at.slice(0,5)}–{s.ends_at.slice(0,5)} WAT</p>
             <p><Users size={14}/> Student: {s.student_name} · Tutor: {s.tutor_name}</p></div>
           <div className="private-slot-actions">
             <a href={s.meeting_url} target="_blank" rel="noopener noreferrer"><Video size={14}/> Join Google Meet</a>
-            {isStaff&&<button type="button" disabled={!!busy} onClick={()=>toggleSlot(s)}>Deactivate</button>}
+            {isStaff&&<button type="button" disabled={!!busy} onClick={()=>editSlot(s)}>Edit</button>}
+            {isStaff&&<button type="button" disabled={!!busy} onClick={()=>toggleSlot(s)}>{s.is_active?'Deactivate':'Reactivate'}</button>}
           </div>
         </article>)}
       </div>
