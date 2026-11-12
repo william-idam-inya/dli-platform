@@ -291,6 +291,10 @@
     {
       "file": "20261112063538_stage_q2c_archived_payroll_history.sql",
       "gitBlobSha1": "7a7a8990f89ba2542c9900b74a3b7ba2a3caff46"
+    },
+    {
+      "file": "20261112064031_stage_q2d_student_entitlement_realtime.sql",
+      "gitBlobSha1": "02e191d7cd86123b26d50b7979c4d628cfaddf4f"
     }
   ]
 }
