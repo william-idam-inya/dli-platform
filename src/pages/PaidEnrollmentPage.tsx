@@ -6,6 +6,9 @@ import { supabase } from '../lib/supabase';
 import './PaidEnrollmentPage.css';
 
 type Subject={id:string;name:string};
+type CatalogueRow={programme_id:string;programme_name:string;programme_code:string;
+ academic_level_id:string;academic_level_name:string;level_sort_order:number;
+ subject_id:string;subject_name:string};
 type Request={id:string;student_id:string;plan_code:string;subject_ids:string[];amount_ngn:number|string;
  status:'awaiting_payment'|'submitted'|'approved'|'rejected';submitted_at:string;review_note:string};
 type Proof={id:string;request_id:string;student_id:string;object_path:string;submitted_at:string};
@@ -31,6 +34,9 @@ export default function PaidEnrollmentPage(){
  const isManager=Boolean(account&&managerRoles.includes(account.role));
  const isStudent=account?.role==='student';
  const [subjects,setSubjects]=useState<Subject[]>([]);
+ const [catalogue,setCatalogue]=useState<CatalogueRow[]>([]);
+ const [programme,setProgramme]=useState('');
+ const [level,setLevel]=useState('');
  const [selected,setSelected]=useState<string[]>([]);
  const [plan,setPlan]=useState('group_5_science');
  const [requests,setRequests]=useState<Request[]>([]);
@@ -52,8 +58,8 @@ export default function PaidEnrollmentPage(){
   setLoading(true);
   try{
    const [s,r,p,b,d,control]=await Promise.all([
-    isStudent?supabase.from('subjects').select('id,name').eq('is_active',true).order('name'):
-       Promise.resolve({data:[] as Subject[],error:null}),
+    isStudent?supabase.rpc('dli_enrolment_catalogue'):
+       Promise.resolve({data:[] as CatalogueRow[],error:null}),
     supabase.from('dli_enrollment_requests')
       .select('id,student_id,plan_code,subject_ids,amount_ngn,status,submitted_at,review_note')
       .order('submitted_at',{ascending:false}).limit(200),
@@ -68,7 +74,9 @@ export default function PaidEnrollmentPage(){
    if([s,r,p,b,d,control].some(x=>x.error)||!control.data){
     setError('The enrolment data could not be verified. Refresh before continuing.');return;
    }
-   setSubjects((s.data??[]) as Subject[]);
+   const rows=(s.data??[]) as CatalogueRow[];
+   setCatalogue(rows);
+   setSubjects([...new Map(rows.map(item=>[item.subject_id,{id:item.subject_id,name:item.subject_name}])).values()]);
    setRequests((r.data??[]) as Request[]);
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
@@ -81,13 +89,26 @@ export default function PaidEnrollmentPage(){
  useEffect(()=>{void load();},[load]);
  const current=requests.find(r=>r.status==='awaiting_payment'||r.status==='submitted'||r.status==='approved');
  const picked=plans.find(p=>p.id===plan)??plans[0];
+ const programmes=[...new Map(catalogue.map(item=>[item.programme_id,
+   {id:item.programme_id,name:item.programme_name}])).values()];
+ const levels=[...new Map(catalogue.filter(item=>item.programme_id===programme)
+   .map(item=>[item.academic_level_id,{id:item.academic_level_id,name:item.academic_level_name,
+     order:item.level_sort_order}])).values()].sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
+ const eligibleSubjects=[...new Map(catalogue.filter(item=>item.programme_id===programme&&item.academic_level_id===level)
+   .map(item=>[item.subject_id,{id:item.subject_id,name:item.subject_name}])).values()]
+   .sort((a,b)=>a.name.localeCompare(b.name));
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(!supabase||busy||!isStudent||account?.studentTier==='paid'||applicationsOpen!==true)return;
-  if(selected.length<1||selected.length>6){setError('Select between one and six subjects.');return;}
+  if(!programme||!level||selected.length<1||selected.length>6||
+     selected.some(id=>!eligibleSubjects.some(s=>s.id===id))){
+    setError('Choose a valid programme, academic level and 1–6 matching subjects.');return;
+  }
   setBusy(true);setError(null);setNotice(null);
   try{
-   const res=await supabase.rpc('dli_apply_paid',{p_plan:plan,p_subjects:selected});
+   const res=await supabase.rpc('dli_apply_paid_v2',{
+     p_plan:plan,p_programme:programme,p_level:level,p_subjects:selected,
+   });
    if(res.error||!res.data){setError('Could not create the application. Check your existing request and refresh.');return;}
    setNotice('Application created. Follow the verified DLI transfer instructions and submit payment evidence.');
    await load();
@@ -206,12 +227,27 @@ export default function PaidEnrollmentPage(){
       {plans.map(p=><option key={p.id} value={p.id}>{p.name} · {money(p.cost)}/month</option>)}
     </select>
     <strong>Monthly learner fee: {money(picked.cost)}</strong>
-    <label>Choose subjects (1–6)</label>
-    <div className="upgrade-subjects">{subjects.map(s=><label key={s.id}>
+    <label htmlFor="upgrade-programme">Programme</label>
+    <select id="upgrade-programme" required value={programme} onChange={e=>{
+      setProgramme(e.target.value);setLevel('');setSelected([]);
+    }}>
+      <option value="">Select a programme</option>
+      {programmes.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+    </select>
+    <label htmlFor="upgrade-academic-level">Academic level</label>
+    <select id="upgrade-academic-level" required value={level} disabled={!programme}
+      onChange={e=>{setLevel(e.target.value);setSelected([]);}}>
+      <option value="">Select an academic level</option>
+      {levels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
+    </select>
+    <label>Subjects within selected programme and level (1–6)</label>
+    <div className="upgrade-subjects">{eligibleSubjects.map(s=><label key={s.id}>
        <input type="checkbox" checked={selected.includes(s.id)} onChange={()=>toggle(s.id)}/>{s.name}
     </label>)}</div>
+    {!catalogue.length&&!loading&&<p className="academic-empty">No paid DLI-Online courses are configured. Administration must first connect an active programme, academic level and subjects in Academic Setup.</p>}
+    {Boolean(programme&&level&&!eligibleSubjects.length)&&<p className="academic-empty">No active subjects are configured for this academic level.</p>}
     {plan==='private_1_to_1'&&<p className="academic-code-hint">The private tuition document specifies a standard two-subject tutor allocation but also mentions six subjects. DLI must confirm any additional subjects before scheduling or compensation.</p>}
-    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!selected.length}>
+    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!programme||!level||!selected.length}>
       <BookOpen size={16}/> Submit enrolment application
     </button>
    </form>
