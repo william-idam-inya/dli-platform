@@ -12,13 +12,13 @@ alter table public.dli_enrollment_requests
 do $q6_fk$
 begin
  if not exists(select 1 from pg_constraint
-  where conrelid='public.dli_enrollment_requests'::regclass and conname='dli_enrollment_requests_programme_fk') then
+  where conrelid='public.dli_enrollment_requests'::regclass and conname in ('dli_enrollment_requests_programme_fk','dli_enrollment_requests_programme_id_fkey')) then
   alter table public.dli_enrollment_requests
    add constraint dli_enrollment_requests_programme_fk foreign key (programme_id)
    references public.programmes(id) on delete restrict;
  end if;
  if not exists(select 1 from pg_constraint
-  where conrelid='public.dli_enrollment_requests'::regclass and conname='dli_enrollment_requests_academic_level_fk') then
+  where conrelid='public.dli_enrollment_requests'::regclass and conname in ('dli_enrollment_requests_academic_level_fk','dli_enrollment_requests_academic_level_id_fkey')) then
   alter table public.dli_enrollment_requests
    add constraint dli_enrollment_requests_academic_level_fk foreign key (academic_level_id)
    references public.academic_levels(id) on delete restrict;
