@@ -37,6 +37,7 @@ export default function PaidEnrollmentPage(){
  const [proofs,setProofs]=useState<Proof[]>([]);
  const [bank,setBank]=useState<Bank|null>(null);
  const [demos,setDemos]=useState<Demo[]>([]);
+ const [applicationsOpen,setApplicationsOpen]=useState<boolean|null>(null);
  const [file,setFile]=useState<File|null>(null);
  const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
  const [bankRefs,setBankRefs]=useState<Record<string,string>>({});
@@ -50,7 +51,7 @@ export default function PaidEnrollmentPage(){
   if(!supabase||!account){setLoading(false);return;}
   setLoading(true);
   try{
-   const [s,r,p,b,d]=await Promise.all([
+   const [s,r,p,b,d,control]=await Promise.all([
     isStudent?supabase.from('subjects').select('id,name').eq('is_active',true).order('name'):
        Promise.resolve({data:[] as Subject[],error:null}),
     supabase.from('dli_enrollment_requests')
@@ -62,8 +63,9 @@ export default function PaidEnrollmentPage(){
        .select('id,subject_name,weekday,starts_at,ends_at,meeting_url')
        .eq('state','published').eq('class_type','free_demo').limit(50)
        :Promise.resolve({data:[] as Demo[],error:null}),
+    supabase.from('dli_operational_controls').select('is_enabled').eq('setting_key','paid_enrolment_open').maybeSingle(),
    ]);
-   if([s,r,p,b,d].some(x=>x.error)){
+   if([s,r,p,b,d,control].some(x=>x.error)||!control.data){
     setError('The enrolment data could not be verified. Refresh before continuing.');return;
    }
    setSubjects((s.data??[]) as Subject[]);
@@ -71,6 +73,7 @@ export default function PaidEnrollmentPage(){
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
    setDemos((d.data??[]) as Demo[]);
+   setApplicationsOpen(Boolean(control.data.is_enabled));
    setError(null);
   }catch{setError('The enrolment service is temporarily unreachable.');}
   finally{setLoading(false);}
@@ -80,7 +83,7 @@ export default function PaidEnrollmentPage(){
  const picked=plans.find(p=>p.id===plan)??plans[0];
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
-  if(!supabase||busy||!isStudent||account?.studentTier==='paid')return;
+  if(!supabase||busy||!isStudent||account?.studentTier==='paid'||applicationsOpen!==true)return;
   if(selected.length<1||selected.length>6){setError('Select between one and six subjects.');return;}
   setBusy(true);setError(null);setNotice(null);
   try{
@@ -185,6 +188,11 @@ export default function PaidEnrollmentPage(){
     <p className="user-caption">Select your arrangement and specific subjects. Plan prices come from DLI Paid Learning Plans; extra/changed allocations require Admin review.</p>
    </div></div>
    <form className="upgrade-form" onSubmit={e=>void submit(e)}>
+    {applicationsOpen!==true&&<p className="auth-feedback error" role="status">
+      {applicationsOpen===false
+       ?'New paid enrolment applications are temporarily paused by DLI administration. Current requests are unaffected.'
+       :'Application status cannot be verified. Refresh before submitting.'}
+    </p>}
     <label htmlFor="upgrade-plan">Plan</label>
     <select id="upgrade-plan" value={plan} onChange={e=>setPlan(e.target.value)}>
       {plans.map(p=><option key={p.id} value={p.id}>{p.name} · {money(p.cost)}/month</option>)}
@@ -195,7 +203,7 @@ export default function PaidEnrollmentPage(){
        <input type="checkbox" checked={selected.includes(s.id)} onChange={()=>toggle(s.id)}/>{s.name}
     </label>)}</div>
     {plan==='private_1_to_1'&&<p className="academic-code-hint">The private tuition document specifies a standard two-subject tutor allocation but also mentions six subjects. DLI must confirm any additional subjects before scheduling or compensation.</p>}
-    <button className="academic-submit" type="submit" disabled={busy||loading||!selected.length}>
+    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!selected.length}>
       <BookOpen size={16}/> Submit enrolment application
     </button>
    </form>
