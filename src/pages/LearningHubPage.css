@@ -13,3 +13,8 @@
 .learning-hub-loading{padding:2rem;color:var(--muted)}
 @media(max-width:950px){.learning-hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:510px){.learning-hub-tabs{grid-template-columns:1fr}.learning-hub-header{align-items:flex-start}}
+
+/* Each existing feature keeps its original route and logic, but the shared
+   learning hub owns the primary heading to avoid stacked page banners. */
+.learning-hub>section .module-page-hero{display:none}
+.learning-hub>section>.module-page{padding-top:0}
