@@ -315,7 +315,7 @@ export default function CommunicationTemplatesPage() {
     <p className="module-footnote"><LockKeyhole size={15}/>
       Templates do not hold approvals. Every generated draft starts private and
       requires its own review under <Link to="/communications/reviews">Communications review</Link>.
-      Sending, publication, schedules and audience delivery remain disabled.
+      After independent approval, WhatsApp and email drafts can be opened in manual composers. Templates themselves never send, publish or select recipients automatically.
     </p>
   </div>;
 }
