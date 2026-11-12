@@ -3,12 +3,11 @@ import { BookOpen, CheckCircle2, Download, RefreshCw, ShieldCheck, Upload, Walle
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import { programmeChoices, levelChoices, subjectChoices, validSubjectSelection, type EnrolmentCatalogueRow } from '../lib/enrolmentCatalogue';
 import './PaidEnrollmentPage.css';
 
 type Subject={id:string;name:string};
-type CatalogueRow={programme_id:string;programme_name:string;programme_code:string;
- academic_level_id:string;academic_level_name:string;level_sort_order:number;
- subject_id:string;subject_name:string};
+type CatalogueRow = EnrolmentCatalogueRow;
 type Request={id:string;student_id:string;plan_code:string;subject_ids:string[];amount_ngn:number|string;
  status:'awaiting_payment'|'submitted'|'approved'|'rejected';submitted_at:string;review_note:string};
 type Proof={id:string;request_id:string;student_id:string;object_path:string;submitted_at:string};
@@ -76,7 +75,8 @@ export default function PaidEnrollmentPage(){
    }
    const rows=(s.data??[]) as CatalogueRow[];
    setCatalogue(rows);
-   setSubjects([...new Map(rows.map(item=>[item.subject_id,{id:item.subject_id,name:item.subject_name}])).values()]);
+   setSubjects([...new Map(rows.filter(item=>item.subject_id&&item.subject_name)
+     .map(item=>[item.subject_id!,{id:item.subject_id!,name:item.subject_name!}])).values()]);
    setRequests((r.data??[]) as Request[]);
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
@@ -89,19 +89,13 @@ export default function PaidEnrollmentPage(){
  useEffect(()=>{void load();},[load]);
  const current=requests.find(r=>r.status==='awaiting_payment'||r.status==='submitted'||r.status==='approved');
  const picked=plans.find(p=>p.id===plan)??plans[0];
- const programmes=[...new Map(catalogue.map(item=>[item.programme_id,
-   {id:item.programme_id,name:item.programme_name}])).values()];
- const levels=[...new Map(catalogue.filter(item=>item.programme_id===programme)
-   .map(item=>[item.academic_level_id,{id:item.academic_level_id,name:item.academic_level_name,
-     order:item.level_sort_order}])).values()].sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
- const eligibleSubjects=[...new Map(catalogue.filter(item=>item.programme_id===programme&&item.academic_level_id===level)
-   .map(item=>[item.subject_id,{id:item.subject_id,name:item.subject_name}])).values()]
-   .sort((a,b)=>a.name.localeCompare(b.name));
+ const programmes=programmeChoices(catalogue);
+ const levels=levelChoices(catalogue,programme);
+ const eligibleSubjects=subjectChoices(catalogue,programme,level);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(!supabase||busy||!isStudent||account?.studentTier==='paid'||applicationsOpen!==true)return;
-  if(!programme||!level||selected.length<1||selected.length>6||
-     selected.some(id=>!eligibleSubjects.some(s=>s.id===id))){
+  if(!programme||!level||!validSubjectSelection(catalogue,programme,level,selected)){
     setError('Choose a valid programme, academic level and 1–6 matching subjects.');return;
   }
   setBusy(true);setError(null);setNotice(null);
@@ -244,7 +238,7 @@ export default function PaidEnrollmentPage(){
     <div className="upgrade-subjects">{eligibleSubjects.map(s=><label key={s.id}>
        <input type="checkbox" checked={selected.includes(s.id)} onChange={()=>toggle(s.id)}/>{s.name}
     </label>)}</div>
-    {!catalogue.length&&!loading&&<p className="academic-empty">No paid DLI-Online courses are configured. Administration must first connect an active programme, academic level and subjects in Academic Setup.</p>}
+    {!catalogue.length&&!loading&&<p className="academic-empty" role="status">No available academic courses. DLI administration must configure active Programme → Academic Level → Subjects and corresponding courses under Academic Setup. Subject choices remain unavailable until then.</p>}
     {Boolean(programme&&level&&!eligibleSubjects.length)&&<p className="academic-empty">No active subjects are configured for this academic level.</p>}
     {plan==='private_1_to_1'&&<p className="academic-code-hint">The private tuition document specifies a standard two-subject tutor allocation but also mentions six subjects. DLI must confirm any additional subjects before scheduling or compensation.</p>}
     <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!programme||!level||!selected.length}>
