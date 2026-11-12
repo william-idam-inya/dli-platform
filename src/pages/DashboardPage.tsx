@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, roleLabels } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
 import './UnifiedDashboard.css';
 
 const actions=[
@@ -78,6 +79,7 @@ export default function DashboardPage(){
         {isManager?'Manage classes and assignments':'Open my timetable'} <ArrowRight size={15}/>
       </Link>
     </section>}
+    <DliDashboardAnnouncements/>
     <section className="section-block">
       <div className="section-heading">
         <div><p className="section-kicker">YOUR WORKSPACE</p><h2>What would you like to manage?</h2></div>
