@@ -117,10 +117,10 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
-        label: 'Communications',
+        label: 'Messages',
         path: '/communications',
         icon: MessageSquareText,
-        description: 'Private editable communication drafts only; no delivery or publishing enabled.',
+        description: 'Institutional direct chat with safeguarded Student–Tutor contact and Founder/Admin oversight.',
         group: 'Operations',
       },
       {
