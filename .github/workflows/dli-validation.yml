@@ -82,6 +82,9 @@ jobs:
       - name: Check Deno Edge Function TypeScript syntax with Node 22
         run: node --experimental-strip-types --check supabase/functions/admin-create-user/index.ts
 
+      - name: Verify fresh mobile guest sign-in and fail-closed membership (offline)
+        run: npm run check:guest-login
+
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
