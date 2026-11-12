@@ -293,6 +293,7 @@ export default function ClassesWorkspacePage(){
                 onClick={()=>setParams({tab:'messages',class:c.id})}>
                 <MessageCircle size={14}/> Subject chat
               </button>}
+              {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>
               {staff&&c.state!=='archived'&&<>
                 <button type="button" disabled={busy} onClick={()=>editClass(c)}><Pencil size={14}/> Edit</button>
                 {c.state==='draft'&&<button type="button" disabled={busy} onClick={()=>void changeState(c,'published')}><CheckCircle2 size={14}/> Publish</button>}
@@ -302,7 +303,7 @@ export default function ClassesWorkspacePage(){
           </article>;
         })}</div>
       </section>
-      <p className="module-footnote">The <Link to="/academics">academic catalogue</Link> still defines subjects and courses; lesson materials, assignments and quizzes remain in <Link to="/learning">Courses &amp; lessons</Link>. They are not duplicate class-assignment dashboards.</p>
+      <p className="module-footnote"><Link to="/academics">Academic setup</Link> defines subjects and courses. Lessons, assignments, quizzes and attendance are organised under <Link to="/study">Learning &amp; results</Link>.</p>
     </>}
   </div>;
 }
