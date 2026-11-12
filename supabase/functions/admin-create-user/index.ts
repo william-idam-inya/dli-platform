@@ -160,7 +160,12 @@ Deno.serve(async (request: Request) => {
     .eq('status', 'pending')
     .select('id')
     .maybeSingle();
-  if (activateError || activated?.id !== created.id) {
+  if (activateError) {
+    return response(500, {
+      error: 'Invitation activation failed. Ask DLI administration to review the pending account. Do not reuse this link.',
+    }, origin);
+  }
+  if (activated?.id !== created.id) {
     return response(409, {
       error: 'Invitation activation was not confirmed. Ask DLI administration to review the pending account. Do not reuse this link.',
     }, origin);
