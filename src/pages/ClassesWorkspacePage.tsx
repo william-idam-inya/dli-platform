@@ -289,7 +289,7 @@ export default function ClassesWorkspacePage(){
               {communicating&&c.state==='published'&&<Link to={'/communications?section=class&class='+encodeURIComponent(c.id)}>
                 <MessageCircle size={14}/> Subject chat
               </Link>}
-              {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>
+              {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>}
               {staff&&c.state!=='archived'&&<>
                 <button type="button" disabled={busy} onClick={()=>editClass(c)}><Pencil size={14}/> Edit</button>
                 {c.state==='draft'&&<button type="button" disabled={busy} onClick={()=>void changeState(c,'published')}><CheckCircle2 size={14}/> Publish</button>}
