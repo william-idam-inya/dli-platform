@@ -62,6 +62,7 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserStatus>('all');
   const [selectedRoles, setSelectedRoles] = useState<Record<string, DliRole>>({});
+  const [recoveryReview, setRecoveryReview] = useState<{ id: string; profileExists: boolean } | null>(null);
 
   const loadUsers = useCallback(async (reset = true) => {
     if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
@@ -176,6 +177,57 @@ export default function UserManagementPage() {
     }
   }
 
+  async function inspectPendingInvitation(user: UserRecord) {
+    if (!supabase || saving || user.status !== 'pending' ||
+        !roles.includes(user.role) || (account?.role !== 'owner' && account?.role !== 'admin')) return;
+    setSaving(user.id);
+    setError(null);
+    setNotice(null);
+    setRecoveryReview(null);
+    try {
+      const { data, error: inspectError } = await supabase.functions.invoke<{
+        recovery_status: string; profile_exists: boolean;
+      }>('admin-create-user', { body: { action: 'inspect_pending', registry_id: user.id } });
+      if (inspectError || data?.recovery_status !== 'pending_linked') {
+        setError('This pending invitation cannot be safely repaired automatically. Ask the Founder to review the Auth identity and registry records.');
+      } else {
+        setRecoveryReview({ id: user.id, profileExists: data.profile_exists });
+        setNotice('Pending invitation inspected. Confirm the recipient and role before authorising recovery. No one-time link is regenerated.');
+      }
+    } catch {
+      setError('The recovery inspection could not be confirmed. Retry only after refreshing the registry.');
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function recoverPendingInvitation(user: UserRecord) {
+    if (!supabase || saving || user.status !== 'pending' ||
+        recoveryReview?.id !== user.id ||
+        (account?.role !== 'owner' && account?.role !== 'admin')) return;
+    if (!window.confirm(`Recover the pending registry for ${user.full_name} (${user.email}) as ${roleLabels[user.role]}? This does not generate or resend an invitation link.`)) return;
+    setSaving(user.id);
+    setError(null);
+    setNotice(null);
+    try {
+      const { data, error: recoveryError } = await supabase.functions.invoke<{
+        recovery_status: string;
+      }>('admin-create-user', { body: { action: 'recover_pending', registry_id: user.id } });
+      if (recoveryError || data?.recovery_status !== 'recovered') {
+        setError('Recovery was not confirmed. Refresh the registry before retrying; an Owner may need to inspect the identity manually.');
+      } else {
+        setRecoveryReview(null);
+        setNotice('Pending account recovered and audited. Confirm a valid invitation or password-recovery delivery method separately.');
+        await loadUsers(true);
+        await loadAudit();
+      }
+    } catch {
+      setError('Recovery status is uncertain after a network error. Refresh the registry before retrying.');
+    } finally {
+      setSaving(null);
+    }
+  }
+
   function canManage(user: UserRecord) {
     return account && user.id !== account.id && roles.includes(user.role) && user.status !== 'revoked';
   }
@@ -271,6 +323,23 @@ export default function UserManagementPage() {
                       onClick={() => { void updateUser(user, 'change_role'); }}>
                       <UserRoundCog size={15}/> Change role
                     </button>
+                    {user.status === 'pending' && (account?.role === 'owner' || account?.role === 'admin') && (
+                      <>
+                        <button className="user-outline-button" type="button" disabled={Boolean(saving)}
+                          onClick={() => { void inspectPendingInvitation(user); }}>
+                          Inspect pending invitation
+                        </button>
+                        {recoveryReview?.id === user.id && (
+                          <>
+                            <span className="user-busy" role="status">Identity matched. Profile {recoveryReview.profileExists ? 'exists' : 'will be created'}.</span>
+                            <button className="user-outline-button" type="button" disabled={Boolean(saving)}
+                              onClick={() => { void recoverPendingInvitation(user); }}>
+                              Confirm safe recovery
+                            </button>
+                          </>
+                        )}
+                      </>
+                    )}
                     {user.status === 'active' && (
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
                         onClick={() => { void updateUser(user, 'suspend'); }}>
