@@ -1,0 +1,22 @@
+.tutor-payroll .payroll-filters{display:flex;align-items:end;flex-wrap:wrap;gap:.9rem;margin:1rem 0}
+.payroll-filters label{font-weight:750;font-size:.83rem;display:grid;gap:.45rem}
+.payroll-filters input,.payroll-filters select{background:var(--surface-soft);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:.7rem;font:inherit;min-height:42px}
+.payroll-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin:1rem 0}
+.payroll-summary>div{display:grid;gap:.5rem;padding:1rem;border:1px solid var(--border);border-radius:13px;background:var(--surface-soft)}
+.payroll-summary strong{font-size:1.35rem}.payroll-summary small{color:var(--muted)}
+.payroll-cycles{display:grid;gap:1rem}
+.payroll-cycle{padding:1rem;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.payroll-cycle-head{display:flex;align-items:start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.payroll-cycle-head p{margin:.35rem 0}.payroll-cycle-head small{color:var(--muted)}
+.payroll-status{font-size:.76rem;font-weight:800;padding:.35rem .65rem;border-radius:999px;background:var(--surface-soft);border:1px solid var(--border)}
+.payroll-overdue{color:#d64747;border-color:#c43b3b}.payroll-due_today{color:#a06c00;border-color:#a06c00}.payroll-paid{color:#279667;border-color:#279667}
+.payroll-cycle-info{display:flex;flex-wrap:wrap;gap:.45rem 1rem;padding:.8rem 0}
+.payroll-cycle-info p{display:flex;align-items:center;gap:.35rem;font-size:.83rem}
+.payroll-actions{display:grid;gap:.55rem}
+.payroll-actions details{border-top:1px solid var(--border);padding:.75rem 0}
+.payroll-actions summary{font-weight:750;cursor:pointer}
+.payroll-actions label{display:grid;gap:.35rem;max-width:500px;margin:.6rem 0;font-size:.82rem}
+.payroll-actions input{border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);font:inherit;min-height:40px;padding:.6rem}
+.payroll-actions button{background:var(--surface-soft);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:.6rem 1rem;font:inherit;font-weight:750;cursor:pointer}
+.tutor-payroll button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:650px){.payroll-summary{grid-template-columns:1fr}}
