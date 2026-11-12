@@ -420,9 +420,11 @@ export default function AcademicSetupPage() {
         </section>
       </div>
       <div className="module-footnote">
-        <ShieldCheck size={15}/> Course topics, cohorts and offerings are managed separately.
-        Student enrolments and tutor assignments are not yet enabled.
-        <Link to="/cohorts" className="text-link">Open cohorts &amp; topics</Link>
+        <ShieldCheck size={15}/> Subjects and courses form the reusable learning catalogue.
+        Enrol one or multiple students and allocate a tutor through
+        <Link to="/classes" className="text-link"> Classes &amp; timetable</Link>.
+        Existing course-specific topics and cohort offerings remain available under
+        <Link to="/cohorts" className="text-link"> Advanced curriculum tools</Link>.
       </div>
     </div>
   );
