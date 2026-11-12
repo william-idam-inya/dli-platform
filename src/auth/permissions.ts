@@ -11,6 +11,7 @@ export type Account = {
   full_name: string;
   role: DliRole;
   status: 'active';
+  studentTier?: 'free' | 'paid';
 };
 
 export const roleLabels: Record<DliRole, string> = {
@@ -28,10 +29,12 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/': DLI_ROLES,
   '/feedback': DLI_ROLES,
   '/profile': DLI_ROLES,
+  '/enrolment': ['student','owner','admin'],
+  '/payroll': ['owner','admin','tutor'],
   '/academics': ['owner', 'admin', 'academic_coordinator'],
   '/cohorts': ['owner', 'admin', 'academic_coordinator'],
   '/assignments': ['owner', 'admin', 'academic_coordinator'],
-  '/classes': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
+  '/classes': ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
   '/my-classes': ['tutor', 'student'],
   '/private-classes': ['owner', 'admin', 'student', 'tutor'],
   '/study': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
@@ -40,7 +43,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/quizzes': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/schedule': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/attendance': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/users': ['owner', 'admin', 'assistant_admin'],
+  '/users': ['owner', 'admin'],
   '/tutors': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/finance': ['owner', 'admin', 'finance_officer'],
   '/finance/reviews': ['owner', 'admin', 'finance_officer'],
@@ -60,6 +63,13 @@ export function isDliRole(value: unknown): value is DliRole {
   return typeof value === 'string' && (DLI_ROLES as readonly string[]).includes(value);
 }
 
-export function canAccessPath(role: DliRole, path: string): boolean {
+const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes']);
+export function canAccessPath(role: DliRole, path: string, studentTier: 'free'|'paid'='paid'): boolean {
+  if(role==='student'&&studentTier!=='paid'&&!FREE_STUDENT_ROUTES.has(path))return false;
   return routeRoles[path]?.includes(role) ?? false;
+}
+export function accountRoleLabel(account:Account):string{
+ return account.role==='student'
+  ? account.studentTier==='paid'?'Paid Student':'Free Student'
+  : roleLabels[account.role];
 }
