@@ -46,3 +46,11 @@
 .dli-direct-section-tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
 .dli-direct-section-tabs button{font:inherit;font-size:.87rem;font-weight:750;padding:.7rem 1rem;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);cursor:pointer}
 .dli-direct-section-tabs button.selected{background:var(--purple);color:#fff;border-color:var(--purple)}
+
+.dli-direct-attach-label{display:flex;align-items:center;gap:.45rem;font-size:.79rem;font-weight:750}
+.dli-direct-compose input[type="file"]{box-sizing:border-box;width:100%;max-width:100%;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);padding:.65rem;font-size:.75rem}
+.dli-direct-selected-file{font-size:.75rem;color:var(--muted);overflow-wrap:anywhere}
+.dli-direct-file-link,.dli-direct-file-review button{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--border);background:var(--surface-soft);color:var(--text);border-radius:7px;padding:.55rem .7rem;font-size:.78rem;max-width:100%;overflow-wrap:anywhere;cursor:pointer}
+.dli-direct-file-review{display:grid;gap:.5rem;border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem}
+.dli-direct-file-review strong{font-size:.78rem}
+.dli-direct-file-review button{justify-self:start}
