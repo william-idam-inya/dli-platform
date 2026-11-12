@@ -6,6 +6,13 @@ import { roleLabels } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './MemberProfilePage.css';
 
+function nigeriaToday():string{
+  const parts=new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit',
+  }).formatToParts(new Date());
+  const get=(type:string)=>parts.find(p=>p.type===type)?.value??'';
+  return get('year')+'-'+get('month')+'-'+get('day');
+}
 type Profile={user_id:string;personal_name:string;date_of_birth:string;avatar_path:string|null;preferred_theme:'system'|'light'|'dark';updated_at:string};
 export default function MemberProfilePage(){
  const {account}=useAuth();
@@ -52,7 +59,7 @@ export default function MemberProfilePage(){
  async function save(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(!supabase||busy||!userId||!account)return;
   const clean=name.trim();
-  if(clean.length<2||clean.length>160||!dob||dob>'2026-11-12'||dob<'1900-01-01'){
+  if(clean.length<2||clean.length>160||!dob||dob>nigeriaToday()||dob<'1900-01-01'){
     setError('Enter your name and a valid date of birth.');return;
   }
   setBusy(true);setError(null);setNotice(null);
@@ -100,6 +107,7 @@ export default function MemberProfilePage(){
    </div></div>
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
+  {notice&&<p><Link className="user-outline-button" to="/">Open my DLI dashboard</Link></p>}
   <section className="panel member-profile-main">
    <div className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
     <h2>{profile?'Your saved profile':'Complete your profile'}</h2>
@@ -119,7 +127,7 @@ export default function MemberProfilePage(){
       value={name} onChange={e=>setName(e.target.value)}/>
     <label htmlFor="member-profile-dob">Date of birth</label>
     <input id="member-profile-dob" required type="date" min="1900-01-01"
-      max={new Date().toISOString().slice(0,10)} value={dob} onChange={e=>setDob(e.target.value)}/>
+      max={nigeriaToday()} value={dob} onChange={e=>setDob(e.target.value)}/>
     <label htmlFor="member-profile-theme">Display preference (synced across devices)</label>
     <select id="member-profile-theme" value={theme} onChange={e=>setTheme(e.target.value as Profile['preferred_theme'])}>
       {themeOptions.map(([value,label])=><option value={value} key={value}>{label}</option>)}
