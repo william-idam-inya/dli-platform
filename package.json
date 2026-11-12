@@ -30,7 +30,8 @@
     "check:file-picker-focus": "node scripts/verify-file-picker-focus.mjs",
     "check:auth-activation": "node scripts/verify-auth-activation.mjs",
     "check:invitation-recovery": "node scripts/verify-invitation-recovery.mjs",
-    "check:invitation-handler": "node scripts/verify-invitation-handler.mjs"
+    "check:invitation-handler": "node scripts/verify-invitation-handler.mjs",
+    "check:password-policy": "node scripts/verify-password-policy.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
