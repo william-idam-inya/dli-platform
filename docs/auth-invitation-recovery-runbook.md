@@ -51,6 +51,20 @@ If an orphan identity is suspected, independently inspect the exact lowercased e
 
 For an unlinked/orphan case, the Owner and a qualified database operator must document evidence, check for live sessions, verify there is no active registry or existing user workflow, and separately approve a carefully scoped recovery procedure. Do not directly set an arbitrary role or delete an Auth identity from the application. Any SQL repair should be transactional, fully audited, and reviewed before execution.
 
+## Local front-end against the staged QA function
+
+The function `admin-create-user-qa` is separately deployed on the development Supabase project with JWT verification enabled. The ordinary `admin-create-user` Edge Function is untouched.
+
+In the development checkout, switch to the reviewed authentication audit branch, keep the existing public-only Supabase `.env.local` settings, and add **only** this optional line to that ignored local file:
+
+```dotenv
+VITE_DLI_AUTH_QA_FUNCTION=admin-create-user-qa
+```
+
+Restart Vite with `npm.cmd run dev -- --port 5173 --strictPort`; go to `http://localhost:5173/`, sign in using an already approved Owner/Admin account, and open **User Management**. The invitation form and the pending-invitation inspect/confirm controls now call the QA endpoint **only in Vite development mode**. Release and Cloudflare preview builds still use the original endpoint, regardless of this variable. Never commit a real `.env.local` file.
+
+The QA function relies on exact `DLI_APP_ORIGINS` CORS; for local testing confirm `http://localhost:5173` is allowed. The function does not automatically email any recipient; an operator must transmit a secure link privately. Do not share a link, screenshot, session cookie, or password in chat.
+
 ## Controlled test sequence
 
 1. Verify source CI and new offline negative tests; check Edge function was deployed to **development** and `verify_jwt=true`.
