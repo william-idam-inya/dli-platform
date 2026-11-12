@@ -271,6 +271,10 @@
     {
       "file": "20261112051801_stage_q1d_assignment_driven_tutor_payroll.sql",
       "gitBlobSha1": "c998bdc49170d46838a5b6f52258aefcf24f0214"
+    },
+    {
+      "file": "20261112053132_stage_q1e_rls_free_demo_and_assistant_directory.sql",
+      "gitBlobSha1": "f07c38e688a0874e66c4c38b2d79ac6785865065"
     }
   ]
 }
