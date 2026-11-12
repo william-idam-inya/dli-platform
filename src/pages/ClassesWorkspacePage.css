@@ -1,0 +1,40 @@
+.classes-workspace .panel {margin-bottom:1rem;}
+.classes-tabs {display:flex;flex-wrap:wrap;gap:.55rem;margin:1.25rem 0;}
+.classes-tabs button,.classes-selection-actions button,.classes-card-actions button {
+ display:inline-flex;align-items:center;justify-content:center;gap:.45rem;cursor:pointer;
+ padding:.65rem .85rem;border-radius:9px;border:1px solid var(--border);
+ background:var(--surface);color:var(--text);font:inherit;font-size:.84rem;font-weight:700;
+}
+.classes-tabs button.selected {background:var(--purple);border-color:var(--purple);color:white;}
+.classes-form {margin-top:0;max-width:760px;}
+.classes-student-picker {border:1px solid var(--border);border-radius:12px;padding:1rem;min-width:0;display:grid;gap:.7rem;}
+.classes-student-picker legend {padding:0 .35rem;font-weight:750;color:var(--text);font-size:.88rem;}
+.classes-student-picker>input {width:100%;min-height:40px;padding:.7rem;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);}
+.classes-selection {font-size:.88rem;font-weight:800;color:var(--purple);margin:0;}
+.classes-selection-actions {display:flex;gap:.5rem;flex-wrap:wrap;}
+.classes-selection-actions button {padding:.4rem .65rem;font-size:.77rem;}
+.classes-student-list {display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.45rem;max-height:230px;overflow-y:auto;}
+.classes-student-list label {display:flex;gap:.5rem;align-items:center;padding:.6rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.84rem;}
+.classes-student-list input {width:16px;min-width:16px;height:16px;}
+.classes-time-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+.classes-time-row label {display:grid;gap:.45rem;}
+.classes-form-actions {display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;}
+.classes-filters {display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+.classes-filters label {display:grid;gap:.35rem;font-weight:650;font-size:.82rem;}
+.classes-filters select {min-height:40px;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);}
+.classes-filters .classes-toggle {display:flex;align-items:center;gap:.45rem;}
+.classes-cards {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem;}
+.classes-card {border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);padding:1.1rem;min-width:0;}
+.classes-card-heading {display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:.65rem;}
+.classes-card-heading h3 {display:flex;align-items:center;gap:.45rem;font-size:1.05rem;margin:0 0 .35rem;color:var(--text);}
+.classes-card-heading small {color:var(--muted);}
+.classes-state {padding:.3rem .55rem;border-radius:100px;font-size:.72rem;font-weight:700;color:#65513b;background:#f9edcd;text-transform:capitalize;}
+.classes-state.published {color:#16663b;background:#e5f4e9;}
+.classes-state.archived {color:#656579;background:#e9e9ee;}
+.classes-card>p {display:flex;align-items:flex-start;gap:.45rem;line-height:1.55;font-size:.84rem;color:var(--text);margin:.8rem 0;overflow-wrap:anywhere;}
+.classes-card>p svg {flex-shrink:0;margin-top:.15rem;color:var(--purple);}
+.classes-card-actions {border-top:1px solid var(--border);padding-top:.8rem;display:flex;gap:.45rem;flex-wrap:wrap;}
+.classes-card-actions a {display:inline-flex;align-items:center;gap:.45rem;border-radius:9px;padding:.65rem .85rem;color:white;background:var(--purple);text-decoration:none;font-size:.84rem;font-weight:700;}
+.classes-card-actions a:focus-visible,.classes-workspace button:focus-visible,.classes-form input:focus-visible,.classes-form select:focus-visible {outline:2px solid var(--purple);outline-offset:2px;}
+.classes-workspace button:disabled {opacity:.55;cursor:not-allowed;}
+@media(max-width:640px){.classes-time-row {grid-template-columns:1fr;}.classes-student-list{grid-template-columns:1fr;}.classes-card{padding:.85rem;}.classes-tabs button {flex:1 1 160px;}}
