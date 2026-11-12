@@ -175,6 +175,10 @@
     {
       "file": "20261112003138_stage_l2a_membership_archive_recovery.sql",
       "gitBlobSha1": "e2905ccd7754fbece2ad4388fadeed33804953f7"
+    },
+    {
+      "file": "20261112004320_stage_l2b_safe_archive_guard.sql",
+      "gitBlobSha1": "8f8a6b2a97958d2059822b491c1dd299f74cb3f2"
     }
   ]
 }
