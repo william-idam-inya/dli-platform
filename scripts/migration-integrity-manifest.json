@@ -247,6 +247,10 @@
     {
       "file": "20261112042920_stage_p2_private_member_profiles.sql",
       "gitBlobSha1": "08325955a53ea2b4a545cf4bc52458cf1debff82"
+    },
+    {
+      "file": "20261112043340_stage_p2a_role_assignment_owner_admin_only.sql",
+      "gitBlobSha1": "f5cdea014409940d7b147f5ac56fa63f5262d790"
     }
   ]
 }
