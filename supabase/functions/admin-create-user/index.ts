@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
+import { confirmedInvitationActivation } from './activation-check.mjs';
 
 // No service/secret key is ever delivered to the browser or recorded in an audit log.
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
@@ -165,7 +166,7 @@ Deno.serve(async (request: Request) => {
       error: 'Invitation activation failed. Ask DLI administration to review the pending account. Do not reuse this link.',
     }, origin);
   }
-  if (activated?.id !== created.id) {
+  if (!confirmedInvitationActivation(activated, created.id)) {
     return response(409, {
       error: 'Invitation activation was not confirmed. Ask DLI administration to review the pending account. Do not reuse this link.',
     }, origin);
