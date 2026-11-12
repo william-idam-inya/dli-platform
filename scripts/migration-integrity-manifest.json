@@ -219,6 +219,10 @@
     {
       "file": "20261112031536_stage_l2_orphan_receipt_cleanup.sql",
       "gitBlobSha1": "f40f33f69a47ad3f71aa55b5920e17d97f9f2032"
+    },
+    {
+      "file": "20261112034550_stage_n1_direct_messaging.sql",
+      "gitBlobSha1": "56ef78ecdd0c32c4a6d5b51bbfb536174ad4f4de"
     }
   ]
 }
