@@ -152,7 +152,7 @@ export const navigationSections: NavigationSection[] = [
         label: 'Finance',
         path: '/finance',
         icon: Wallet,
-        description: 'Restricted pending finance-policy proposals. Invoices, collections and payouts remain disabled.',
+        description: 'Internal finance-policy proposals and document rates; private manual fee verification has its own section. Automated billing and payouts remain disabled.',
         group: 'Operations',
       },
       {
