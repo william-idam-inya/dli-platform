@@ -1,186 +1,98 @@
-import {
-  ArrowRight,
-  BookOpen,
-  CalendarDays,
-  CheckCircle2,
-  CircleDashed,
-  GraduationCap,
-  LockKeyhole,
-  ShieldCheck,
-  Wallet,
-  Users,
-} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { ArrowRight, BookOpen, CalendarClock, ClipboardCheck, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { navigationItems } from '../data/navigation';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, roleLabels } from '../auth/permissions';
+import { supabase } from '../lib/supabase';
+import './UnifiedDashboard.css';
 
-const highlights = [
-  {
-    title: 'Academic structure',
-    description: 'Set up programmes, levels, subjects, courses and cohorts.',
-    icon: BookOpen,
-    path: '/academics',
-    tone: 'violet',
-  },
-  {
-    title: 'People & access',
-    description: 'Authorise users and assign institutional roles securely.',
-    icon: Users,
-    path: '/users',
-    tone: 'blue',
-  },
-  {
-    title: 'Teaching & learning',
-    description: 'Organise lessons, assessments, classes and attendance.',
-    icon: GraduationCap,
-    path: '/learning',
-    tone: 'amber',
-  },
-  {
-    title: 'Finance operations',
-    description: 'Configure fees and manage invoices and verified payments.',
-    icon: Wallet,
-    path: '/finance',
-    tone: 'green',
-  },
+const actions=[
+  {title:'Classes & timetable',description:'Individual and group subjects, students, tutors and joining links.',path:'/classes',icon:CalendarClock},
+  {title:'Academic catalogue',description:'Approved programmes, levels, subjects and course definitions.',path:'/academics',icon:BookOpen},
+  {title:'People & access',description:'Manage registered accounts, invitations and role permissions.',path:'/users',icon:Users},
+  {title:'Courses & lessons',description:'Course resources, lesson materials and learning activities.',path:'/learning',icon:GraduationCap},
+  {title:'Quizzes & results',description:'Secure class quizzes and saved learning outcomes.',path:'/quizzes',icon:ClipboardCheck},
+  {title:'Finance',description:'Approved rate references and internal finance governance.',path:'/finance',icon:Wallet},
+  {title:'Feedback & support',description:'Report a problem, make a suggestion or review member reports.',path:'/feedback',icon:MessageSquareText},
 ];
+type TeachingClass={id:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer'};
 
-const roadmap = [
-  { code: 'A', title: 'Foundation', detail: 'Application shell, navigation and design system.', status: 'done' },
-  { code: 'B', title: 'Identity & access', detail: 'Founder and Admin sign-in verified; additional negative-path checks remain.', status: 'active' },
-  { code: 'C', title: 'User management', detail: 'Database-backed user directory and audited actions; browser testing pending.', status: 'active' },
-  { code: 'D–I', title: 'Core DLI modules', detail: 'Stage F2 attendance and reporting implemented in dev; controlled browser acceptance remains.', status: 'active' },
-  { code: 'J–K', title: 'Release readiness', detail: 'AI compliance, security testing, backups and deployment.', status: 'planned' },
-];
-
-export default function DashboardPage() {
-  const { account } = useAuth();
-  const accessibleHighlights = highlights.filter((item) => account && canAccessPath(account.role, item.path));
-  return (
-    <div className="dashboard-page">
-      <section className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> DETAILED LEARNING INSTITUTE</div>
-          <h1>Build a better learning experience.</h1>
-          <p className="welcome-copy">
-            Welcome to your role-scoped development workspace. DLI modules will become available as their database-backed stages are completed.
-          </p>
-        </div>
-        <div className="welcome-art" aria-hidden="true">
-          <div className="art-orbit orbit-one" />
-          <div className="art-orbit orbit-two" />
-          <div className="art-cap"><GraduationCap size={58} strokeWidth={1.25} /></div>
-          <span className="art-spark spark-one">✦</span>
-          <span className="art-spark spark-two">✧</span>
-        </div>
-      </section>
-
-      <section className="status-banner" aria-label="Current build status">
-        <div className="status-banner-icon"><ShieldCheck size={20} /></div>
-        <div className="status-banner-copy">
-          <strong>Stage I3: Owner-controlled group invitations and governance settings</strong>
-          <span>Stage I2 passes Windows TypeScript/build and the Admin screenshot shows two active programmes and zero active courses and cohorts. Stage I3 adds Founder-controlled WhatsApp group-link settings, Admin read-only access and database-verified governance safeguards. Finance rules and announcement publication remain locked.</span>
-        </div>
-        <span className="status-chip">Stage I3</span>
-      </section>
-
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">DLI WORKSPACE</p>
-            <h2>Institutional modules</h2>
-          </div>
-          <span className="section-note">{account ? roleLabels[account.role] : ''} · Modules depend on build stage</span>
-        </div>
-        <div className="module-grid">
-          {accessibleHighlights.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link to={item.path} className="module-card" key={item.title}>
-                <div className={`module-icon ${item.tone}`}><Icon size={21} strokeWidth={1.8} /></div>
-                <div className="module-card-body">
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </div>
-                <span className="module-arrow"><ArrowRight size={18} /></span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <div className="dashboard-lower">
-        <section className="panel roadmap-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">IMPLEMENTATION PLAN</p>
-              <h2>Build roadmap</h2>
-            </div>
-            <span className="roadmap-count">11 stages</span>
-          </div>
-          <div className="roadmap-list">
-            {roadmap.map((item, index) => (
-              <div className={`roadmap-item ${item.status}`} key={item.code}>
-                <div className="roadmap-marker">
-                  {item.status === 'active' ? <CircleDashed size={19} /> : item.status === 'done' ? <CheckCircle2 size={19} /> : <span>{item.code}</span>}
-                </div>
-                <div className="roadmap-content">
-                  <div className="roadmap-title-row">
-                    <strong>{item.title}</strong>
-                    <span className={`roadmap-state ${item.status}`}>{item.status === 'active' ? 'In progress' : item.status === 'done' ? 'Completed' : 'Planned'}</span>
-                  </div>
-                  <p>{item.detail}</p>
-                </div>
-                {index < roadmap.length - 1 && <div className="roadmap-connector" />}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="panel readiness-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">FOUNDATION CHECK</p>
-              <h2>Readiness</h2>
-            </div>
-            <div className="readiness-shield"><LockKeyhole size={19} /></div>
-          </div>
-          <div className="readiness-items">
-            <div className="readiness-item complete">
-              <span className="readiness-icon"><CheckCircle2 size={17} /></span>
-              <span><strong>Private repository</strong><small>Created and under version control</small></span>
-            </div>
-            <div className="readiness-item complete">
-              <span className="readiness-icon"><CheckCircle2 size={17} /></span>
-              <span><strong>Foundation branch</strong><small>Stage A is isolated for review</small></span>
-            </div>
-            <div className="readiness-item complete">
-              <span className="readiness-icon"><CheckCircle2 size={17} /></span>
-              <span><strong>Supabase development</strong><small>Dedicated DLI development project created</small></span>
-            </div>
-            <div className="readiness-item pending">
-              <span className="readiness-icon"><CircleDashed size={17} /></span>
-              <span><strong>Authentication & RLS</strong><small>Founder/Admin login tested; negative-path testing remains</small></span>
-            </div>
-          </div>
-          <div className="readiness-footnote">
-            <LockKeyhole size={14} />
-            All user management operations remain subject to server-side permission checks.
-          </div>
-        </section>
+export default function DashboardPage(){
+  const {account}=useAuth();
+  const [classes,setClasses]=useState<TeachingClass[]>([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(false);
+  const isManager=account?.role==='owner'||account?.role==='admin'||account?.role==='academic_coordinator';
+  const available=actions.filter(action=>account&&canAccessPath(account.role,action.path));
+  const refresh=useCallback(async()=>{
+    if(!supabase||!account){setLoading(false);setError(true);return;}
+    setLoading(true);
+    try {
+      const response=await supabase.from('teaching_classes')
+        .select('id,state,billing_mode').limit(500);
+      if(response.error){setClasses([]);setError(true);}
+      else{setClasses((response.data??[]) as TeachingClass[]);setError(false);}
+    }catch{setClasses([]);setError(true);}
+    finally{setLoading(false);}
+  },[account?.id]);
+  useEffect(()=>{void refresh();},[refresh]);
+  const published=classes.filter(c=>c.state==='published').length;
+  const drafts=classes.filter(c=>c.state==='draft').length;
+  return <div className="dashboard-page unified-overview">
+    <section className="welcome-row">
+      <div>
+        <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
+        <h1>{isManager?'Manage learning in one place.':account?.role==='tutor'?'Your teaching workspace.':
+          account?.role==='student'?'Your learning workspace.':'Your DLI workspace.'}</h1>
+        <p className="welcome-copy">
+          {account?roleLabels[account.role]:''} · One connected register for individual and group classes,
+          academic resources and authorised member operations.
+        </p>
       </div>
-
-      <section className="next-step-card">
-        <div className="next-step-icon"><CalendarDays size={21} /></div>
-        <div>
-          <strong>Next implementation milestone</strong>
-          <p>Verify I3 Admin read-only settings, Founder-only link updates and the unchanged publication lock. Real-role acceptance and quiz-function security remain before release.</p>
-        </div>
-        <Link to={navigationItems.find((item) => item.path === '/settings')?.path ?? '/settings'} className="text-link">
-          Open institutional settings <ArrowRight size={16} />
-        </Link>
-      </section>
-    </div>
-  );
+      <div className="welcome-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/>
+        <div className="art-cap"><GraduationCap size={52} strokeWidth={1.25}/></div>
+      </div>
+    </section>
+    <section className="status-banner">
+      <div className="status-banner-icon"><ShieldCheck size={20}/></div>
+      <div className="status-banner-copy">
+        <strong>Role-restricted academic workspace</strong>
+        <span>Classes, timetables, fees and learning materials are connected by verified DLI accounts.
+          Transfer receipts require manual bank-credit verification. The development platform is not yet a live payment or production service.</span>
+      </div>
+    </section>
+    {canAccessPath(account?.role??'student','/classes')&&<section className="panel unified-overview-snapshot">
+      <div className="panel-heading"><div><p className="section-kicker">CURRENT CLASSES</p>
+        <h2>{isManager?'Your authorised class register':'Your assigned classes'}</h2>
+        <p className="user-caption">Counts reflect records visible to your role, not the entire DLI organisation.</p>
+      </div><button type="button" className="user-outline-button" disabled={loading} onClick={()=>void refresh()}>
+        <RefreshCw size={15}/> Refresh
+      </button></div>
+      {error?<p className="auth-feedback error" role="alert">Could not retrieve class counts. Open Classes &amp; timetable to try again.</p>:
+        loading?<p role="status">Loading class register…</p>:
+        <div className="unified-overview-metrics">
+          <div><strong>{published}</strong><span>Published classes</span></div>
+          {isManager&&<div><strong>{drafts}</strong><span>Drafts awaiting setup or verification</span></div>}
+        </div>}
+      <Link className="user-outline-button unified-overview-open" to="/classes"><CalendarClock size={16}/>
+        {isManager?'Manage classes and assignments':'Open my timetable'} <ArrowRight size={15}/>
+      </Link>
+    </section>}
+    <section className="section-block">
+      <div className="section-heading">
+        <div><p className="section-kicker">YOUR WORKSPACE</p><h2>What would you like to manage?</h2></div>
+        <span className="section-note">Only tools authorised for your DLI role</span>
+      </div>
+      <div className="module-grid">
+        {available.map(item=><Link className="module-card" to={item.path} key={item.path}>
+          <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
+          <div className="module-card-body"><h3>{item.title}</h3><p>{item.description}</p></div>
+          <span className="module-arrow"><ArrowRight size={17}/></span>
+        </Link>)}
+      </div>
+    </section>
+    <p className="unified-overview-footnote"><LockKeyhole size={14}/>
+      Group membership and private meeting links are protected by database permissions;
+      a local dashboard count is never a substitute for those access controls.</p>
+  </div>;
 }
