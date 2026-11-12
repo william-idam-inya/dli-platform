@@ -72,11 +72,16 @@ export function LoginPage() {
     setPending(true);
     setError(null);
     clearNotice();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(), password,
-    });
-    if (signInError) setError('Sign-in failed. Check your credentials and account verification.');
-    setPending(false);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(), password,
+      });
+      if (signInError) setError('Sign-in failed. Check your credentials and account verification.');
+    } catch {
+      setError('Sign-in service is temporarily unavailable. Check your connection and retry.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return <AuthLayout title="Sign in to DLI" intro="Only authorised students and staff can access this workspace.">
@@ -109,12 +114,17 @@ export function ForgotPasswordPage() {
     if (!supabase || pending) return;
     setPending(true);
     setError(null);
-    const { error: sendError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/set-password`,
-    });
-    if (sendError) setError('Password recovery is currently unavailable. Contact DLI administration.');
-    else setSubmitted(true);
-    setPending(false);
+    try {
+      const { error: sendError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/set-password`,
+      });
+      if (sendError) setError('Password recovery is currently unavailable. Contact DLI administration.');
+      else setSubmitted(true);
+    } catch {
+      setError('Password recovery service could not be reached. Check your connection and retry.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return <AuthLayout title="Password recovery" intro="Request a reset for an existing DLI account.">
@@ -195,10 +205,15 @@ export function SetPasswordPage() {
     }
     setPending(true);
     setError(null);
-    const { error: saveError } = await supabase.auth.updateUser({ password });
-    if (saveError) setError('Could not set the password. Please request another secure link.');
-    else navigate('/', { replace: true });
-    setPending(false);
+    try {
+      const { error: saveError } = await supabase.auth.updateUser({ password });
+      if (saveError) setError('Could not set the password. Please request another secure link.');
+      else navigate('/', { replace: true });
+    } catch {
+      setError('Password update service could not be reached. Check your connection and retry.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return <AuthLayout title="Set your password" intro="Complete your invitation or account recovery.">
@@ -235,15 +250,20 @@ export function ChangePasswordPage() {
     setPending(true);
     setMessage(null);
     setError(null);
-    const { error: changeError } = await supabase.auth.updateUser({
-      password, current_password: current,
-    });
-    if (changeError) setError('Password change failed. Check your current password.');
-    else {
-      setMessage('Your password was changed.');
-      setCurrent(''); setPassword(''); setRepeat('');
+    try {
+      const { error: changeError } = await supabase.auth.updateUser({
+        password, current_password: current,
+      });
+      if (changeError) setError('Password change failed. Check your current password.');
+      else {
+        setMessage('Your password was changed.');
+        setCurrent(''); setPassword(''); setRepeat('');
+      }
+    } catch {
+      setError('Password change service could not be reached. Check your connection and retry.');
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
 
   return <div className="module-page">
