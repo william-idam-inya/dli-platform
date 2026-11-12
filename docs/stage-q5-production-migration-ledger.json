@@ -1,0 +1,460 @@
+{
+  "schemaVersion": 1,
+  "projectRef": "thoinmwqxmqxrnywjuxq",
+  "capturedDate": "2026-11-12",
+  "purpose": "Audit receipt: reviewed SQL source names and Git blob hashes paired with Supabase MCP-generated migration versions. Do not run CLI db push until history is reconciled.",
+  "migrationCount": 75,
+  "versionRemappingCount": 74,
+  "migrations": [
+    {
+      "source_file": "20261105005354_stage_b_identity_rbac.sql",
+      "source_git_blob_sha1": "87da506ec8a0e86be6d8e3ef74840a81dc5eb3d8",
+      "recorded_version": "20261112120647",
+      "recorded_name": "20261105005354_stage_b_identity_rbac"
+    },
+    {
+      "source_file": "20261105005422_stage_b_rls_performance.sql",
+      "source_git_blob_sha1": "87e5f9277501bcc8ede9e45bee1b09ead014b261",
+      "recorded_version": "20261112120719",
+      "recorded_name": "20261105005422_stage_b_rls_performance"
+    },
+    {
+      "source_file": "20261105010208_stage_b_authorisation_policy_optimisation.sql",
+      "source_git_blob_sha1": "53a29753dbf44898db273ecf7cf3529a0104bf2e",
+      "recorded_version": "20261112120721",
+      "recorded_name": "20261105010208_stage_b_authorisation_policy_optimisation"
+    },
+    {
+      "source_file": "20261105024931_stage_c_user_management.sql",
+      "source_git_blob_sha1": "30c1e44cd7d0c69e819b9fe70826b569d7204e72",
+      "recorded_version": "20261112120723",
+      "recorded_name": "20261105024931_stage_c_user_management"
+    },
+    {
+      "source_file": "20261105025910_stage_c_rls_read_policy_optimisation.sql",
+      "source_git_blob_sha1": "df2b7b7b7210123bd4d4817d5cc706e52a20c758",
+      "recorded_version": "20261112120725",
+      "recorded_name": "20261105025910_stage_c_rls_read_policy_optimisation"
+    },
+    {
+      "source_file": "20261105074030_stage_d1_academic_catalogue.sql",
+      "source_git_blob_sha1": "1dacda99f264c7e68758bcdddd703693fd6a8a9d",
+      "recorded_version": "20261112120728",
+      "recorded_name": "20261105074030_stage_d1_academic_catalogue"
+    },
+    {
+      "source_file": "20261105074719_stage_d1_foreign_key_indexes.sql",
+      "source_git_blob_sha1": "f127d0e4c4971f51acf78bb554f11517b4582a83",
+      "recorded_version": "20261112120730",
+      "recorded_name": "20261105074719_stage_d1_foreign_key_indexes"
+    },
+    {
+      "source_file": "20261105075951_stage_d2_topics_cohorts_offerings.sql",
+      "source_git_blob_sha1": "dcb5427f602ff40ac5dd1256c81161b99f6a4445",
+      "recorded_version": "20261112120731",
+      "recorded_name": "20261105075951_stage_d2_topics_cohorts_offerings"
+    },
+    {
+      "source_file": "20261105080800_stage_d2_offering_cohort_foreign_key_index.sql",
+      "source_git_blob_sha1": "43c75f3abf0c958209d000e854eae462a215500d",
+      "recorded_version": "20261112120744",
+      "recorded_name": "20261105080800_stage_d2_offering_cohort_foreign_key_index"
+    },
+    {
+      "source_file": "20261105191811_stage_d3_tutor_student_class_membership.sql",
+      "source_git_blob_sha1": "6358b96f0bab37744e3dceab78b414a9222c4013",
+      "recorded_version": "20261112120746",
+      "recorded_name": "20261105191811_stage_d3_tutor_student_class_membership"
+    },
+    {
+      "source_file": "20261105191955_stage_d3_assignment_trigger_field_fix.sql",
+      "source_git_blob_sha1": "549c70e0edbb1a590d1613d0413aeea106570a80",
+      "recorded_version": "20261112120749",
+      "recorded_name": "20261105191955_stage_d3_assignment_trigger_field_fix"
+    },
+    {
+      "source_file": "20261105192042_stage_d3_offering_membership_correlation_fix.sql",
+      "source_git_blob_sha1": "32330b5f318f2b86767d73f33c52407a23418092",
+      "recorded_version": "20261112120753",
+      "recorded_name": "20261105192042_stage_d3_offering_membership_correlation_fix"
+    },
+    {
+      "source_file": "20261105192119_stage_d3_course_cohort_membership_correlation_fix.sql",
+      "source_git_blob_sha1": "cb74720daf309d602d7a76198ebee3b693e0cde8",
+      "recorded_version": "20261112120757",
+      "recorded_name": "20261105192119_stage_d3_course_cohort_membership_correlation_fix"
+    },
+    {
+      "source_file": "20261105192458_stage_d3_allow_deactivation_after_role_change.sql",
+      "source_git_blob_sha1": "018a0f14e7cb1ec78518996edc20eff54bcaaf52",
+      "recorded_version": "20261112120759",
+      "recorded_name": "20261105192458_stage_d3_allow_deactivation_after_role_change"
+    },
+    {
+      "source_file": "20261105193848_stage_e1_lessons_external_resources.sql",
+      "source_git_blob_sha1": "15d1f928e6c7cb706cf989b22554fd88a92956b9",
+      "recorded_version": "20261112120801",
+      "recorded_name": "20261105193848_stage_e1_lessons_external_resources"
+    },
+    {
+      "source_file": "20261105200858_stage_e2_private_lesson_file_storage.sql",
+      "source_git_blob_sha1": "5c07ba8816086284047abd0e12e71b7ac7400bdc",
+      "recorded_version": "20261112120815",
+      "recorded_name": "20261105200858_stage_e2_private_lesson_file_storage"
+    },
+    {
+      "source_file": "20261105201001_stage_e2_file_audit_multichange_fix.sql",
+      "source_git_blob_sha1": "fda30aebfddfed6036dc72c658d8ef09a2009b50",
+      "recorded_version": "20261112120817",
+      "recorded_name": "20261105201001_stage_e2_file_audit_multichange_fix"
+    },
+    {
+      "source_file": "20261105203948_stage_e3_assignments_submissions_manual_grading.sql",
+      "source_git_blob_sha1": "cc4ff2eb51d58017dc4933e89ef40c63a57b451b",
+      "recorded_version": "20261112120821",
+      "recorded_name": "20261105203948_stage_e3_assignments_submissions_manual_grading"
+    },
+    {
+      "source_file": "20261105210728_stage_e4_quizzes_attempts_private_answer_keys.sql",
+      "source_git_blob_sha1": "b46d6e6bdf50c75df9d171f0c5bab328f4cc61f5",
+      "recorded_version": "20261112120824",
+      "recorded_name": "20261105210728_stage_e4_quizzes_attempts_private_answer_keys"
+    },
+    {
+      "source_file": "20261105211159_stage_e4_quiz_authoring_audit.sql",
+      "source_git_blob_sha1": "89382b33021fab28f56a34b3d416fb72fb141807",
+      "recorded_version": "20261112120826",
+      "recorded_name": "20261105211159_stage_e4_quiz_authoring_audit"
+    },
+    {
+      "source_file": "20261105221711_stage_f1_role_scoped_class_scheduling.sql",
+      "source_git_blob_sha1": "b1f9cc2c2b4ed18451a4ef098c76b4e5d651095b",
+      "recorded_version": "20261112120828",
+      "recorded_name": "20261105221711_stage_f1_role_scoped_class_scheduling"
+    },
+    {
+      "source_file": "20261105224330_stage_f2_scoped_staff_attendance.sql",
+      "source_git_blob_sha1": "d39f021c79529eb33d14b7e25a1385eaa4de1eb3",
+      "recorded_version": "20261112120833",
+      "recorded_name": "20261105224330_stage_f2_scoped_staff_attendance"
+    },
+    {
+      "source_file": "20261105224532_stage_f2_non_recursive_roster_rls.sql",
+      "source_git_blob_sha1": "3cea383ec4b440682f7ae964418191929dc8bd54",
+      "recorded_version": "20261112120846",
+      "recorded_name": "20261105224532_stage_f2_non_recursive_roster_rls"
+    },
+    {
+      "source_file": "20261105225150_stage_f2_single_scoped_read_policies.sql",
+      "source_git_blob_sha1": "deea811122aedc40c64dab73305241fa5f16b9bd",
+      "recorded_version": "20261112120848",
+      "recorded_name": "20261105225150_stage_f2_single_scoped_read_policies"
+    },
+    {
+      "source_file": "20261105230327_stage_g1_pending_finance_policy_proposals.sql",
+      "source_git_blob_sha1": "0d250b17336f5484ea9944735cfdfa23dc69a23e",
+      "recorded_version": "20261112120850",
+      "recorded_name": "20261105230327_stage_g1_pending_finance_policy_proposals"
+    },
+    {
+      "source_file": "20261105232540_stage_g2_nonbinding_finance_review_ledger.sql",
+      "source_git_blob_sha1": "ee23f9ba19ed7178de045c2542517b7100d7cb35",
+      "recorded_version": "20261112120852",
+      "recorded_name": "20261105232540_stage_g2_nonbinding_finance_review_ledger"
+    },
+    {
+      "source_file": "20261106024945_stage_h1_internal_draft_communications.sql",
+      "source_git_blob_sha1": "6775bab2cbd7106d150ab43c7f86ce963679b5ac",
+      "recorded_version": "20261112120854",
+      "recorded_name": "20261106024945_stage_h1_internal_draft_communications"
+    },
+    {
+      "source_file": "20261106025105_stage_h1_draft_editor_index.sql",
+      "source_git_blob_sha1": "475da1e51f786283c6862527920cbf357dbd92c2",
+      "recorded_version": "20261112120856",
+      "recorded_name": "20261106025105_stage_h1_draft_editor_index"
+    },
+    {
+      "source_file": "20261106042804_stage_h2_internal_revision_bound_review.sql",
+      "source_git_blob_sha1": "92ef803544399aca4de189d20ac7940d432131dd",
+      "recorded_version": "20261112120858",
+      "recorded_name": "20261106042804_stage_h2_internal_revision_bound_review"
+    },
+    {
+      "source_file": "20261106043121_stage_h2_reject_stale_review_revision.sql",
+      "source_git_blob_sha1": "cea65befe2984c7c8f9d6de91c0b438e3819151e",
+      "recorded_version": "20261112120914",
+      "recorded_name": "20261106043121_stage_h2_reject_stale_review_revision"
+    },
+    {
+      "source_file": "20261106052544_stage_h3_private_reusable_message_templates.sql",
+      "source_git_blob_sha1": "4d73a343f8d08ffa058aa03d0428983d37beb4ef",
+      "recorded_version": "20261112120916",
+      "recorded_name": "20261106052544_stage_h3_private_reusable_message_templates"
+    },
+    {
+      "source_file": "20261106054324_stage_h4_private_internal_reminder_planner.sql",
+      "source_git_blob_sha1": "ee8cbc29eaf863136600764a09354e576b531c3e",
+      "recorded_version": "20261112120918",
+      "recorded_name": "20261106054324_stage_h4_private_internal_reminder_planner"
+    },
+    {
+      "source_file": "20261106060210_stage_h5_restricted_in_app_announcements.sql",
+      "source_git_blob_sha1": "317c12242647d92a1d3a3aef2246fc494cb00a72",
+      "recorded_version": "20261112120920",
+      "recorded_name": "20261106060210_stage_h5_restricted_in_app_announcements"
+    },
+    {
+      "source_file": "20261106060838_stage_h5_publication_requires_explicit_approval_flag.sql",
+      "source_git_blob_sha1": "1d201007a2ae6aa65c77623dca0b72c00401c7a8",
+      "recorded_version": "20261112120923",
+      "recorded_name": "20261106060838_stage_h5_publication_requires_explicit_approval_flag"
+    },
+    {
+      "source_file": "20261106061236_stage_h5_index_announcement_publisher_fk.sql",
+      "source_git_blob_sha1": "13753728c0c7bfc109cf2a8e6cc3f7cbee3a9b89",
+      "recorded_version": "20261112120924",
+      "recorded_name": "20261106061236_stage_h5_index_announcement_publisher_fk"
+    },
+    {
+      "source_file": "20261106062435_stage_h6_audited_manual_whatsapp_email_preparation.sql",
+      "source_git_blob_sha1": "859f986eb0c723fa9618c9cc50c8915722322af7",
+      "recorded_version": "20261112120927",
+      "recorded_name": "20261106062435_stage_h6_audited_manual_whatsapp_email_preparation"
+    },
+    {
+      "source_file": "20261106072209_stage_i3_owner_controlled_group_links.sql",
+      "source_git_blob_sha1": "2f982abd92d370ba2bd7482b9879f8bf062bd93e",
+      "recorded_version": "20261112120938",
+      "recorded_name": "20261106072209_stage_i3_owner_controlled_group_links"
+    },
+    {
+      "source_file": "20261108150415_stage_k1_private_quiz_rpc_implementations.sql",
+      "source_git_blob_sha1": "db139970bffb70e019d31d2dc5d56f6fcb0d2cee",
+      "recorded_version": "20261112120941",
+      "recorded_name": "20261108150415_stage_k1_private_quiz_rpc_implementations"
+    },
+    {
+      "source_file": "20261108212538_stage_k7_private_member_feedback.sql",
+      "source_git_blob_sha1": "4465d4cb204d39b54a64beb2d7e8486c4898226f",
+      "recorded_version": "20261112120943",
+      "recorded_name": "20261108212538_stage_k7_private_member_feedback"
+    },
+    {
+      "source_file": "20261112000214_stage_l1_private_learning_workflow.sql",
+      "source_git_blob_sha1": "d2a071a84f665559bba078e17a2aab427450f4cd",
+      "recorded_version": "20261112120946",
+      "recorded_name": "20261112000214_stage_l1_private_learning_workflow"
+    },
+    {
+      "source_file": "20261112001910_stage_l1a_private_audit_correlation.sql",
+      "source_git_blob_sha1": "281a1741ab9efedd416cfdffb650dbd3366737ac",
+      "recorded_version": "20261112120949",
+      "recorded_name": "20261112001910_stage_l1a_private_audit_correlation"
+    },
+    {
+      "source_file": "20261112002954_stage_l2_unified_teaching_classes.sql",
+      "source_git_blob_sha1": "7151b002ed13ae0552748f56d0e988a413034d0e",
+      "recorded_version": "20261112120952",
+      "recorded_name": "20261112002954_stage_l2_unified_teaching_classes"
+    },
+    {
+      "source_file": "20261112003138_stage_l2a_membership_archive_recovery.sql",
+      "source_git_blob_sha1": "e2905ccd7754fbece2ad4388fadeed33804953f7",
+      "recorded_version": "20261112120954",
+      "recorded_name": "20261112003138_stage_l2a_membership_archive_recovery"
+    },
+    {
+      "source_file": "20261112004320_stage_l2b_safe_archive_guard.sql",
+      "source_git_blob_sha1": "8f8a6b2a97958d2059822b491c1dd299f74cb3f2",
+      "recorded_version": "20261112121005",
+      "recorded_name": "20261112004320_stage_l2b_safe_archive_guard"
+    },
+    {
+      "source_file": "20261112005851_stage_m1a_targeted_scheduled_notices_and_class_rls_fix.sql",
+      "source_git_blob_sha1": "f47a9ab90a0ccd942431cf819c893691be0a34af",
+      "recorded_version": "20261112121008",
+      "recorded_name": "20261112005851_stage_m1a_targeted_scheduled_notices_and_class_rls_fix"
+    },
+    {
+      "source_file": "20261112010016_stage_m1b_subject_chat_and_consent_contacts.sql",
+      "source_git_blob_sha1": "25fab2e42a887aba22ae8ea7e4c68b4f12f24a63",
+      "recorded_version": "20261112121010",
+      "recorded_name": "20261112010016_stage_m1b_subject_chat_and_consent_contacts"
+    },
+    {
+      "source_file": "20261112010210_stage_m1c_credit_date_renewals_and_tutor_forecasts.sql",
+      "source_git_blob_sha1": "8bca5e3c05f7a03f2925730cfa7f9ed2a938d388",
+      "recorded_version": "20261112121013",
+      "recorded_name": "20261112010210_stage_m1c_credit_date_renewals_and_tutor_forecasts"
+    },
+    {
+      "source_file": "20261112010357_stage_m1d_notice_receipt_and_chat_retention.sql",
+      "source_git_blob_sha1": "69304feeefcad155a48e45583a592774e96f5ad1",
+      "recorded_version": "20261112121016",
+      "recorded_name": "20261112010357_stage_m1d_notice_receipt_and_chat_retention"
+    },
+    {
+      "source_file": "20261112010922_stage_m1e_subject_chat_read_cursors.sql",
+      "source_git_blob_sha1": "4fff3ffc46b823a6902fdb8e7a7700f827513028",
+      "recorded_version": "20261112121018",
+      "recorded_name": "20261112010922_stage_m1e_subject_chat_read_cursors"
+    },
+    {
+      "source_file": "20261112011544_stage_m1f_tutor_compensation_name_snapshot.sql",
+      "source_git_blob_sha1": "c7400d5bd31d1820dd039a16666b87c6601050f6",
+      "recorded_version": "20261112121020",
+      "recorded_name": "20261112011544_stage_m1f_tutor_compensation_name_snapshot"
+    },
+    {
+      "source_file": "20261112011856_stage_m1g_rls_helper_execution_grants.sql",
+      "source_git_blob_sha1": "b537f82bcc18a8f048f06ca2b0fa6c41453a4645",
+      "recorded_version": "20261112121032",
+      "recorded_name": "20261112011856_stage_m1g_rls_helper_execution_grants"
+    },
+    {
+      "source_file": "20261112012213_stage_m1h_student_contact_permission_audit.sql",
+      "source_git_blob_sha1": "0c265a4b1fcc2f27cb8326ee19efbcbc3e885bfe",
+      "recorded_version": "20261112121035",
+      "recorded_name": "20261112012213_stage_m1h_student_contact_permission_audit"
+    },
+    {
+      "source_file": "20261112012826_stage_m1i_guardian_contact_gate_and_chat_reports.sql",
+      "source_git_blob_sha1": "a78df5e6dff81b3706cebb03d8b78b6c28653636",
+      "recorded_version": "20261112121038",
+      "recorded_name": "20261112012826_stage_m1i_guardian_contact_gate_and_chat_reports"
+    },
+    {
+      "source_file": "20261112031536_stage_l2_orphan_receipt_cleanup.sql",
+      "source_git_blob_sha1": "f40f33f69a47ad3f71aa55b5920e17d97f9f2032",
+      "recorded_version": "20261112121039",
+      "recorded_name": "20261112031536_stage_l2_orphan_receipt_cleanup"
+    },
+    {
+      "source_file": "20261112034550_stage_n1_direct_messaging.sql",
+      "source_git_blob_sha1": "56ef78ecdd0c32c4a6d5b51bbfb536174ad4f4de",
+      "recorded_version": "20261112121041",
+      "recorded_name": "20261112034550_stage_n1_direct_messaging"
+    },
+    {
+      "source_file": "20261112034941_stage_n1a_messaging_policy_execution_and_review_audit.sql",
+      "source_git_blob_sha1": "6ff7850c288ed5600a4dfaa1036c567e4c791ea8",
+      "recorded_version": "20261112121043",
+      "recorded_name": "20261112034941_stage_n1a_messaging_policy_execution_and_review_audit"
+    },
+    {
+      "source_file": "20261112035656_stage_n1b_private_messaging_rpc_implementations.sql",
+      "source_git_blob_sha1": "be96a824b03ba84f6c19c404e8ac6d05ae439ceb",
+      "recorded_version": "20261112121046",
+      "recorded_name": "20261112035656_stage_n1b_private_messaging_rpc_implementations"
+    },
+    {
+      "source_file": "20261112040002_stage_n2_restricted_message_attachments.sql",
+      "source_git_blob_sha1": "8ef7415f065e58f3437660e9702b19b1d50fdee7",
+      "recorded_version": "20261112121057",
+      "recorded_name": "20261112040002_stage_n2_restricted_message_attachments"
+    },
+    {
+      "source_file": "20261112040338_stage_n2a_message_report_thread_links.sql",
+      "source_git_blob_sha1": "b230202d849317f5cb001c093a7fd1209f7d1bcf",
+      "recorded_version": "20261112121100",
+      "recorded_name": "20261112040338_stage_n2a_message_report_thread_links"
+    },
+    {
+      "source_file": "20261112041420_stage_p1_peer_messaging_and_class_support_categories.sql",
+      "source_git_blob_sha1": "29250800c489e19b6da7c0d88c68ba8a849a82d9",
+      "recorded_version": "20261112121103",
+      "recorded_name": "20261112041420_stage_p1_peer_messaging_and_class_support_categories"
+    },
+    {
+      "source_file": "20261112042920_stage_p2_private_member_profiles.sql",
+      "source_git_blob_sha1": "08325955a53ea2b4a545cf4bc52458cf1debff82",
+      "recorded_version": "20261112121105",
+      "recorded_name": "20261112042920_stage_p2_private_member_profiles"
+    },
+    {
+      "source_file": "20261112043340_stage_p2a_role_assignment_owner_admin_only.sql",
+      "source_git_blob_sha1": "f5cdea014409940d7b147f5ac56fa63f5262d790",
+      "recorded_version": "20261112121107",
+      "recorded_name": "20261112043340_stage_p2a_role_assignment_owner_admin_only"
+    },
+    {
+      "source_file": "20261112043615_stage_p2b_restore_assistant_admin_invite_delegation.sql",
+      "source_git_blob_sha1": "4cf9b26eb57c1cbe3da4d7a6ea2aeb0cb26e8205",
+      "recorded_version": "20261112121110",
+      "recorded_name": "20261112043615_stage_p2b_restore_assistant_admin_invite_delegation"
+    },
+    {
+      "source_file": "20261112050728_stage_q1a_free_paid_enrolment_and_entitlements.sql",
+      "source_git_blob_sha1": "d17d382022c732a4aa4a2b60eb402480ac5d245c",
+      "recorded_version": "20261112121113",
+      "recorded_name": "20261112050728_stage_q1a_free_paid_enrolment_and_entitlements"
+    },
+    {
+      "source_file": "20261112051417_stage_q1b_class_structure_and_select_policies.sql",
+      "source_git_blob_sha1": "e85088376540b44567f8263c98be36dd4527536a",
+      "recorded_version": "20261112121125",
+      "recorded_name": "20261112051417_stage_q1b_class_structure_and_select_policies"
+    },
+    {
+      "source_file": "20261112051538_stage_q1c_operational_role_and_paid_class_guards.sql",
+      "source_git_blob_sha1": "afc62fe15b719f4ddd44ed3510e3a0152c1ceae6",
+      "recorded_version": "20261112121127",
+      "recorded_name": "20261112051538_stage_q1c_operational_role_and_paid_class_guards"
+    },
+    {
+      "source_file": "20261112051801_stage_q1d_assignment_driven_tutor_payroll.sql",
+      "source_git_blob_sha1": "c998bdc49170d46838a5b6f52258aefcf24f0214",
+      "recorded_version": "20261112121131",
+      "recorded_name": "20261112051801_stage_q1d_assignment_driven_tutor_payroll"
+    },
+    {
+      "source_file": "20261112053132_stage_q1e_rls_free_demo_and_assistant_directory.sql",
+      "source_git_blob_sha1": "f07c38e688a0874e66c4c38b2d79ac6785865065",
+      "recorded_version": "20261112121137",
+      "recorded_name": "20261112053132_stage_q1e_rls_free_demo_and_assistant_directory"
+    },
+    {
+      "source_file": "20261112053814_stage_q1f_catalogue_access_and_paid_isolation.sql",
+      "source_git_blob_sha1": "2f3ab9324cab4ff3922521eedc080ac97dfdbb90",
+      "recorded_version": "20261112121139",
+      "recorded_name": "20261112053814_stage_q1f_catalogue_access_and_paid_isolation"
+    },
+    {
+      "source_file": "20261112062833_stage_q2_assigned_catalogue_visibility.sql",
+      "source_git_blob_sha1": "d00a1f8e8a330f59a8b3b298af24edb260ee6618",
+      "recorded_version": "20261112121142",
+      "recorded_name": "20261112062833_stage_q2_assigned_catalogue_visibility"
+    },
+    {
+      "source_file": "20261112063127_stage_q2b_operational_enrolment_switch.sql",
+      "source_git_blob_sha1": "4e4c12b09c1e073bdfa5cd9f854a1eef8aef8eef",
+      "recorded_version": "20261112121144",
+      "recorded_name": "20261112063127_stage_q2b_operational_enrolment_switch"
+    },
+    {
+      "source_file": "20261112063538_stage_q2c_archived_payroll_history.sql",
+      "source_git_blob_sha1": "7a7a8990f89ba2542c9900b74a3b7ba2a3caff46",
+      "recorded_version": "20261112121212",
+      "recorded_name": "20261112063538_stage_q2c_archived_payroll_history"
+    },
+    {
+      "source_file": "20261112064031_stage_q2d_student_entitlement_realtime.sql",
+      "source_git_blob_sha1": "02e191d7cd86123b26d50b7979c4d628cfaddf4f",
+      "recorded_version": "20261112121214",
+      "recorded_name": "20261112064031_stage_q2d_student_entitlement_realtime"
+    },
+    {
+      "source_file": "20261112064750_stage_q2e_atomic_class_rosters.sql",
+      "source_git_blob_sha1": "a2eafeb8599c9542064d5fdfa151ca5c71296d22",
+      "recorded_version": "20261112121217",
+      "recorded_name": "20261112064750_stage_q2e_atomic_class_rosters"
+    },
+    {
+      "source_file": "20261112121339_stage_q5_production_admission_closed.sql",
+      "source_git_blob_sha1": "38f83768c18a8ed9f41ecdc006535be80f45c09d",
+      "recorded_version": "20261112121339",
+      "recorded_name": "stage_q5_production_admission_closed"
+    }
+  ]
+}
