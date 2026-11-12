@@ -46,6 +46,22 @@ jobs:
       - name: Verify production environment gate self-tests
         run: npm run check:release-env-tests
 
+      - name: Assert ordinary Cloudflare Pages builds cannot bypass release gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if CF_PAGES=1 CF_PAGES_BRANCH=main npm run build > /tmp/dli-pages-build-gate.log 2>&1; then
+            echo "ERROR: unapproved Pages production build passed"
+            exit 1
+          fi
+          if ! grep -Fq 'DLI K4 production configuration BLOCKED:' /tmp/dli-pages-build-gate.log; then
+            echo "ERROR: Pages build failed for an unexpected reason"
+            cat /tmp/dli-pages-build-gate.log
+            exit 1
+          fi
+          rm -f /tmp/dli-pages-build-gate.log
+          echo "Unapproved Pages build correctly blocked"
+
       - name: Verify browser-bundle scanner self-tests
         run: npm run check:bundle-scanner
 
@@ -76,6 +92,7 @@ jobs:
           grep -Fq 'X-Frame-Options: DENY' dist/_headers
           grep -Fq 'X-Content-Type-Options: nosniff' dist/_headers
           grep -Fq 'Referrer-Policy: no-referrer' dist/_headers
+          grep -Fq 'Content-Security-Policy:' dist/_headers
 
       - name: Assert unapproved production release remains blocked
         shell: bash
