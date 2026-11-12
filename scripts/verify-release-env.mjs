@@ -86,7 +86,7 @@ function selfTest() {
 if (process.argv.includes('--self-test')) {
   selfTest();
 } else if (process.argv.includes('--when-pages') && !isCloudflarePagesBuild(process.env)) {
-  process.stdout.write('DLI K4 Cloudflare Pages release gate skipped outside Pages.\\n');
+  process.stdout.write('DLI K4 Cloudflare Pages release gate skipped outside Pages.\n');
 } else {
   // Vite's actual loader honours process.env and .env production file precedence.
   // This is intentionally checked independently from any client bundle output.
