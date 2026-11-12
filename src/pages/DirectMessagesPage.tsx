@@ -240,7 +240,7 @@ export default function DirectMessagesPage(){
     <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
       <strong>Institutional messaging with safeguarding oversight</strong>
       <p>Founder and Admin may inspect institutional messages for safeguarding and spam prevention.
-        Their oversight openings are audited. Only approved Student–Tutor class relationships can initiate direct conversations.
+        Their oversight openings are audited. Students in the same published group class may contact each other only when both have DLI messaging approval; Student–Tutor contact also requires an approved class relationship.
         Contact DLI staff directly for urgent safeguarding concerns.</p>
     </div></div>
     {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
@@ -275,7 +275,7 @@ export default function DirectMessagesPage(){
               <span className="dli-direct-avatar">{c.full_name.charAt(0).toUpperCase()}</span>
               <span><strong>{c.full_name}</strong><small>{c.member_role.replaceAll('_',' ')}</small></span>
             </button>)}
-          {!contacts.length&&!loading&&<p className="dli-direct-empty">No authorised contacts yet. Assigned tutor/student conversations appear after class approval.</p>}
+          {!contacts.length&&!loading&&<p className="dli-direct-empty">No authorised contacts yet. Assigned tutors and students from your approved group classes appear after class and messaging approvals.</p>}
         </section>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
           {visible.map(t=>{
