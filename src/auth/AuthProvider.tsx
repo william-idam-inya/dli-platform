@@ -142,6 +142,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
+  useEffect(() => {
+    if (!supabase || account?.role !== 'student' || account.studentTier !== 'free') return;
+    // Free-to-Paid approval is authoritative in the database. The Realtime
+    // event only requests a fresh server-side role/entitlement verification.
+    // This does not accept any client-supplied role or tier.
+    let disposed = false;
+    const client = supabase;
+    let channel: ReturnType<typeof client.channel> | null = null;
+    void (async () => {
+      const result = await client.auth.getUser();
+      if (disposed || result.error || !result.data.user) return;
+      const userId = result.data.user.id;
+      channel = client.channel('dli-entitlement-' + userId)
+        .on('postgres_changes', {
+          event: '*', schema: 'public', table: 'dli_student_entitlements',
+          filter: 'student_id=eq.' + userId,
+        }, () => { if (!disposed) void refresh(); })
+        .subscribe();
+    })();
+    return () => {
+      disposed = true;
+      if (channel) void client.removeChannel(channel);
+    };
+  }, [account?.id, account?.role, account?.studentTier, refresh]);
+
   return (
     <AuthContext.Provider value={{
       state, account, notice, refresh, clearNotice: () => setNotice(null),
