@@ -923,6 +923,31 @@ approval are required before enabling messaging for minors.
 
 See `docs/stage-n1-direct-messaging.md`.
 
+## Stage N2 — Private messaging attachments (development-only)
+
+Direct messaging supports PDF, image, TXT, DOCX, XLSX and PPTX files
+up to 10 MB, using the private `dli-chat-files` bucket, scoped
+metadata, receipt-style two-step file readiness, Storage row
+policies, and database guards that prevent cross-thread or
+cross-sender attachment impersonation. This file feature applies
+to direct conversations, not yet the older subject-chat model.
+
+Founder/Admin oversight downloads require an audited five-minute
+access ticket. Message reports are now linked to the actual
+conversation and include an **Open reported conversation** action.
+No public sharing, automatic file execution, preview or external
+message distribution was activated.
+
+Migrations `20261112040002_stage_n2_restricted_message_attachments.sql`
+and `20261112040338_stage_n2a_message_report_thread_links.sql`
+are recorded in the reviewed 59-migration integrity manifest.
+At deployment, all chat/message/attachment rows and bucket objects
+remain empty. Independent authenticated role tests, antivirus/
+unsafe-file inspection, safeguarding and retention policy,
+production environment and backup/restore remain outstanding.
+
+See `docs/stage-n2-secure-message-attachments.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
