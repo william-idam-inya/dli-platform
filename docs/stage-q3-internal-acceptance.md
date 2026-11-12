@@ -6,7 +6,7 @@
 Development and offline regression testing **only**. No real student/tutor invitations, production deployment, payment collection, bank-transfer confirmation, paid entitlements, actual tutor payouts, live teaching records, or irreversible database mutations. Keep the existing development accounts and records.
 
 ## Automated acceptance introduced
-- `npm run check:role-matrix` transpiles the **actual** `src/auth/permissions.ts` into an isolated in-memory module using the existing TypeScript dependency; does not connect to Supabase or external networks.
+- `npm run check:role-matrix` imports the **actual** `src/auth/permissions.ts` using Node 22.18+ built-in type stripping; does not connect to Supabase or external networks.
 - Checks registry roles, unknown-route default denial, Founder/Admin/Assistant Admin/Tutor and legacy role navigation, Free/Paid Student boundaries, label differentiation and the application's explicitly guarded business routes.
 - Integrated into `.github/workflows/dli-validation.yml`; any failure blocks CI on this branch.
 - A passing script means **frontend route/access rules only**. It cannot establish database RLS, invitation security, HTTP isolation, actual logged-in UX or financial safety.
