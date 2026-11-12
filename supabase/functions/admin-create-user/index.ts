@@ -1,12 +1,13 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // No service/secret key is ever delivered to the browser or recorded in an audit log.
+// Production fails closed until DLI_APP_ORIGINS is configured with approved HTTPS origin(s).
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
 const allowedRoles = new Set([
   'owner','admin','assistant_admin','academic_coordinator',
   'finance_officer','tutor','student',
 ]);
-const allowedOrigins = (Deno.env.get('DLI_APP_ORIGINS') || 'http://localhost:5173')
+const allowedOrigins = (Deno.env.get('DLI_APP_ORIGINS') || '')
   .split(',').map((part) => part.trim()).filter(Boolean);
 
 function response(status: number, body: Record<string, unknown>, origin?: string) {
