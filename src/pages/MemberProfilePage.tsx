@@ -13,13 +13,26 @@ function nigeriaToday():string{
   const get=(type:string)=>parts.find(p=>p.type===type)?.value??'';
   return get('year')+'-'+get('month')+'-'+get('day');
 }
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function validBirthDate(yearText:string,monthText:string,dayText:string): string | null {
+  if(!/^\d{4}$/.test(yearText)||!/^(0?[1-9]|1[0-2])$/.test(monthText)||
+    !/^(0?[1-9]|[12][0-9]|3[01])$/.test(dayText)) return null;
+  const year=Number(yearText),month=Number(monthText),day=Number(dayText);
+  if(year<1900||year>Number(nigeriaToday().slice(0,4)))return null;
+  const maxDay=new Date(Date.UTC(year,month,0)).getUTCDate();
+  if(day>maxDay)return null;
+  const value=yearText+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  return value<=nigeriaToday()?value:null;
+}
 type Profile={user_id:string;personal_name:string;date_of_birth:string;avatar_path:string|null;preferred_theme:'system'|'light'|'dark';updated_at:string};
 export default function MemberProfilePage(){
  const {account}=useAuth();
  const [userId,setUserId]=useState('');
  const [profile,setProfile]=useState<Profile|null>(null);
  const [name,setName]=useState('');
- const [dob,setDob]=useState('');
+ const [birthYear,setBirthYear]=useState('');
+ const [birthMonth,setBirthMonth]=useState('');
+ const [birthDay,setBirthDay]=useState('');
  const [theme,setTheme]=useState<Profile['preferred_theme']>('system');
  const [photo,setPhoto]=useState<File|null>(null);
  const [picture,setPicture]=useState<string|null>(null);
@@ -41,7 +54,10 @@ export default function MemberProfilePage(){
     if(r.error){setError('Your profile could not be loaded securely.');return;}
     const row=(r.data??null) as Profile|null;
     setProfile(row);setName(row?.personal_name??account.full_name);
-    setDob(row?.date_of_birth??'');setTheme(row?.preferred_theme??'system');
+    setBirthYear(row?.date_of_birth?.slice(0,4)??'');
+    setBirthMonth(row?.date_of_birth?.slice(5,7)??'');
+    setBirthDay(row?.date_of_birth?.slice(8,10)??'');
+    setTheme(row?.preferred_theme??'system');
     setError(null);
     if(row?.avatar_path){
       const image=await supabase.storage.from('dli-member-avatars').download(row.avatar_path);
@@ -59,7 +75,8 @@ export default function MemberProfilePage(){
  async function save(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(!supabase||busy||!userId||!account)return;
   const clean=name.trim();
-  if(clean.length<2||clean.length>160||!dob||dob>nigeriaToday()||dob<'1900-01-01'){
+  const dob=validBirthDate(birthYear,birthMonth,birthDay);
+  if(clean.length<2||clean.length>160||!dob){
     setError('Enter your name and a valid date of birth.');return;
   }
   if(!profile&&!photo){setError('A profile picture is required to complete first-time onboarding.');return;}
@@ -126,9 +143,26 @@ export default function MemberProfilePage(){
     <label htmlFor="member-profile-name">Full name</label>
     <input id="member-profile-name" required minLength={2} maxLength={160} autoComplete="name"
       value={name} onChange={e=>setName(e.target.value)}/>
-    <label htmlFor="member-profile-dob">Date of birth</label>
-    <input id="member-profile-dob" required type="date" min="1900-01-01"
-      max={nigeriaToday()} value={dob} onChange={e=>setDob(e.target.value)}/>
+    <label htmlFor="member-profile-birth-day">Date of birth</label>
+    <div className="member-profile-birth-fields">
+      <div><label htmlFor="member-profile-birth-day">Day</label>
+        <select id="member-profile-birth-day" required value={birthDay}
+          onChange={e=>setBirthDay(e.target.value)}>
+          <option value="">Day</option>
+          {Array.from({length:31},(_,i)=>i+1).map(day=><option key={day} value={String(day).padStart(2,'0')}>{day}</option>)}
+        </select></div>
+      <div><label htmlFor="member-profile-birth-month">Month</label>
+        <select id="member-profile-birth-month" required value={birthMonth}
+          onChange={e=>setBirthMonth(e.target.value)}>
+          <option value="">Month</option>
+          {MONTHS.map((month,i)=><option key={month} value={String(i+1).padStart(2,'0')}>{month}</option>)}
+        </select></div>
+      <div><label htmlFor="member-profile-birth-year">Year</label>
+        <input id="member-profile-birth-year" type="number" inputMode="numeric"
+          required min={1900} max={Number(nigeriaToday().slice(0,4))}
+          placeholder="YYYY" value={birthYear} onChange={e=>setBirthYear(e.target.value)}/></div>
+    </div>
+    <small className="member-profile-date-help">Choose day and month, then type the four-digit year. No scrolling through years.</small>
     <label htmlFor="member-profile-theme">Display preference (synced across devices)</label>
     <select id="member-profile-theme" value={theme} onChange={e=>setTheme(e.target.value as Profile['preferred_theme'])}>
       {themeOptions.map(([value,label])=><option value={value} key={value}>{label}</option>)}

@@ -67,6 +67,12 @@ jobs:
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
+      - name: Verify programme/level/subject catalogue consistency (offline)
+        run: npm run check:enrolment-catalogue
+
+      - name: Verify cross-role dashboard and internal link consistency (offline)
+        run: npm run check:workspace-consistency
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 

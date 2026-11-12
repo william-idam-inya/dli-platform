@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { BookOpen, CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil, Plus, RefreshCw, Users, Video, Wallet, MessageCircle } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
+import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
 import './AcademicSetupPage.css';
@@ -32,6 +33,9 @@ export default function ClassesWorkspacePage(){
   const {account}=useAuth();
   const [params,setParams]=useSearchParams();
   const staff=Boolean(account&&STAFF.has(account.role));
+  const mayOpenAcademic=Boolean(account&&canAccessPath(account.role,'/academics',account.studentTier));
+  const mayOpenUsers=Boolean(account&&canAccessPath(account.role,'/users',account.studentTier));
+  const mayOpenLearning=Boolean(account&&canAccessPath(account.role,'/study',account.studentTier));
   const paying=account?.role==='owner'||account?.role==='admin'||(account?.role==='student'&&account.studentTier==='paid');
   const communicating=account?.role==='owner'||account?.role==='admin'||
     (account?.role==='student'&&account.studentTier==='paid')||account?.role==='tutor';
@@ -259,7 +263,7 @@ export default function ClassesWorkspacePage(){
           <select id="classes-subject" required value={subjectId} onChange={e=>setForm(v=>({...v,subject_id:e.target.value}))}>
             {topics.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          {!topics.length&&<p className="academic-code-hint">Add approved subjects in <Link to="/academics">Academic catalogue</Link>.</p>}
+          {!topics.length&&<p className="academic-code-hint">Add approved subjects in {mayOpenAcademic?<Link to="/academics">Academic catalogue</Link>:<strong>Academic Setup (Admin team)</strong>}.</p>}
           <label htmlFor="classes-weekday">6. Weekly day and class time (WAT)</label>
           <select id="classes-weekday" value={form.weekday} onChange={e=>setForm(v=>({...v,weekday:Number(e.target.value)}))}>
             {WEEKDAYS.map((day,i)=><option key={day} value={i}>{day}</option>)}
@@ -272,7 +276,7 @@ export default function ClassesWorkspacePage(){
           <select id="classes-tutor" required value={tutorId} onChange={e=>setForm(v=>({...v,tutor_id:e.target.value}))}>
             {tutors.map(t=><option key={t.id} value={t.auth_user_id}>{t.full_name}</option>)}
           </select>
-          {!tutors.length&&<p className="academic-code-hint">Authorise tutors through <Link to="/users">Users &amp; access</Link>.</p>}
+          {!tutors.length&&<p className="academic-code-hint">Authorise tutors through {mayOpenUsers?<Link to="/users">Users &amp; access</Link>:<strong>Founder/Admin accounts</strong>}.</p>}
           <label htmlFor="classes-meet">8. Google Meet link</label>
           <input id="classes-meet" type="url" required maxLength={2048} value={form.meeting_url}
             placeholder="https://meet.google.com/abc-defg-hij" onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
@@ -328,7 +332,7 @@ export default function ClassesWorkspacePage(){
           </article>;
         })}</div>
       </section>
-      <p className="module-footnote"><Link to="/academics">Academic setup</Link> defines subjects and courses. Lessons, assignments, quizzes and attendance are organised under <Link to="/study">Learning &amp; results</Link>.</p>
+      <p className="module-footnote">{mayOpenAcademic?<Link to="/academics">Academic setup</Link>:<strong>Academic setup</strong>} defines subjects and courses. Lessons, assignments, quizzes and attendance are organised under {mayOpenLearning?<Link to="/study">Learning &amp; results</Link>:<strong>Learning &amp; results</strong>}.</p>
     </>}
   </div>;
 }

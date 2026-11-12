@@ -1,47 +1,63 @@
 import { lazy, Suspense } from 'react';
-import { BookOpen, ClipboardCheck, CalendarCheck, GraduationCap } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { BookOpen, LockKeyhole, CalendarClock } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+import { learningAreas, type LearningTab } from '../data/learningAreas';
 import './LearningHubPage.css';
 
 const LearningPage=lazy(()=>import('./LearningPage'));
 const AssessmentPage=lazy(()=>import('./AssessmentPage'));
 const QuizPage=lazy(()=>import('./QuizPage'));
 const AttendancePage=lazy(()=>import('./AttendancePage'));
-type Tab='lessons'|'assignments'|'quizzes'|'attendance';
-const tabs:{id:Tab;label:string;description:string;icon:typeof BookOpen}[]=[
- {id:'lessons',label:'Lessons',description:'Read learning materials and complete course activities.',icon:BookOpen},
- {id:'assignments',label:'Assignments',description:'Submit written work and view tutor feedback.',icon:ClipboardCheck},
- {id:'quizzes',label:'Quizzes & results',description:'Take assessments and review saved results.',icon:GraduationCap},
- {id:'attendance',label:'Attendance',description:'Check class attendance and recorded participation.',icon:CalendarCheck},
-];
 
 export default function LearningHubPage(){
+ const {account}=useAuth();
  const [params,setParams]=useSearchParams();
- const selected=tabs.some(t=>t.id===params.get('tab'))
-  ?params.get('tab') as Tab:'lessons';
- function choose(tab:Tab){
+ const selected=learningAreas.some(t=>t.id===params.get('tab'))
+  ?params.get('tab') as LearningTab:'lessons';
+ const freeStudent=account?.role==='student'&&account.studentTier!=='paid';
+ const selectedArea=learningAreas.find(t=>t.id===selected)!;
+ function choose(tab:LearningTab){
   setParams(old=>{const next=new URLSearchParams(old);next.set('tab',tab);return next;});
  }
  return <div className="learning-hub">
   <div className="learning-hub-header">
     <span className="learning-hub-symbol"><BookOpen size={23}/></span>
-    <div><p className="section-kicker">ONE PLACE FOR LEARNING</p>
+    <div><p className="section-kicker">ONE CONNECTED ACADEMIC WORKSPACE</p>
       <h1>Learning &amp; results</h1>
-      <p>Lessons, assignments, quizzes and attendance are grouped together. Choose what you want to do.</p>
+      <p>Lessons, assignments, quizzes and attendance share one academic workspace.
+        What you can open depends on your approved enrolment and assigned classes.</p>
     </div>
   </div>
   <nav className="learning-hub-tabs" aria-label="Learning and progress sections">
-    {tabs.map(t=><button type="button" key={t.id} className={t.id===selected?'active':''}
+    {learningAreas.map(t=><button type="button" key={t.id} className={t.id===selected?'active':''}
       aria-current={t.id===selected?'page':undefined} onClick={()=>choose(t.id)}>
       <t.icon size={18}/><span><strong>{t.label}</strong><small>{t.description}</small></span>
     </button>)}
   </nav>
-  <section aria-label={tabs.find(t=>t.id===selected)?.label}>
-    <Suspense fallback={<p className="learning-hub-loading" role="status">Loading selected learning area…</p>}>
-      {selected==='lessons'?<LearningPage/>:
-       selected==='assignments'?<AssessmentPage/>:
-       selected==='quizzes'?<QuizPage/>:<AttendancePage/>}
-    </Suspense>
+  <section aria-label={selectedArea.label}>
+    {freeStudent?
+      <div className="panel learning-hub-access" role="status">
+        <LockKeyhole size={24} aria-hidden="true"/>
+        <div>
+          <h2>{selectedArea.label}</h2>
+          <p>This area is part of DLI's academic system. Your Free Student account
+            can view its structure, but private lessons, assignments, quizzes,
+            results and attendance records require an authorised paid enrolment
+            and the relevant assigned course.</p>
+          <p>Free Demo classes remain available separately. No paid learning
+            content or answer keys are exposed on this preview.</p>
+          <div className="learning-hub-access-actions">
+            <Link className="user-outline-button" to="/enrolment">Free Demo &amp; enrolment</Link>
+            <Link className="user-outline-button" to="/classes"><CalendarClock size={16}/> My classes</Link>
+          </div>
+        </div>
+      </div>:
+      <Suspense fallback={<p className="learning-hub-loading" role="status">Loading selected learning area…</p>}>
+        {selected==='lessons'?<LearningPage/>:
+         selected==='assignments'?<AssessmentPage/>:
+         selected==='quizzes'?<QuizPage/>:<AttendancePage/>}
+      </Suspense>}
   </section>
  </div>;
 }
