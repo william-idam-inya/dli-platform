@@ -64,6 +64,9 @@ jobs:
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
+      - name: Verify programme, academic level and unique subject selection (no network)
+        run: npm run check:enrolment-catalogue
+
       - name: Verify TypeScript
         run: npm run typecheck
 
