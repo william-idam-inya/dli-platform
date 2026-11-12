@@ -1,0 +1,12 @@
+.unified-overview-snapshot {margin:1.25rem 0;}
+.unified-overview-metrics {display:flex;flex-wrap:wrap;gap:.85rem;margin:1rem 0;}
+.unified-overview-metrics>div {
+ display:flex;flex-direction:column;gap:.35rem;min-width:min(100%,165px);
+ padding:1rem 1.2rem;background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;
+}
+.unified-overview-metrics strong {color:var(--text);font-size:1.65rem;line-height:1.2;}
+.unified-overview-metrics span {color:var(--muted);font-size:.8rem;line-height:1.45;}
+.unified-overview-open {display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;margin-top:.35rem;}
+.unified-overview-footnote {display:flex;align-items:flex-start;gap:.45rem;font-size:.78rem;line-height:1.5;color:var(--muted);margin-top:1.4rem;}
+.unified-overview-footnote svg {flex-shrink:0;}
+@media(max-width:540px){.unified-overview-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.unified-overview-metrics>div {min-width:0;padding:.85rem;}}
