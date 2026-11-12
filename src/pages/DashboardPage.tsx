@@ -69,8 +69,7 @@ export default function DashboardPage(){
       }));
       setAcademicCounts(Object.fromEntries(records) as Partial<Record<LearningTab,number|null>>);
     }catch{
-      setAcademicCounts(Object.fromEntries(targets.map(t=>[t.id,null]))
-        as Partial<Record<LearningTab,number|null>>);
+      setAcademicCounts(Object.fromEntries(targets.map(t=>[t.id,null])) as Partial<Record<LearningTab,number|null>>);
     }finally{setAcademicLoading(false);}
   },[account?.id,account?.role,account?.studentTier]);
   useEffect(()=>{void refreshAcademic();},[refreshAcademic]);
