@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bell, BellRing, Check, X } from 'lucide-react';
+import { Bell, BellRing, Check, MessageCircle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -142,4 +142,44 @@ export function DliDashboardAnnouncements(){
       </div>}
     <Link className="text-link" to="/announcements">Open announcement centre</Link>
   </section>;
+}
+
+export function DliMessageBadge(){
+  const {account}=useAuth();
+  const [unread,setUnread]=useState(0);
+  const eligible=account?.role==='tutor'||account?.role==='student';
+  const refresh=useCallback(async()=>{
+    if(!supabase||!eligible){setUnread(0);return;}
+    try{
+      const [user,messages,reads]=await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from('dli_class_messages')
+          .select('class_id,student_id,sender_id,created_at')
+          .order('created_at',{ascending:false}).limit(500),
+        supabase.from('dli_chat_reads').select('class_id,student_id,seen_at').limit(500),
+      ]);
+      if(user.error||!user.data.user||messages.error||reads.error)return;
+      const uid=user.data.user.id;
+      const index=new Map((reads.data??[]).map(r=>[r.class_id+'|'+r.student_id,r.seen_at]));
+      const count=(messages.data??[]).filter(m=>{
+        if(m.sender_id===uid)return false;
+        const seenAt=index.get(m.class_id+'|'+m.student_id);
+        return !seenAt||new Date(m.created_at)>new Date(seenAt);
+      }).length;
+      setUnread(count);
+    }catch{/* Do not expose private message content in notifications. */}
+  },[account?.id,eligible]);
+  useEffect(()=>{
+    void refresh();
+    const timer=window.setInterval(()=>{void refresh();},30000);
+    const onFocus=()=>{void refresh();};
+    window.addEventListener('focus',onFocus);
+    return ()=>{window.clearInterval(timer);window.removeEventListener('focus',onFocus);};
+  },[refresh]);
+  if(!eligible)return null;
+  return <Link to="/classes?tab=messages" className="icon-button dli-message-link"
+    aria-label={'Subject messages'+(unread?' — '+unread+' unread':'')} title="Subject messages">
+    <MessageCircle size={19}/>
+    {unread>0&&<span className="dli-notification-count">{unread>99?'99+':unread}</span>}
+  </Link>;
 }
