@@ -58,8 +58,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
-          <strong>Stage I3 · Institutional settings</strong>
-          <p>Founder edits DLI group links; Admin read-only. Finance and publication stay locked.</p>
+          <strong>Connected class management</strong>
+          <p>One student or a group, with subject, tutor, timetable and secure payment review.</p>
         </div>
       </div>
       <div className="sidebar-version">DLI Platform · Development</div>
@@ -133,7 +133,15 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="breadcrumb">
               <span>DLI Workspace</span>
               <span className="breadcrumb-divider">/</span>
-              <strong>{activeItem?.label ?? 'Page not found'}</strong>
+              <strong>{activeItem?.label ?? ({
+                '/cohorts':'Advanced curriculum','/assignments':'Legacy course assignments',
+                '/schedule':'Legacy course timetable','/finance/reviews':'Finance policy reviews',
+                '/communications/reviews':'Communication reviews',
+                '/communications/templates':'Message templates',
+                '/communications/reminders':'Internal reminders',
+                '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
+                '/my-classes':'Classes & timetable',
+              } as Record<string,string>)[location.pathname] ?? 'Workspace'}</strong>
             </div>
           </div>
           <div className="topbar-actions">
