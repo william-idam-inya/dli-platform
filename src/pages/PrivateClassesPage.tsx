@@ -25,7 +25,7 @@ function feedback(error:unknown):string {
   return 'The operation could not be completed. Verify your selections and refresh.';
 }
 
-export default function PrivateClassesPage(){
+export default function PrivateClassesPage({billingOnly=false,embedded=false}:{billingOnly?:boolean;embedded?:boolean}={}){
   const {account}=useAuth();
   const [params]=useSearchParams();
   const requestedRegistry=params.get('registry')??'';
@@ -230,7 +230,7 @@ export default function PrivateClassesPage(){
   }
 
   return <div className="module-page private-classes-page">
-    <div className="module-page-hero">
+    {!embedded&&<div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> PRIVATE LEARNING</div>
@@ -240,7 +240,7 @@ export default function PrivateClassesPage(){
           'View your monthly fee, submit transfer proof and join your assigned lessons.'}</p>
       </div>
       <span className="module-status"><span/> Stage L1</span>
-    </div>
+    </div>}
     <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
       <strong>Account-linked private records</strong><p>Bank transfer is manual. Uploading a screenshot or PDF never marks a fee paid.
       An authorised Admin must check the actual bank credit before verifying the receipt. Private meeting links are visible only to the assigned parties.</p>
@@ -264,10 +264,10 @@ export default function PrivateClassesPage(){
       {!students.length&&<p className="academic-empty">No active Student accounts found. <Link to="/users">Open Users &amp; access</Link>.</p>}
     </section>}
 
-    {isStaff&&<nav className="private-step-nav" aria-label="Private class administration steps">
+    {isStaff&&<nav className="private-step-nav" aria-label={billingOnly?'Payment administration steps':'Private class administration steps'}>
       {([
         ['fee','1 · Assign fee'],['bank','2 · Bank details'],['verify','3 · Verify proof'],
-        ['schedule','4 · Assign subject'],['roster','5 · Tutor roster'],
+        ...(!billingOnly ? ([['schedule','4 · Assign subject'],['roster','5 · Tutor roster']] as const) : []),
       ] as const).map(([step,label])=><button type="button" key={step}
         className={adminStep===step?'selected':''} aria-current={adminStep===step?'step':undefined}
         onClick={()=>setAdminStep(step)}>{label}</button>)}
@@ -350,7 +350,7 @@ export default function PrivateClassesPage(){
       {isStaff&&pending.length>0&&<p className="academic-code-hint">There are {pending.length} receipt(s) awaiting review across students. Select each student above to inspect and verify their documents.</p>}
     </section>}
 
-    {isStaff&&adminStep==='schedule'&&<section className="panel">
+    {!billingOnly&&isStaff&&adminStep==='schedule'&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">05 · PRIVATE SUBJECT TIMETABLE</p>
         <h2>Assign a subject, day, time, tutor and Google Meet</h2>
         <p className="user-caption">Work in this order for each subject. Use a weekday and recurring class time in West Africa Time (UTC+1), not a date calendar. Schedule assignments require at least one manually verified fee for that student.</p>
@@ -382,7 +382,7 @@ export default function PrivateClassesPage(){
       </form>
     </section>}
 
-    {(!isStaff||adminStep==='roster')&&<section className="panel">
+    {!billingOnly&&(!isStaff||adminStep==='roster')&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">{isStaff?'06 · LINKED CLASS RECORDS':'02 · PERSONAL TIMETABLE'}</p>
         <h2>{isStaff?'Individual tutor–student class register':isTutor?'Students and classes assigned to me':'My subject timetable'}</h2>
         <p className="user-caption">One record connects the student, subject, weekly time, assigned tutor and joining link. Only active assignments are shown.</p>
@@ -407,6 +407,6 @@ export default function PrivateClassesPage(){
       </div>
       <p className="academic-code-hint"><LockKeyhole size={13}/> Meeting links are visible only to the selected student, assigned tutor and authorised administrative staff. Do not share these links publicly.</p>
     </section>}
-    <p className="module-footnote"><Clock3 size={14}/> This feature is operating in the development environment. The private-plan source document has an unresolved 2-versus-6-subject description. Administrators explicitly choose each agreed subject and its schedule; no automatic fee collection is enabled.</p>
+    <p className="module-footnote"><Clock3 size={14}/> Manual bank transfer evidence is reviewed by authorised DLI administrators; submission does not confirm bank credit. No automated collections or tutor payouts are enabled.</p>
   </div>;
 }
