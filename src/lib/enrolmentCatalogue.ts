@@ -49,7 +49,9 @@ export function subjectChoices(
   // and suppress duplicate labels within the same programme and level.
   const seenIds = new Set<string>(), seenNames = new Set<string>();
   const choices: SubjectChoice[] = [];
-  for (const row of [...rows].sort((a,b)=>(a.subject_name??'').localeCompare(b.subject_name??'')
+  for (const row of [...rows].sort((a,b)=>
+    (a.subject_name??'').trim().localeCompare((b.subject_name??'').trim(),'en',{sensitivity:'base'})
+    || (a.subject_name??'').length-(b.subject_name??'').length
     || (a.subject_id??'').localeCompare(b.subject_id??''))) {
     if (row.programme_id!==programmeId || row.academic_level_id!==academicLevelId ||
       !row.subject_id || !row.subject_name) continue;
