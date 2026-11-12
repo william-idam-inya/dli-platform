@@ -54,15 +54,16 @@ export function DliNotificationBell(){
   const {visible,seen,error,refresh}=useVisibleNotices(true);
   const [open,setOpen]=useState(false);
   const [popup,setPopup]=useState<string|null>(null);
+  const [sessionDismissed,setSessionDismissed]=useState<string[]>([]);
   const [busy,setBusy]=useState<string|null>(null);
   const seenMap=new Map(seen.map(s=>[s.notice_id,s]));
   const unread=visible.filter(n=>!seenMap.get(n.id)?.read_at);
   useEffect(()=>{
     // A new published, non-dismissed notice appears in the login overlay.
     // The backend stores the dismissal; user can still find the notice later.
-    const latest=visible.find(n=>!seenMap.get(n.id)?.popup_dismissed_at);
+    const latest=visible.find(n=>!seenMap.get(n.id)?.popup_dismissed_at&&!sessionDismissed.includes(n.id));
     setPopup(latest?.id??null);
-  },[visible.map(n=>n.id).join(','),seen.map(s=>s.notice_id+String(s.popup_dismissed_at)).join('|')]);
+  },[visible.map(n=>n.id).join(','),seen.map(s=>s.notice_id+String(s.popup_dismissed_at)).join('|'),sessionDismissed.join('|')]);
   const item=visible.find(n=>n.id===popup);
   async function mark(n:DliNotice,dismiss:boolean){
     if(!supabase||busy)return;
@@ -81,7 +82,9 @@ export function DliNotificationBell(){
       if(dismiss)setPopup(null);
       await refresh();
     }catch{
-      // Keep the notice visible rather than claiming its read state was persisted.
+      // Never trap a member inside a modal when the DB is unreachable.
+      // Acknowledgement may be retried on the next sign-in.
+      if(dismiss){setSessionDismissed(prev=>[...prev,n.id]);setPopup(null);}
     }finally{setBusy(null);}
   }
   return <div className="dli-notification-widget">
