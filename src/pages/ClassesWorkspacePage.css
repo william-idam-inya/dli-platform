@@ -38,3 +38,5 @@
 .classes-card-actions a:focus-visible,.classes-workspace button:focus-visible,.classes-form input:focus-visible,.classes-form select:focus-visible {outline:2px solid var(--purple);outline-offset:2px;}
 .classes-workspace button:disabled {opacity:.55;cursor:not-allowed;}
 @media(max-width:640px){.classes-time-row {grid-template-columns:1fr;}.classes-student-list{grid-template-columns:1fr;}.classes-card{padding:.85rem;}.classes-tabs button {flex:1 1 160px;}}
+
+.classes-selected-names {font-size:.81rem;color:var(--muted);line-height:1.5;overflow-wrap:anywhere;margin:0;}
