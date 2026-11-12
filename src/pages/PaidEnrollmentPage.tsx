@@ -3,10 +3,13 @@ import { BookOpen, CheckCircle2, Download, RefreshCw, ShieldCheck, Upload, Walle
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import {
+  programmeChoices, levelChoices, subjectChoices, validSubjectSelection,
+  type EnrolmentCatalogueRow,
+} from '../lib/enrolmentCatalogue';
 import './PaidEnrollmentPage.css';
 
-type Subject={id:string;name:string};
-type Request={id:string;student_id:string;plan_code:string;subject_ids:string[];amount_ngn:number|string;
+type Request={id:string;student_id:string;plan_code:string;programme_id:string|null;academic_level_id:string|null;subject_ids:string[];amount_ngn:number|string;
  status:'awaiting_payment'|'submitted'|'approved'|'rejected';submitted_at:string;review_note:string};
 type Proof={id:string;request_id:string;student_id:string;object_path:string;submitted_at:string};
 type Bank={bank_name:string;account_name:string;account_number:string;is_active:boolean};
@@ -30,7 +33,9 @@ export default function PaidEnrollmentPage(){
  const {account,refresh:refreshAccess}=useAuth();
  const isManager=Boolean(account&&managerRoles.includes(account.role));
  const isStudent=account?.role==='student';
- const [subjects,setSubjects]=useState<Subject[]>([]);
+ const [catalogue,setCatalogue]=useState<EnrolmentCatalogueRow[]>([]);
+ const [programme,setProgramme]=useState('');
+ const [academicLevel,setAcademicLevel]=useState('');
  const [selected,setSelected]=useState<string[]>([]);
  const [plan,setPlan]=useState('group_5_science');
  const [requests,setRequests]=useState<Request[]>([]);
@@ -52,10 +57,10 @@ export default function PaidEnrollmentPage(){
   setLoading(true);
   try{
    const [s,r,p,b,d,control]=await Promise.all([
-    isStudent?supabase.from('subjects').select('id,name').eq('is_active',true).order('name'):
-       Promise.resolve({data:[] as Subject[],error:null}),
+    isStudent?supabase.rpc('dli_enrolment_catalogue'):
+       Promise.resolve({data:[] as EnrolmentCatalogueRow[],error:null}),
     supabase.from('dli_enrollment_requests')
-      .select('id,student_id,plan_code,subject_ids,amount_ngn,status,submitted_at,review_note')
+      .select('id,student_id,plan_code,programme_id,academic_level_id,subject_ids,amount_ngn,status,submitted_at,review_note')
       .order('submitted_at',{ascending:false}).limit(200),
     supabase.from('dli_enrollment_proofs').select('id,request_id,student_id,object_path,submitted_at').limit(200),
     supabase.from('private_bank_details').select('bank_name,account_name,account_number,is_active').maybeSingle(),
@@ -68,7 +73,7 @@ export default function PaidEnrollmentPage(){
    if([s,r,p,b,d,control].some(x=>x.error)||!control.data){
     setError('The enrolment data could not be verified. Refresh before continuing.');return;
    }
-   setSubjects((s.data??[]) as Subject[]);
+   setCatalogue((s.data??[]) as EnrolmentCatalogueRow[]);
    setRequests((r.data??[]) as Request[]);
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
@@ -81,13 +86,25 @@ export default function PaidEnrollmentPage(){
  useEffect(()=>{void load();},[load]);
  const current=requests.find(r=>r.status==='awaiting_payment'||r.status==='submitted'||r.status==='approved');
  const picked=plans.find(p=>p.id===plan)??plans[0];
+ const programmes=programmeChoices(catalogue);
+ const levels=levelChoices(catalogue,programme);
+ const subjects=subjectChoices(catalogue,programme,academicLevel);
+ const chosenProgramme=programmes.find(item=>item.id===programme);
+ const paidProgramme=chosenProgramme?.code==='dli-online';
+ const currentSubjects=subjectChoices(catalogue,current?.programme_id??'',current?.academic_level_id??'');
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(!supabase||busy||!isStudent||account?.studentTier==='paid'||applicationsOpen!==true)return;
-  if(selected.length<1||selected.length>6){setError('Select between one and six subjects.');return;}
+  if(!paidProgramme||!academicLevel||!levels.some(level=>level.id===academicLevel)||
+    !validSubjectSelection(catalogue,programme,academicLevel,selected)){
+    setError('Choose DLI-Online, an available academic level and 1–6 distinct subjects configured for that programme and level.');
+    return;
+  }
   setBusy(true);setError(null);setNotice(null);
   try{
-   const res=await supabase.rpc('dli_apply_paid',{p_plan:plan,p_subjects:selected});
+   const res=await supabase.rpc('dli_apply_paid_v2',{
+     p_plan:plan,p_programme:programme,p_level:academicLevel,p_subjects:selected,
+   });
    if(res.error||!res.data){setError('Could not create the application. Check your existing request and refresh.');return;}
    setNotice('Application created. Follow the verified DLI transfer instructions and submit payment evidence.');
    await load();
@@ -196,6 +213,38 @@ export default function PaidEnrollmentPage(){
     <p className="user-caption">Select your arrangement and specific subjects. Plan prices come from DLI Paid Learning Plans; extra/changed allocations require Admin review.</p>
    </div></div>
    <form className="upgrade-form" onSubmit={e=>void submit(e)}>
+    <label htmlFor="upgrade-programme">1. Programme</label>
+    <select id="upgrade-programme" value={programme} required
+      onChange={e=>{setProgramme(e.target.value);setAcademicLevel('');setSelected([]);}}>
+      <option value="">Select a programme</option>
+      {programmes.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+    </select>
+    {!programmes.length&&!loading&&<p className="academic-empty">
+      No active DLI programme is available. Contact DLI administration.
+    </p>}
+    {chosenProgramme&&!paidProgramme&&<p className="academic-code-hint">
+      DLI-Scholars Club offers free learning. See published Free Demo classes above.
+      Paid learning plans are currently limited to DLI-Online.
+    </p>}
+    <label htmlFor="upgrade-level">2. Academic level</label>
+    <select id="upgrade-level" value={academicLevel} required disabled={!programme||!levels.length}
+      onChange={e=>{setAcademicLevel(e.target.value);setSelected([]);}}>
+      <option value="">Select an academic level</option>
+      {levels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
+    </select>
+    {programme&&!levels.length&&!loading&&<p className="academic-code-hint">
+      No academic levels are configured for this programme yet.
+      An Admin must add active courses under Academic setup before enrolment can proceed.
+    </p>}
+    <label>3. Subjects</label>
+    {!subjects.length&&academicLevel&&<p className="academic-code-hint">
+      No active subjects are configured for this programme and academic level.
+    </p>}
+    <div className="upgrade-subjects">{subjects.map(s=><label key={s.id}>
+      <input type="checkbox" checked={selected.includes(s.id)}
+        disabled={!paidProgramme||applicationsOpen!==true}
+        onChange={()=>toggle(s.id)}/>{s.name}
+    </label>)}</div>
     {applicationsOpen!==true&&<p className="auth-feedback error" role="status">
       {applicationsOpen===false
        ?'New paid enrolment applications are temporarily paused by DLI administration. Current requests are unaffected.'
@@ -206,12 +255,10 @@ export default function PaidEnrollmentPage(){
       {plans.map(p=><option key={p.id} value={p.id}>{p.name} · {money(p.cost)}/month</option>)}
     </select>
     <strong>Monthly learner fee: {money(picked.cost)}</strong>
-    <label>Choose subjects (1–6)</label>
-    <div className="upgrade-subjects">{subjects.map(s=><label key={s.id}>
-       <input type="checkbox" checked={selected.includes(s.id)} onChange={()=>toggle(s.id)}/>{s.name}
-    </label>)}</div>
+    <p className="user-caption">Choose 1–6 subjects from your selected academic level only.</p>
     {plan==='private_1_to_1'&&<p className="academic-code-hint">The private tuition document specifies a standard two-subject tutor allocation but also mentions six subjects. DLI must confirm any additional subjects before scheduling or compensation.</p>}
-    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!selected.length}>
+    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!paidProgramme||!academicLevel||
+        !validSubjectSelection(catalogue,programme,academicLevel,selected)}>
       <BookOpen size={16}/> Submit enrolment application
     </button>
    </form>
@@ -223,7 +270,9 @@ export default function PaidEnrollmentPage(){
     <p className="user-caption">{statusText[current.status]}</p>
    </div></div>
    <p className="upgrade-amount">{money(current.amount_ngn)} / month</p>
-   <p>Subjects: {current.subject_ids.map(id=>subjects.find(s=>s.id===id)?.name??'Selected subject').join(' · ')}</p>
+   <p>Programme: {programmes.find(p=>p.id===current.programme_id)?.name??'Recorded programme'}
+    · Academic level: {levelChoices(catalogue,current.programme_id??'').find(l=>l.id===current.academic_level_id)?.name??'Recorded level'}</p>
+   <p>Subjects: {current.subject_ids.map(id=>currentSubjects.find(s=>s.id===id)?.name??'Selected subject').join(' · ')}</p>
    {current.review_note&&<p>Admin note: {current.review_note}</p>}
    {current.status==='awaiting_payment'&&<div className="upgrade-bank">
     {bank?.is_active?<><h3>Verified DLI transfer instructions</h3>
@@ -246,6 +295,7 @@ export default function PaidEnrollmentPage(){
    {!requests.length&&!loading&&<p className="academic-empty">No paid-enrolment applications have been received.</p>}
    <div className="upgrade-requests">{requests.map(req=><article key={req.id}>
     <div><strong>{req.plan_code.replaceAll('_',' ')} · {money(req.amount_ngn)}</strong>
+      <small>Programme and level are recorded with this request for academic allocation.</small>
      <small>Status: {statusText[req.status]}</small>
      <small>Student ID: {req.student_id}</small>
      <small>Requested subjects: {req.subject_ids.length}</small>
