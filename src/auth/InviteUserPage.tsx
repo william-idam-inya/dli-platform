@@ -3,6 +3,7 @@ import { ClipboardCopy, LockKeyhole, ShieldCheck, UserPlus } from 'lucide-react'
 import { useAuth } from './AuthProvider';
 import { roleLabels, type DliRole } from './permissions';
 import { supabase } from '../lib/supabase';
+import { invitationEndpoint } from './invitationEndpoint';
 
 const permittedRoles: Partial<Record<DliRole, DliRole[]>> = {
   owner: ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'finance_officer', 'tutor', 'student'],
@@ -42,7 +43,7 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke<InvitationResult>(
-        'admin-create-user',
+        invitationEndpoint,
         { body: { email: email.trim().toLowerCase(), full_name: fullName.trim(), role } },
       );
       if (invokeError || !data?.invitation_url) {
