@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import paidLearningReference from '../data/paidLearningPlans.json';
-import DliTutorCompensation from './DliTutorCompensation';
+import TutorPayrollPage from './TutorPayrollPage';
 import './PaidLearningPlans.css';
 import './FinancePage.css';
 
@@ -275,7 +275,7 @@ export default function FinancePage() {
       </form>
     </section>}
 
-    <DliTutorCompensation/>
+    <TutorPayrollPage/>
 
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
@@ -307,6 +307,6 @@ export default function FinancePage() {
       DLI’s finance workspace includes document rate references, planned tutor compensation
       and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
       and credit-date verification are handled in <Link to="/classes?tab=payments"> Classes &amp; timetable · Fees</Link>.
-      No automatic debit, tutor payout or bank reconciliation is enabled.</p>
+      No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
   </div>;
 }
