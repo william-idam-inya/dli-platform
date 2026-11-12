@@ -61,6 +61,9 @@ jobs:
       - name: Verify document-backed paid learning rates remain finance-inactive
         run: npm run check:paid-learning-plans
 
+      - name: Verify frontend role and student-tier matrix (no network)
+        run: npm run check:role-matrix
+
       - name: Verify TypeScript
         run: npm run typecheck
 
