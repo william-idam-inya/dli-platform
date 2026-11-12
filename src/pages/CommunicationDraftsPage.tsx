@@ -210,8 +210,7 @@ export default function CommunicationDraftsPage() {
       <Link to="/communications/templates"> Message templates</Link>.
       Independent revision clearance is under
       <Link to="/communications/reviews"> Communications review</Link>, and planned follow-ups remain under <Link to="/communications/reminders"> Internal reminders</Link>.
-      External sending, publishing, group integration, delivery receipts,
-      automated notifications and recipient lists remain disabled.
+      Approved WhatsApp and email drafts may be handed to an external composer after independent review, with the sender choosing recipients manually. Automatic sending, delivery receipts and external group integrations are not configured.
     </p>
   </div>;
 }
