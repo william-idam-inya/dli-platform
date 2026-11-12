@@ -3,6 +3,7 @@ import { ClipboardCopy, LockKeyhole, ShieldCheck, UserPlus } from 'lucide-react'
 import { useAuth } from './AuthProvider';
 import { roleLabels, type DliRole } from './permissions';
 import { supabase } from '../lib/supabase';
+import { invitationEndpoint } from './invitationEndpoint';
 
 const permittedRoles: Partial<Record<DliRole, DliRole[]>> = {
   owner: ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'finance_officer', 'tutor', 'student'],
@@ -40,17 +41,23 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
     setResult(null);
     setCopied(false);
 
-    const { data, error: invokeError } = await supabase.functions.invoke<InvitationResult>(
-      'admin-create-user',
-      { body: { email: email.trim().toLowerCase(), full_name: fullName.trim(), role } },
-    );
-    if (invokeError || !data?.invitation_url) {
-      setError('The invitation could not be created. Check your permissions and whether this email is already registered. No invitation has been sent.');
-    } else {
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke<InvitationResult>(
+        invitationEndpoint,
+        { body: { email: email.trim().toLowerCase(), full_name: fullName.trim(), role } },
+      );
+      if (invokeError || !data?.invitation_url) {
+        setError('The invitation could not be confirmed. Check your permissions and whether this email is already registered. Ask DLI administration to review the account before retrying.');
+        return;
+      }
       setResult(data);
-      onCreated?.();
+      // A parent list refresh must never hide a valid, one-time invitation.
+      try { onCreated?.(); } catch { /* The recipient link is still valid. */ }
+    } catch {
+      setError('The invitation service did not respond. Ask DLI administration to check the account before retrying; a partially created invitation may require review.');
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
 
   const copy = async () => {
