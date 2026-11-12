@@ -912,8 +912,9 @@ when authorised. Unicode text supports different languages.
 
 Development migrations
 `20261112034550_stage_n1_direct_messaging.sql` and
-`20261112034941_stage_n1a_messaging_policy_execution_and_review_audit.sql`
-are recorded in the 56-file integrity manifest. No real
+`20261112034941_stage_n1a_messaging_policy_execution_and_review_audit.sql`,
+with the `20261112035656_stage_n1b_private_messaging_rpc_implementations.sql`
+security follow-up, are recorded in the 57-file integrity manifest. No real
 messages, users or payment changes were introduced. File
 attachments, true push notifications and fully unified
 cross-channel backend search are **not yet implemented**.
