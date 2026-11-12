@@ -44,6 +44,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Workspace',
       },
       {
+        label: 'Free Demo & enrolment',
+        path: '/enrolment',
+        icon: BookOpen,
+        description: 'Join Free Demo lessons, apply for Paid Student access or review incoming upgrade requests.',
+        group: 'Workspace',
+      },
+      {
         label: 'Feedback & support',
         path: '/feedback',
         icon: MessageSquareText,
@@ -93,6 +100,13 @@ export const navigationSections: NavigationSection[] = [
   {
     label: 'Operations',
     items: [
+      {
+        label: 'Tutor payroll',
+        path: '/payroll',
+        icon: Wallet,
+        description: 'Assignment-derived monthly compensation, due dates and verified payment records.',
+        group: 'Operations',
+      },
       {
         label: 'Finance',
         path: '/finance',
