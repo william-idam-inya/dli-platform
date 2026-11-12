@@ -52,3 +52,8 @@ background:var(--surface,#fff);color:var(--text,#252235);font:inherit;resize:ver
 .dli-class-chat button:disabled{opacity:.5;cursor:not-allowed}
 .dli-class-chat :is(button,input,textarea):focus-visible{outline:2px solid var(--purple,#6950bf);outline-offset:2px}
 @media(max-width:720px){.dli-chat-layout{grid-template-columns:1fr}.dli-thread-list{max-height:230px}.dli-thread-conversation{padding:.75rem}}
+
+.dli-report-message{margin-top:.55rem;border:0;background:transparent;color:#9f473b;cursor:pointer;
+font:inherit;font-size:.72rem;text-decoration:underline;text-underline-offset:2px;padding:.15rem}
+.dli-report-message:focus-visible{outline:2px solid #9f473b}
+.dli-approval-card>span{flex:1 1 200px;overflow-wrap:anywhere;font-size:.78rem;line-height:1.4}
