@@ -76,6 +76,9 @@ jobs:
       - name: Verify Q5 offline recovery receipt creator with synthetic files
         run: npm run check:recovery-receipt-tests
 
+      - name: Verify fresh-browser guest login remains accessible
+        run: npm run check:guest-login
+
       - name: Verify TypeScript
         run: npm run typecheck
 
