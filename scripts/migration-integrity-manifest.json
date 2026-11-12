@@ -211,6 +211,14 @@
     {
       "file": "20261112012213_stage_m1h_student_contact_permission_audit.sql",
       "gitBlobSha1": "0c265a4b1fcc2f27cb8326ee19efbcbc3e885bfe"
+    },
+    {
+      "file": "20261112012826_stage_m1i_guardian_contact_gate_and_chat_reports.sql",
+      "gitBlobSha1": "a78df5e6dff81b3706cebb03d8b78b6c28653636"
+    },
+    {
+      "file": "20261112031536_stage_l2_orphan_receipt_cleanup.sql",
+      "gitBlobSha1": "f40f33f69a47ad3f71aa55b5920e17d97f9f2032"
     }
   ]
 }
