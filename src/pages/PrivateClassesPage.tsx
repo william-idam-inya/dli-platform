@@ -3,6 +3,7 @@ import { Banknote, CalendarClock, CheckCircle2, Clock3, Download, LockKeyhole, P
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import paidLearningPlans from '../data/paidLearningPlans.json';
 import './AcademicSetupPage.css';
 import './PrivateClassesPage.css';
 
@@ -42,6 +43,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
   const [student,setStudent]=useState('');
   const [month,setMonth]=useState(new Date().toISOString().slice(0,7));
   const [amount,setAmount]=useState('35000');
+  const [planId,setPlanId]=useState('private_one_to_one');
   const [subject,setSubject]=useState('');
   const [weekday,setWeekday]=useState(1);
   const [start,setStart]=useState('16:00');
@@ -132,7 +134,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
         setError('Choose an active student, billing month and positive NGN amount.');return;
       }
       const {error:e}=await supabase!.from('private_student_fees').insert({
-        student_id:chosenStudent,billing_month:month+'-01',amount_ngn:amount,plan_label:'Private 1-to-1'});
+        student_id:chosenStudent,billing_month:month+'-01',amount_ngn:amount,plan_label:paidLearningPlans.plans.find(p=>p.id===planId)?.name??'Private 1-to-1'});
       if(e){setError(feedback(e));return;}
       setNotice('Individual fee assigned; no money was collected. The student can now see bank instructions and submit proof.');
       await refresh();
@@ -294,9 +296,18 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
 
     {isStaff&&adminStep==='fee'&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">03 · ASSIGN MONTHLY FEE</p><h2>Student's individual billing record</h2>
-        <p className="user-caption">The PDF's private plan lists ₦35,000/month, but each fee is explicitly assigned and remains unpaid until separately verified. One fee record per student per billing month.</p>
+        <p className="user-caption">Choose the approved general DLI rate for this student. Individual and group classes share this billing form. A fee is assigned, never automatically collected; one record per Student per billing month.</p>
       </div></div>
       <form className="academic-form private-form" onSubmit={assignFee}>
+        <label htmlFor="l1-plan">Approved paid-learning plan reference</label>
+        <select id="l1-plan" value={planId} onChange={e=>{
+          const next=paidLearningPlans.plans.find(p=>p.id===e.target.value);
+          if(!next)return;
+          setPlanId(next.id);setAmount(String(next.studentFeeMonthlyNgn));
+        }}>
+          {paidLearningPlans.plans.map(p=><option key={p.id} value={p.id}>{p.name} · ₦{p.studentFeeMonthlyNgn.toLocaleString('en-NG')}/month</option>)}
+        </select>
+        <p className="academic-code-hint">Other group sizes and the private plan’s two-versus-six-subject discrepancy require an explicit DLI policy decision; do not assign invented rates.</p>
         <label htmlFor="l1-month">Billing month</label><input type="month" id="l1-month" required value={month} onChange={e=>setMonth(e.target.value)}/>
         <label htmlFor="l1-amount">Assigned amount in naira (₦)</label><input id="l1-amount" inputMode="decimal" required
           value={amount} onChange={e=>setAmount(e.target.value)}/>
