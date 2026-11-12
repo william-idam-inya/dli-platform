@@ -69,32 +69,41 @@ export default function UserManagementPage() {
     if (reset) setLoading(true);
     else setLoadingMore(true);
     const nextPage = reset ? 0 : page + 1;
-    const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
-      'admin-manage-users', { body: { action: 'list', page: nextPage } },
-    );
-    if (requestError || !data || !Array.isArray(data.users)) {
-      setError('Could not load the account registry. Please retry.');
-    } else {
-      setUsers(existing => reset ? data.users :
-        [...existing, ...data.users.filter(item => !existing.some(old => old.id === item.id))]);
-      setRoles(data.allowed_roles ?? []);
-      setHasMore(Boolean(data.has_more));
-      setPage(nextPage);
+    try {
+      const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
+        'admin-manage-users', { body: { action: 'list', page: nextPage } },
+      );
+      if (requestError || !data || !Array.isArray(data.users)) {
+        setError('Could not load the account registry. Please retry.');
+      } else {
+        setUsers(existing => reset ? data.users :
+          [...existing, ...data.users.filter(item => !existing.some(old => old.id === item.id))]);
+        setRoles(data.allowed_roles ?? []);
+        setHasMore(Boolean(data.has_more));
+        setPage(nextPage);
+      }
+    } catch {
+      setError('Could not reach the account registry. Check your connection and retry.');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-    setLoading(false);
-    setLoadingMore(false);
   }, [page]);
 
   const loadAudit = useCallback(async () => {
     if (!supabase) return;
-    const { data, error: requestError } = await supabase.functions.invoke<AuditResponse>(
-      'admin-manage-users', { body: { action: 'audit' } },
-    );
-    if (requestError || !data || !Array.isArray(data.events)) {
-      setAuditError('The audit trail could not be loaded.');
-    } else {
-      setAudit(data.events);
-      setAuditError(null);
+    try {
+      const { data, error: requestError } = await supabase.functions.invoke<AuditResponse>(
+        'admin-manage-users', { body: { action: 'audit' } },
+      );
+      if (requestError || !data || !Array.isArray(data.events)) {
+        setAuditError('The audit trail could not be loaded.');
+      } else {
+        setAudit(data.events);
+        setAuditError(null);
+      }
+    } catch {
+      setAuditError('The audit service could not be reached. Retry after checking your connection.');
     }
   }, []);
 
@@ -102,20 +111,25 @@ export default function UserManagementPage() {
   useEffect(() => {
     if (!supabase) return;
     let cancelled = false;
-    (async () => {
-      const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
-        'admin-manage-users', { body: { action: 'list', page: 0 } },
-      );
-      if (cancelled) return;
-      if (requestError || !data || !Array.isArray(data.users)) {
-        setError('Could not load the account registry. Please retry.');
-      } else {
-        setUsers(data.users);
-        setRoles(data.allowed_roles ?? []);
-        setHasMore(Boolean(data.has_more));
-        setPage(0);
+    void (async () => {
+      try {
+        const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
+          'admin-manage-users', { body: { action: 'list', page: 0 } },
+        );
+        if (cancelled) return;
+        if (requestError || !data || !Array.isArray(data.users)) {
+          setError('Could not load the account registry. Please retry.');
+        } else {
+          setUsers(data.users);
+          setRoles(data.allowed_roles ?? []);
+          setHasMore(Boolean(data.has_more));
+          setPage(0);
+        }
+      } catch {
+        if (!cancelled) setError('The account registry could not be reached. Retry while signed in.');
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     })();
     void loadAudit();
     return () => { cancelled = true; };
@@ -142,19 +156,24 @@ export default function UserManagementPage() {
     setSaving(user.id);
     setError(null);
     setNotice(null);
-    const { error: requestError, data } = await supabase.functions.invoke(
-      'admin-manage-users', {
-        body: { action, user_id: user.id, ...(action === 'change_role' ? { role } : {}) },
-      },
-    );
-    if (requestError || !data?.user) {
-      setError('The account change was not saved. Your permissions or the account status may have changed.');
-    } else {
-      setNotice('Account change saved and audited. Access rules take effect on subsequent database requests.');
-      await loadUsers(true);
-      await loadAudit();
+    try {
+      const { error: requestError, data } = await supabase.functions.invoke(
+        'admin-manage-users', {
+          body: { action, user_id: user.id, ...(action === 'change_role' ? { role } : {}) },
+        },
+      );
+      if (requestError || !data?.user) {
+        setError('The account change was not confirmed. Refresh the registry before deciding whether to retry.');
+      } else {
+        setNotice('Account change saved and audited. Access rules take effect on subsequent database requests.');
+        await loadUsers(true);
+        await loadAudit();
+      }
+    } catch {
+      setError('The account operation could not be confirmed. Refresh the registry before retrying to avoid duplicate action.');
+    } finally {
+      setSaving(null);
     }
-    setSaving(null);
   }
 
   function canManage(user: UserRecord) {
