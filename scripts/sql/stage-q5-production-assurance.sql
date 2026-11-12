@@ -59,3 +59,38 @@ select n.nspname,count(*) as function_count
 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 where n.nspname in ('public','private') and p.prokind='f'
 group by n.nspname order by n.nspname;
+
+-- Stage Q6: both scoped columns must be NOT NULL; the legacy RPC must be
+-- inaccessible to all browser roles, with the new scoped RPC authenticated-only.
+select
+ (select count(*) from information_schema.columns
+  where table_schema='public' and table_name='dli_enrollment_requests'
+    and column_name in ('programme_id','academic_level_id') and is_nullable='NO')
+    as required_academic_columns,
+ exists(select 1 from pg_trigger
+  where tgrelid='public.dli_enrollment_requests'::regclass
+    and tgname='dli_enrolment_selection_guard' and tgenabled='O')
+    as scoped_enrolment_guard_enabled,
+ (select has_function_privilege('authenticated',p.oid,'EXECUTE')
+  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='public' and p.proname='dli_apply_paid'
+  limit 1) as legacy_rpc_authenticated_allowed,
+ (select has_function_privilege('authenticated',p.oid,'EXECUTE')
+  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='public' and p.proname='dli_apply_paid_v2'
+  limit 1) as scoped_rpc_authenticated_allowed;
+
+-- Compare function and trigger source digests to the accepted QA baseline,
+-- excluding Supabase managed schemas. No private user records are returned.
+select
+ (select md5(string_agg(
+    n.nspname||'.'||p.proname||':'||pg_get_function_identity_arguments(p.oid)||':'||pg_get_functiondef(p.oid),
+    E'\n' order by n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)))
+  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname in ('public','private') and p.prokind='f') as routine_digest,
+ (select md5(string_agg(
+    n.nspname||'.'||c.relname||'.'||t.tgname||':'||pg_get_triggerdef(t.oid),
+    E'\n' order by n.nspname,c.relname,t.tgname))
+  from pg_trigger t join pg_class c on c.oid=t.tgrelid
+  join pg_namespace n on n.oid=c.relnamespace
+  where not t.tgisinternal and n.nspname in('public','private')) as trigger_digest;
