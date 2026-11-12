@@ -122,13 +122,17 @@ export default function DirectMessagesPage(){
     }catch{setError('Could not create a verified conversation.');}
     finally{setBusy(false);}
   }
-  async function cleanupFile(path:string,id:string){
-    if(!supabase)return;
-    // Cleanup is permitted only for the uploader's still-unlinked file.
-    // If the message committed despite a failed browser response, RLS
-    // rejects deletion of its attached evidence.
-    await supabase.storage.from('dli-chat-files').remove([path]);
-    await supabase.from('dli_direct_files').delete().eq('id',id);
+  async function cleanupFile(path:string,id:string):Promise<boolean>{
+    if(!supabase)return false;
+    // Keep the metadata if Storage deletion fails, so a later recovery
+    // attempt can still match the object to its owner and conversation.
+    // Attached evidence is protected against either deletion by RLS.
+    try{
+      const removed=await supabase.storage.from('dli-chat-files').remove([path]);
+      if(removed.error)return false;
+      const metadata=await supabase.from('dli_direct_files').delete().eq('id',id);
+      return !metadata.error;
+    }catch{return false;}
   }
   async function send(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
@@ -154,27 +158,31 @@ export default function DirectMessagesPage(){
         if(init.error||!init.data){setError('The private attachment record was rejected. Check your role and daily file limit.');return;}
         const upload=await supabase.storage.from('dli-chat-files').upload(path,file,{contentType:file.type,upsert:false});
         if(upload.error){
-          await cleanupFile(path,fileId);
-          setError('File upload failed. No message was sent.');return;
+          const cleaned=await cleanupFile(path,fileId);
+          setError(cleaned?'File upload failed and unlinked metadata was cleaned up. No message was sent.':
+            'File upload could not be confirmed. No message was sent; contact DLI administration if the pending file remains.');return;
         }
         const ready=await supabase.from('dli_direct_files').update({is_ready:true})
           .eq('id',fileId).select('id').maybeSingle();
         if(ready.error||!ready.data){
-          await cleanupFile(path,fileId);
-          setError('The file could not be verified after upload. Refresh before trying again.');return;
+          const cleaned=await cleanupFile(path,fileId);
+          setError(cleaned?'The incomplete file upload was cleaned up. Refresh before retrying.':
+            'File readiness could not be confirmed and cleanup did not complete. Contact DLI administration before retrying.');return;
         }
       }
       const messageBody=body||'📎 '+attachment!.name;
       const payload={thread_id:current.id,body:messageBody,...(fileId?{file_id:fileId}:{})};
       const result=await supabase.from('dli_direct_messages').insert(payload).select('id').maybeSingle();
       if(result.error||!result.data){
-        if(fileId&&path)await cleanupFile(path,fileId);
-        setError('Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.');return;
+        const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
+        setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
+          'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
       setDraft('');setAttachment(null);await loadThread(current.id);
     }catch{
-      if(fileId&&path)await cleanupFile(path,fileId);
-      setError('The message request was interrupted. Refresh to confirm its status before retrying.');
+      const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
+      setError(cleaned?'The message request was interrupted. Refresh to confirm its status before retrying.':
+        'The request was interrupted, and its attachment could not be cleaned up. Refresh the thread and contact DLI administration before retrying.');
     }finally{setBusy(false);}
   }
   async function downloadFile(file:DirectFile){
