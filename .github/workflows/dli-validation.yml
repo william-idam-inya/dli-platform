@@ -73,6 +73,9 @@ jobs:
       - name: Verify Q5 production admission, edge origins and pinned release project
         run: npm run check:q5-release-safety
 
+      - name: Verify Q5 offline recovery receipt creator with synthetic files
+        run: npm run check:recovery-receipt-tests
+
       - name: Verify TypeScript
         run: npm run typecheck
 
