@@ -18,3 +18,11 @@
    learning hub owns the primary heading to avoid stacked page banners. */
 .learning-hub>section .module-page-hero{display:none}
 .learning-hub>section>.module-page{padding-top:0}
+
+.learning-hub-access{display:flex;align-items:flex-start;gap:1rem;padding:1.25rem}
+.learning-hub-access>svg{color:var(--muted);flex-shrink:0}
+.learning-hub-access h2{margin:0 0:.55rem;font-size:1.2rem}
+.learning-hub-access p{color:var(--muted);line-height:1.55}
+.learning-hub-access-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.9rem}
+.learning-hub-access-actions a{display:inline-flex;gap:.4rem;align-items:center}
+@media(max-width:510px){.learning-hub-access{flex-direction:column}}
