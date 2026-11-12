@@ -1,14 +1,22 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // No service/secret key is ever delivered to the browser or recorded in an audit log.
-// Production fails closed until DLI_APP_ORIGINS is configured with approved HTTPS origin(s).
+// The verified Cloudflare production origin is permitted ONLY when this function
+// runs inside the dedicated DLI production project. QA still requires an explicit
+// DLI_APP_ORIGINS allowlist. Every mutation additionally requires verified JWT,
+// active DLI registry identity, and role-assignment policy approval.
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
 const allowedRoles = new Set([
   'owner','admin','assistant_admin','academic_coordinator',
   'finance_officer','tutor','student',
 ]);
-const allowedOrigins = (Deno.env.get('DLI_APP_ORIGINS') || '')
+const configuredOrigins = (Deno.env.get('DLI_APP_ORIGINS') || '')
   .split(',').map((part) => part.trim()).filter(Boolean);
+const productionOrigin = Deno.env.get('SUPABASE_URL') ===
+  'https://thoinmwqxmqxrnywjuxq.supabase.co'
+  ? ['https://dli-platform-prod.pages.dev']
+  : [];
+const allowedOrigins = [...new Set([...productionOrigin, ...configuredOrigins])];
 
 function response(status: number, body: Record<string, unknown>, origin?: string) {
   return new Response(JSON.stringify(body), {
