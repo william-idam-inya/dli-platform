@@ -231,6 +231,10 @@
     {
       "file": "20261112035656_stage_n1b_private_messaging_rpc_implementations.sql",
       "gitBlobSha1": "be96a824b03ba84f6c19c404e8ac6d05ae439ceb"
+    },
+    {
+      "file": "20261112040002_stage_n2_restricted_message_attachments.sql",
+      "gitBlobSha1": "8ef7415f065e58f3437660e9702b19b1d50fdee7"
     }
   ]
 }
