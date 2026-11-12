@@ -61,6 +61,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage L1 implements personal 1-to-1 class administration:** a protected `/private-classes` page assigns each learner a monthly fee, enables manually reviewed bank-transfer proofs, and links each approved student to subjects, weekly day/time, assigned tutor and Google Meet URL. Tutor and Student views show only their permitted records. The development-only schema includes four new RLS tables and a private receipt bucket. No bank account, fee, student, payment or class record was seeded. Controlled real-role tests, payment operating policy, production infrastructure and backups remain required. See `docs/stage-l1-private-learning-workflow.md`.
 
+**Stage L2 unifies weekly class assignment:** `/classes` is the primary role-based space for individual learners **and** groups. Select one or more authorised students, then subject, weekday/time, tutor and Google Meet; a class automatically becomes individual or group according to its active membership. Fees, bank instructions and manual receipt review are in the same workspace as a tab. The academic catalogue and content/quiz modules remain distinct, while legacy duplicate scheduling routes are removed from main navigation but retained for compatibility. No public deployment or live learner account was created. See `docs/stage-l2-unified-class-workspace.md` for details, database safeguards and pending content/payment-policy integration.
+
 ## Local development
 
 Use a supported Node.js LTS release.
