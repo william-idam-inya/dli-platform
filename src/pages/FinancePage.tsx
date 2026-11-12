@@ -148,10 +148,8 @@ export default function FinancePage() {
 
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>All financial proposals remain pending — no charges are enabled</strong>
-        <p>Only the Founder, Admin and Finance Officer may view or submit proposals. No proposal
-        is an approved fee, bank instruction, invoice, receipt or compensation agreement.
-        This stage cannot approve proposals or collect or transfer funds.</p>
+      <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
+        <p>Only the Founder, Admin and Finance Officer may view or submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate <a href="/private-classes">Private 1-to-1 classes</a> area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
       </div>
     </div>
 
@@ -167,12 +165,12 @@ export default function FinancePage() {
       <div className="finance-summary-card">
         <FileText size={20}/>
         <strong>Disabled</strong>
-        <span>Invoice issuance</span>
+        <span>Automated invoices</span>
       </div>
       <div className="finance-summary-card">
         <Banknote size={20}/>
         <strong>Disabled</strong>
-        <span>Payments and payouts</span>
+        <span>Automated payments and payouts</span>
       </div>
     </div>
 
@@ -283,8 +281,7 @@ export default function FinancePage() {
         <p className="user-caption">These proposals do not authorise a charge or bank transfer. Review notes are recorded separately in <Link to="/finance/reviews">Finance review</Link>.</p>
       </div></div>
       {!loading && proposals.length === 0 && <p className="academic-empty">
-        No finance-policy proposals have been submitted yet. The institution has no
-        approved fee schedule or payment workflow configured in this stage.
+        No general finance-policy proposals have been submitted yet. Individual private-class fee assignments and manual transfer verification are managed separately.
       </p>}
       <div className="finance-proposals">
         {proposals.map(proposal => <article className="finance-proposal" key={proposal.id}>
@@ -304,8 +301,8 @@ export default function FinancePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      This module stores internal proposals only. Fee activation, invoices,
-      transfer proof, receipts, payouts and reconciliation require separately
-      approved policies and independently tested workflows.</p>
+      This Finance foundation page stores internal policy proposals only. The separate
+      Private 1-to-1 classes module handles manual transfer evidence for individual fees.
+      Automated invoices, payments, payouts and reconciliation remain unconfigured.</p>
   </div>;
 }
