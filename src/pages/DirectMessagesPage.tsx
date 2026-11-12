@@ -3,7 +3,7 @@ import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, Refr
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DliClassCommunication from './DliClassCommunication';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
@@ -26,6 +26,7 @@ const isOversight=(role?:string)=>role==='owner'||role==='admin';
 
 export default function DirectMessagesPage(){
   const {account}=useAuth();
+  const [params]=useSearchParams();
   const [uid,setUid]=useState('');
   const [contacts,setContacts]=useState<Contact[]>([]);
   const [threads,setThreads]=useState<Thread[]>([]);
@@ -37,7 +38,7 @@ export default function DirectMessagesPage(){
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
   const [mode,setMode]=useState<'inbox'|'oversight'>('inbox');
-  const [section,setSection]=useState<'direct'|'class'>('direct');
+  const [section,setSection]=useState<'direct'|'class'>(params.get('section')==='class'?'class':'direct');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
