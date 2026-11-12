@@ -234,7 +234,7 @@ export default function FeedbackPage() {
               </span>
             </div>
             <p className="feedback-message">{item.message}</p>
-          {staff&&<small className="feedback-reporter-id">Report ID: {item.id} · Reporter: {item.submitted_by}</small>
+          {staff&&<small className="feedback-reporter-id">Report ID: {item.id} · Reporter: {item.submitted_by}</small>}
             {staff&&<div className="feedback-review-actions" aria-label="Manage feedback review status">
               {(['new','reviewing','resolved'] as Status[]).filter(value=>value!==item.status)
                 .map(value=><button type="button" key={value}
