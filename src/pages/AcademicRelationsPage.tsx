@@ -230,6 +230,9 @@ export default function AcademicRelationsPage() {
       <p role="status">{loading ? 'Loading live academic relationships…' : 'Live DLI development catalogue'}</p>
       <button className="user-outline-button" type="button" disabled={loading || Boolean(busy)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
+      <Link className="user-outline-button" to="/assignments">
+        <GraduationCap size={16}/> Assign tutors &amp; enrol students
+      </Link>
     </div>
     <div className="academic-columns">
       <section className="panel academic-panel">
