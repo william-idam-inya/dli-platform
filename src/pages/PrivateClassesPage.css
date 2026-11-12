@@ -1,0 +1,62 @@
+.private-classes-page .panel { margin:0 0 1rem; }
+.private-classes-page :is(select,input):focus-visible,
+.private-classes-page button:focus-visible { outline:2px solid var(--purple,#6c4ac8);outline-offset:2px; }
+.private-student-choice>label,.private-filter {display:grid;gap:0.5rem;font-size:0.87rem;font-weight:650;}
+.private-student-choice select,.private-filter select {
+ display:block;width:100%;min-height:42px;max-width:560px;border:1px solid var(--border);
+ background:var(--surface-soft);color:var(--text);border-radius:9px;padding:0.7rem;font:inherit;
+}
+.private-classes-page .private-form {max-width:740px;margin-top:0;}
+.private-classes-page .private-checkbox {display:flex;align-items:flex-start;gap:0.6rem;line-height:1.5;font-weight:500;}
+.private-classes-page .private-checkbox input {width:18px;min-height:18px;flex-shrink:0;}
+.private-time-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+.private-time-row label {display:grid;gap:0.5rem;}
+.private-bank-card {
+ border:1px solid var(--border);border-left:4px solid var(--purple);
+ border-radius:12px;padding:1rem 1.15rem;background:var(--surface-soft);
+ margin-bottom:1.2rem;
+}
+.private-bank-card strong {font-size:1rem;}
+.private-bank-card p {margin:0.55rem 0;overflow-wrap:anywhere;}
+.private-bank-card small {color:var(--muted);line-height:1.5;}
+.private-fee-list,.private-slot-list {display:grid;gap:0.9rem;}
+.private-fee-item,.private-slot-card {
+ border:1px solid var(--border);border-radius:13px;padding:1rem;background:var(--surface-soft);
+}
+.private-fee-header {display:flex;gap:1rem;justify-content:space-between;align-items:start;flex-wrap:wrap;}
+.private-fee-header>div {display:grid;gap:0.35rem;}
+.private-fee-header small {color:var(--muted);}
+.private-fee-amount {font-size:1.3rem;font-weight:800;margin:0.8rem 0;}
+.private-pill {font-size:0.75rem;font-weight:700;padding:0.3rem 0.6rem;border-radius:100px;background:#ecedf5;color:#3a4263;}
+.private-verified {background:#e5f5ea;color:#17683d;}
+.private-rejected {background:#fff0ed;color:#9a3929;}
+.private-submitted {background:#fff4df;color:#865512;}
+.private-upload,.private-receipt {border-top:1px solid var(--border);padding-top:0.9rem;margin-top:0.9rem;display:grid;gap:0.65rem;}
+.private-upload label,.private-review label {font-size:0.83rem;font-weight:700;}
+.private-upload input {display:block;width:100%;font:inherit;font-size:0.83rem;}
+.private-upload .academic-submit {justify-self:start;}
+.private-receipt .user-outline-button {justify-self:start;}
+.private-receipt small {display:block;color:var(--muted);overflow-wrap:anywhere;}
+.private-review {display:flex;flex-wrap:wrap;gap:0.55rem;align-items:center;}
+.private-review label {width:100%;}
+.private-review input {min-height:37px;padding:0.55rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:7px;flex:1 1 180px;}
+.private-review button,.private-slot-actions button {
+ display:inline-flex;align-items:center;gap:0.35rem;padding:0.55rem 0.8rem;
+ border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-size:0.8rem;font-weight:700;cursor:pointer;
+}
+.private-classes-page button:disabled {opacity:0.55;cursor:not-allowed;}
+.private-slot-card {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.private-slot-card>div:first-child {display:grid;gap:0.45rem;}
+.private-slot-card strong {font-size:1rem;}
+.private-slot-card p {display:flex;align-items:center;gap:0.4rem;margin:0;color:var(--muted);font-size:0.82rem;line-height:1.5;flex-wrap:wrap;}
+.private-slot-actions {display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;}
+.private-slot-actions a {display:inline-flex;align-items:center;gap:0.4rem;padding:0.6rem 0.8rem;border-radius:8px;background:var(--purple);color:#fff;text-decoration:none;font-size:0.8rem;font-weight:750;}
+.private-filter {margin-bottom:1rem;}
+.private-classes-page .academic-code-hint svg {vertical-align:middle;}
+@media(max-width:680px){
+ .private-time-row {grid-template-columns:1fr;}
+ .private-fee-item,.private-slot-card {padding:0.85rem;}
+ .private-review button {flex:1 1 140px;justify-content:center;}
+ .private-slot-actions {width:100%;}
+ .private-slot-actions a {flex:1;justify-content:center;}
+}
