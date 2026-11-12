@@ -84,6 +84,8 @@ export default function AppShell({ children }: AppShellProps) {
     if (error) setLogoutError('Could not sign out. Please retry.');
   };
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [themeSyncing,setThemeSyncing]=useState(false);
+  const [themeSyncWarning,setThemeSyncWarning]=useState<string|null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     try {
       return window.localStorage.getItem('dli-theme') === 'dark';
@@ -100,6 +102,52 @@ export default function AppShell({ children }: AppShellProps) {
       // Theme still works for this session when browser storage is unavailable.
     }
   }, [darkMode]);
+
+  useEffect(()=>{
+    if(!account||!supabase)return;
+    let active=true;
+    const client=supabase;
+    async function reloadSavedPreference(){
+      try{
+        const auth=await client.auth.getUser();
+        if(!active||auth.error||!auth.data.user)return;
+        const r=await client.from('dli_member_profiles')
+          .select('preferred_theme').eq('user_id',auth.data.user.id).maybeSingle();
+        if(!active||r.error||!r.data)return;
+        const pref=r.data.preferred_theme as 'system'|'light'|'dark';
+        setDarkMode(pref==='dark'||(pref==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches));
+        setThemeSyncWarning(null);
+      }catch{
+        // Keep the local theme when preference retrieval is unavailable.
+      }
+    }
+    void reloadSavedPreference();
+    window.addEventListener('dli-profile-changed',reloadSavedPreference);
+    return()=>{
+      active=false;
+      window.removeEventListener('dli-profile-changed',reloadSavedPreference);
+    };
+  },[account?.id]);
+
+  async function changeTheme(){
+    if(themeSyncing)return;
+    const next=!darkMode;
+    setDarkMode(next);
+    if(!supabase||!account)return;
+    setThemeSyncing(true);setThemeSyncWarning(null);
+    try{
+      const auth=await supabase.auth.getUser();
+      if(auth.error||!auth.data.user)throw new Error('no verified user');
+      const result=await supabase.from('dli_member_profiles')
+        .update({preferred_theme:next?'dark':'light'})
+        .eq('user_id',auth.data.user.id)
+        .select('user_id').maybeSingle();
+      if(result.error||!result.data)
+        setThemeSyncWarning('Theme changed locally, but your cloud preference was not saved. Open My profile to finish setup or retry.');
+    }catch{
+      setThemeSyncWarning('Theme changed on this device, but could not be synced to your account. Please try again.');
+    }finally{setThemeSyncing(false);}
+  }
 
   useEffect(() => {
     setMobileOpen(false);
@@ -151,7 +199,8 @@ export default function AppShell({ children }: AppShellProps) {
             <span className="preview-label"><span className="preview-dot" /> Development access</span>
             <button
               className="icon-button theme-toggle"
-              onClick={() => setDarkMode((current) => !current)}
+              onClick={() => { void changeTheme(); }}
+              disabled={themeSyncing}
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
@@ -168,6 +217,7 @@ export default function AppShell({ children }: AppShellProps) {
 
         <div className="page-content">
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
+          {themeSyncWarning && <p role="alert" className="auth-feedback error">{themeSyncWarning}</p>}
           {children}
           <footer className="page-footer">
             <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
