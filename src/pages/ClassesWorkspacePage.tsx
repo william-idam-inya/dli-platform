@@ -9,12 +9,14 @@ import './ClassesWorkspacePage.css';
 
 type Person = { id:string;auth_user_id:string;full_name:string;role:'student'|'tutor' };
 type Topic = {id:string;name:string};
-type ClassRow = {id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer'};
+type Programme = {id:string;name:string;code:string};
+type ClassType='free_demo'|'group_5_science'|'group_10'|'private_1_to_1';
+type ClassRow = {id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer';class_type:ClassType;class_start_date:string;programme_id:string;class_group_id:string;class_group_name:string};
 type Member = {id:string;class_id:string;student_id:string;student_name:string;is_active:boolean};
-type FormData = {subject_id:string;tutor_id:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;billing_mode:'free'|'manual_transfer'};
+type FormData = {subject_id:string;tutor_id:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;class_type:ClassType;class_start_date:string;class_group_id:string;class_group_name:string};
 const WEEKDAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const STAFF=new Set(['owner','admin','academic_coordinator']);
-const EMPTY:FormData={subject_id:'',tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00',meeting_url:'',billing_mode:'manual_transfer'};
+const STAFF=new Set(['admin','assistant_admin']);
+const EMPTY:FormData={subject_id:'',tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00',meeting_url:'',class_type:'group_5_science',class_start_date:'',class_group_id:'',class_group_name:''};
 function errorMessage(e:unknown) {
   const code=(e as {code?:string}|null)?.code;
   if(code==='23505')return 'A student or tutor has a conflicting class time, or this record already exists.';
@@ -24,19 +26,21 @@ function errorMessage(e:unknown) {
 }
 function validMeet(s:string){return /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(s);}
 function kind(n:number){return n===0?'Unassigned draft':n===1?'Individual · 1 student':'Group · '+n+' students';}
-function fromRow(c:ClassRow):FormData{return {subject_id:c.subject_id,tutor_id:c.tutor_id,weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),meeting_url:c.meeting_url,billing_mode:c.billing_mode};}
+function fromRow(c:ClassRow):FormData{return {subject_id:c.subject_id,tutor_id:c.tutor_id,weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),meeting_url:c.meeting_url,class_type:c.class_type,class_start_date:c.class_start_date,class_group_id:c.class_group_id,class_group_name:c.class_group_name};}
 
 export default function ClassesWorkspacePage(){
   const {account}=useAuth();
   const [params,setParams]=useSearchParams();
   const staff=Boolean(account&&STAFF.has(account.role));
-  const paying=account?.role==='owner'||account?.role==='admin'||account?.role==='student';
+  const paying=account?.role==='owner'||account?.role==='admin'||(account?.role==='student'&&account.studentTier==='paid');
   const communicating=account?.role==='owner'||account?.role==='admin'||
-    account?.role==='student'||account?.role==='tutor';
+    (account?.role==='student'&&account.studentTier==='paid')||account?.role==='tutor';
   const tab=params.get('tab')==='payments'&&paying?'payments':
     params.get('tab')==='messages'&&communicating?'messages':'classes';
   const [people,setPeople]=useState<Person[]>([]);
   const [topics,setTopics]=useState<Topic[]>([]);
+  const [programmes,setProgrammes]=useState<Programme[]>([]);
+  const [paidStudents,setPaidStudents]=useState<string[]>([]);
   const [classes,setClasses]=useState<ClassRow[]>([]);
   const [members,setMembers]=useState<Member[]>([]);
   const [chosen,setChosen]=useState<string[]>([]);
@@ -53,16 +57,19 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,t]=await Promise.all([
-        supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode').limit(500),
+      const [c,m,p,t,pr,paid]=await Promise.all([
+        supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('subjects').select('id,name').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('programmes').select('id,name,code').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
       ]);
-      if([c,m,p,t].some(x=>x.error)){setError('Could not read the authorised teaching register. Retry secure access.');}
+      if([c,m,p,t,pr,paid].some(x=>x.error)){setError('Could not read the authorised teaching register. Retry secure access.');}
       else{
         setClasses((c.data??[]) as ClassRow[]);setMembers((m.data??[]) as Member[]);
         setPeople((p.data??[]) as Person[]);setTopics((t.data??[]) as Topic[]);
+        setProgrammes((pr.data??[]) as Programme[]);setPaidStudents((paid.data??[]).map(x=>x.student_id));
         setError(null);
       }
     }catch{setError('The class register could not be reached. Check your internet connection.');}
@@ -71,7 +78,7 @@ export default function ClassesWorkspacePage(){
   useEffect(()=>{void refresh();},[refresh]);
   const students=people.filter(p=>p.role==='student');
   const tutors=people.filter(p=>p.role==='tutor');
-  const studentOptions=students.filter(p=>p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
+  const studentOptions=students.filter(p=>(form.class_type==='free_demo'||paidStudents.includes(p.auth_user_id))&&p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
   const requested=params.get('registry')??'';
   useEffect(()=>{
     if(!requested)return;
@@ -80,6 +87,7 @@ export default function ClassesWorkspacePage(){
   },[requested,students.length]);
   const subjectId=topics.some(t=>t.id===form.subject_id)?form.subject_id:topics[0]?.id??'';
   const tutorId=tutors.some(t=>t.auth_user_id===form.tutor_id)?form.tutor_id:tutors[0]?.auth_user_id??'';
+  const programmeId=programmes.find(p=>p.code===(form.class_type==='free_demo'?'dli-scholars-club':'dli-online'))?.id??'';
   const chosenSet=useMemo(()=>new Set(chosen),[chosen]);
   const classList=classes.filter(c=>(showArchived||c.state!=='archived')&&(!tutorFilter||c.tutor_id===tutorFilter));
   function setStudent(id:string,value:boolean){setChosen(existing=>value?[...new Set([...existing,id])]:existing.filter(x=>x!==id));}
@@ -93,19 +101,26 @@ export default function ClassesWorkspacePage(){
   async function save(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(!supabase||!staff||busy)return;
-    const fields={...form,subject_id:subjectId,tutor_id:tutorId,meeting_url:form.meeting_url.trim()};
-    if(!chosen.length||!fields.subject_id||!fields.tutor_id||
+    const fields={...form,subject_id:subjectId,tutor_id:tutorId,programme_id:programmeId,
+      billing_mode:form.class_type==='free_demo'?'free' as const:'manual_transfer' as const,
+      meeting_url:form.meeting_url.trim()};
+    const payload={...fields,...(!fields.class_group_id?{class_group_id:undefined}:{})};
+    if((!chosen.length&&fields.class_type!=='free_demo')||!fields.class_start_date||!fields.programme_id||
+      (fields.class_type==='private_1_to_1'&&chosen.length!==1)||
+      (fields.class_type==='group_5_science'&&chosen.length>5)||
+      (fields.class_type==='group_10'&&chosen.length>10)||
+      !fields.subject_id||!fields.tutor_id||
       fields.starts_at>=fields.ends_at||!validMeet(fields.meeting_url)){
-      setError('Choose at least one student, subject, tutor, valid weekly time and Google Meet URL.');return;
+      setError('Choose a valid class type, programme, start date, eligible students, subject, tutor, time and Google Meet URL.');return;
     }
     setBusy(true);setError(null);setNotice(null);
     try{
       let id=editing;
       if(editing){
-        const {data,error:e}=await supabase.from('teaching_classes').update(fields).eq('id',editing).select('id').maybeSingle();
+        const {data,error:e}=await supabase.from('teaching_classes').update(payload).eq('id',editing).select('id').maybeSingle();
         if(e||!data){setError(errorMessage(e));return;}
       }else{
-        const {data,error:e}=await supabase.from('teaching_classes').insert(fields).select('id').single();
+        const {data,error:e}=await supabase.from('teaching_classes').insert(payload).select('id').single();
         if(e||!data){setError(errorMessage(e));return;}
         id=data.id;
       }
@@ -132,7 +147,7 @@ export default function ClassesWorkspacePage(){
           ' Review the saved roster before publishing.');
         await refresh();return;
       }
-      if(!editing&&fields.billing_mode==='free'){
+      if(!editing&&fields.class_type==='free_demo'){
         const result=await supabase.from('teaching_classes').update({state:'published'}).eq('id',id).select('id').maybeSingle();
         setNotice(result.error||!result.data?'Class saved as draft. Resolve any conflicts before publishing.':
           'Class published to its enrolled learners and tutor.');
