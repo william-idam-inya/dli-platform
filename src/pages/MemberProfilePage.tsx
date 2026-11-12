@@ -62,6 +62,7 @@ export default function MemberProfilePage(){
   if(clean.length<2||clean.length>160||!dob||dob>nigeriaToday()||dob<'1900-01-01'){
     setError('Enter your name and a valid date of birth.');return;
   }
+  if(!profile&&!photo){setError('A profile picture is required to complete first-time onboarding.');return;}
   setBusy(true);setError(null);setNotice(null);
   let avatarPath=profile?.avatar_path??null;
   let justUploaded:string|null=null;
@@ -70,7 +71,7 @@ export default function MemberProfilePage(){
     const types:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
     const ext=types[photo.type];
     if(!ext||photo.size<1||photo.size>2*1024*1024){
-      setError('The optional photo must be JPEG, PNG or WEBP and at most 2 MB.');return;
+      setError('The profile photo must be JPEG, PNG or WEBP and at most 2 MB.');return;
     }
     justUploaded=userId+'/'+crypto.randomUUID()+'.'+ext;
     const upload=await supabase.storage.from('dli-member-avatars').upload(justUploaded,photo,
@@ -111,13 +112,13 @@ export default function MemberProfilePage(){
   <section className="panel member-profile-main">
    <div className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
     <h2>{profile?'Your saved profile':'Complete your profile'}</h2>
-    <p className="user-caption">A profile photo is optional. Personal details are stored in the DLI cloud database, not a public Google Drive folder.</p>
+    <p className="user-caption">A profile picture is required during first-time onboarding. You can change it later. DLI cloud storage supports cross-device sign-in; Google Drive syncing requires a separate authorised connection.</p>
    </div><button type="button" className="user-outline-button" onClick={()=>void refresh()} disabled={loading||busy}><RefreshCw size={15}/> Refresh</button></div>
    <form className="member-profile-form" onSubmit={e=>void save(e)}>
     <div className="member-profile-photo">
       {picture?<img src={picture} alt="Your private profile photo"/>:<span><UserRound size={32}/></span>}
-      <div><label htmlFor="member-photo"><Camera size={16}/> Profile photo (optional)</label>
-        <input id="member-photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+      <div><label htmlFor="member-photo"><Camera size={16}/> Profile picture {profile?'(change optional)':'(required for first login)'}</label>
+        <input id="member-photo" type="file" required={!profile&&!picture} accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
           onChange={e=>setPhoto(e.target.files?.[0]??null)}/>
         <small>JPEG, PNG or WEBP, maximum 2 MB</small>
       </div>
