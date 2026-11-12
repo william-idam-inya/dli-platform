@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CheckCircle2, LockKeyhole, MessageCircle, Phone, RefreshCw, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './DliClassCommunication.css';
 
@@ -17,6 +18,8 @@ const fmt=(value:string)=>new Intl.DateTimeFormat('en-NG',{
 const validPhone=(s:string)=>/^\+[1-9][0-9]{7,14}$/.test(s);
 export default function DliClassCommunication(){
   const {account}=useAuth();
+  const [params]=useSearchParams();
+  const requestedClass=params.get('class')??'';
   const moderator=Boolean(account&&canModerate(account.role));
   const student=account?.role==='student';
   const tutor=account?.role==='tutor';
@@ -83,7 +86,7 @@ export default function DliClassCommunication(){
     }
     return output;
   },[classes,roster,uid,student,tutor]);
-  const active=threads.find(t=>t.key===selected)??threads[0]??null;
+  const active=threads.find(t=>t.key===selected)??threads.find(t=>t.class_id===requestedClass)??threads[0]??null;
   const myContact=contacts.find(c=>c.user_id===uid);
   const approved=active?contacts.some(c=>c.user_id===active.student_id&&c.student_messaging_approved):false;
   const partner=active?contacts.find(c=>c.user_id===(
