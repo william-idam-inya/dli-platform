@@ -67,6 +67,8 @@ See `docs/BUILD_STATUS.md` and the approved DLI Platform Setup & Build Manual fo
 
 **Stage N2 adds direct-message file attachments and report navigation:** Approved DLI members can attach selected document/image types up to 10 MB in their private direct chats; downloads are protected by database/Storage RLS. Founder/Admin file inspection requires a five-minute logged access ticket. Reported messages link to their original conversation. This remains development-only and does **not** enable broad file types, malware scanning, push notifications or verified live-learner onboarding. See `docs/stage-n2-secure-message-attachments.md`.
 
+**Stage P1 reduces the Academic sidebar to three workspaces:** Academic setup; Classes & timetable; Learning & results (tabs for lessons, assignments, quizzes and attendance). Approved students in the same published group class may initiate direct messages, and Feedback & support now offers class-specific reporting categories and an optional class link. Earlier routes/data remain intact. See `docs/stage-p1-academic-simplification-peer-support.md`.
+
 ## Local development
 
 Use a supported Node.js LTS release.
