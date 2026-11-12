@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Banknote, BookOpen, CalendarClock, CheckCircle2, Clock3, Download, LockKeyhole, Plus, RefreshCw, ShieldCheck, Upload, Users, Video } from 'lucide-react';
+import { Banknote, CalendarClock, CheckCircle2, Clock3, Download, LockKeyhole, Plus, RefreshCw, ShieldCheck, Upload, Users, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -49,6 +49,7 @@ export default function PrivateClassesPage(){
   const [receiptFile,setReceiptFile]=useState<File|null>(null);
   const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
   const [tutorFilter,setTutorFilter]=useState('');
+  const [adminStep,setAdminStep]=useState<'bank'|'fee'|'verify'|'schedule'|'roster'>('fee');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
@@ -92,8 +93,9 @@ export default function PrivateClassesPage(){
   const selectedFees=fees.filter(f=>!isStaff||f.student_id===chosenStudent);
   const verifiedStudents=new Set(fees.filter(f=>f.payment_status==='verified').map(f=>f.student_id));
   const assignedSlots=useMemo(()=>slots.filter(x=>x.is_active),[slots]);
-  const visibleSlots=assignedSlots.filter(s=>!isStaff||(
-    (!chosenStudent||s.student_id===chosenStudent) && (!tutorFilter||s.tutor_id===tutorFilter)));
+  const visibleSlots=assignedSlots.filter(s=>!isStaff || (tutorFilter
+    ? s.tutor_id===tutorFilter
+    : (!chosenStudent || s.student_id===chosenStudent)));
   const pending=receipts.filter(r=>r.status==='submitted');
 
   async function execute(key:string,action:()=>Promise<void>){
@@ -244,7 +246,15 @@ export default function PrivateClassesPage(){
       {!students.length&&<p className="academic-empty">No active Student accounts found. <Link to="/users">Open Users &amp; access</Link>.</p>}
     </section>}
 
-    {isStaff&&<section className="panel">
+    {isStaff&&<nav className="private-step-nav" aria-label="Private class administration steps">
+      {([
+        ['fee','1 · Assign fee'],['bank','2 · Bank details'],['verify','3 · Verify proof'],
+        ['schedule','4 · Assign subject'],['roster','5 · Tutor roster'],
+      ] as const).map(([step,label])=><button type="button" key={step}
+        className={adminStep===step?'selected':''} aria-current={adminStep===step?'step':undefined}
+        onClick={()=>setAdminStep(step)}>{label}</button>)}
+    </nav>}
+    {isStaff&&adminStep==='bank'&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">02 · BANK TRANSFER DETAILS</p><h2>Institutional account for transfers</h2>
         <p className="user-caption">The account is hidden from Students until you activate it. Confirm ownership independently before activation.</p>
       </div></div>
@@ -264,7 +274,7 @@ export default function PrivateClassesPage(){
       </form>
     </section>}
 
-    {isStaff&&<section className="panel">
+    {isStaff&&adminStep==='fee'&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">03 · ASSIGN MONTHLY FEE</p><h2>Student's individual billing record</h2>
         <p className="user-caption">The PDF's private plan lists ₦35,000/month, but each fee is explicitly assigned and remains unpaid until separately verified. One fee record per student per billing month.</p>
       </div></div>
@@ -276,7 +286,7 @@ export default function PrivateClassesPage(){
       </form>
     </section>}
 
-    {(isStaff||isStudent)&&<section className="panel">
+    {(isStudent||(isStaff&&adminStep==='verify'))&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">{isStaff?'04 · PAYMENT REVIEW':'01 · FEES & PAYMENT'}</p>
         <h2>{isStaff?'Payment status and uploaded receipts':'My assigned fees'}</h2>
         <p className="user-caption">Fees are private to each student and finance administrators. Proof is evidence for review, not bank confirmation.</p>
@@ -322,7 +332,7 @@ export default function PrivateClassesPage(){
       {isStaff&&pending.length>0&&<p className="academic-code-hint">There are {pending.length} receipt(s) awaiting review across students. Select each student above to inspect and verify their documents.</p>}
     </section>}
 
-    {isStaff&&<section className="panel">
+    {isStaff&&adminStep==='schedule'&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">05 · PRIVATE SUBJECT TIMETABLE</p>
         <h2>Assign a subject, day, time, tutor and Google Meet</h2>
         <p className="user-caption">Work in this order for each subject. Use a weekday and recurring class time in West Africa Time (UTC+1), not a date calendar. Schedule assignments require at least one manually verified fee for that student.</p>
@@ -353,14 +363,14 @@ export default function PrivateClassesPage(){
       </form>
     </section>}
 
-    <section className="panel">
+    {(!isStaff||adminStep==='roster')&&<section className="panel">
       <div className="panel-heading"><div><p className="section-kicker">{isStaff?'06 · LINKED CLASS RECORDS':'02 · PERSONAL TIMETABLE'}</p>
         <h2>{isStaff?'Individual tutor–student class register':isTutor?'Students and classes assigned to me':'My subject timetable'}</h2>
         <p className="user-caption">One record connects the student, subject, weekly time, assigned tutor and joining link. Only active assignments are shown.</p>
       </div></div>
       {isStaff&&<label htmlFor="l1-roster-filter" className="private-filter">View assignments for tutor
         <select id="l1-roster-filter" value={tutorFilter} onChange={e=>setTutorFilter(e.target.value)}>
-          <option value="">All tutors of selected student</option>
+          <option value="">Show selected Student only</option>
           {tutors.map(t=><option key={t.auth_user_id} value={t.auth_user_id}>{t.full_name}</option>)}
         </select>
       </label>}
@@ -376,7 +386,7 @@ export default function PrivateClassesPage(){
         </article>)}
       </div>
       <p className="academic-code-hint"><LockKeyhole size={13}/> Meeting links are visible only to the selected student, assigned tutor and authorised administrative staff. Do not share these links publicly.</p>
-    </section>
+    </section>}
     <p className="module-footnote"><Clock3 size={14}/> This feature is operating in the development environment. The private-plan source document has an unresolved 2-versus-6-subject description. Administrators explicitly choose each agreed subject and its schedule; no automatic fee collection is enabled.</p>
   </div>;
 }
