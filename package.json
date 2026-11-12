@@ -27,7 +27,8 @@
     "check:role-matrix": "node scripts/verify-role-matrix.mjs",
     "check:recovery-bundle-tests": "node scripts/verify-recovery-bundle.mjs --self-test",
     "check:recovery-bundle": "node scripts/verify-recovery-bundle.mjs",
-    "check:file-picker-focus": "node scripts/verify-file-picker-focus.mjs"
+    "check:file-picker-focus": "node scripts/verify-file-picker-focus.mjs",
+    "check:q5-release-safety": "node scripts/verify-q5-release-safety.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
