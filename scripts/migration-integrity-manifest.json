@@ -179,6 +179,18 @@
     {
       "file": "20261112004320_stage_l2b_safe_archive_guard.sql",
       "gitBlobSha1": "8f8a6b2a97958d2059822b491c1dd299f74cb3f2"
+    },
+    {
+      "file": "20261112005851_stage_m1a_targeted_scheduled_notices_and_class_rls_fix.sql",
+      "gitBlobSha1": "f47a9ab90a0ccd942431cf819c893691be0a34af"
+    },
+    {
+      "file": "20261112010016_stage_m1b_subject_chat_and_consent_contacts.sql",
+      "gitBlobSha1": "25fab2e42a887aba22ae8ea7e4c68b4f12f24a63"
+    },
+    {
+      "file": "20261112010210_stage_m1c_credit_date_renewals_and_tutor_forecasts.sql",
+      "gitBlobSha1": "8bca5e3c05f7a03f2925730cfa7f9ed2a938d388"
     }
   ]
 }
