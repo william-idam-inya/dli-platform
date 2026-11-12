@@ -948,6 +948,32 @@ production environment and backup/restore remain outstanding.
 
 See `docs/stage-n2-secure-message-attachments.md`.
 
+## Stage P1 — Clearer academics, class peers and categorised support (development)
+
+Academic navigation is reduced from six links to **three**:
+Academic setup, Classes & timetable, and Learning & results.
+The last page groups existing Lessons, Assignments, Quizzes and
+Attendance in one responsive set of tabs. This is a non-destructive
+UI consolidation; older feature paths and all academic data remain.
+
+The P1 migration `20261112041420_stage_p1_peer_messaging_and_class_support_categories.sql`
+extends direct-message authorisation to two active Students in
+the same published group class **only when both are safeguarding
+approved**. It also adds explicit formal Feedback categories for
+tutor absence/late arrival, class cancellation, schedules, teaching
+quality, attendance, conduct, safety, resource, Google Meet and
+payment concerns; optional class links are validated by a protected
+trigger. The existing five-reports/hour limit, private review,
+audit events, safeguarding and session checks remain in force.
+
+The migration is recorded in the 60-file reviewed manifest.
+No real messages, Student/Tutor test accounts, fees or teaching
+classes were created. Multi-user browser acceptance and formal
+guardian/complaint handling remain open; unified class programme
+linkage is still separately outstanding.
+
+See `docs/stage-p1-academic-simplification-peer-support.md`.
+
 ## Remaining roadmap
 
 Remaining Stage D academic relationships; E. LMS; F. Scheduling/attendance; G. Finance;
