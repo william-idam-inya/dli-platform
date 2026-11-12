@@ -191,6 +191,22 @@
     {
       "file": "20261112010210_stage_m1c_credit_date_renewals_and_tutor_forecasts.sql",
       "gitBlobSha1": "8bca5e3c05f7a03f2925730cfa7f9ed2a938d388"
+    },
+    {
+      "file": "20261112010357_stage_m1d_notice_receipt_and_chat_retention.sql",
+      "gitBlobSha1": "69304feeefcad155a48e45583a592774e96f5ad1"
+    },
+    {
+      "file": "20261112010922_stage_m1e_subject_chat_read_cursors.sql",
+      "gitBlobSha1": "4fff3ffc46b823a6902fdb8e7a7700f827513028"
+    },
+    {
+      "file": "20261112011544_stage_m1f_tutor_compensation_name_snapshot.sql",
+      "gitBlobSha1": "c7400d5bd31d1820dd039a16666b87c6601050f6"
+    },
+    {
+      "file": "20261112011856_stage_m1g_rls_helper_execution_grants.sql",
+      "gitBlobSha1": "b537f82bcc18a8f048f06ca2b0fa6c41453a4645"
     }
   ]
 }
