@@ -163,7 +163,7 @@ export default function PrivateClassesPage(){
       const {data,error:e}=await supabase!.storage.from('dli-payment-proofs').download(r.object_path);
       if(e||!data){setError('Could not download the authorised receipt file.');return;}
       const url=URL.createObjectURL(data);
-      const link=document.createElement('a');link.href=url;link.download='dli-payment-proof-'+r.id;
+      const link=document.createElement('a');link.href=url;link.download='dli-payment-proof-'+r.id+'.'+(r.object_path.split('.').pop()??'pdf');
       document.body.appendChild(link);link.click();link.remove();
       window.setTimeout(()=>URL.revokeObjectURL(url),30000);
     });
