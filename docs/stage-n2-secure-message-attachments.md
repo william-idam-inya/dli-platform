@@ -42,10 +42,13 @@ The `/communications` **Messages** workspace includes:
    file and the current reader to be an approved thread participant.
 
 The UI attempts private cleanup if a pending upload or associated
-message write fails. A network failure can still obscure whether a
-write committed; all error text instructs the user to refresh before
-retrying. Unreferenced objects or metadata can require staff-led
-reconciliation, so no automated purge is claimed.
+message write fails. **If Storage deletion fails, the uploader's
+matching database metadata is retained** so recovery can still
+identify the file owner and its conversation. A network failure
+can obscure whether a message write committed; the UI instructs
+the user to refresh before retrying. Unreferenced objects or
+metadata may require staff-led reconciliation, and no automated
+purge is claimed.
 
 ## Auditable moderation
 
