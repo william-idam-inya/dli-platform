@@ -3,7 +3,7 @@ import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { navigationSections } from '../data/navigation';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath, roleLabels } from '../auth/permissions';
+import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
@@ -11,7 +11,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
   const permittedSections = navigationSections.map((section) => ({
     ...section,
-    items: section.items.filter((item) => account && canAccessPath(account.role, item.path)),
+    items: section.items.filter((item) => account && canAccessPath(account.role, item.path,account.studentTier)),
   })).filter((section) => section.items.length > 0);
 
   return (
@@ -208,7 +208,7 @@ export default function AppShell({ children }: AppShellProps) {
             </button>
             <NavLink to="/profile" className="account-mini" title="My profile and settings">
               <span className="profile-placeholder">{account?.full_name?.charAt(0).toUpperCase() || 'D'}</span>
-              <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? roleLabels[account.role] : ''}</small></span>
+              <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? accountRoleLabel(account) : ''}</small></span>
             </NavLink>
             <button className="icon-button" onClick={() => { void signOut(); }}
               aria-label="Sign out" title="Sign out"><LogOut size={17} /></button>
