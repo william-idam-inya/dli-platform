@@ -279,6 +279,10 @@
     {
       "file": "20261112053814_stage_q1f_catalogue_access_and_paid_isolation.sql",
       "gitBlobSha1": "2f3ab9324cab4ff3922521eedc080ac97dfdbb90"
+    },
+    {
+      "file": "20261112062833_stage_q2_assigned_catalogue_visibility.sql",
+      "gitBlobSha1": "d00a1f8e8a330f59a8b3b298af24edb260ee6618"
     }
   ]
 }
