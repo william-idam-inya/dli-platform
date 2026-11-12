@@ -96,7 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setAccount(record as Account);
+    let studentTier:'free'|'paid'|undefined;
+    if(record.role==='student'){
+      const entitlement=await supabase.from('dli_student_entitlements')
+        .select('tier').eq('student_id',user.id).maybeSingle();
+      if(run!==verification.current)return;
+      if(entitlement.error){setAccount(null);setState('unavailable');return;}
+      studentTier=entitlement.data?.tier==='paid'?'paid':'free';
+    }
+    setAccount({...record,studentTier} as Account);
     setNotice(null);
     setState('active');
   }, []);
