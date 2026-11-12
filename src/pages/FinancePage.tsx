@@ -174,8 +174,8 @@ export default function FinancePage() {
       </div>
       <div className="finance-summary-card">
         <Banknote size={20}/>
-        <strong>Disabled</strong>
-        <span>Automated payments and payouts</span>
+        <strong>Verification required</strong>
+        <span>Transfers and tutor payment records</span>
       </div>
     </div>
 
