@@ -64,6 +64,9 @@ jobs:
       - name: Verify document-backed paid learning rates remain finance-inactive
         run: npm run check:paid-learning-plans
 
+      - name: Verify frontend password strength policy (offline)
+        run: npm run check:password-policy
+
       - name: Verify invitation activation fail-closed behavior (offline)
         run: npm run check:auth-activation
 
