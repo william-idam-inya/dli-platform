@@ -118,6 +118,11 @@ export default function ClassesWorkspacePage(){
     event.preventDefault();
     if(!supabase||!staff||busy)return;
     const url=form.meeting_url.trim();
+    const groupPeers=classes.filter(c=>Boolean(form.class_group_id)&&
+      c.class_group_id===form.class_group_id&&c.id!==editing&&c.state!=='archived');
+    if(groupPeers.some(c=>c.meeting_url!==url)){
+      setError('Sessions within one group must share the saved Google Meet link.');return;
+    }
     if((!chosen.length&&form.class_type!=='free_demo')||
       !form.class_start_date||!programmeId||!subjectId||!tutorId||
       (form.class_type==='private_1_to_1'&&chosen.length!==1)||
@@ -275,7 +280,7 @@ export default function ClassesWorkspacePage(){
           <select id="classes-type" value={form.class_type}
            onChange={e=>{setChosen([]);setForm(v=>({...v,class_type:e.target.value as ClassType,class_group_id:''}));}}>
             <option value="free_demo">Free Demo · DLI-Scholars Club</option>
-            <option value="group_5_science">Group of 5 · Science</option>
+            <option value="group_5_science">Group of 5</option>
             <option value="group_10">Group of 10 Students</option>
             <option value="private_1_to_1">Completely Private · One Student</option>
           </select>
@@ -287,10 +292,15 @@ export default function ClassesWorkspacePage(){
           <label htmlFor="classes-group">3. Group (reuse when adding subjects to the same group)</label>
           <select id="classes-group" value={form.class_group_id}
            onChange={e=>{
-            const existing=classes.find(c=>c.class_group_id===e.target.value);
+            const existing=classes.find(c=>c.class_group_id===e.target.value&&c.state!=='archived');
             setForm(v=>existing?{...v,class_group_id:existing.class_group_id,class_group_name:existing.class_group_name,
-              class_type:existing.class_type,class_start_date:existing.class_start_date}
+              class_type:existing.class_type,class_start_date:existing.class_start_date,
+              meeting_url:existing.meeting_url}
               :{...v,class_group_id:''});
+            // Each subject has its own tutor and time; subjects within the
+            // same group reuse one meeting link and the approved student roster.
+            if(existing)setChosen(members.filter(m=>m.class_id===existing.id&&m.is_active).map(m=>m.student_id));
+            else setChosen([]);
            }}>
            <option value="">New class/group</option>
            {Array.from(new Map(classes.filter(c=>c.state!=='archived')
@@ -342,8 +352,10 @@ export default function ClassesWorkspacePage(){
           {!tutors.length&&<p className="academic-code-hint">Authorise tutors through {mayOpenUsers?<Link to="/users">Users &amp; access</Link>:<strong>Founder/Admin accounts</strong>}.</p>}
           <label htmlFor="classes-meet">8. Google Meet link</label>
           <input id="classes-meet" type="url" required maxLength={2048} value={form.meeting_url}
+            readOnly={Boolean(form.class_group_id&&classes.some(c=>
+              c.class_group_id===form.class_group_id&&c.id!==editing&&c.state!=='archived'))}
             placeholder="https://meet.google.com/abc-defg-hij" onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
-          <p className="academic-code-hint">Class type determines the learning programme, fee requirement and payroll tier. Add other subjects to the same Group to share the group identity.</p>
+          <p className="academic-code-hint">Class type determines the programme, fee requirement and payroll tier. Add other subjects to the same group, each with its own tutor and weekly time, while reusing the group's Google Meet link.</p>
           <p className="academic-code-hint">Paid classes are saved as drafts until the students' transfers are manually verified. No receipt automatically marks payment as received.</p>
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit" disabled={busy||loading||(!chosen.length&&form.class_type!=='free_demo')||!subjectId||!tutorId||!form.class_start_date||!programmeId}>
