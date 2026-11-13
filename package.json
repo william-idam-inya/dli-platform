@@ -31,7 +31,8 @@
     "check:q5-release-safety": "node scripts/verify-q5-release-safety.mjs",
     "check:recovery-receipt-tests": "node scripts/create-recovery-manifest.mjs --self-test",
     "prepare:recovery-receipt": "node scripts/create-recovery-manifest.mjs",
-    "check:guest-login": "node scripts/verify-guest-login.mjs"
+    "check:guest-login": "node scripts/verify-guest-login.mjs",
+    "check:deployment-identity": "node --experimental-strip-types scripts/verify-deployment-identity.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

@@ -3,6 +3,7 @@ import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
+import { deploymentIdentity } from '../lib/deploymentIdentity';
 
 function AuthLayout({ title, intro, children }: {
   title: string; intro: string; children: ReactNode;
@@ -11,7 +12,11 @@ function AuthLayout({ title, intro, children }: {
     <main className="auth-frame">
       <div className="auth-panel">
         <div className="auth-mark">DLI</div>
-        <p className="auth-eyebrow">DETAILED LEARNING INSTITUTE</p>
+        <p className="auth-eyebrow">
+          DETAILED LEARNING INSTITUTE · {deploymentIdentity.kind==='qa'
+            ? 'QA TESTING' : deploymentIdentity.kind==='production'
+              ? 'PRODUCTION' : 'UNVERIFIED ENVIRONMENT'}
+        </p>
         <h1>{title}</h1>
         <p className="auth-intro">{intro}</p>
         {children}
@@ -50,6 +55,13 @@ export function AuthTemporarilyUnavailable() {
 }
 
 export function MissingConfiguration() {
+  if (deploymentIdentity.mismatch) return <AuthLayout
+    title="Deployment configuration mismatch"
+    intro="This Cloudflare address is connected to the wrong DLI environment. Secure sign-in is blocked until DLI administration corrects the deployment.">
+    <p role="alert" className="auth-feedback error">
+      Changing your account password will not correct a database mismatch.
+    </p>
+  </AuthLayout>;
   return <AuthLayout title="Setup required" intro="This deployment does not yet have the public Supabase connection settings.">
     <Feedback error message="Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to a local .env.local file, then restart Vite. Never add a service-role or secret key." />
   </AuthLayout>;
@@ -94,6 +106,16 @@ export function LoginPage() {
     </form>
     <div className="auth-links"><Link to="/forgot-password">Forgot your password?</Link></div>
     <p className="auth-helper">There is no public registration. Contact DLI administration to request access.</p>
+    {deploymentIdentity.kind==='qa'&&<p className="auth-helper">
+      <strong>QA testing:</strong> This site uses a separate account directory and password
+      from production. If your production password does not work here,
+      select <Link to="/forgot-password">Forgot your password?</Link> to
+      recover this QA account. Resetting it will not change your production password.
+    </p>}
+    {deploymentIdentity.kind==='production'&&<p className="auth-helper">
+      <strong>Production:</strong> Testing-site passwords and sessions are separate.
+      Use only the credentials established for this production workspace.
+    </p>}
   </AuthLayout>;
 }
 
