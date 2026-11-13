@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, BookOpen, CalendarClock, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarClock, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
 import OfficialDliLogo from '../components/OfficialDliLogo';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
