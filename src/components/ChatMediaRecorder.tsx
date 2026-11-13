@@ -37,13 +37,16 @@ export default function ChatMediaRecorder({
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=null;}
     setPreview(null);
   };
-  useEffect(()=>()=> {
+  useEffect(()=>{
+    mounted.current=true;
+    return ()=>{
     mounted.current=false;
     cancelled.current=true;
     const recording=recorderRef.current;
     if(recording&&recording.state!=='inactive')recording.stop();
     stopTracks();
     if(urlRef.current)URL.revokeObjectURL(urlRef.current);
+    };
   },[]);
 
   const start=async(next:Kind)=>{
