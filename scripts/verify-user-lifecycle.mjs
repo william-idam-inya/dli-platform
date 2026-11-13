@@ -53,6 +53,8 @@ for(const token of [
 ]) assert.ok(edge.includes(token),'Missing edge safeguard '+token);
 assert.doesNotMatch(edge,/Access-Control-Allow-Origin': '\*'/);
 const ui=read('src/pages/UserManagementPage.tsx');
+const dialog=read('src/components/UserActionDialog.tsx');
+const ux=ui+'\n'+dialog;
 for(const token of [
   'availableLifecycleActions({',
   "const [view, setView] = useState<'current'|'archived'>('current')",
@@ -60,13 +62,13 @@ for(const token of [
   'Remove from register',
   'Restore access',
   'Restore record to register',
-  'Type the account email to confirm',
-  'The decision and reason will be recorded in the audit trail.',
-  'The record returns to the revoked register. This will not restore sign-in access.',
-  'The record will disappear from the current register',
+  'Enter the account email to confirm',
+  'The reason is retained in the audit trail.',
+  'This returns the entry to the revoked register. Access stays revoked until separately restored.',
+  'This hides a revoked entry from the current register',
   'Recent account history',
   "action: 'list', page: nextPage, view, status:filter",
-]) assert.ok(ui.includes(token),'Missing UX safety '+token);
+]) assert.ok(ux.includes(token),'Missing UX safety '+token);
 const css=read('src/styles.css');
 assert.match(css,/\.user-lifecycle-review/);
 assert.match(css,/\.user-view-tabs/);
