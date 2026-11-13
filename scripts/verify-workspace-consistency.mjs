@@ -34,11 +34,12 @@ for(const role of DLI_ROLES){
   assert.ok(allowed.includes('/'),'Overview is required: '+role);
   assert.ok(allowed.includes('/profile'),'Profile is required: '+role);
   assert.ok(allowed.includes('/announcements'),'Announcements are required: '+role);
+  assert.ok(allowed.includes('/communications'),'Messaging is required for every role and student tier: '+role+'/'+tier);
   if(role==='student'){
     assert.ok(allowed.includes('/study'),'All students see the learning workspace.');
     assert.ok(allowed.includes('/classes'),'All students see their class workspace.');
     if(tier==='free'){
-      for(const protectedPath of ['/quizzes','/learning','/assessments','/attendance','/communications']){
+      for(const protectedPath of ['/quizzes','/learning','/assessments','/attendance']){
         assert.equal(canAccessPath(role,protectedPath,tier),false,
           'Free Student must never directly open protected '+protectedPath);
       }
