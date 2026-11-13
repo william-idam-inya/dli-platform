@@ -40,7 +40,8 @@
     "check:class-offering-link": "node scripts/verify-class-offering-link.mjs",
     "check:recovery-rate-limit": "node --experimental-strip-types scripts/verify-recovery-rate-limit.mjs",
     "check:password-visibility": "node scripts/verify-password-visibility.mjs",
-    "check:mobile-academic-acceptance": "node scripts/verify-mobile-academic-acceptance.mjs"
+    "check:mobile-academic-acceptance": "node scripts/verify-mobile-academic-acceptance.mjs",
+    "check:login-autofill": "node scripts/verify-login-autofill.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

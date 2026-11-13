@@ -88,6 +88,9 @@ jobs:
       - name: Verify accessible show/hide controls on all password forms
         run: npm run check:password-visibility
 
+      - name: Verify Chrome credential manager autofill uses browser-submitted values
+        run: npm run check:login-autofill
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
