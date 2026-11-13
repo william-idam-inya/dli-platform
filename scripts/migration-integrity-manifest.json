@@ -315,6 +315,10 @@
     {
       "file": "20261113140333_stage_q10a_linked_class_roster_reconcile.sql",
       "gitBlobSha1": "8c7810a2579e519fea3df3e3100b0e5df97d181f"
+    },
+    {
+      "file": "20261113201934_stage_q12_null_safe_paid_class_rpc_guards.sql",
+      "gitBlobSha1": "11bada3147a735531656fdd1efd50080c412181f"
     }
   ]
 }
