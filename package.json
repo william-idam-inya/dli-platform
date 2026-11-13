@@ -42,7 +42,8 @@
     "check:password-visibility": "node scripts/verify-password-visibility.mjs",
     "check:mobile-academic-acceptance": "node scripts/verify-mobile-academic-acceptance.mjs",
     "check:login-autofill": "node scripts/verify-login-autofill.mjs",
-    "check:qa-user-registry": "node scripts/verify-qa-user-registry.mjs"
+    "check:qa-user-registry": "node scripts/verify-qa-user-registry.mjs",
+    "check:user-lifecycle": "node --experimental-strip-types scripts/verify-user-lifecycle.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

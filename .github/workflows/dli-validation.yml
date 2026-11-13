@@ -95,6 +95,9 @@ jobs:
       - name: Verify QA user-registry CORS and honest error display (offline)
         run: npm run check:qa-user-registry
 
+      - name: Verify reversible user lifecycle and audited deletion alternative
+        run: npm run check:user-lifecycle
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
