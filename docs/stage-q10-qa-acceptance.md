@@ -21,6 +21,9 @@ Supabase: **development only**, `pbepbcdkrdqnepvcwtyw`.
 - [ ] Admin creates a paid teaching class with identical programme, subject, Tutor and student roster.
 - [ ] An Admin selects **Verify and connect**; the association appears in the class details.
 - [ ] Attempting to link a second class to the same offering fails; changing a linked class's subject/tutor fails.
+- [ ] Admin changes a linked class's roster, explicitly confirms **Reconcile approved academic roster**, and sees the correct activated/revoked counts.
+- [ ] Repeated reconciliation is idempotent (no duplicate enrolment, no additional activation).
+- [ ] A Free Student in a paid draft class causes reconciliation to reject without creating any offering membership.
 
 ## Required negative cases before merging
 
@@ -35,7 +38,7 @@ Supabase: **development only**, `pbepbcdkrdqnepvcwtyw`.
 
 ## Remaining architecture task
 
-The link is intentionally immutable and does **not** synchronise future additions/removals to both registries. This prevents accidental entitlement grants. A separate transactional membership-change workflow and its RLS regression tests remain necessary before closing issue #36. Do not describe the linkage alone as a complete end-to-end student enrolment system.
+The association is intentionally immutable. The Q10A Admin RPC synchronises future student activations and revocations **only on explicit confirmation**, using a single database transaction and never granting a paid entitlement. Authenticated RLS negative tests and end-to-end teaching-class lifecycle tests are still required before closing issue #36; do not treat an offline source test as proof of working real-account onboarding.
 
 ## QA evidence
 
