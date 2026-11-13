@@ -52,7 +52,7 @@ export default function RoleProfileFields(){
      .eq('user_id',draft.user_id).maybeSingle();
    if(verified.error||!verified.data||verified.data.city!==payload.city)
      throw new Error('Profile was saved, but confirmation failed. Refresh before trying again.');
-   setProfile({...draft,...payload});setNotice('Your '+profileRoleLabel(account.role).toLowerCase()+' has been saved and verified.');
+   setProfile({...draft,...payload});setNotice('Your '+profileRoleLabel(account?.role??'').toLowerCase()+' has been saved and verified.');
   }catch(cause){setError(cause instanceof Error?cause.message:'Could not save your profile.');}
   finally{setSaving(false);}
  }
