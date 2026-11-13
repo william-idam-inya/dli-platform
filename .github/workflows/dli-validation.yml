@@ -82,6 +82,9 @@ jobs:
       - name: Verify signed-out login and fail-closed Auth behavior
         run: npm run check:auth-guest-recovery
 
+      - name: Verify Supabase recovery rate-limit handling and UI feedback (offline)
+        run: npm run check:recovery-rate-limit
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
