@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const ui=read('src/pages/ClassesWorkspacePage.tsx');
 const css=read('src/pages/ClassesWorkspacePage.css');
-const sql=read('supabase/migrations/20261113212500_stage_q13_unified_multisubject_teaching_groups.sql');
+const sql=read('supabase/migrations/20261113203621_stage_q13_unified_multisubject_teaching_groups.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 
 for(const str of [
@@ -53,7 +53,7 @@ assert.doesNotMatch(sql,/SECURITY DEFINER[\s\S]{0,150}FUNCTION public\.dli_save_
 assert.doesNotMatch(sql,/INSERT INTO\s+auth\.users|DROP\s+TABLE|TRUNCATE\s+TABLE/i);
 assert.doesNotMatch(sql,/SET\s+is_enabled\s*=\s*true/i);
 
-const f='20261113212500_stage_q13_unified_multisubject_teaching_groups.sql';
+const f='20261113203621_stage_q13_unified_multisubject_teaching_groups.sql';
 assert.ok(manifest.entries.some(row=>row.file===f&&/^[a-f0-9]{40}$/.test(row.gitBlobSha1)),
   'Review and hash-pin the new migration');
 console.log('Q13 multi-subject class tier, tutor, time, link, roster and security guards passed.');
