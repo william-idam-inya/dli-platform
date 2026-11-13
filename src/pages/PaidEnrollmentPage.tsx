@@ -3,6 +3,7 @@ import { BookOpen, CheckCircle2, Download, RefreshCw, ShieldCheck, Upload, Walle
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import { profileMissing, type RoleProfile } from '../lib/roleProfiles';
 import { programmeChoices, levelChoices, subjectChoices, validSubjectSelection, type EnrolmentCatalogueRow } from '../lib/enrolmentCatalogue';
 import './PaidEnrollmentPage.css';
 
@@ -44,6 +45,7 @@ export default function PaidEnrollmentPage(){
  const [bank,setBank]=useState<Bank|null>(null);
  const [demos,setDemos]=useState<Demo[]>([]);
  const [applicationsOpen,setApplicationsOpen]=useState<boolean|null>(null);
+ const [studentProfileReady,setStudentProfileReady]=useState<boolean|null>(null);
  const [file,setFile]=useState<File|null>(null);
  const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
  const [bankRefs,setBankRefs]=useState<Record<string,string>>({});
@@ -93,6 +95,16 @@ export default function PaidEnrollmentPage(){
    setBank((b.data??null) as Bank|null);
    setDemos((d.data??[]) as Demo[]);
    setApplicationsOpen(Boolean(control.data.is_enabled));
+   if(isStudent){
+     const auth=await supabase.auth.getUser();
+     if(auth.error||!auth.data.user){setStudentProfileReady(null);}
+     else{
+       const result=await supabase.from('dli_role_profiles').select('*')
+        .eq('user_id',auth.data.user.id).maybeSingle();
+       setStudentProfileReady(result.error?null:Boolean(result.data&&
+         profileMissing(result.data as RoleProfile,'student').length===0));
+     }
+   }
    setError(null);
   }catch{setError('The enrolment service is temporarily unreachable.');}
   finally{setLoading(false);}
@@ -106,6 +118,7 @@ export default function PaidEnrollmentPage(){
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(!supabase||busy||!isStudent||account?.studentTier==='paid'||applicationsOpen!==true)return;
+  if(studentProfileReady!==true){setError('Complete your school, class and location in My profile before applying.');return;}
   if(!programme||!level||!validSubjectSelection(catalogue,programme,level,selected)){
     setError('Choose a valid programme, academic level and 1–6 matching subjects.');return;
   }
@@ -222,6 +235,9 @@ export default function PaidEnrollmentPage(){
     <p className="user-caption">Select your arrangement and specific subjects. Plan prices come from DLI Paid Learning Plans; extra/changed allocations require Admin review.</p>
    </div></div>
    <form className="upgrade-form" onSubmit={e=>void submit(e)}>
+    {studentProfileReady!==true&&<p className="auth-feedback error" role="status">
+       Complete your school, class and city-level location in <Link to="/profile">My profile</Link> before applying.
+     </p>}
     {applicationsOpen!==true&&<p className="auth-feedback error" role="status">
       {applicationsOpen===false
        ?'New paid enrolment applications are temporarily paused by DLI administration. Current requests are unaffected.'
@@ -252,7 +268,7 @@ export default function PaidEnrollmentPage(){
     {!catalogue.length&&!loading&&<p className="academic-empty" role="status">No available academic courses. DLI administration must configure active Programme → Academic Level → Subjects and corresponding courses under Academic Setup.</p>}
     {Boolean(programme&&level&&!eligibleSubjects.length)&&<p className="academic-empty">No active subjects are configured for this academic level.</p>}
     {plan==='private_1_to_1'&&<p className="academic-code-hint">The private tuition document specifies a standard two-subject tutor allocation but also mentions six subjects. DLI must confirm any additional subjects before scheduling or compensation.</p>}
-    <button className="academic-submit" type="submit" disabled={busy||loading||applicationsOpen!==true||!programme||!level||!selected.length}>
+    <button className="academic-submit" type="submit" disabled={busy||loading||studentProfileReady!==true||applicationsOpen!==true||!programme||!level||!selected.length}>
       <BookOpen size={16}/> Submit enrolment application
     </button>
    </form>

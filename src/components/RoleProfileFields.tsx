@@ -11,6 +11,7 @@ export default function RoleProfileFields(){
  const [profile,setProfile]=useState<RoleProfile|null>(null);
  const [draft,setDraft]=useState<RoleProfile|null>(null);
  const [saving,setSaving]=useState(false),[loading,setLoading]=useState(true);
+ const [subjectsText,setSubjectsText]=useState('');
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
   if(!supabase||!account)return;
@@ -23,13 +24,15 @@ export default function RoleProfileFields(){
    if(result.error)throw new Error('Your extended profile could not be loaded securely.');
    const row=(result.data as RoleProfile|null)??emptyRoleProfile(id);
    setProfile(result.data?row:null);setDraft(row);
+   setSubjectsText(row.specializations.join(', '));
   }catch(e){setError(e instanceof Error?e.message:'Profile service is unavailable.');}
   finally{setLoading(false);}
  },[account?.id]);
  useEffect(()=>{void load();},[load]);
  if(!account)return null;
  const set=(field:keyof RoleProfile,value:string|number|null)=>setDraft(current=>current?{...current,[field]:value}:current);
- const missing=draft?profileMissing(draft,account.role):[];
+ const subjectsSelected=[...new Set(subjectsText.split(',').map(s=>s.trim()).filter(Boolean))].slice(0,12);
+ const missing=draft?profileMissing({...draft,specializations:subjectsSelected},account.role):[];
  async function save(e:FormEvent<HTMLFormElement>){
   e.preventDefault();if(!supabase||!draft||saving||loading)return;
   if(missing.length){setError('Complete these profile fields first: '+missing.join(', ')+'.');return;}
@@ -39,7 +42,7 @@ export default function RoleProfileFields(){
     school_name:draft.school_name.trim(),school_class:draft.school_class.trim(),
     academic_interest:draft.academic_interest.trim(),country:draft.country.trim(),
     state_name:draft.state_name.trim(),city:draft.city.trim(),
-    qualification:draft.qualification.trim(),specializations:draft.specializations,
+    qualification:draft.qualification.trim(),specializations:subjectsSelected,
     experience_years:draft.experience_years,
     institution:draft.institution.trim(),professional_title:draft.professional_title.trim(),
     department:draft.department.trim(),role_responsibilities:draft.role_responsibilities.trim(),
@@ -81,8 +84,8 @@ export default function RoleProfileFields(){
     <label htmlFor="dli-tutor-qualification">Highest qualification / certification *</label>
     <input id="dli-tutor-qualification" maxLength={180} required value={draft.qualification} onChange={e=>set('qualification',e.target.value)} placeholder="e.g., B.Sc. Mathematics"/>
     <label htmlFor="dli-tutor-specializations">Subjects taught (separate with commas) *</label>
-    <input id="dli-tutor-specializations" required maxLength={500} value={draft.specializations.join(', ')}
-     onChange={e=>setDraft(v=>v?{...v,specializations:[...new Set(e.target.value.split(',').map(s=>s.trim()).filter(Boolean))].slice(0,12)}:v)}
+    <input id="dli-tutor-specializations" required maxLength={500} value={subjectsText}
+     onChange={e=>setSubjectsText(e.target.value)}
      placeholder="Mathematics, Physics"/>
     <label htmlFor="dli-tutor-experience">Years of teaching experience *</label>
     <input id="dli-tutor-experience" type="number" required min={0} max={65}
