@@ -3,6 +3,7 @@ import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
+import { PasswordInput } from './PasswordInput';
 import { isPasswordPolicyRejection, passwordPolicyError, passwordRequirementText } from './passwordPolicy';
 
 function AuthLayout({ title, intro, children }: {
@@ -87,8 +88,8 @@ export function LoginPage() {
       <input id="login-email" type="email" required autoComplete="username"
         value={email} onChange={event => setEmail(event.target.value)} />
       <label htmlFor="login-password">Password</label>
-      <input id="login-password" type="password" required autoComplete="current-password"
-        value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="login-password" label="password" autoComplete="current-password"
+        value={password} onChange={setPassword} />
       <button className="auth-submit" type="submit" disabled={pending}>
         <LockKeyhole size={16} /> {pending ? 'Signing in…' : 'Sign in'}
       </button>
@@ -206,11 +207,11 @@ export function SetPasswordPage() {
       <Feedback error message={error} />
       <label htmlFor="set-password">New password</label>
       <p className="auth-helper">{passwordRequirementText}</p>
-      <input id="set-password" type="password" required minLength={12}
-        autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="set-password" label="new password" minLength={12}
+        autoComplete="new-password" value={password} onChange={setPassword} />
       <label htmlFor="set-password-again">Confirm new password</label>
-      <input id="set-password-again" type="password" required minLength={12}
-        autoComplete="new-password" value={repeat} onChange={event => setRepeat(event.target.value)} />
+      <PasswordInput id="set-password-again" label="confirmed password" minLength={12}
+        autoComplete="new-password" value={repeat} onChange={setRepeat} />
       <button className="auth-submit" type="submit" disabled={pending}>
         <KeyRound size={16} /> {pending ? 'Saving…' : 'Set password'}
       </button>
@@ -258,15 +259,15 @@ export function ChangePasswordPage() {
       <Feedback error message={error} />
       <Feedback message={message} />
       <label htmlFor="current-password">Current password</label>
-      <input id="current-password" type="password" required autoComplete="current-password"
-        value={current} onChange={event => setCurrent(event.target.value)} />
+      <PasswordInput id="current-password" label="current password" autoComplete="current-password"
+        value={current} onChange={setCurrent} />
       <label htmlFor="change-password">New password</label>
       <p className="auth-helper">{passwordRequirementText}</p>
-      <input id="change-password" type="password" required minLength={12} autoComplete="new-password"
-        value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="change-password" label="new password" minLength={12}
+        autoComplete="new-password" value={password} onChange={setPassword} />
       <label htmlFor="change-repeat">Confirm new password</label>
-      <input id="change-repeat" type="password" required minLength={12} autoComplete="new-password"
-        value={repeat} onChange={event => setRepeat(event.target.value)} />
+      <PasswordInput id="change-repeat" label="confirmed password" minLength={12}
+        autoComplete="new-password" value={repeat} onChange={setRepeat} />
       <button type="submit" className="auth-submit" disabled={pending}>{pending ? 'Updating…' : 'Update password'}</button>
     </form>
   </div>;
