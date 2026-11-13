@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { availableLifecycleActions, type LifecycleAction } from '../lib/userLifecycle';
 
 type UserStatus = 'pending' | 'active' | 'suspended' | 'revoked';
 type UserRecord = {
@@ -37,7 +38,6 @@ type AuditEvent = {
   created_at: string;
 };
 type AuditResponse = { events: AuditEvent[] };
-type LifecycleAction = 'restore_revoked' | 'archive' | 'unarchive';
 type AccountAction = 'change_role' | 'suspend' | 'reactivate' | 'revoke' | LifecycleAction;
 const lifecycleLabels: Record<LifecycleAction,string> = {
   restore_revoked:'Restore access',archive:'Remove from register',unarchive:'Restore record to register',
@@ -297,6 +297,10 @@ export default function UserManagementPage() {
           <div className="user-list">
             {visible.map(user => {
               const permitted = Boolean(canManage(user));
+              const lifecycleAllowed = account ? availableLifecycleActions({
+                actorRole:account.role,status:user.status,archivedAt:user.archived_at,
+                isSelf:user.id===account.id,canManageRole:roles.includes(user.role),
+              }) : [];
               const chosenRole = selectedRoles[user.id] ?? user.role;
               return <article className="user-item" key={user.id}>
                 <div className="user-item-top">
@@ -348,8 +352,7 @@ export default function UserManagementPage() {
                         <ShieldAlert size={15}/> Revoke
                       </button>
                     )}
-                    {!user.archived_at && user.status==='revoked' &&
-                      (account?.role==='owner'||account?.role==='admin') && <>
+                    {lifecycleAllowed.includes('restore_revoked') && <>
                         <button className="user-outline-button" type="button" disabled={Boolean(saving)}
                           onClick={()=>requestLifecycle(user,'restore_revoked')}>
                           <CheckCircle2 size={15}/> Restore access</button>
@@ -357,8 +360,7 @@ export default function UserManagementPage() {
                           onClick={()=>requestLifecycle(user,'archive')}>
                           <ShieldAlert size={15}/> Remove from register</button>
                       </>}
-                    {Boolean(user.archived_at) &&
-                      (account?.role==='owner'||account?.role==='admin') &&
+                    {lifecycleAllowed.includes('unarchive') &&
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
                         onClick={()=>requestLifecycle(user,'unarchive')}>
                         <RefreshCw size={15}/> Restore record</button>}
