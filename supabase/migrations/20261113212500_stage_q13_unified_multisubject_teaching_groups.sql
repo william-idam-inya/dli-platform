@@ -137,8 +137,8 @@ BEGIN
   IF jsonb_array_length(p_lessons) NOT BETWEEN 1 AND 15 THEN
     RAISE EXCEPTION 'Select between one and fifteen subjects' USING errcode='23514';
   END IF;
-  SELECT count(distinct student_id) INTO v_count
-  FROM unnest(p_students) AS student_id;
+  SELECT count(distinct v.student_id) INTO v_count
+  FROM unnest(p_students) AS v(student_id);
   IF v_count<>cardinality(p_students)
      OR (p_class_type='private_1_to_1' AND v_count>1)
      OR (p_class_type='group_5_science' AND v_count>5)
@@ -160,8 +160,8 @@ BEGIN
       WHERE a.auth_user_id=ANY(p_students) AND a.role='student'::public.dli_role
         AND a.status='active'::public.dli_account_status)<>v_count
     OR (p_class_type<>'free_demo' AND EXISTS(
-      SELECT 1 FROM unnest(p_students) AS student
-      WHERE NOT private.dli_is_paid(student)
+      SELECT 1 FROM unnest(p_students) AS v(student_id)
+      WHERE NOT private.dli_is_paid(v.student_id)
     ))
   THEN RAISE EXCEPTION 'Only active, eligible students may join this class'
     USING errcode='23514'; END IF;
