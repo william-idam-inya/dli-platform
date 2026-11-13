@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
+import OfficialDliLogo from '../components/OfficialDliLogo';
 
 function AuthLayout({ title, intro, children }: {
   title: string; intro: string; children: ReactNode;
@@ -11,7 +12,7 @@ function AuthLayout({ title, intro, children }: {
   return (
     <main className="auth-frame">
       <div className="auth-panel">
-        <div className="auth-mark">DLI</div>
+        <div className="auth-mark"><OfficialDliLogo /></div>
         <p className="auth-eyebrow">
           DETAILED LEARNING INSTITUTE · {deploymentIdentity.kind==='qa'
             ? 'QA TESTING' : deploymentIdentity.kind==='production'

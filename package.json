@@ -33,7 +33,8 @@
     "prepare:recovery-receipt": "node scripts/create-recovery-manifest.mjs",
     "check:guest-login": "node scripts/verify-guest-login.mjs",
     "check:deployment-identity": "node --experimental-strip-types scripts/verify-deployment-identity.mjs",
-    "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs"
+    "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs",
+    "check:official-branding": "node scripts/verify-official-branding.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
