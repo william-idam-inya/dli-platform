@@ -4,6 +4,7 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase';
 import { isFilePickerFocused } from './filePickerFocus';
+import { classifyAuthVerificationError } from './authVerificationError';
 import { isDliRole, type Account } from './permissions';
 
 export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
@@ -43,7 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (authError) {
         setAccount(null);
-        setState('unavailable');
+        // getUser() reports AuthSessionMissingError for signed-out visitors.
+        // This is NOT a registry outage: show the sign-in page instead.
+        setState(classifyAuthVerificationError(authError));
         return;
       }
       user = authData.user;
@@ -52,10 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState('guest');
         return;
       }
-    } catch {
+    } catch (error) {
       if (run !== verification.current) return;
       setAccount(null);
-      setState('unavailable');
+      setState(classifyAuthVerificationError(error));
       return;
     }
 
