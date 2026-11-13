@@ -34,7 +34,8 @@
     "check:guest-login": "node scripts/verify-guest-login.mjs",
     "check:deployment-identity": "node --experimental-strip-types scripts/verify-deployment-identity.mjs",
     "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs",
-    "check:official-branding": "node scripts/verify-official-branding.mjs"
+    "check:official-branding": "node scripts/verify-official-branding.mjs",
+    "check:q15-production-ui": "node scripts/verify-q15-production-ui.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
