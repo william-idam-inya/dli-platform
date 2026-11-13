@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, CalendarClock, GraduationCap, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import OfficialDliLogo from '../components/OfficialDliLogo';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
@@ -102,7 +103,7 @@ export default function DashboardPage(){
         </p>
       </div>
       <div className="welcome-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/>
-        <div className="art-cap"><GraduationCap size={52} strokeWidth={1.25}/></div>
+        <div className="art-cap"><OfficialDliLogo decorative /></div>
       </div>
     </section>
     <section className="status-banner">
