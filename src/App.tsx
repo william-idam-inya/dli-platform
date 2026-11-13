@@ -16,6 +16,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const PaidEnrollmentPage = lazy(() => import('./pages/PaidEnrollmentPage'));
 const TutorPayrollPage = lazy(() => import('./pages/TutorPayrollPage'));
 const MemberProfilePage = lazy(() => import('./pages/MemberProfilePage'));
+const MemberDetailPage = lazy(() => import('./pages/MemberDetailPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const AcademicSetupPage = lazy(() => import('./pages/AcademicSetupPage'));
 const AcademicRelationsPage = lazy(() => import('./pages/AcademicRelationsPage'));
@@ -107,6 +108,7 @@ function Workspace() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/profile" element={<AllowedArea path="/profile"><MemberProfilePage /></AllowedArea>} />
+        <Route path="/members/:userId" element={<AllowedArea path="/users"><MemberDetailPage /></AllowedArea>} />
         <Route path="/enrolment" element={<AllowedArea path="/enrolment"><PaidEnrollmentPage /></AllowedArea>} />
         <Route path="/payroll" element={<AllowedArea path="/payroll"><TutorPayrollPage /></AllowedArea>} />
         <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />

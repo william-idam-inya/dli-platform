@@ -39,6 +39,7 @@ export default function PaidEnrollmentPage(){
  const [selected,setSelected]=useState<string[]>([]);
  const [plan,setPlan]=useState('group_5_science');
  const [requests,setRequests]=useState<Request[]>([]);
+ const [studentNames,setStudentNames]=useState<Record<string,string>>({});
  const [proofs,setProofs]=useState<Proof[]>([]);
  const [bank,setBank]=useState<Bank|null>(null);
  const [demos,setDemos]=useState<Demo[]>([]);
@@ -78,6 +79,16 @@ export default function PaidEnrollmentPage(){
    setSubjects([...new Map(rows.filter(item=>item.subject_id&&item.subject_name)
      .map(item=>[item.subject_id!,{id:item.subject_id!,name:item.subject_name!}])).values()]);
    setRequests((r.data??[]) as Request[]);
+   if(isManager){
+     const studentIds=[...new Set((r.data??[]).map(item=>item.student_id))];
+     if(studentIds.length){
+       const names=await supabase.from('authorised_users')
+         .select('auth_user_id,full_name').in('auth_user_id',studentIds);
+       if(names.error){setError('Student names could not be loaded securely.');}
+       else setStudentNames(Object.fromEntries((names.data??[])
+         .filter(row=>row.auth_user_id).map(row=>[row.auth_user_id,row.full_name])));
+     }else setStudentNames({});
+   }
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
    setDemos((d.data??[]) as Demo[]);
@@ -277,7 +288,10 @@ export default function PaidEnrollmentPage(){
    <div className="upgrade-requests">{requests.map(req=><article key={req.id}>
     <div><strong>{req.plan_code.replaceAll('_',' ')} · {money(req.amount_ngn)}</strong>
      <small>Status: {statusText[req.status]}</small>
-     <small>Student ID: {req.student_id}</small>
+     <small>Student: <strong>{studentNames[req.student_id]||'Name unavailable'}</strong></small>
+     <Link className="user-outline-button" to={'/members/'+encodeURIComponent(req.student_id)}>
+       View student profile
+     </Link>
      <small>Requested subjects: {req.subject_ids.length}</small>
     </div>
     {proofs.filter(p=>p.request_id===req.id).map(p=><button type="button" key={p.id}

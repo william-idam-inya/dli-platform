@@ -49,6 +49,7 @@ const statusLabels: Record<UserStatus, string> = {
 export default function UserManagementPage() {
   const { account } = useAuth();
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [registryAuthIds,setRegistryAuthIds]=useState<Record<string,string>>({});
   const [roles, setRoles] = useState<DliRole[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(0);
@@ -121,6 +122,18 @@ export default function UserManagementPage() {
     return () => { cancelled = true; };
   }, [loadAudit]);
 
+  useEffect(()=>{
+    if(!supabase||!(account?.role==='owner'||account?.role==='admin')||!users.length)return;
+    const client=supabase;let active=true;
+    void (async()=>{
+      const ids=users.map(user=>user.id);
+      const r=await client.from('authorised_users').select('id,auth_user_id').in('id',ids);
+      if(!active)return;
+      if(!r.error)setRegistryAuthIds(Object.fromEntries((r.data??[])
+        .filter(item=>item.auth_user_id).map(item=>[item.id,item.auth_user_id as string])));
+    })();
+    return()=>{active=false;};
+  },[users,account?.role]);
   const visible = useMemo(() => users.filter(item => {
     const q = search.trim().toLowerCase();
     return (filter === 'all' || item.status === filter) &&
@@ -231,6 +244,10 @@ export default function UserManagementPage() {
                     <small>Added {time(user.created_at)}</small>
                   </div>
                   <div className="user-tags">
+                    {(account?.role==='owner'||account?.role==='admin')&&registryAuthIds[user.id]&&
+                      <Link className="user-outline-button" to={'/members/'+encodeURIComponent(registryAuthIds[user.id])}>
+                        View full profile
+                      </Link>}
                     <span className="user-role">{roleLabels[user.role]}</span>
                     <span className={`user-status user-status-${user.status}`}>{statusLabels[user.status]}</span>
                     {user.id === account?.id && <span className="user-self">You</span>}
