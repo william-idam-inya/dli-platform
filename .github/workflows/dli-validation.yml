@@ -67,6 +67,9 @@ jobs:
       - name: Verify frontend role and student-tier matrix (no network)
         run: npm run check:role-matrix
 
+      - name: Verify Q10 role-based mobile navigation and touch-target design
+        run: npm run check:role-ux
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
