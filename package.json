@@ -41,7 +41,8 @@
     "check:recovery-rate-limit": "node --experimental-strip-types scripts/verify-recovery-rate-limit.mjs",
     "check:password-visibility": "node scripts/verify-password-visibility.mjs",
     "check:mobile-academic-acceptance": "node scripts/verify-mobile-academic-acceptance.mjs",
-    "check:login-autofill": "node scripts/verify-login-autofill.mjs"
+    "check:login-autofill": "node scripts/verify-login-autofill.mjs",
+    "check:qa-user-registry": "node scripts/verify-qa-user-registry.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
