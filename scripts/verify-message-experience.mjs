@@ -98,6 +98,17 @@ for(const marker of [
 assert.doesNotMatch(sql,/grant\s+\w+\s+on\s+public\.dli_direct_reads\s+to\s+anon/i);
 assert.doesNotMatch(sql,/public\s*=\s*true/i);
 assert.doesNotMatch(sql,/drop\s+policy\s+if\s+exists\s+direct_threads/i);
+const mediaGuard=read('supabase/migrations/20261114005500_stage_q18b_chat_media_attachment_guard.sql');
+for(const [mime,ext] of [['audio/webm','webm'],['audio/mp4','m4a'],['audio/ogg','ogg'],
+  ['video/webm','webm'],['video/mp4','mp4']]){
+ assert.ok(mediaGuard.includes("when '"+mime+"' then '"+ext+"'"),mime+' backend suffix guard missing');
+}
+for(const requirement of [
+  'Not an authorised chat participant','Daily attachment limit reached',
+  'Upload your attachment before finalising','Attached evidence cannot be deleted',
+  'private.dli_direct_allowed(t.participant_a,t.participant_b)',
+]) assert.ok(mediaGuard.includes(requirement),'Private storage safety removed: '+requirement);
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 assert.ok(manifest.entries.some(x=>x.file==='20261114004500_stage_q18_private_chat_receipts_and_media.sql'&&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)));
+assert.ok(manifest.entries.some(x=>x.file==='20261114005500_stage_q18b_chat_media_attachment_guard.sql'&&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)));
 console.log('Q18 all-role messaging, safe notifications, media notes, role-scoped read receipts and 10MB private storage passed offline.');
