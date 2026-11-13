@@ -15,7 +15,7 @@ Q10 adds one nullable `teaching_classes.offering_id` with a one-to-one unique co
 - The offering must have *exactly* the class tutor as its active tutor assignment.
 - The active student roster must be exactly identical on both sides, with at least one student, each already holding a verified paid entitlement.
 - The Admin explicitly confirms the irreversible association in **Classes & timetable**. Assistant Admins cannot initiate links.
-- The RPC does not insert or auto-approve student enrolments, tutor assignments, paid entitlements, receipt evidence or payment operations. It cannot link another class to the same offering.
+- The linking RPC itself does not insert student enrolments, tutor assignments, paid entitlements, receipt evidence or payment operations. It cannot link another class to the same offering. After linking, Admin can explicitly invoke **Reconcile approved academic roster** to atomically activate or revoke existing linked offering student memberships; it still cannot create paid entitlements or accounts.
 - Linked classes cannot change programme, subject, tutor or learning tier. Historical links are immutable. An archived class remains linked for audit purposes, but its Tutor/Student academic read rights close.
 
 ## How access works
@@ -38,11 +38,11 @@ The course-offering metadata SELECT policy now uses the same guarded helper. The
 5. Admin: create a draft **paid teaching class** with the same subject, tutor and selected students.
 6. In **Classes & timetable**, select the offering and click **Verify and connect**. The RPC refuses mismatches; do not bypass it.
 7. Publish the class only after the approved paid student(s) are confirmed.
-8. Verify lessons, assignments, quizzes, results and attendance with distinct authenticated Tutor, Paid Student, Free Student and unassigned Student sessions. Verify revocation and archive behaviour.
+8. When Admin changes the class roster later, click **Reconcile approved academic roster** to apply matching activations/revocations atomically. Verify that a Free Student cannot be activated and that a second execution is idempotent.\n9. Verify lessons, assignments, quizzes, results and attendance with distinct authenticated Tutor, Paid Student, Free Student and unassigned Student sessions. Verify revocation and archive behaviour.
 
 There are currently no real classes or offerings in development, so steps 2–8 cannot be declared passed from source code checks alone.
 
-**Important limitation:** The initial connection checks exact parity but *does not automatically synchronise future roster edits* between the two registries. Revoking a person in either registry denies that person's private content through intersected read checks, but new member onboarding requires explicit Academic Assignments enrolment as well. Do not close the original architectural issue until transactional ongoing membership reconciliation and authenticated role tests are completed.
+**Roster lifecycle:** The initial connection checks exact parity. Changes after linking are *not silently synchronised*: an authorised Admin must explicitly confirm the **Reconcile approved academic roster** action, which atomically updates active offering student enrolments from the vetted paid teaching-class roster. A revoked teaching-class learner cannot read linked content even before reconciliation because access requires membership in BOTH registries. Full authenticated negative tests remain necessary before closing issue #36.
 
 ## Cloudflare / Codespaces workflow
 
@@ -50,7 +50,7 @@ Branch: `feature/stage-q10-class-offering-linkage`, based on `feature/stage-q7-a
 
 GitHub checks: `npm ci && npm run check:class-offering-link && npm run check:workspace-consistency && npm run build`.
 
-The development Supabase project is `pbepbcdkrdqnepvcwtyw` and recorded the new version `20261113135357_stage_q10_teaching_offering_link`. Production Supabase `thoinmwqxmqxrnywjuxq` has **not** received Q10.
+The development Supabase project is `pbepbcdkrdqnepvcwtyw` and recorded two new immutable versions: `20261113135357_stage_q10_teaching_offering_link` and `20261113140333_stage_q10a_linked_class_roster_reconcile`. Production Supabase `thoinmwqxmqxrnywjuxq` has **not** received Q10.
 
 The **development** paid-enrolment operational flag was already enabled on November 12, 2026 by a separate settings event; Q10 did not modify it. Zero paid enrolment requests existed at audit time. **Production** paid enrolment remains disabled. Do not assume the development flag is a production launch approval.
 
