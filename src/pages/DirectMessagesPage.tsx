@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Download, Flag, LockKeyhole, MessageCircle, Paperclip, Pin, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DliClassCommunication from './DliClassCommunication';
+import ChatMediaRecorder from '../components/ChatMediaRecorder';
 import { Link, useSearchParams } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
@@ -10,9 +11,13 @@ type Contact={user_id:string;full_name:string;member_role:string};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
 type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
+type DirectRead={thread_id:string;reader_id:string;seen_at:string};
+const mediaKind=(mime:string):'audio'|'video'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':null;
 const fileSuffix:Record<string,string>={
   'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp',
   'text/plain':'txt',
+  'audio/webm':'webm','audio/mp4':'m4a','audio/ogg':'ogg',
+  'video/webm':'webm','video/mp4':'mp4',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xlsx',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
@@ -36,6 +41,12 @@ export default function DirectMessagesPage(){
   const [activeId,setActiveId]=useState('');
   const [messages,setMessages]=useState<DirectMessage[]>([]);
   const [files,setFiles]=useState<DirectFile[]>([]);
+  const [reads,setReads]=useState<DirectRead[]>([]);
+  const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
+  const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
+  const [pins,setPins]=useState<string[]>([]);
+  const [playback,setPlayback]=useState<Record<string,string>>({});
+  const playableUrls=useRef<string[]>([]);
   const [attachment,setAttachment]=useState<File|null>(null);
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
@@ -46,6 +57,29 @@ export default function DirectMessagesPage(){
   const [openingContactId,setOpeningContactId]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
+  useEffect(()=>()=>{playableUrls.current.forEach(url=>URL.revokeObjectURL(url));},[]);
+  useEffect(()=>{
+    if(!uid)return;
+    try{
+      const saved=JSON.parse(localStorage.getItem('dli-chat-pins:'+uid)??'[]') as unknown;
+      setPins(Array.isArray(saved)?saved.filter((x):x is string=>typeof x==='string').slice(0,50):[]);
+    }catch{setPins([]);}
+  },[uid]);
+  const togglePin=(id:string)=>{
+    const next=pins.includes(id)?pins.filter(x=>x!==id):[...pins,id];
+    setPins(next);
+    try{localStorage.setItem('dli-chat-pins:'+uid,JSON.stringify(next));}catch{/* Optional local pins. */}
+  };
+  async function enableAlerts(){
+    if(typeof Notification==='undefined'){
+      setNotice('Browser notifications are unavailable on this device. In-app message alerts still work.');return;
+    }
+    try{
+      const result=await Notification.requestPermission();
+      setNotice(result==='granted'?'Browser alerts enabled while DLI is open.':
+        'Browser alerts were not enabled. In-app notifications remain available.');
+    }catch{setNotice('Browser permission could not be enabled. In-app alerts remain available.');}
+  }
   const moderator=isOversight(account?.role);
   const current=threads.find(t=>t.id===activeId)??null;
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
@@ -55,20 +89,26 @@ export default function DirectMessagesPage(){
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [auth,directory,inbox,flags]=await Promise.all([
+      const [auth,directory,inbox,flags,readRows,headMessages]=await Promise.all([
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
         moderator?supabase.from('dli_direct_reports').select('id,message_id,thread_id,reason,status,created_at').order('created_at',{ascending:false}).limit(100):
           Promise.resolve({data:[],error:null}),
+        supabase.from('dli_direct_reads').select('thread_id,reader_id,seen_at').limit(500),
+        supabase.from('dli_direct_messages')
+          .select('id,thread_id,sender_id,body,created_at,file_id')
+          .order('created_at',{ascending:false}).limit(700),
       ]);
-      if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error){
+      if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
         setError('The messaging directory could not be verified. Retry while signed in.');return;
       }
       setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
       setThreads((inbox.data??[]) as Thread[]);
       setReports((flags.data??[]) as Report[]);
+      setReads((readRows.data??[]) as DirectRead[]);
+      setRecentMessages((headMessages.data??[]) as DirectMessage[]);
       setError(null);
     }catch{setError('Messaging is temporarily unreachable.');}
     finally{setLoading(false);}
