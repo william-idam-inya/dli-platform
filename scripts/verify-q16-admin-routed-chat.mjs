@@ -35,7 +35,7 @@ for(const phrase of [
   "supabase.from('dli_direct_threads')",
   "supabase.from('dli_direct_messages')",
   "setThreads(old=>old.some(t=>t.id===newThread.id)",
-  "setActiveId(result.data.id)",
+  "setActiveId(newThread.id)",
   "ref={composeRef}",
   "threadRef.current?.scrollIntoView",
   "This chat could not be created on the server",
