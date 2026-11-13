@@ -9,6 +9,7 @@ import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from './OfficialDliLogo';
+import ProfileAvatar from './ProfileAvatar';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -309,7 +310,8 @@ export default function AppShell({ children }: AppShellProps) {
               {darkMode ? <Sun size={19} /> : <Moon size={19} />}
             </button>
             <NavLink to="/profile" className="account-mini" title="My profile and settings">
-              <span className="profile-placeholder">{account?.full_name?.charAt(0).toUpperCase() || 'D'}</span>
+              {account ? <ProfileAvatar key={account.id} name={account.full_name} /> :
+                <span className="profile-placeholder">D</span>}
               <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? accountRoleLabel(account) : ''}</small></span>
             </NavLink>
             <button className="icon-button" onClick={() => { void signOut(); }}
