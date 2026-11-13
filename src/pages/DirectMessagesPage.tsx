@@ -159,9 +159,15 @@ export default function DirectMessagesPage(){
         .eq('thread_id',id).eq('is_ready',true).limit(100);
       if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
       setFiles((attachments.data??[]) as DirectFile[]);
-      if(mode==='inbox'&&uid){
-        // Only the actual participant marks their own read position. The DB
-        // assigns the timestamp and enforces both identity and relationship.
+      const newestIncoming=(result.data??[]).filter(msg=>msg.sender_id!==uid).at(-1);
+      if(mode==='inbox'&&uid&&newestIncoming){
+        // Polling an already-read thread must never issue continuous writes.
+        // Read the current server cursor before acknowledging new incoming data.
+        const cursor=await supabase.from('dli_direct_reads')
+          .select('seen_at').eq('thread_id',id).eq('reader_id',uid).maybeSingle();
+        if(cursor.error || (cursor.data?.seen_at&&
+            new Date(cursor.data.seen_at)>=new Date(newestIncoming.created_at)))return;
+        // The DB stamps the write and independently checks this user/thread.
         const updated=await supabase.from('dli_direct_reads')
           .update({seen_at:new Date().toISOString()})
           .eq('thread_id',id).eq('reader_id',uid)
