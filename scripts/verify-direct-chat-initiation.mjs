@@ -8,6 +8,7 @@ const page=read('src/pages/DirectMessagesPage.tsx');
 const css=read('src/pages/DirectMessagesPage.css');
 const grants=read('supabase/migrations/20261113222549_stage_q16_staff_routed_direct_chat.sql');
 const moderation=read('supabase/migrations/20261113223204_stage_q16b_null_safe_messaging_moderation.sql');
+const auditFix=read('supabase/migrations/20261114000001_stage_q17_direct_message_audit_field_guard.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 
 for(const p of [
@@ -56,11 +57,24 @@ for(const p of [
 assert.doesNotMatch(grants,/GRANT INSERT ON public\.dli_class_messages/i);
 assert.doesNotMatch(grants,/GRANT INSERT[\s\S]{0,100} TO anon/i);
 assert.match(moderation,/COALESCE\(private\.current_role\(\) IN/);
+assert.match(auditFix,/create or replace function private\.dli_direct_audit\(\)/i);
+assert.match(auditFix,/if tg_table_name = 'dli_direct_threads' then/);
+assert.match(auditFix,/elsif tg_table_name = 'dli_direct_messages' then/);
+assert.match(auditFix,/elsif tg_table_name = 'dli_direct_reports' then/);
+assert.match(auditFix,/'messaging\.thread_created'/);
+assert.match(auditFix,/'messaging\.message_sent'/);
+assert.match(auditFix,/'messaging\.message_reported'/);
+assert.match(auditFix,/insert into public\.audit_logs/);
+assert.match(auditFix,/revoke all on function private\.dli_direct_audit\(\)/);
+assert.doesNotMatch(auditFix,/case\s+tg_table_name/i,
+  'Avoid the original CASE expression that evaluates nonexistent NEW fields.');
+
 for(const file of [
  '20261113222549_stage_q16_staff_routed_direct_chat.sql',
  '20261113223204_stage_q16b_null_safe_messaging_moderation.sql',
+ '20261114000001_stage_q17_direct_message_audit_field_guard.sql',
 ]) assert.ok(manifest.entries.some(e=>e.file===file&&/^[a-f0-9]{40}$/.test(e.gitBlobSha1)));
 assert.match(css,/\.dli-direct-inline-feedback\.error/);
 assert.match(css,/\.dli-direct-working/);
 assert.match(css,/@media\(max-width:750px\)/);
-console.log('Q17 direct-chat click, server-verified thread opening, visible feedback, preserved subject tab and safeguarded grants passed offline.');
+console.log('Q17 direct-chat click, audit-trigger field isolation, server-verified opening, visible feedback, and safeguarding passed offline.');
