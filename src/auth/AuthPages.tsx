@@ -86,8 +86,14 @@ export function LoginPage() {
     setPending(true);
     setError(null);
     clearNotice();
+    // Password managers can fill the native inputs without dispatching
+    // React change events. Read current form values at submit time so a
+    // visible autofill is never silently replaced by stale component state.
+    const formValues = new FormData(event.currentTarget);
+    const submittedEmail = String(formValues.get('username') ?? email).trim().toLowerCase();
+    const submittedPassword = String(formValues.get('password') ?? password);
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(), password,
+      email: submittedEmail, password: submittedPassword,
     });
     if (signInError) setError('Sign-in failed. Check your credentials and account verification.');
     setPending(false);
@@ -95,13 +101,15 @@ export function LoginPage() {
 
   return <AuthLayout title="Sign in to DLI" intro="Only authorised students and staff can access this workspace.">
     <Feedback error message={error || notice} />
-    <form className="auth-form" onSubmit={submit}>
+    <form className="auth-form" onSubmit={submit} autoComplete="on">
       <label htmlFor="login-email">Email address</label>
-      <input id="login-email" type="email" required autoComplete="username"
-        value={email} onChange={event => setEmail(event.target.value)} />
+      <input id="login-email" name="username" type="email" required autoComplete="username"
+        autoCapitalize="none" spellCheck={false}
+        value={email} onChange={event => setEmail(event.target.value)}
+        onInput={event => setEmail(event.currentTarget.value)} />
       <label htmlFor="login-password">Password</label>
-      <PasswordInput id="login-password" label="password" autoComplete="current-password"
-        value={password} onChange={setPassword} />
+      <PasswordInput id="login-password" name="password" label="password"
+        autoComplete="current-password" value={password} onChange={setPassword} />
       <button className="auth-submit" type="submit" disabled={pending}>
         <LockKeyhole size={16} /> {pending ? 'Signing in…' : 'Sign in'}
       </button>
