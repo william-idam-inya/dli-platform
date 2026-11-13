@@ -323,6 +323,10 @@
     {
       "file": "20261114000200_stage_q17_role_profiles_directory_geocoding.sql",
       "gitBlobSha1": "70cbfaa6d4b51801714a604ce3ec14b5aea6cce1"
+    },
+    {
+      "file": "20261114005000_stage_q18_skill_tree_progress.sql",
+      "gitBlobSha1": "37775cdd52e52f20fc9df618327529ba55f0dc74"
     }
   ]
 }
