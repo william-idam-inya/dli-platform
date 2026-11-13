@@ -5,6 +5,7 @@ import App from './App';
 import RuntimeErrorBoundary from './components/RuntimeErrorBoundary';
 import { AuthProvider } from './auth/AuthProvider';
 import './styles.css';
+import './design-system.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
