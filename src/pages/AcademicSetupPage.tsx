@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  BookOpen, CheckCircle2, CircleOff, GraduationCap, Layers3, LibraryBig,
+  BookOpen, CheckCircle2, CircleOff, GraduationCap, LibraryBig,
   Plus, RefreshCw, School, ShieldCheck, Settings2, ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
