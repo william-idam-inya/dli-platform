@@ -10,6 +10,10 @@ type Cycle={engagement_key:string;tutor_id:string;tutor_name:string;engagement_n
  proposed_monthly_ngn:number|string;allocation_review:boolean;
  payout_status:'paid'|'scheduled'|'due_today'|'overdue';confirmed_on:string|null};
 type PayoutHistory={id:string;engagement_key:string;tutor_id:string;tutor_name:string;cycle_number:number;due_on:string;amount_ngn:number|string;confirmed_on:string};
+const classTierNames:Record<string,string>={
+  group_5_science:'Group of 5',group_10:'Group of 10',
+  private_1_to_1:'Private · 1 student',free_demo:'Free',
+};
 const money=(v:string|number)=>new Intl.NumberFormat('en-NG',{
  style:'currency',currency:'NGN',maximumFractionDigits:0,
 }).format(Number(v));
@@ -141,7 +145,7 @@ export default function TutorPayrollPage(){
    {filtered.map(c=><article key={c.engagement_key} className="payroll-cycle">
      <div className="payroll-cycle-head"><div>
        <strong>{c.tutor_name}</strong><p>{c.engagement_name}</p>
-       <small>{({'group_5_science':'Group of 5','group_10':'Group of 10','private_1_to_1':'Private · 1 student','free_demo':'Free'}[c.class_type] ?? c.class_type.replaceAll('_',' '))} · {c.students_count} student(s) · {c.subjects_count} subject(s)</small>
+       <small>{classTierNames[c.class_type] ?? c.class_type.replaceAll('_',' ')} · {c.students_count} student(s) · {c.subjects_count} subject(s)</small>
       </div>
       <span className={'payroll-status payroll-'+c.payout_status}>{labels[c.payout_status]}</span>
      </div>
