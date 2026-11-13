@@ -14,9 +14,20 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
   const location = useLocation();
   const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'lessons';
+  const [expandedSections,setExpandedSections] = useState<Record<string,boolean>>({});
   const permittedSections = permittedNavigation(path=>Boolean(
     account && canAccessPath(account.role,path,account.studentTier),
   ));
+
+  // Open the active route's section while retaining an explicitly expanded
+  // section. Native details/summary provides mouse and keyboard toggling.
+  useEffect(()=>{
+    const selected=permittedSections.find(section=>
+      section.items.some(item=>item.path===location.pathname));
+    if(!selected)return;
+    setExpandedSections(current=>current[selected.label]
+      ?current:{...current,[selected.label]:true});
+  },[location.pathname,account?.role,account?.studentTier]);
 
   return (
     <div className="sidebar-inner">
@@ -39,10 +50,13 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <nav className="primary-nav" aria-label="Main navigation">
         {permittedSections.map((section) => (
-          <details className="nav-section"
-            key={section.label+':'+(section.items.some(item => item.path===location.pathname)?'active':'idle')}
-            defaultOpen={section.label === 'Workspace' ||
-              section.items.some(item => item.path===location.pathname)}>
+          <details className="nav-section" key={section.label}
+            open={expandedSections[section.label] ?? (section.label === 'Workspace')}
+            onToggle={event=>{
+              const isOpen=event.currentTarget.open;
+              setExpandedSections(current=>current[section.label]===isOpen
+                ?current:{...current,[section.label]:isOpen});
+            }}>
             <summary className="nav-section-label nav-section-toggle">
               <span>{section.label}</span><ChevronDown size={15} aria-hidden="true"/>
             </summary>
