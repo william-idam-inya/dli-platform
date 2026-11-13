@@ -34,7 +34,8 @@
     "check:guest-login": "node scripts/verify-guest-login.mjs",
     "check:q8-staff-bootstrap": "node scripts/verify-staff-bootstrap.mjs",
     "check:q9-academic-catalogue": "node scripts/verify-q9-academic-catalogue.mjs",
-    "check:role-ux": "node scripts/verify-role-ux.mjs"
+    "check:role-ux": "node scripts/verify-role-ux.mjs",
+    "check:password-policy": "node scripts/verify-password-policy.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
