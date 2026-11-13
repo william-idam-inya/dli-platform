@@ -33,7 +33,7 @@ that production identity or child-access controls work end-to-end.
 | Item | Production | Development QA |
 | --- | --- | --- |
 | Supabase ref | `thoinmwqxmqxrnywjuxq` | `pbepbcdkrdqnepvcwtyw` |
-| Recorded migration versions | 76 | 78 |
+| Recorded migration versions | 76 | 79 |
 | Active authorised accounts (read-only count) | 2 | 4 |
 | Active catalogue courses | 25 | 25 |
 | Teaching classes / course offerings | 0 / 0 | 0 / 0 |
@@ -47,17 +47,20 @@ private file bytes are NEVER copied from QA to production.
 
 ## Backend compatibility / migrations
 
-The candidate has two NEW versioned SQL files after the 76-migration production baseline:
+The candidate has three NEW versioned SQL files after the 76-migration production baseline:
 
 1. `20261113135357_stage_q10_teaching_offering_link.sql`
 2. `20261113140333_stage_q10a_linked_class_roster_reconcile.sql`
+3. `20261113201934_stage_q12_null_safe_paid_class_rpc_guards.sql`
 
-Development QA has both migrations applied. Their combined SQL has been tested
-in production with `BEGIN ... ROLLBACK` and schema/switch assertions: the
-dry run succeeded and changed **no persistent schema or records**.
+Development QA has all three migrations applied. Their combined SQL was tested
+in production with `BEGIN ... ROLLBACK`, schema/switch assertions and an explicit
+**NULL-role Admin-RPC rejection** test. The dry run succeeded and changed
+**no persistent schema or records**. Q12 specifically closes a nullable-role
+authorisation defect found during independent SQL role-context testing.
 
-**Do not deploy this candidate to production until both are approved and applied
-in this exact order, followed by a fresh readback confirming 78 production
+**Do not deploy this candidate to production until all three are approved and applied
+in this exact order, followed by a fresh readback confirming 79 production
 migration records, unchanged Auth/profile/catalogue counts, paid intake closed
 and expected RLS/execute grants.** No destructive migration rewrites.
 Old migration history has known QA-only Q3 drift; do not blindly copy QA history.
@@ -110,9 +113,23 @@ scripts are mandatory BEFORE touching production schema.
 - GitHub Actions source/typecheck/build/migration checks passed on the initial
   merged candidate (run `43498418513`); the rebased production candidate must
   pass its own CI.
-- Combined Q10/Q10A production SQL transaction compiled and rolled back.
+- Combined Q10/Q10A/Q12 production SQL transaction compiled and rolled back,
+  including denied class-link and roster-sync calls for an unverified role.
 - Production Pages preview deployments disabled to avoid confusing preview URLs
   with the official site. QA remains on the development Supabase project.
 
 **Do not merge or deploy until the release checklist is supported by actual
 test evidence, not only scripts or screenshots from separate environments.**
+
+## Q12 independent verification
+
+- Supabase development migration `20261113201934` applied on 13 November 2026.
+- A signed-in but unverified SQL role context initially reached an Admin-only
+  RPC's business validation because SQL `<> 'admin'` evaluates to NULL when
+  `private.current_role()` is NULL. Q12 explicitly uses
+  `IS DISTINCT FROM 'admin'`, rejecting missing/invalid roles.
+- Actual QA negative role test passed; all three migrations passed a
+  `BEGIN / ROLLBACK` negative-access test on the production schema.
+- [GitHub Actions 43500787004](https://github.com/william-idam-inya/dli-platform/actions/runs/43500787004)
+  passed after the Q12 source/test corrections. These tests cannot substitute
+  for live authenticated browser and payment-admission negative testing.
