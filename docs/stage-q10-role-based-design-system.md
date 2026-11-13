@@ -77,3 +77,17 @@ No Codespaces or localhost server needs to remain running after a GitHub push.
 
 The preview URL must remain a development-only test address until the Q10
 PR receives independent signed-in device acceptance and reviewer signoff.
+
+## Password visibility accessibility acceptance (Q10)
+
+The authentication UI now uses one shared `PasswordInput` control for all six
+password fields across login, set-password, confirmation and Account Security.
+The input is masked by default; the adjacent eye button toggles only that input
+between masked and visible without changing the entered value or submitting
+the form. Each toggle has a 44px touch area, keyboard focus ring and
+state-specific accessible name. Automated tests: `npm run
+check:password-visibility`, `npm run typecheck`, `npm run build`.
+
+This feature must be visually accepted on the **successful Q10 Cloudflare
+preview deployment**. Source tests alone do not prove Cloudflare published
+the latest commit; do not claim it is live until the deployed SHA matches.
