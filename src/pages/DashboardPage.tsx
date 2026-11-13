@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
+import { dashboardPriorityPaths } from '../data/roleNavigation';
 import { learningAreas, learningAreaUrl, type LearningTab } from '../data/learningAreas';
 import { supabase } from '../lib/supabase';
 import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
@@ -29,6 +30,29 @@ export default function DashboardPage(){
     canAccessPath(account.role,path,account.studentTier)))
     .map(section=>({...section,items:section.items.filter(item=>item.path!=='/'&&item.path!=='/profile')}))
     .filter(section=>section.items.length>0);
+
+  // Same role-checked registry as the sidebar: show four priority actions first.
+  // All remaining permitted tools stay discoverable under one expandable group.
+  const allTools = sections.flatMap(section=>section.items);
+  const priorityPaths = account
+    ? dashboardPriorityPaths(account,allTools.map(item=>item.path)) : [];
+  const orderedTools = [...allTools].sort((a,b)=>{
+    const ai=priorityPaths.indexOf(a.path);
+    const bi=priorityPaths.indexOf(b.path);
+    return (ai<0?100:ai)-(bi<0?100:bi);
+  });
+  const spotlight = orderedTools.slice(0,4);
+  const spotlightPaths = new Set(spotlight.map(item=>item.path));
+  const secondarySections = sections.map(section=>({
+    ...section, items:section.items.filter(item=>!spotlightPaths.has(item.path)),
+  })).filter(section=>section.items.length>0);
+  const remainingCount = secondarySections.reduce((sum,section)=>sum+section.items.length,0);
+  const actionCard = (item:(typeof allTools)[number])=><Link className="module-card"
+      to={item.path} key={item.path}>
+      <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
+      <div className="module-card-body"><h3>{item.label}</h3><p>{item.description}</p></div>
+      <span className="module-arrow" aria-hidden="true"><ArrowRight size={17}/></span>
+    </Link>;
 
   const refresh=useCallback(async()=>{
     if(!supabase||!account||!canAccessPath(account.role,'/classes',account.studentTier)){
@@ -155,22 +179,22 @@ export default function DashboardPage(){
     </section>}
     <section className="section-block">
       <div className="section-heading">
-        <div><p className="section-kicker">YOUR AUTHORISED TOOLS</p>
-          <h2>Everything available to your role</h2>
-          <p className="user-caption">These entries mirror the sidebar. Missing tools are restricted by your role, not separate apps.</p>
+        <div><p className="section-kicker">YOUR WORKSPACE</p>
+          <h2>Start with what matters most</h2>
+          <p className="user-caption">Quick actions reflect your verified role and available learning access.</p>
         </div>
       </div>
-      {sections.map(section=><section className="unified-module-group" key={section.label}
-        aria-label={section.label+' tools'}>
-        <h3 className="unified-module-group-label">{section.label}</h3>
-        <div className="module-grid">
-          {section.items.map(item=><Link className="module-card" to={item.path} key={item.path}>
-            <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
-            <div className="module-card-body"><h3>{item.label}</h3><p>{item.description}</p></div>
-            <span className="module-arrow"><ArrowRight size={17}/></span>
-          </Link>)}
-        </div>
-      </section>)}
+      <div className="module-grid" aria-label="Priority DLI tools">
+        {spotlight.map(actionCard)}
+      </div>
+      {remainingCount>0&&<details className="dashboard-extra-tools">
+        <summary>Explore more authorised tools <span>{remainingCount} additional</span></summary>
+        {secondarySections.map(section=><section className="unified-module-group"
+          key={section.label} aria-label={section.label+' additional tools'}>
+          <h3 className="unified-module-group-label">{section.label}</h3>
+          <div className="module-grid">{section.items.map(actionCard)}</div>
+        </section>)}
+      </details>}
     </section>
     <p className="unified-overview-footnote"><LockKeyhole size={14}/>
       Sidebar links and dashboard cards never grant privileges. PostgreSQL row-level

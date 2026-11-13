@@ -103,6 +103,9 @@ jobs:
       - name: Verify guided Academic Structure and preserved catalogue controls
         run: npm run check:academic-hierarchy
 
+      - name: Verify responsive role navigation and complete learning dashboard
+        run: npm run check:unified-role-ux
+
       - name: Verify TypeScript
         run: npm run typecheck
 
