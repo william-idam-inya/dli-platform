@@ -85,6 +85,9 @@ jobs:
       - name: Verify guided Academic Structure and preserved catalogue controls
         run: npm run check:academic-hierarchy
 
+      - name: Verify Q13 unified multi-subject class builder
+        run: npm run check:q13-unified-class-builder
+
       - name: Verify TypeScript
         run: npm run typecheck
 
