@@ -106,6 +106,9 @@ jobs:
       - name: Verify responsive role navigation and complete learning dashboard
         run: npm run check:unified-role-ux
 
+      - name: Verify official DLI logo on all public and role surfaces
+        run: npm run check:official-branding
+
       - name: Verify TypeScript
         run: npm run typecheck
 
