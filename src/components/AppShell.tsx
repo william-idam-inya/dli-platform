@@ -11,10 +11,21 @@ import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
   const sidebarLocation = useLocation();
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const permittedSections = navigationSections.map((section) => ({
     ...section,
     items: section.items.filter((item) => account && canAccessPath(account.role, item.path,account.studentTier)),
   })).filter((section) => section.items.length > 0);
+
+  // Keep the group containing the selected page open, without preventing
+  // members from manually expanding/collapsing other groups.
+  useEffect(() => {
+    const selected = permittedSections.find(section =>
+      section.items.some(item => item.path === sidebarLocation.pathname));
+    if (!selected) return;
+    setExpandedSections(current => current[selected.label]
+      ? current : {...current, [selected.label]: true});
+  }, [sidebarLocation.pathname, account?.role, account?.studentTier]);
 
   return (
     <div className="sidebar-inner">
@@ -39,8 +50,12 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <details
             className="nav-section"
             key={section.label + ':' + (section.items.some(item => item.path === sidebarLocation.pathname) ? 'active' : 'idle')}
-            defaultOpen={section.label === 'Workspace' ||
-              section.items.some(item => item.path === sidebarLocation.pathname)}
+            open={expandedSections[section.label] ?? (section.label === 'Workspace')}
+            onToggle={event => {
+              const isOpen = event.currentTarget.open;
+              setExpandedSections(existing => existing[section.label] === isOpen
+                ? existing : {...existing, [section.label]: isOpen});
+            }}
           >
             <summary className="nav-section-label nav-section-toggle">
               <span>{section.label}</span><ChevronDown size={15} aria-hidden="true" />
