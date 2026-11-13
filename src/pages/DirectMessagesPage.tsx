@@ -143,23 +143,26 @@ export default function DirectMessagesPage(){
   const loadThread=useCallback(async(id:string)=>{
     if(!supabase||!id)return;
     try{
+      let loadedMessages:DirectMessage[]=[];
       if(mode==='oversight'&&moderator){
         const result=await supabase.rpc('dli_direct_moderation_messages',{p_thread:id});
         if(result.error){setError('This oversight view was denied or unavailable.');return;}
-        setMessages(((result.data??[]) as DirectMessage[]).reverse());
+        loadedMessages=((result.data??[]) as DirectMessage[]).reverse();
+        setMessages(loadedMessages);
       }else{
         const result=await supabase.from('dli_direct_messages')
           .select('id,thread_id,sender_id,body,created_at,file_id')
           .eq('thread_id',id).order('created_at',{ascending:true}).limit(100);
         if(result.error){setError('This conversation cannot be opened with your current permissions.');return;}
-        setMessages((result.data??[]) as DirectMessage[]);
+        loadedMessages=(result.data??[]) as DirectMessage[];
+        setMessages(loadedMessages);
       }
       const attachments=await supabase.from('dli_direct_files')
         .select('id,thread_id,original_name,object_path,mime_type,size_bytes,is_ready')
         .eq('thread_id',id).eq('is_ready',true).limit(100);
       if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
       setFiles((attachments.data??[]) as DirectFile[]);
-      const newestIncoming=(result.data??[]).filter(msg=>msg.sender_id!==uid).at(-1);
+      const newestIncoming=loadedMessages.filter(msg=>msg.sender_id!==uid).at(-1);
       if(mode==='inbox'&&uid&&newestIncoming){
         // Polling an already-read thread must never issue continuous writes.
         // Read the current server cursor before acknowledging new incoming data.
