@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
+import { dashboardPriorityPaths } from '../data/roleNavigation';
 import { learningAreas, learningAreaUrl, type LearningTab } from '../data/learningAreas';
 import { supabase } from '../lib/supabase';
 import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
@@ -29,6 +30,15 @@ export default function DashboardPage(){
     canAccessPath(account.role,path,account.studentTier)))
     .map(section=>({...section,items:section.items.filter(item=>item.path!=='/'&&item.path!=='/profile')}))
     .filter(section=>section.items.length>0);
+  const authorisedItems = sections.flatMap(section=>section.items);
+  const priorityPaths=account ? dashboardPriorityPaths(account,
+    ['/', ...authorisedItems.map(item=>item.path)]) : [];
+  const priorityItems=priorityPaths.flatMap(path=>
+    authorisedItems.filter(item=>item.path===path));
+  const secondarySections=sections.map(section=>({...section,
+    items:section.items.filter(item=>!priorityPaths.includes(item.path)),
+  })).filter(section=>section.items.length>0);
+  const additionalToolCount=secondarySections.reduce((n,section)=>n+section.items.length,0);
 
   const refresh=useCallback(async()=>{
     if(!supabase||!account||!canAccessPath(account.role,'/classes',account.studentTier)){
@@ -104,6 +114,19 @@ export default function DashboardPage(){
           does not activate payments or invitations.</span>
       </div>
     </section>
+    {priorityItems.length>0&&<section className="section-block unified-priority-section">
+      <div className="section-heading"><div>
+        <p className="section-kicker">QUICK START</p><h2>Recommended for your role</h2>
+        <p className="user-caption">Your most useful destinations; every other authorised tool remains available below and in More.</p>
+      </div></div>
+      <div className="module-grid">
+        {priorityItems.map(item=><Link className="module-card" to={item.path} key={item.path}>
+          <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
+          <div className="module-card-body"><h3>{item.label}</h3><p>{item.description}</p></div>
+          <span className="module-arrow"><ArrowRight size={17}/></span>
+        </Link>)}
+      </div>
+    </section>}
     {canViewClasses&&<section className="panel unified-overview-snapshot">
       <div className="panel-heading"><div><p className="section-kicker">CURRENT CLASSES</p>
         <h2>{isManager?'Authorised class register':'My accessible classes'}</h2>
@@ -153,25 +176,28 @@ export default function DashboardPage(){
         </Link>)}
       </div>
     </section>}
-    <section className="section-block">
+    {additionalToolCount>0&&<section className="section-block">
       <div className="section-heading">
-        <div><p className="section-kicker">YOUR AUTHORISED TOOLS</p>
-          <h2>Everything available to your role</h2>
-          <p className="user-caption">These entries mirror the sidebar. Missing tools are restricted by your role, not separate apps.</p>
+        <div><p className="section-kicker">FULL WORKSPACE</p>
+          <h2>Additional authorised tools</h2>
+          <p className="user-caption">Secondary features remain here and in the complete navigation drawer.</p>
         </div>
       </div>
-      {sections.map(section=><section className="unified-module-group" key={section.label}
-        aria-label={section.label+' tools'}>
-        <h3 className="unified-module-group-label">{section.label}</h3>
-        <div className="module-grid">
-          {section.items.map(item=><Link className="module-card" to={item.path} key={item.path}>
-            <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
-            <div className="module-card-body"><h3>{item.label}</h3><p>{item.description}</p></div>
-            <span className="module-arrow"><ArrowRight size={17}/></span>
-          </Link>)}
-        </div>
-      </section>)}
-    </section>
+      <details className="dashboard-extra-tools">
+        <summary>Explore more authorised tools <span>{additionalToolCount} additional</span></summary>
+        {secondarySections.map(section=><section className="unified-module-group" key={section.label}
+          aria-label={section.label+' tools'}>
+          <h3 className="unified-module-group-label">{section.label}</h3>
+          <div className="module-grid">
+            {section.items.map(item=><Link className="module-card" to={item.path} key={item.path}>
+              <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
+              <div className="module-card-body"><h3>{item.label}</h3><p>{item.description}</p></div>
+              <span className="module-arrow"><ArrowRight size={17}/></span>
+            </Link>)}
+          </div>
+        </section>)}
+      </details>
+    </section>}
     <p className="unified-overview-footnote"><LockKeyhole size={14}/>
       Sidebar links and dashboard cards never grant privileges. PostgreSQL row-level
       security and verified membership govern private academic records.</p>
