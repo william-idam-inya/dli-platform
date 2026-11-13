@@ -76,6 +76,9 @@ jobs:
       - name: Verify local-only calendar reminders and aggregate exports
         run: npm run check:operational-tools
 
+      - name: Verify Q10 paid-only class/offering association and RLS contract
+        run: npm run check:class-offering-link
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
