@@ -70,6 +70,20 @@ export const navigationSections: NavigationSection[] = [
         group: 'Academic',
       },
       {
+        label: 'Advanced curriculum',
+        path: '/cohorts',
+        icon: School,
+        description: 'Academic topics, cohorts and course offerings, managed by authorised academic staff.',
+        group: 'Academic',
+      },
+      {
+        label: 'Academic assignments',
+        path: '/assignments',
+        icon: BookOpen,
+        description: 'Manage assigned tutors and student membership for approved course offerings.',
+        group: 'Academic',
+      },
+      {
         label: 'Classes & timetable',
         path: '/classes',
         icon: CalendarClock,
@@ -122,6 +136,34 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Communication drafts',
+        path: '/communications/drafts',
+        icon: MessageSquareText,
+        description: 'Prepare internal communications for approved review and manual delivery.',
+        group: 'Operations',
+      },
+      {
+        label: 'Communication reviews',
+        path: '/communications/reviews',
+        icon: MessageSquareText,
+        description: 'Review and record decisions on internal communication drafts.',
+        group: 'Operations',
+      },
+      {
+        label: 'Message templates',
+        path: '/communications/templates',
+        icon: MessageSquareText,
+        description: 'Manage reusable private DLI communication templates.',
+        group: 'Operations',
+      },
+      {
+        label: 'Internal reminders',
+        path: '/communications/reminders',
+        icon: Bell,
+        description: 'Plan internal reminders without sending unsolicited messages.',
+        group: 'Operations',
+      },
+      {
         label: 'In-app announcements',
         path: '/announcements',
         icon: Bell,
@@ -136,6 +178,20 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Audit trail',
+        path: '/reports/audit',
+        icon: ChartNoAxesCombined,
+        description: 'Inspect authorised institutional audit events and change history.',
+        group: 'Operations',
+      },
+      {
+        label: 'Finance reviews',
+        path: '/finance/reviews',
+        icon: Wallet,
+        description: 'Review internal finance-policy proposals and their recorded decisions.',
+        group: 'Operations',
+      },
+      {
         label: 'Settings',
         path: '/settings',
         icon: Settings,
@@ -147,3 +203,14 @@ export const navigationSections: NavigationSection[] = [
 ];
 
 export const navigationItems = navigationSections.flatMap((section) => section.items);
+
+// Side navigation and dashboard cards intentionally consume this SAME registry.
+// A feature without a backend-enabled route must not be added as a live tool.
+export function permittedNavigation(
+  canOpen: (path: string) => boolean,
+): NavigationSection[] {
+  return navigationSections.map(section=>({
+    ...section,
+    items: section.items.filter(item=>canOpen(item.path)),
+  })).filter(section=>section.items.length>0);
+}

@@ -12,3 +12,10 @@
 .member-profile-identity{max-width:920px}
 .member-profile-identity p{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;overflow-wrap:anywhere}
 .member-profile-identity a{color:var(--purple);font-weight:750}
+
+.member-profile-birth-fields{display:grid;grid-template-columns:minmax(80px,1fr) minmax(140px,1.5fr) minmax(110px,1fr);gap:.65rem}
+.member-profile-birth-fields>div{display:grid;gap:.35rem;min-width:0}
+.member-profile-birth-fields label{font-size:.8rem;font-weight:700}
+.member-profile-birth-fields select,.member-profile-birth-fields input{box-sizing:border-box;width:100%;min-width:0;min-height:45px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);padding:.6rem;font:inherit}
+.member-profile-date-help{color:var(--muted)}
+@media(max-width:540px){.member-profile-birth-fields{grid-template-columns:1fr 1fr}.member-profile-birth-fields>div:last-child{grid-column:1/-1}}

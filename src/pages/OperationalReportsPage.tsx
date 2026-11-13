@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  BarChart3, BookOpen, CalendarDays, ClipboardCheck, FileText,
+  BarChart3, BookOpen, CalendarDays, ClipboardCheck, Download, FileText,
   GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck, Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import { createAggregateCsv } from '../lib/manualExports';
 import './AcademicSetupPage.css';
 import './OperationalReportsPage.css';
 
@@ -132,6 +133,31 @@ export default function OperationalReportsPage(){
   },[account?.role]);
   useEffect(()=>{void refresh();},[refresh]);
 
+  const exportReady=Boolean(permitted&&!loading&&checkedAt&&items.length
+    &&items.every(item=>{
+      const value=values[item.id];
+      return value&&!value.error&&value.count!==null&&Number.isSafeInteger(value.count);
+    }));
+  function downloadSummary(){
+    if(!exportReady||!checkedAt)return;
+    try{
+      const csv=createAggregateCsv(checkedAt,items.map(item=>({
+        category:item.category,label:item.label,count:values[item.id]!.count!,
+      })));
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a');
+      link.href=url;
+      link.download='dli-role-scoped-aggregate-'+checkedAt.slice(0,10)+'.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }catch{
+      setError('This snapshot cannot be exported until every visible count is verified.');
+    }
+  }
+
   const renderedAt = checkedAt
     ?new Intl.DateTimeFormat('en-NG',{
       timeZone:'Africa/Lagos',day:'numeric',month:'short',year:'numeric',
@@ -181,7 +207,7 @@ export default function OperationalReportsPage(){
           read under PostgreSQL Row Level Security. They are not
           institution-wide totals unless your role is authorised to
           view all relevant records. No financial figures, automated
-          comparisons, performance percentages or exports are generated.</p>
+          comparisons or performance percentages are generated. Only the verified\n          non-identifying aggregate counts can be downloaded.</p>
       </div>
     </div>
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -192,6 +218,11 @@ export default function OperationalReportsPage(){
       <button type="button" className="user-outline-button"
         disabled={loading||!permitted} onClick={()=>{void refresh();}}>
         <RefreshCw size={15}/> Refresh counts
+      </button>
+      <button type="button" className="user-outline-button"
+        disabled={!exportReady} onClick={downloadSummary}
+        title="Download only the verified counts you can already see">
+        <Download size={15}/> Export aggregate CSV
       </button>
     </div>
     {section('academic','Classes & academic content','Unified weekly teaching appears first; legacy course/cohort records are retained for learning resources and existing assessments. Student-to-class links are records, not unique people.')}
@@ -205,7 +236,7 @@ export default function OperationalReportsPage(){
     <p className="module-footnote"><LockKeyhole size={15}/>
       This is a restricted development dashboard, not a production
       financial statement or certified attendance report. Sensitive
-      downloads, bulk exports and unapproved policy settings remain disabled.
+      bulk personal-data exports and unapproved policy settings remain restricted.\n      The optional CSV contains only the counts visible to your current role.
     </p>
   </div>;
 }

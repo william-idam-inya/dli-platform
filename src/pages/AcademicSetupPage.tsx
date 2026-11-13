@@ -110,8 +110,9 @@ export default function AcademicSetupPage() {
 
   const activeProgrammes = programmes.filter(item => item.is_active);
   const activeLevels = levels.filter(item => item.is_active);
-  // The learning pathway must have an actual active course offering; bare
-  // programme/subject catalogue entries are not proof of offered lessons.
+  // This explorer shows approved active COURSE CATALOGUE records only.
+  // A teaching class, scheduled offering, tutor or student access requires
+  // separate approved course-offering and roster configuration.
   const availableCourses = useMemo(() => courses.filter(course =>
     course.is_active &&
     programmes.some(item => item.id === course.programme_id && item.is_active) &&
@@ -273,7 +274,7 @@ export default function AcademicSetupPage() {
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
           <h1>Academic structure</h1>
-          <p>Choose a DLI programme and academic level to see exactly which subjects we offer.</p>
+          <p>Choose a DLI programme and academic level to see configured curriculum subjects. Class availability requires a separate approved course offering.</p>
         </div>
       </div>
 
@@ -289,7 +290,7 @@ export default function AcademicSetupPage() {
       <div className="academic-overview-stats" aria-label="Academic catalogue totals">
         <div><LibraryBig size={19}/><strong>{activeProgrammes.length}</strong><span>Active programmes</span></div>
         <div><BookOpen size={19}/><strong>{subjects.filter(item => item.is_active).length}</strong><span>Subjects by level</span></div>
-        <div><GraduationCap size={19}/><strong>{availableCourses.length}</strong><span>Available courses</span></div>
+        <div><GraduationCap size={19}/><strong>{availableCourses.length}</strong><span>Active catalogue courses</span></div>
       </div>
 
       {loading ? (
@@ -328,7 +329,7 @@ export default function AcademicSetupPage() {
           <div className="academic-step">
             <div className="academic-step-title">
               <span className="academic-step-marker" aria-hidden="true">2</span>
-              <div><h2>Choose an academic level</h2><p>Only levels with an active course in the chosen programme appear here.</p></div>
+              <div><h2>Choose an academic level</h2><p>Only levels with an active curriculum course in this programme appear here.</p></div>
             </div>
             {offeredLevels.length === 0 ? (
               <p className="academic-empty">No academic levels are currently offered in this programme. Configure a course under Catalogue management.</p>
@@ -350,10 +351,10 @@ export default function AcademicSetupPage() {
           <div className="academic-step academic-step-last">
             <div className="academic-step-title">
               <span className="academic-step-marker" aria-hidden="true">3</span>
-              <div><h2>Available subjects</h2>
+              <div><h2>Catalogue subjects</h2>
                 <p>{selectedProgramme?.name}{selectedLevel ? ' · ' + selectedLevel.name : ''}</p>
               </div>
-              <span className="academic-available-count">{pathwayCourses.length} available</span>
+              <span className="academic-available-count">{pathwayCourses.length} configured</span>
             </div>
             {pathwayCourses.length > 0 ? (
               <div className="academic-subject-grid">
@@ -361,12 +362,12 @@ export default function AcademicSetupPage() {
                   <div className="academic-subject-tile" key={course.id}>
                     <span className="academic-subject-icon"><BookOpen size={18}/></span>
                     <strong>{subjectNameFor(course.subject_id)}</strong>
-                    <CheckCircle2 size={17} className="academic-subject-check" aria-label="Available"/>
+                    <CheckCircle2 size={17} className="academic-subject-check" aria-label="Active in the catalogue"/>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="academic-empty">No active subject offerings for this selection. Check Catalogue management below.</p>
+              <p className="academic-empty">No active catalogue subjects for this selection. Check Catalogue management below.</p>
             )}
           </div>
 
@@ -375,7 +376,7 @@ export default function AcademicSetupPage() {
             <div><strong>How do subjects and courses differ?</strong>
               <p>A subject is what DLI teaches (such as Mathematics).
                 A course is that subject offered within a particular DLI programme and academic level.
-                These course records are used to organise teaching; they are not individual classes or quizzes.</p>
+                These catalogue records do not mean a teaching class is published or a lesson or quiz is available. A cohort offering, matching roster and approved access are required separately.</p>
             </div>
           </div>
         </section>
