@@ -85,6 +85,9 @@ jobs:
       - name: Verify guided Academic Structure and preserved catalogue controls
         run: npm run check:academic-hierarchy
 
+      - name: Verify official DLI institutional logo consistency
+        run: npm run check:official-branding
+
       - name: Verify TypeScript
         run: npm run typecheck
 
