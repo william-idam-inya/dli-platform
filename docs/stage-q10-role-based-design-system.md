@@ -58,3 +58,22 @@ permitted routes, even when they are not a priority.
 Page routes, permitted roles, teaching classes, academic data, quizzes,
 assignments, notices, receipt verification and payment status are **unchanged**.
 New UI must not silently resurrect disabled payment, invitation or publishing flows.
+
+## Cloudflare mobile QA — laptop-free
+
+The `dli-platform-qa` Pages project now allows preview deployments from
+`feature/stage-q10-role-based-design-system`; production auto-deploys are
+still disabled, and the QA preview points exclusively to development Supabase.
+No Codespaces or localhost server needs to remain running after a GitHub push.
+
+1. Open the exact successful deployment URL from Cloudflare Pages → QA → Deployments.
+2. As a fresh signed-out visitor, verify the login screen appears (never a fake service outage).
+3. With authorised test accounts, verify the appropriate four mobile shortcuts,
+   all additional permitted pages under More, correct highlighting, and back navigation.
+4. Verify student Free/Paid differences, desktop group expansion, and the full
+   Learning & results tabs (Lessons, Assignments, Quizzes, Attendance).
+5. Review on 320px, 375px and desktop, with touch and keyboard including Escape.
+6. Do not attempt actual payment or release to production based on design QA.
+
+The preview URL must remain a development-only test address until the Q10
+PR receives independent signed-in device acceptance and reviewer signoff.
