@@ -26,3 +26,11 @@
 .learning-hub-access-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.9rem}
 .learning-hub-access-actions a{display:inline-flex;gap:.4rem;align-items:center}
 @media(max-width:510px){.learning-hub-access{flex-direction:column}}
+
+/* Skill Tree gets a compact first-class location without changing legacy tabs. */
+@media(max-width:510px){
+ .learning-hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .learning-hub-tabs button{padding:.65rem;align-items:center}
+ .learning-hub-tabs button small{display:none}
+ .learning-hub-tabs button strong{font-size:.8rem}
+}
