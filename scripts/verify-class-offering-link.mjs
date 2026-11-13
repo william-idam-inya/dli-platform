@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
-const sql=readFileSync(new URL('../supabase/migrations/20261113134200_stage_q10_teaching_offering_link.sql',import.meta.url),'utf8');
+const sql=readFileSync(new URL('../supabase/migrations/20261113135357_stage_q10_teaching_offering_link.sql',import.meta.url),'utf8');
 const ui=readFileSync(new URL('../src/pages/ClassesWorkspacePage.tsx',import.meta.url),'utf8');
 const permissions=readFileSync(new URL('../src/auth/permissions.ts',import.meta.url),'utf8');
 
