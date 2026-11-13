@@ -311,6 +311,10 @@
     {
       "file": "20261113135357_stage_q10_teaching_offering_link.sql",
       "gitBlobSha1": "552a3107cf07598cb7b12a07890ca2cd65019f4e"
+    },
+    {
+      "file": "20261113140333_stage_q10a_linked_class_roster_reconcile.sql",
+      "gitBlobSha1": "8c7810a2579e519fea3df3e3100b0e5df97d181f"
     }
   ]
 }
