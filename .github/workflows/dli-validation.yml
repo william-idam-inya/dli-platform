@@ -91,6 +91,9 @@ jobs:
       - name: Verify safe role and mobile UI production parity
         run: npm run check:q15-production-ui
 
+      - name: Verify Q16 administrator-routed secure direct messaging
+        run: npm run check:q16-admin-routed-chat
+
       - name: Verify TypeScript
         run: npm run typecheck
 

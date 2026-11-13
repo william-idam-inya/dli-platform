@@ -57,3 +57,47 @@
 
 .dli-direct-drafts-link{font-size:.78rem;color:var(--muted);margin:.65rem 0}
 .dli-direct-drafts-link a{color:var(--purple);font-weight:750}
+
+
+/* Q16: staff-routed direct chat: clear action state, reachable composer. */
+.dli-direct-contacts section>button,
+.dli-direct-conversations button {min-height:46px;}
+.dli-direct-sidebar section>button:focus-visible,
+.dli-direct-compose textarea:focus-visible {
+  outline:2px solid var(--purple);
+  outline-offset:2px;
+}
+.dli-direct-thread {
+  scroll-margin-top:80px;
+}
+.dli-direct-compose textarea {
+  box-sizing:border-box;
+  width:100%;
+  min-height:82px;
+  font-size:14px;
+}
+.dli-direct-compose button {
+  min-height:44px;
+  justify-content:center;
+}
+.dli-direct-class-paused {
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  color:var(--text);
+  background:var(--surface-soft);
+  line-height:1.5;
+  font-size:.85rem;
+}
+@media(max-width:750px) {
+  .dli-direct-layout{grid-template-columns:minmax(0,1fr);}
+  .dli-direct-sidebar{max-height:270px;}
+  .dli-direct-thread{min-height:480px;}
+  .dli-direct-message-list{min-height:180px;max-height:370px;}
+  .dli-direct-compose{padding:12px;}
+  .dli-direct-compose>div{flex-wrap:wrap;}
+  .dli-direct-compose button{min-width:105px;}
+}
+@media(max-width:380px) {
+  .dli-direct-compose button{width:100%;}
+}
