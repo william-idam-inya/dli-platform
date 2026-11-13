@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
 import './MemberProfilePage.css';
 
 function nigeriaToday():string{
@@ -40,6 +41,7 @@ export default function MemberProfilePage(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState<string|null>(null);
  const [notice,setNotice]=useState<string|null>(null);
+ const [photoStatus,setPhotoStatus]=useState<string|null>(null);
 
  const refresh=useCallback(async()=>{
    if(!supabase||!account){setLoading(false);return;}
@@ -72,44 +74,82 @@ export default function MemberProfilePage(){
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>()=>{if(picture)URL.revokeObjectURL(picture);},[picture]);
 
+ async function uploadPhoto(cropped:Blob){
+  if(!supabase||!account||!userId||busy||loading)throw new Error('Your account is not ready. Refresh your profile and try again.');
+  const clean=name.trim(),dob=validBirthDate(birthYear,birthMonth,birthDay);
+  if(!profile&&(!dob||clean.length<2||clean.length>160))
+   throw new Error('Complete your full name and date of birth first, then upload your first profile photo.');
+  if(!cropped.size||cropped.size>2*1024*1024)
+   throw new Error('Your cropped photo is too large. Choose another image.');
+  const client=supabase;
+  const path=userId+'/'+crypto.randomUUID()+'.jpg';
+  let uploaded=false,linked=false;
+  setBusy(true);setError(null);setNotice(null);setPhotoStatus('Uploading photo securely…');
+  try{
+   // A new object key avoids overwriting an existing private photo.
+   const upload=await client.storage.from('dli-member-avatars').upload(path,cropped,
+     {contentType:'image/jpeg',upsert:false,cacheControl:'3600'});
+   if(upload.error)throw new Error('Photo upload was not accepted by secure storage. Check your connection and retry.');
+   uploaded=true;setPhotoStatus('Saving photo to your profile…');
+   const result=profile
+    ?await client.from('dli_member_profiles').update({avatar_path:path})
+      .eq('user_id',userId).select('user_id,avatar_path').maybeSingle()
+    :await client.from('dli_member_profiles').insert({
+       user_id:userId,personal_name:clean,date_of_birth:dob!,avatar_path:path,preferred_theme:theme,
+      }).select('user_id,avatar_path').maybeSingle();
+   if(result.error||result.data?.avatar_path!==path)
+    throw new Error('The photo reached storage, but your profile could not be updated. Please retry.');
+   linked=true;setPhotoStatus('Verifying your saved photo…');
+   const checked=await client.from('dli_member_profiles')
+     .select('avatar_path').eq('user_id',userId).maybeSingle();
+   if(checked.error||checked.data?.avatar_path!==path)
+    throw new Error('The photo was saved, but its profile link could not be verified. Refresh your profile before uploading again.');
+   const stored=await client.storage.from('dli-member-avatars').download(path);
+   if(stored.error||!stored.data)
+    throw new Error('The photo was saved, but its private preview could not be loaded. Refresh your profile before uploading again.');
+   const pictureUrl=URL.createObjectURL(stored.data);
+   setPicture(previous=>{if(previous)URL.revokeObjectURL(previous);return pictureUrl;});
+   setProfile(previous=>previous?{...previous,avatar_path:path}:{
+      user_id:userId,personal_name:clean,date_of_birth:dob!,avatar_path:path,
+      preferred_theme:theme,updated_at:new Date().toISOString(),
+   });
+   setPhoto(null);setPhotoStatus('Photo uploaded and verified in private cloud storage.');
+   setNotice('Profile photo saved. Your picture should now appear in the top-right account circle.');
+   window.dispatchEvent(new CustomEvent('dli-profile-changed'));
+   // Best-effort cleanup of an old unreferenced image; does not block success.
+   if(profile?.avatar_path&&profile.avatar_path!==path)
+     void client.storage.from('dli-member-avatars').remove([profile.avatar_path]);
+  }catch(cause){
+   if(uploaded&&!linked)await client.storage.from('dli-member-avatars').remove([path]);
+   const message=cause instanceof Error?cause.message:'Photo could not be uploaded. Please retry.';
+   setPhotoStatus(linked?'Saved to your account, but final verification needs a refresh.':'Photo upload was not completed.');
+   setError(message);
+   // The editor stays open on a failed pre-link upload, so cropping is not lost.
+   if(linked){setPhoto(null);window.dispatchEvent(new CustomEvent('dli-profile-changed'));}
+   throw new Error(message);
+  }finally{setBusy(false);}
+ }
+
  async function save(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(!supabase||busy||!userId||!account)return;
-  const clean=name.trim();
-  const dob=validBirthDate(birthYear,birthMonth,birthDay);
+  const clean=name.trim(),dob=validBirthDate(birthYear,birthMonth,birthDay);
   if(clean.length<2||clean.length>160||!dob){
     setError('Enter your name and a valid date of birth.');return;
   }
-  if(!profile&&!photo){setError('A profile picture is required to complete first-time onboarding.');return;}
+  if(!profile){setError('Choose a photo, crop it and click Upload photo before saving your profile details.');return;}
   setBusy(true);setError(null);setNotice(null);
-  let avatarPath=profile?.avatar_path??null;
-  let justUploaded:string|null=null;
   try{
-   if(photo){
-    const types:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-    const ext=types[photo.type];
-    if(!ext||photo.size<1||photo.size>2*1024*1024){
-      setError('The profile photo must be JPEG, PNG or WEBP and at most 2 MB.');return;
-    }
-    justUploaded=userId+'/'+crypto.randomUUID()+'.'+ext;
-    const upload=await supabase.storage.from('dli-member-avatars').upload(justUploaded,photo,
-      {contentType:photo.type,upsert:false});
-    if(upload.error){setError('Could not upload your private profile photo.');return;}
-    avatarPath=justUploaded;
-   }
-   const data={personal_name:clean,date_of_birth:dob,avatar_path:avatarPath,preferred_theme:theme};
-   const result=profile
-    ? await supabase.from('dli_member_profiles').update(data).eq('user_id',userId).select('user_id').maybeSingle()
-    : await supabase.from('dli_member_profiles').insert({user_id:userId,...data}).select('user_id').maybeSingle();
+   const result=await supabase.from('dli_member_profiles')
+     .update({personal_name:clean,date_of_birth:dob,preferred_theme:theme})
+     .eq('user_id',userId).select('user_id').maybeSingle();
    if(result.error||!result.data){
-     if(justUploaded)await supabase.storage.from('dli-member-avatars').remove([justUploaded]);
-     setError('Profile save was not confirmed. Refresh before trying again.');return;
+     setError('Profile details were not saved. Please retry.');return;
    }
-   setPhoto(null);setNotice('Your private profile and device-independent preferences were saved.');
+   setNotice('Your personal details and display preference were saved.');
    window.dispatchEvent(new CustomEvent('dli-profile-changed'));
    await refresh();
-  }catch{
-   setError('Profile update could not be confirmed. Refresh before retrying.');
-  }finally{setBusy(false);}
+  }catch{setError('Profile update could not be confirmed. Refresh before retrying.');}
+  finally{setBusy(false);}
  }
  const themeOptions=[['system','Follow my device'],['light','Light mode'],['dark','Dark mode']] as const;
  return <div className="module-page member-profile-page">
@@ -129,17 +169,34 @@ export default function MemberProfilePage(){
   <section className="panel member-profile-main">
    <div className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
     <h2>{profile?'Your saved profile':'Complete your profile'}</h2>
-    <p className="user-caption">A profile picture is required during first-time onboarding. You can change it later. DLI cloud storage supports cross-device sign-in; Google Drive syncing requires a separate authorised connection.</p>
+    <p className="user-caption">Choose a picture, adjust the crop, then select Upload photo. The photo is saved to your private DLI cloud storage and remains available across devices. Saving other profile details is a separate action.</p>
    </div><button type="button" className="user-outline-button" onClick={()=>void refresh()} disabled={loading||busy}><RefreshCw size={15}/> Refresh</button></div>
    <form className="member-profile-form" onSubmit={e=>void save(e)}>
     <div className="member-profile-photo">
-      {picture?<img src={picture} alt="Your private profile photo"/>:<span><UserRound size={32}/></span>}
-      <div><label htmlFor="member-photo"><Camera size={16}/> Profile picture {profile?'(change optional)':'(required for first login)'}</label>
-        <input id="member-photo" type="file" required={!profile&&!picture} accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-          onChange={e=>setPhoto(e.target.files?.[0]??null)}/>
-        <small>JPEG, PNG or WEBP, maximum 2 MB</small>
+      {picture?<img src={picture} alt="Your saved private profile photo"/>:<span><UserRound size={32}/></span>}
+      <div className="member-profile-photo-chooser">
+        <label htmlFor="member-photo"><Camera size={16}/> Profile picture {profile?'(change optional)':'(required for first login)'}</label>
+        <input id="member-photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          disabled={busy||loading}
+          onChange={event=>{
+           const selected=event.currentTarget.files?.[0]??null;
+           event.currentTarget.value='';
+           setNotice(null);setError(null);setPhotoStatus(null);
+           if(!selected){return;}
+           if(!['image/jpeg','image/png','image/webp'].includes(selected.type)||!selected.size||selected.size>2*1024*1024){
+             setPhoto(null);setError('Choose a JPEG, PNG or WEBP image no larger than 2 MB.');return;
+           }
+           setPhoto(selected);
+          }}/>
+        <small>JPEG, PNG or WEBP, maximum 2 MB. After choosing a file, crop it below and click Upload photo.</small>
+        <span className="member-photo-cloud-state" aria-live="polite">
+          {photoStatus??(picture?'Saved photo is available in your DLI cloud account.':'No saved photo could be displayed.')}
+        </span>
       </div>
     </div>
+    {photo&&<ProfilePhotoEditor file={photo} disabled={busy||loading}
+      onCancel={()=>{setPhoto(null);setPhotoStatus(null);}}
+      onUpload={uploadPhoto}/>}
     <label htmlFor="member-profile-name">Full name</label>
     <input id="member-profile-name" required minLength={2} maxLength={160} autoComplete="name"
       value={name} onChange={e=>setName(e.target.value)}/>
@@ -167,8 +224,8 @@ export default function MemberProfilePage(){
     <select id="member-profile-theme" value={theme} onChange={e=>setTheme(e.target.value as Profile['preferred_theme'])}>
       {themeOptions.map(([value,label])=><option value={value} key={value}>{label}</option>)}
     </select>
-    <button type="submit" className="academic-submit" disabled={loading||busy}>
-      <Save size={16}/>{busy?'Saving profile…':'Save my profile'}
+    <button type="submit" className="academic-submit" disabled={loading||busy||!profile}>
+      <Save size={16}/>{busy?'Saving profile…':'Save personal details'}
     </button>
    </form>
   </section>
