@@ -334,6 +334,29 @@ export default function DirectMessagesPage(){
     }catch{setError('Could not confirm file download access.');}
     finally{setBusy(false);}
   }
+  async function playPrivateMedia(file:DirectFile){
+    if(!supabase||busy)return;
+    if(playback[file.id])return;
+    setBusy(true);setError(null);
+    try{
+      if(mode==='oversight'){
+        const ticket=await supabase.rpc('dli_direct_authorise_file_review',{p_file:file.id});
+        if(ticket.error||ticket.data!==true){
+          setError('Audited media-review permission was not granted.');return;
+        }
+      }
+      // No public or shareable media URL: fetch via the member's JWT,
+      // then generate a local-only blob URL for explicit inline playback.
+      const response=await supabase.storage.from('dli-chat-files').download(file.object_path);
+      if(response.error||!response.data){
+        setError('This private recording is not accessible to your account.');return;
+      }
+      const url=URL.createObjectURL(response.data);
+      playableUrls.current.push(url);
+      setPlayback(prev=>({...prev,[file.id]:url}));
+    }catch{setError('The private recording could not be loaded.');}
+    finally{setBusy(false);}
+  }
   async function reportMessage(message:DirectMessage){
     if(!supabase||busy||mode==='oversight')return;
     const reason=window.prompt('Briefly describe the concern (spam, abuse or safety). Do not include sensitive unrelated information.','');
@@ -365,13 +388,13 @@ export default function DirectMessagesPage(){
       <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
         <h1>Messages</h1><p>Private conversations with authorised DLI members, in any language.</p>
       </div>
-      <span className="module-status"><span/> Stage N1</span>
+      <button type="button" className="user-outline-button" onClick={()=>void enableAlerts()}>
+        <BellRing size={16}/> Enable browser alerts
+      </button>
     </div>
     <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
       <strong>Institutional messaging with safeguarding oversight</strong>
-      <p>Founder and Admin may inspect institutional messages for safeguarding and spam prevention.
-        Their oversight openings are audited. Students in the same published group class may contact each other only when both have DLI messaging approval; Student–Tutor contact also requires an approved class relationship.
-        Contact DLI staff directly for urgent safeguarding concerns.</p>
+      <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is audited for safeguarding and abuse prevention. Always report unsafe messages.</p>
     </div></div>
     {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
       Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
@@ -484,6 +507,6 @@ export default function DirectMessagesPage(){
       </section>
     </div>
     </>}
-    <p className="module-footnote"><Users size={14}/> Direct and subject conversations appear here. Direct-chat files use private download rules. Push notifications, delivery/read receipts and group conversations are not yet enabled.</p>
+    <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
   </div>;
 }
