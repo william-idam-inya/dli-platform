@@ -82,6 +82,9 @@ jobs:
       - name: Verify fresh-browser guest login remains accessible
         run: npm run check:guest-login
 
+      - name: Verify guided Academic Structure and preserved catalogue controls
+        run: npm run check:academic-hierarchy
+
       - name: Verify TypeScript
         run: npm run typecheck
 
