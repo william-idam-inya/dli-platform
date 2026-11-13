@@ -79,6 +79,9 @@ jobs:
       - name: Verify Q10 paid-only class/offering association and RLS contract
         run: npm run check:class-offering-link
 
+      - name: Verify Cloudflare QA and production environment isolation
+        run: npm run check:deployment-identity
+
       - name: Verify signed-out login and fail-closed Auth behavior
         run: npm run check:auth-guest-recovery
 
