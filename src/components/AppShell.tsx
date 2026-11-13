@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
+import OfficialDliLogo from './OfficialDliLogo';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -32,7 +33,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="sidebar-inner">
       <NavLink to="/" className="brand" onClick={onNavigate} aria-label="DLI Platform home">
-        <span className="brand-mark">DLI</span>
+        <span className="brand-mark"><OfficialDliLogo decorative /></span>
         <span className="brand-copy">
           <strong>DLI Platform</strong>
           <small>Detailed Learning Institute</small>
@@ -40,7 +41,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </NavLink>
 
       <div className="workspace-switcher">
-        <span className="workspace-avatar">D</span>
+        <span className="workspace-avatar"><OfficialDliLogo decorative /></span>
         <span className="workspace-copy">
           <strong>DLI Workspace</strong>
           <small>{account ? accountRoleLabel(account) : 'Institutional workspace'}</small>
