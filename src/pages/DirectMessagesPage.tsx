@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -28,6 +28,8 @@ export default function DirectMessagesPage(){
   const {account}=useAuth();
   const [params]=useSearchParams();
   const [uid,setUid]=useState('');
+  const threadRef=useRef<HTMLElement>(null);
+  const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
   const [threads,setThreads]=useState<Thread[]>([]);
   const [reports,setReports]=useState<Report[]>([]);
@@ -41,6 +43,7 @@ export default function DirectMessagesPage(){
   const [section,setSection]=useState<'direct'|'class'>(params.get('section')==='class'?'class':'direct');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
+  const [openingContactId,setOpeningContactId]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
   const moderator=isOversight(account?.role);
@@ -50,7 +53,7 @@ export default function DirectMessagesPage(){
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
 
   const load=useCallback(async()=>{
-    if(!supabase||!account)return;
+    if(!supabase||!account){setLoading(false);return;}
     try{
       const [auth,directory,inbox,flags]=await Promise.all([
         supabase.auth.getUser(),
@@ -103,25 +106,60 @@ export default function DirectMessagesPage(){
   useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
+  useEffect(()=>{
+    if(!activeId||mode!=='inbox')return;
+    // A confirmed conversation should reveal its composer, even when the
+    // directory is scrolled or the layout is stacked on a phone.
+    const frame=window.requestAnimationFrame(()=>{
+      threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
+      composeRef.current?.focus({preventScroll:true});
+    });
+    return()=>window.cancelAnimationFrame(frame);
+  },[activeId,mode]);
   async function openContact(c:Contact){
-    if(!supabase||busy||!uid)return;
-    setBusy(true);setNotice(null);setError(null);
+    if(!supabase||busy)return;
+    if(!uid){setError('Your DLI account is still being verified. Select Refresh and retry.');return;}
+    setBusy(true);setOpeningContactId(c.user_id);setNotice(null);setError(null);
     const [a,b]=[uid,c.user_id].sort((x,y)=>x.localeCompare(y));
     try{
+      const showThread=(thread:Thread)=>{
+        setThreads(previous=>previous.some(item=>item.id===thread.id)
+          ? previous : [thread,...previous]);
+        setMode('inbox');setActiveId(thread.id);
+        setNotice('Conversation opened. You can type a message below; nothing has been sent yet.');
+      };
       const existing=threads.find(t=>t.participant_a===a&&t.participant_b===b);
-      if(existing){setMode('inbox');setActiveId(existing.id);return;}
+      if(existing){showThread(existing);return;}
       const result=await supabase.from('dli_direct_threads')
-        .insert({participant_a:a,participant_b:b}).select('id').maybeSingle();
+        .insert({participant_a:a,participant_b:b})
+        .select('id,participant_a,participant_b,created_at').maybeSingle();
       if(result.error||!result.data){
-        // A duplicate (for example from simultaneous requests) should be
-        // recovered by refreshing the server-provided inbox.
-        await load();
-        setError('Conversation could not be opened. Refresh the list and retry.');return;
+        if(result.error?.code==='23505'){
+          // Another session created the same conversation: recover its
+          // verified row without blindly sending another insert.
+          const duplicate=await supabase.from('dli_direct_threads')
+            .select('id,participant_a,participant_b,created_at')
+            .eq('participant_a',a).eq('participant_b',b).maybeSingle();
+          if(!duplicate.error&&duplicate.data){showThread(duplicate.data);return;}
+        }
+        if(result.error?.code==='42501'||result.error?.code==='42503'){
+          setError('DLI denied this conversation for your current account or contact. Refresh the directory and confirm both accounts are active.');
+        }else if(result.error?.code==='PGRST301'){
+          setError('Your sign-in session needs renewal before starting a conversation.');
+        }else{
+          setError('The server did not confirm that this conversation opened. Refresh and retry. Nothing was sent.');
+        }
+        return;
       }
-      setMode('inbox');setActiveId(result.data.id);
+      // Keep the server-confirmed thread in view immediately; an inbox
+      // refresh may run later and must not hide the new composer.
+      showThread(result.data);
       await load();
-    }catch{setError('Could not create a verified conversation.');}
-    finally{setBusy(false);}
+    }catch{
+      setError('The conversation request could not be confirmed. Nothing was sent. Check your connection and retry.');
+    }finally{
+      setBusy(false);setOpeningContactId(null);
+    }
   }
   async function cleanupFile(path:string,id:string):Promise<boolean>{
     if(!supabase)return false;
@@ -272,10 +310,17 @@ export default function DirectMessagesPage(){
         {mode==='inbox'&&<section className="dli-direct-contacts">
           <h2>Start a chat</h2>
           {contacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
-            <button type="button" disabled={busy} key={c.user_id} onClick={()=>void openContact(c)}>
+            <button type="button" disabled={busy||loading||!uid} key={c.user_id}
+              onClick={()=>void openContact(c)}
+              aria-label={'Start a private chat with '+c.full_name}
+              aria-busy={openingContactId===c.user_id}
+              className={current&&(current.participant_a===c.user_id||current.participant_b===c.user_id)?'selected':''}>
               <span className="dli-direct-avatar">{c.full_name.charAt(0).toUpperCase()}</span>
-              <span><strong>{c.full_name}</strong><small>{c.member_role.replaceAll('_',' ')}</small></span>
+              <span><strong>{c.full_name}</strong>
+                <small>{openingContactId===c.user_id?'Opening conversation…':c.member_role.replaceAll('_',' ')}</small>
+              </span>
             </button>)}
+          {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
           {!contacts.length&&!loading&&<p className="dli-direct-empty">No authorised contacts yet. Assigned tutors and students from your approved group classes appear after class and messaging approvals.</p>}
         </section>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
@@ -303,7 +348,7 @@ export default function DirectMessagesPage(){
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
       </aside>
-      <section className="dli-direct-thread" aria-label="Selected conversation">
+      <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
         {!current?<div className="dli-direct-placeholder"><MessageCircle size={35}/>
           <h2>Select a conversation</h2>
           <p>Search for an authorised DLI member and open a private chat.</p></div>:<>
@@ -332,7 +377,7 @@ export default function DirectMessagesPage(){
           </div>
           {mode==='inbox'?<form className="dli-direct-compose" onSubmit={e=>void send(e)}>
             <label htmlFor="direct-draft">Your message</label>
-            <textarea id="direct-draft" maxLength={2000} rows={2} value={draft}
+            <textarea id="direct-draft" ref={composeRef} maxLength={2000} rows={2} value={draft}
               placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
             <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
               Optional file (PDF, image, TXT, DOCX, XLSX, PPTX; up to 10 MB)
