@@ -43,7 +43,8 @@
     "check:mobile-academic-acceptance": "node scripts/verify-mobile-academic-acceptance.mjs",
     "check:login-autofill": "node scripts/verify-login-autofill.mjs",
     "check:qa-user-registry": "node scripts/verify-qa-user-registry.mjs",
-    "check:user-lifecycle": "node --experimental-strip-types scripts/verify-user-lifecycle.mjs"
+    "check:user-lifecycle": "node --experimental-strip-types scripts/verify-user-lifecycle.mjs",
+    "check:user-actions": "node --experimental-strip-types scripts/verify-user-actions.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

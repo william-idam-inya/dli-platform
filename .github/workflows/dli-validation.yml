@@ -98,6 +98,9 @@ jobs:
       - name: Verify reversible user lifecycle and audited deletion alternative
         run: npm run check:user-lifecycle
 
+      - name: Verify visible account-action dialogs and server-backed role saves
+        run: npm run check:user-actions
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
