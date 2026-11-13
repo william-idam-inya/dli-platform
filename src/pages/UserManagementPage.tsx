@@ -190,7 +190,9 @@ export default function UserManagementPage() {
           <div>
             <p className="section-kicker">AUTHORISED DIRECTORY</p>
             <h2>Account registry</h2>
-            <p className="user-caption">Displaying {users.length} accounts visible to your role. The list is not a system-wide total.</p>
+            <p className="user-caption">{error
+              ? 'The directory is temporarily unavailable; no account count has been verified.'
+              : `Displaying ${users.length} accounts visible to your role. The list is not a system-wide total.`}</p>
           </div>
           <button type="button" className="user-outline-button" onClick={() => { void loadUsers(true); void loadAudit(); }} disabled={loading || Boolean(saving)}>
             <RefreshCw size={16}/> Refresh
@@ -215,6 +217,8 @@ export default function UserManagementPage() {
         </div>
         {loading ? (
           <p role="status" className="user-empty"><Clock3 size={17}/> Loading authorised accounts…</p>
+        ) : error ? (
+          <p className="user-empty" role="status">The registry has not loaded. Select Refresh to try again; no account count is available.</p>
         ) : visible.length === 0 ? (
           <p className="user-empty">No accounts match this view.</p>
         ) : (
