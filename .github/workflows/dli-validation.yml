@@ -103,6 +103,9 @@ jobs:
       - name: Verify guided Academic Structure and preserved catalogue controls
         run: npm run check:academic-hierarchy
 
+      - name: Verify Q13 role mobile links and programme-level academic workflows
+        run: npm run check:mobile-academic-acceptance
+
       - name: Verify TypeScript
         run: npm run typecheck
 
