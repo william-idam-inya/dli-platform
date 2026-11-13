@@ -62,7 +62,7 @@ export default function DashboardPage(){
       <div className="status-banner-copy">
         <strong>Role-restricted academic workspace</strong>
         <span>Classes, timetables, fees and learning materials are connected by verified DLI accounts.
-          Transfer receipts require manual bank-credit verification. The development platform is not yet a live payment or production service.</span>
+          Transfer receipts require independent manual bank-credit verification. This is a restricted institutional workspace; automated online payments and tutor payouts are not enabled.</span>
       </div>
     </section>
     {canAccessPath(account?.role??'student','/classes',account?.studentTier)&&<section className="panel unified-overview-snapshot">
