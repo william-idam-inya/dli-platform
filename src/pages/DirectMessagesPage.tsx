@@ -134,9 +134,10 @@ export default function DirectMessagesPage(){
           const duplicate=await supabase.from('dli_direct_threads')
             .select('id,participant_a,participant_b,created_at')
             .eq('participant_a',a).eq('participant_b',b).maybeSingle();
-          if(!duplicate.error&&duplicate.data){
-            setThreads(old=>old.some(t=>t.id===duplicate.data.id)?old:[duplicate.data,...old]);
-            setMode('inbox');setActiveId(duplicate.data.id);
+          const found=duplicate.data;
+          if(!duplicate.error&&found){
+            setThreads(old=>old.some(t=>t.id===found.id)?old:[found,...old]);
+            setMode('inbox');setActiveId(found.id);
             return;
           }
         }
@@ -151,11 +152,12 @@ export default function DirectMessagesPage(){
       }
       // Display the working composer straight away, without waiting on an inbox
       // refresh or assuming a newly-created thread is already in React state.
-      setThreads(old=>old.some(t=>t.id===result.data.id)?old:[
-        {id:result.data.id,participant_a:a,participant_b:b,created_at:new Date().toISOString()},
+      const newThread=result.data;
+      setThreads(old=>old.some(t=>t.id===newThread.id)?old:[
+        {id:newThread.id,participant_a:a,participant_b:b,created_at:new Date().toISOString()},
         ...old,
       ]);
-      setMode('inbox');setActiveId(result.data.id);
+      setMode('inbox');setActiveId(newThread.id);
       await load();
     }catch{setError('The secure chat service could not open a conversation. Nothing was sent.');}
     finally{setBusy(false);}
