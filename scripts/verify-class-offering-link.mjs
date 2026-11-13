@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
 const sql=readFileSync(new URL('../supabase/migrations/20261113135357_stage_q10_teaching_offering_link.sql',import.meta.url),'utf8');
+const syncSql=readFileSync(new URL('../supabase/migrations/20261113140333_stage_q10a_linked_class_roster_reconcile.sql',import.meta.url),'utf8');
 const ui=readFileSync(new URL('../src/pages/ClassesWorkspacePage.tsx',import.meta.url),'utf8');
 const permissions=readFileSync(new URL('../src/auth/permissions.ts',import.meta.url),'utf8');
 
@@ -39,6 +40,28 @@ for(const excluded of [
   /update\s+public\.dli_operational_controls/i,
   /create\s+policy\s+.*\s+to\s+anon/i,
 ]) assert.doesNotMatch(sql,excluded,'Q10 must not bypass consent or payment checks.');
+for (const pattern of [
+  /private\.current_role\(\)<>'admin'/,
+  /pg_catalog\.pg_advisory_xact_lock\(825101\)/,
+  /from public\.teaching_class_members m/,
+  /private\.dli_is_paid\(m\.student_id\)/,
+  /update public\.student_enrolments e/,
+  /insert into public\.student_enrolments/,
+  /on conflict \(offering_id,student_id\) do update/,
+  /create function public\.dli_reconcile_linked_class_roster/,
+  /revoke all on function public\.dli_reconcile_linked_class_roster/,
+  /grant execute on function public\.dli_reconcile_linked_class_roster/,
+]) assert.match(syncSql,pattern,'Q10A explicitly synchronises only vetted paid offering memberships');
+for (const excluded of [
+  /insert\s+into\s+public\.dli_student_entitlements/i,
+  /update\s+public\.dli_student_entitlements/i,
+  /update\s+public\.dli_operational_controls/i,
+  /insert\s+into\s+public\.dli_enrollment_requests/i,
+  /insert\s+into\s+auth\.users/i,
+]) assert.doesNotMatch(syncSql,excluded,'Roster reconciliation must not create payment or authorisation rights.');
+assert.match(ui,/dli_reconcile_linked_class_roster/);
+assert.match(ui,/Reconcile approved academic roster/);
+
 assert.match(ui,/dli_link_class_to_offering/);
 assert.match(ui,/canLinkOffering=account\?\.role==='admin'/);
 assert.match(ui,/class_type!=='free_demo'/);
@@ -47,4 +70,4 @@ assert.match(permissions,/FREE_STUDENT_ROUTES=/);
 assert.ok(!permissions.includes("'/quizzes','/learning'") ||
   !permissions.includes("const FREE_STUDENT_ROUTES=new Set(['/','/profile','/quizzes'"),
   'Free Students must never gain the protected quiz route.');
-console.log('Q10 explicit class-offering linkage security contracts passed.');
+console.log('Q10 class-offering linkage and atomic Admin roster reconciliation security contracts passed.');
