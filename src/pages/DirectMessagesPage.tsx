@@ -115,12 +115,29 @@ export default function DirectMessagesPage(){
   },[account?.id,moderator]);
   useEffect(()=>{void load();const timer=window.setInterval(()=>{void load();},20000);return()=>window.clearInterval(timer);},[load]);
 
+  const lastMessage=useMemo(()=>{
+    const index=new Map<string,DirectMessage>();
+    for(const msg of recentMessages)if(!index.has(msg.thread_id))index.set(msg.thread_id,msg);
+    return index;
+  },[recentMessages]);
+  const readIndex=useMemo(()=>new Map(reads.map(r=>[r.thread_id+'|'+r.reader_id,r.seen_at])),[reads]);
+  const unreadInThread=(threadId:string)=>recentMessages.filter(msg=>
+    msg.thread_id===threadId && msg.sender_id!==uid &&
+    (!readIndex.get(threadId+'|'+uid) ||
+      new Date(msg.created_at)>new Date(readIndex.get(threadId+'|'+uid)!))).length;
   const visible=useMemo(()=>threads.filter(t=>mode==='oversight'||
     t.participant_a===uid||t.participant_b===uid).filter(t=>{
+    if(chatFilter==='unread'&&mode==='inbox'&&!recentMessages.some(m=>
+      m.thread_id===t.id&&m.sender_id!==uid&&
+      (!readIndex.get(t.id+'|'+uid)||new Date(m.created_at)>new Date(readIndex.get(t.id+'|'+uid)!))))return false;
     if(!search.trim())return true;
     const text=(memberName(t.participant_a)+' '+memberName(t.participant_b)).toLowerCase();
     return text.includes(search.toLowerCase().trim());
-  }),[threads,uid,contacts,search,mode]);
+  }).sort((a,b)=>{
+    const pinned=Number(pins.includes(b.id))-Number(pins.includes(a.id));
+    return pinned||new Date(lastMessage.get(b.id)?.created_at??b.created_at).getTime()-
+      new Date(lastMessage.get(a.id)?.created_at??a.created_at).getTime();
+  }),[threads,uid,contacts,search,mode,chatFilter,reads,recentMessages,pins,lastMessage,readIndex]);
 
   const loadThread=useCallback(async(id:string)=>{
     if(!supabase||!id)return;
@@ -141,8 +158,34 @@ export default function DirectMessagesPage(){
         .eq('thread_id',id).eq('is_ready',true).limit(100);
       if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
       setFiles((attachments.data??[]) as DirectFile[]);
+      if(mode==='inbox'&&uid){
+        // Only the actual participant marks their own read position. The DB
+        // assigns the timestamp and enforces both identity and relationship.
+        const updated=await supabase.from('dli_direct_reads')
+          .update({seen_at:new Date().toISOString()})
+          .eq('thread_id',id).eq('reader_id',uid)
+          .select('thread_id,reader_id,seen_at').maybeSingle();
+        let saved=updated.data;
+        if(!updated.error&&!saved){
+          const created=await supabase.from('dli_direct_reads')
+            .insert({thread_id:id,reader_id:uid})
+            .select('thread_id,reader_id,seen_at').maybeSingle();
+          if(!created.error)saved=created.data;
+          else if(created.error.code==='23505'){
+            const retry=await supabase.from('dli_direct_reads')
+              .update({seen_at:new Date().toISOString()})
+              .eq('thread_id',id).eq('reader_id',uid)
+              .select('thread_id,reader_id,seen_at').maybeSingle();
+            if(!retry.error)saved=retry.data;
+          }
+        }
+        if(saved){
+          setReads(prev=>[...prev.filter(r=>!(r.thread_id===id&&r.reader_id===uid)),saved]);
+          window.dispatchEvent(new Event('dli-direct-messages-changed'));
+        }
+      }
     }catch{setError('Could not confirm that messages were loaded.');}
-  },[mode,moderator]);
+  },[mode,moderator,uid]);
   useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
@@ -254,7 +297,9 @@ export default function DirectMessagesPage(){
             'File readiness could not be confirmed and cleanup did not complete. Contact DLI administration before retrying.');return;
         }
       }
-      const messageBody=body||'📎 '+attachment!.name;
+      const messageBody=body||(attachment&&attachment.type.startsWith('audio/')?'🎙️ Voice note':
+        attachment&&attachment.type.startsWith('video/')?'🎥 Video note':
+        '📎 '+attachment!.name);
       const payload={thread_id:current.id,body:messageBody,...(fileId?{file_id:fileId}:{})};
       const result=await supabase.from('dli_direct_messages').insert(payload).select('id').maybeSingle();
       if(result.error||!result.data){
@@ -263,6 +308,7 @@ export default function DirectMessagesPage(){
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
       setDraft('');setAttachment(null);await loadThread(current.id);
+      window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
       const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
       setError(cleaned?'The message request was interrupted. Refresh to confirm its status before retrying.':
