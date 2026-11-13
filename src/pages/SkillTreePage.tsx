@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, ChevronDown, Flame, LockKeyhole,
+import { ArrowRight, BookOpen, CheckCircle2, ChevronDown, Flame,
   Play, RefreshCw, Save, Sparkles, Trophy, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -129,7 +129,6 @@ export default function SkillTreePage(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
- const [showEditor,setShowEditor]=useState(true);
 
  const refresh=useCallback(async()=>{
   if(!supabase||!account){setLoading(false);return;}
@@ -319,3 +318,4 @@ export default function SkillTreePage(){
    </div>
   </div>}
  </div>;
+}
