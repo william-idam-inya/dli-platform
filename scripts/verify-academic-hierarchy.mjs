@@ -12,7 +12,6 @@ for(const text of [
   'Choose a programme','Choose an academic level','Available subjects',
   'Select a DLI programme','Select an academic level',
   'availableCourses = useMemo','programmeCourses','offeredLevels','pathwayCourses',
-  'subject.academic_level_id === course.academic_level_id',
   "item.id === selectedProgramme?.id","level.id === selectedLevel?.id",
   'aria-pressed','aria-label','How do subjects and courses differ?',
   'academic-admin-drawer','<details','<summary>',
