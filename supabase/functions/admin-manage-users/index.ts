@@ -2,8 +2,23 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // Stage C account management. All mutations are performed by one audited
 // database transaction; raw service keys never reach browser code.
-const origins = (Deno.env.get('DLI_APP_ORIGINS') || '')
-  .split(',').map(value => value.trim()).filter(Boolean);
+// Exact QA origins are permitted only in the isolated DEVELOPMENT Supabase project.
+// A new Cloudflare branch hostname must never require loosening production CORS.
+// Configured DLI_APP_ORIGINS remains the authority for all other environments.
+const qaOrigins = Deno.env.get('SUPABASE_URL') ===
+  'https://pbepbcdkrdqnepvcwtyw.supabase.co'
+  ? [
+    'https://audit-q13-mobile-academic-ac.dli-platform-qa.pages.dev',
+    'https://feature-stage-q10-role-based.dli-platform-qa.pages.dev',
+    'https://feature-stage-q10-class-offe.dli-platform-qa.pages.dev',
+    'https://dli-platform-qa.pages.dev',
+  ]
+  : [];
+const origins = [...new Set([
+  ...(Deno.env.get('DLI_APP_ORIGINS') || '')
+    .split(',').map(value => value.trim()).filter(Boolean),
+  ...qaOrigins,
+])];
 const roles = new Set([
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
   'finance_officer', 'tutor', 'student',
