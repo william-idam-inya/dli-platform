@@ -57,3 +57,41 @@
 
 .dli-direct-drafts-link{font-size:.78rem;color:var(--muted);margin:.65rem 0}
 .dli-direct-drafts-link a{color:var(--purple);font-weight:750}
+
+/* Direct-chat state is displayed beside the conversation, not above the viewport. */
+.dli-direct-working {
+  margin:.6rem 0 0;padding:.6rem .7rem;
+  border:1px solid var(--border);border-radius:9px;
+  background:var(--surface-soft);color:var(--text);
+  font-size:.78rem;line-height:1.5;
+}
+.dli-direct-inline-feedback {
+  margin:1rem 1rem 0;padding:.8rem 1rem;
+  border-radius:10px;border:1px solid var(--border);
+  font-size:.82rem;line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.dli-direct-inline-feedback.error {
+  color:var(--text);background:var(--surface-soft);border-color:#b75f71;
+}
+.dli-direct-inline-feedback.success {
+  color:var(--text);background:var(--surface-soft);border-color:#5fa981;
+}
+.dli-direct-contacts>button:focus-visible,
+.dli-direct-conversations>button:focus-visible,
+.dli-direct-compose :is(textarea,button):focus-visible {
+  outline:2px solid var(--purple);outline-offset:2px;
+}
+.dli-direct-contacts>button {min-height:46px;}
+.dli-direct-thread {scroll-margin-top:80px;}
+.dli-direct-compose textarea {box-sizing:border-box;width:100%;min-height:80px;font-size:16px;}
+.dli-direct-compose button {min-height:44px;}
+@media(max-width:750px) {
+  .dli-direct-sidebar {max-height:280px;}
+  .dli-direct-thread {min-height:440px;}
+  .dli-direct-compose>div {flex-wrap:wrap;}
+  .dli-direct-compose button {min-width:112px;}
+}
+@media(max-width:380px) {
+  .dli-direct-compose button {width:100%;justify-content:center;}
+}
