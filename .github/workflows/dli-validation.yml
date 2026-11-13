@@ -101,6 +101,9 @@ jobs:
       - name: Verify visible account-action dialogs and server-backed role saves
         run: npm run check:user-actions
 
+      - name: Verify secured direct-conversation initiation and user feedback
+        run: npm run check:direct-chat-initiation
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 
