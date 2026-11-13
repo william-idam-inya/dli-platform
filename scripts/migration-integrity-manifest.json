@@ -331,6 +331,10 @@
     {
       "file": "20261113223204_stage_q16b_null_safe_messaging_moderation.sql",
       "gitBlobSha1": "3ae6364d62cffc3ec198f5f69927c0beec34a8a1"
+    },
+    {
+      "file": "20261114000001_stage_q17_direct_message_audit_field_guard.sql",
+      "gitBlobSha1": "e1e781ff7e465595ad0bb45f453d74614a65171e"
     }
   ]
 }
