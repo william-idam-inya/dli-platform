@@ -6,6 +6,7 @@ import { learningAreas, learningAreaUrl } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { deploymentIdentity } from '../lib/deploymentIdentity';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -212,7 +213,7 @@ export default function AppShell({ children }: AppShellProps) {
           <div className="topbar-actions">
             <DliMessageBadge/>
             <DliNotificationBell/>
-            <span className="preview-label"><span className="preview-dot" /> Development access</span>
+            <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
             <button
               className="icon-button theme-toggle"
               onClick={() => { void changeTheme(); }}
