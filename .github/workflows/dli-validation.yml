@@ -76,6 +76,9 @@ jobs:
       - name: Verify Q5 offline recovery receipt creator with synthetic files
         run: npm run check:recovery-receipt-tests
 
+      - name: Verify Cloudflare QA and production environment isolation
+        run: npm run check:deployment-identity
+
       - name: Verify fresh-browser guest login remains accessible
         run: npm run check:guest-login
 
