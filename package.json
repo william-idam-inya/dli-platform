@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
-    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs && node scripts/verify-paid-learning-plans.mjs",
+    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs && node scripts/verify-paid-learning-plans.mjs && npm run check:skill-tree",
     "check:bundle-scanner": "node scripts/verify-browser-bundle.mjs --self-test",
     "check:browser-bundle": "node scripts/verify-browser-bundle.mjs",
     "postbuild": "node scripts/verify-browser-bundle.mjs",
@@ -36,7 +36,8 @@
     "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs",
     "check:official-branding": "node scripts/verify-official-branding.mjs",
     "check:q15-production-ui": "node scripts/verify-q15-production-ui.mjs",
-    "check:q16-admin-routed-chat": "node scripts/verify-q16-admin-routed-chat.mjs"
+    "check:q16-admin-routed-chat": "node scripts/verify-q16-admin-routed-chat.mjs",
+    "check:skill-tree": "node --experimental-strip-types scripts/verify-skill-tree.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
