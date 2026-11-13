@@ -199,10 +199,12 @@ export default function AppShell({ children }: AppShellProps) {
         triggerRef.current?.focus();
       }
       if (event.key !== 'Tab') return;
-      const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
+      const focusable = Array.from(drawerRef.current?.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
-      );
-      if (!focusable?.length) return;
+      ) ?? []).filter(element => element.getClientRects().length > 0);
+      // Closed disclosure groups contain links in the DOM, but they are not
+      // tabbable. Never move focus onto an invisible destination.
+      if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) {
