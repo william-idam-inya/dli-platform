@@ -59,6 +59,13 @@ for (const excluded of [
   /insert\s+into\s+public\.dli_enrollment_requests/i,
   /insert\s+into\s+auth\.users/i,
 ]) assert.doesNotMatch(syncSql,excluded,'Roster reconciliation must not create payment or authorisation rights.');
+const q12=readFileSync(new URL('../supabase/migrations/20261113201934_stage_q12_null_safe_paid_class_rpc_guards.sql',import.meta.url),'utf8');
+assert.equal((q12.match(/IS DISTINCT FROM 'admin'::public\\.dli_role/g)||[]).length,2,
+  'Both Q10 Admin RPCs must reject NULL and non-Admin role lookups.');
+assert.match(q12,/CREATE OR REPLACE FUNCTION public\\.dli_link_class_to_offering/);
+assert.match(q12,/CREATE OR REPLACE FUNCTION public\\.dli_reconcile_linked_class_roster/);
+assert.match(q12,/REVOKE ALL ON FUNCTION public\\.dli_link_class_to_offering/);
+assert.match(q12,/REVOKE ALL ON FUNCTION public\\.dli_reconcile_linked_class_roster/);
 assert.match(ui,/dli_reconcile_linked_class_roster/);
 assert.match(ui,/Reconcile approved academic roster/);
 
