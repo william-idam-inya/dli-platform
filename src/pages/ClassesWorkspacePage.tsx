@@ -190,6 +190,32 @@ export default function ClassesWorkspacePage(){
       setError('Could not verify the academic link. Refresh the register before retrying.');
     }finally{setBusy(false);}
   }
+  async function reconcileLinkedRoster(c:ClassRow) {
+    if(!supabase||!canLinkOffering||busy||!c.offering_id||c.state==='archived')return;
+    if(!window.confirm(
+      'Reconcile this paid class with its linked academic offering? Active approved Paid Students in this class will be enrolled in the offering; removed class students will have offering access revoked. No payment or entitlement is created.'
+    ))return;
+    setBusy(true);setError(null);setNotice(null);
+    try{
+      const {data,error:syncError}=await supabase.rpc('dli_reconcile_linked_class_roster',{
+        p_class_id:c.id,
+      });
+      if(syncError||!data) {
+        setError(syncError?.code==='23514'
+          ?'Reconciliation rejected: confirm every active student has approved Paid Student access and the offering Tutor is still assigned.'
+          :'Could not reconcile the linked paid roster. Refresh both academic systems and verify your Admin role.');
+      }else{
+        const result=data as {active_students:number;activated:number;revoked:number};
+        setNotice('Academic enrolment synchronized: '+result.active_students+
+          ' active Paid Students; '+result.activated+' activated and '+
+          result.revoked+' revoked. No payment entitlement was changed.');
+        await refresh();
+      }
+    }catch{
+      setError('The linked roster reconciliation could not be confirmed. Please refresh.');
+    }finally{setBusy(false);}
+  }
+
   async function changeState(c:ClassRow,state:'published'|'archived'){
     if(!supabase||!staff||busy)return;
     if(!window.confirm(state==='published'?'Publish this class to all selected students and the tutor?':
@@ -391,6 +417,11 @@ export default function ClassesWorkspacePage(){
               {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>}
               {c.offering_id&&c.state==='published'&&mayOpenLearning&&
                 <Link to="/study?tab=lessons"><BookOpen size={14}/> Learning &amp; results</Link>}
+              {canLinkOffering&&c.offering_id&&c.state!=='archived'&&
+                <button type="button" disabled={busy}
+                  onClick={()=>void reconcileLinkedRoster(c)}>
+                  <Users size={14}/> Reconcile approved academic roster
+                </button>}
               {staff&&c.state!=='archived'&&<>
                 <button type="button" disabled={busy} onClick={()=>editClass(c)}><Pencil size={14}/> Edit</button>
                 {c.state==='draft'&&<button type="button" disabled={busy} onClick={()=>void changeState(c,'published')}><CheckCircle2 size={14}/> Publish</button>}
