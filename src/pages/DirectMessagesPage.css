@@ -125,7 +125,7 @@
 .dli-direct-emoji-bar button{width:44px;height:44px;padding:6px;border:1px solid var(--border);
  display:grid;place-items:center;border-radius:10px;background:var(--surface-soft);
  font-size:20px;cursor:pointer}
-.dli-chat-media-recorder{display:grid;gap:10px;border:1px solid var(--border);border-radius:12px;
+.dli-direct-compose>.dli-chat-media-recorder{display:grid;gap:10px;border:1px solid var(--border);border-radius:12px;
  padding:12px;background:var(--surface-soft)}
 .dli-chat-recorder-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .dli-direct-compose .dli-chat-recorder-actions button,.dli-chat-media-preview button{
