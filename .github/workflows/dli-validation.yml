@@ -104,6 +104,9 @@ jobs:
       - name: Verify secured direct-conversation initiation and user feedback
         run: npm run check:direct-chat-initiation
 
+      - name: Verify Q18 role-wide notifications and private voice/video notes
+        run: npm run check:message-experience
+
       - name: Verify file-dialog focus preserves unsaved upload state
         run: npm run check:file-picker-focus
 

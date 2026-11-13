@@ -45,7 +45,8 @@
     "check:qa-user-registry": "node scripts/verify-qa-user-registry.mjs",
     "check:user-lifecycle": "node --experimental-strip-types scripts/verify-user-lifecycle.mjs",
     "check:user-actions": "node --experimental-strip-types scripts/verify-user-actions.mjs",
-    "check:direct-chat-initiation": "node scripts/verify-direct-chat-initiation.mjs"
+    "check:direct-chat-initiation": "node scripts/verify-direct-chat-initiation.mjs",
+    "check:message-experience": "node scripts/verify-message-experience.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
