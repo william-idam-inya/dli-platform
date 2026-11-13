@@ -311,6 +311,10 @@
     {
       "file": "20261113222549_stage_q16_staff_routed_direct_chat.sql",
       "gitBlobSha1": "d614f1e3e937a22b5c6eb4826b29554c42e3ff3e"
+    },
+    {
+      "file": "20261113223204_stage_q16b_null_safe_messaging_moderation.sql",
+      "gitBlobSha1": "3ae6364d62cffc3ec198f5f69927c0beec34a8a1"
     }
   ]
 }
