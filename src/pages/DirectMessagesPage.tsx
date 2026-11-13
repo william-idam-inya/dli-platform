@@ -543,11 +543,18 @@ export default function DirectMessagesPage(){
             <label htmlFor="direct-draft">Your message</label>
             <textarea id="direct-draft" ref={composeRef} maxLength={2000} rows={2} value={draft}
               placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
+            <div className="dli-direct-emoji-bar" role="group" aria-label="Insert an emoji">
+              {['😊','👍','👏','❤️','🙏','🎓'].map(emoji=><button type="button" key={emoji}
+                disabled={busy||draft.length+emoji.length>2000}
+                aria-label={'Insert '+emoji} onClick={()=>setDraft(text=>text+emoji)}>{emoji}</button>)}
+            </div>
+            <ChatMediaRecorder key={mediaReset} disabled={busy}
+              onReady={file=>setAttachment(file)}/>
             <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
-              Optional file (PDF, image, TXT, DOCX, XLSX, PPTX; up to 10 MB)
+              Attach a private file or saved recording (10 MB maximum)
             </label>
             <input id="direct-attachment" type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx,.webm,.ogg,.mp4,.m4a,audio/*,video/*"
               onChange={e=>setAttachment(e.target.files?.[0]??null)}/>
             {attachment&&<small className="dli-direct-selected-file">{attachment.name} · {(attachment.size/1024/1024).toFixed(2)} MB</small>}
             <div><small>{draft.length}/2,000 · 30 messages/hour · 20 files/day</small>
