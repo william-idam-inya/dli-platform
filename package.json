@@ -34,7 +34,8 @@
     "check:enrolment-catalogue": "node scripts/verify-enrolment-catalogue.mjs",
     "check:workspace-consistency": "node scripts/verify-workspace-consistency.mjs",
     "check:operational-tools": "node scripts/verify-operational-tools.mjs",
-    "check:class-offering-link": "node scripts/verify-class-offering-link.mjs"
+    "check:class-offering-link": "node scripts/verify-class-offering-link.mjs",
+    "check:auth-guest-recovery": "node --experimental-strip-types scripts/verify-auth-guest-recovery.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
