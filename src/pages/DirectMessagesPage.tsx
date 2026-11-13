@@ -107,6 +107,11 @@ export default function DirectMessagesPage(){
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
   useEffect(()=>{
+    if(error&&section==='direct'){
+      threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  },[error,section]);
+  useEffect(()=>{
     if(!activeId||mode!=='inbox')return;
     // A confirmed conversation should reveal its composer, even when the
     // directory is scrolled or the layout is stacked on a phone.
@@ -292,8 +297,6 @@ export default function DirectMessagesPage(){
         onClick={()=>setSection('class')}>Subject conversations</button>
     </nav>
     {section==='class'?<DliClassCommunication/>:<>
-    {error&&<p role="alert" className="auth-feedback error">{error}</p>}
-    {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="dli-direct-controls">
       <div className="dli-direct-modes">
         <button type="button" className={mode==='inbox'?'selected':''} onClick={()=>{setMode('inbox');setActiveId('');}}>My chats</button>
@@ -349,6 +352,8 @@ export default function DirectMessagesPage(){
         </section>}
       </aside>
       <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
+        {error&&<p role="alert" className="dli-direct-inline-feedback error">{error}</p>}
+        {notice&&!error&&<p role="status" className="dli-direct-inline-feedback success">{notice}</p>}
         {!current?<div className="dli-direct-placeholder"><MessageCircle size={35}/>
           <h2>Select a conversation</h2>
           <p>Search for an authorised DLI member and open a private chat.</p></div>:<>
