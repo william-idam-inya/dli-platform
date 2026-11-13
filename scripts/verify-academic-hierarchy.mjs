@@ -9,7 +9,7 @@ const styles=read('src/pages/AcademicSetupPage.css');
 const nav=read('src/data/navigation.ts');
 
 for(const text of [
-  'Choose a programme','Choose an academic level','Available subjects',
+  'Choose a programme','Choose an academic level','Catalogue subjects',
   'Select a DLI programme','Select an academic level',
   'availableCourses = useMemo','programmeCourses','offeredLevels','pathwayCourses',
   "item.id === selectedProgramme?.id","level.id === selectedLevel?.id",
@@ -24,6 +24,12 @@ for(const text of [
 
 assert.ok(src.indexOf('Choose a programme')<src.indexOf('academic-admin-drawer'),'Management must follow guided explorer');
 assert.ok(src.includes('courses.filter(item => item.programme_id === courseProgrammeId'),'Advanced course list must stay scoped');
+assert.ok(src.includes('Class availability requires a separate approved course offering.'),
+  'Curriculum must not be presented as published paid class access.');
+assert.ok(src.includes('cohort offering, matching roster and approved access'),
+  'Explicitly distinguish catalogue from active teaching membership.');
+assert.doesNotMatch(src,/The learning pathway must have an actual active course offering/,
+  'Do not describe active courses as real cohort offerings.');
 assert.ok(src.includes('course.is_active &&'),'Inactive courses must never be advertised');
 assert.ok(src.includes('item.id === course.programme_id && item.is_active'),'Inactive programmes must be omitted');
 assert.ok(src.includes('item.id === course.academic_level_id && item.is_active'),'Inactive levels must be omitted');
