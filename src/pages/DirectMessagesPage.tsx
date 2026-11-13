@@ -44,6 +44,7 @@ export default function DirectMessagesPage(){
   const [reads,setReads]=useState<DirectRead[]>([]);
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
   const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
+  const [mediaReset,setMediaReset]=useState(0);
   const [pins,setPins]=useState<string[]>([]);
   const [playback,setPlayback]=useState<Record<string,string>>({});
   const playableUrls=useRef<string[]>([]);
@@ -307,7 +308,7 @@ export default function DirectMessagesPage(){
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
-      setDraft('');setAttachment(null);await loadThread(current.id);
+      setDraft('');setAttachment(null);setMediaReset(value=>value+1);await loadThread(current.id);
       window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
       const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
@@ -415,10 +416,17 @@ export default function DirectMessagesPage(){
         <RefreshCw size={15}/> Refresh
       </button>
     </div>
-    <div className="dli-direct-layout">
+    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')}>
       <aside className="dli-direct-sidebar" aria-label="Conversation directory">
         <label htmlFor="direct-search"><Search size={16}/> Find a person or conversation</label>
         <input id="direct-search" placeholder="Search by name…" value={search} onChange={e=>setSearch(e.target.value)}/>
+        {mode==='inbox'&&<nav className="dli-direct-chat-filters" aria-label="Filter conversations">
+          <button type="button" className={chatFilter==='all'?'selected':''} aria-pressed={chatFilter==='all'}
+            onClick={()=>setChatFilter('all')}>All</button>
+          <button type="button" className={chatFilter==='unread'?'selected':''} aria-pressed={chatFilter==='unread'}
+            onClick={()=>setChatFilter('unread')}>Unread</button>
+          <span>{threads.length} chats</span>
+        </nav>}
         {mode==='inbox'&&<section className="dli-direct-contacts">
           <h2>Start a chat</h2>
           {contacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
@@ -438,12 +446,30 @@ export default function DirectMessagesPage(){
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
           {visible.map(t=>{
             const other=participant(t);
-            return <button key={t.id} type="button" className={activeId===t.id?'selected':''}
-              onClick={()=>setActiveId(t.id)}>
-              <span className="dli-direct-avatar">{memberName(other).charAt(0).toUpperCase()}</span>
-              <span><strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                <small>{mode==='oversight'?'Moderation view':memberRole(other)}</small></span>
-            </button>;
+            const latest=lastMessage.get(t.id);
+            const unread=mode==='inbox'?unreadInThread(t.id):0;
+            return <div className={'dli-direct-chat-list-row'+(activeId===t.id?' selected':'')} key={t.id}>
+              <button type="button" className="dli-direct-chat-list-open"
+                aria-label={'Open conversation with '+memberName(other)+(unread?' ('+unread+' unread)':'')}
+                onClick={()=>setActiveId(t.id)}>
+                <span className="dli-direct-avatar">{memberName(other).charAt(0).toUpperCase()}</span>
+                <span className="dli-direct-chat-list-main">
+                  <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
+                  <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
+                </span>
+                <span className="dli-direct-chat-list-meta">
+                  <small>{latest?stamp(latest.created_at):''}</small>
+                  {unread>0&&<span className="dli-direct-unread-pill">{unread>99?'99+':unread}</span>}
+                </span>
+              </button>
+              {mode==='inbox'&&<button type="button" className="dli-direct-pin-button"
+                aria-pressed={pins.includes(t.id)}
+                aria-label={pins.includes(t.id)?'Unpin conversation':'Pin conversation'}
+                title={pins.includes(t.id)?'Unpin':'Pin on this device'}
+                onClick={()=>togglePin(t.id)}>
+                <Pin size={16} fill={pins.includes(t.id)?'currentColor':'none'}/>
+              </button>}
+            </div>;
           })}
           {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations in this view.</p>}
         </section>
@@ -467,6 +493,8 @@ export default function DirectMessagesPage(){
           <h2>Select a conversation</h2>
           <p>Search for an authorised DLI member and open a private chat.</p></div>:<>
           <header className="dli-direct-thread-head">
+            <button type="button" className="dli-direct-back" aria-label="Back to chats"
+              onClick={()=>{setActiveId('');setError(null);}}><ChevronLeft size={20}/> Chats</button>
             <span className="dli-direct-avatar">{memberName(participant(current)).charAt(0).toUpperCase()}</span>
             <div><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
               <small>{mode==='oversight'?'Read-only institutional review':'Private institutional conversation'}</small></div>
@@ -474,11 +502,33 @@ export default function DirectMessagesPage(){
           </header>
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
             {messages.map(m=><article key={m.id} className={m.sender_id===uid&&mode!=='oversight'?'mine':''}>
-              <small>{memberName(m.sender_id)} · {stamp(m.created_at)}</small>
+              <small>{memberName(m.sender_id)} · {stamp(m.created_at)}
+                {mode==='inbox'&&m.sender_id===uid&&
+                  <span className={'dli-direct-read-status'+(
+                    readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?' read':'')} aria-label={readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?'Read':'Sent'}>
+                    {readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?<CheckCheck size={15}/>:<Check size={15}/>}
+                  </span>}
+              </small>
               <p>{m.body}</p>
               {m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
-                <button type="button" className="dli-direct-file-link" key={f.id} disabled={busy}
-                  onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
+                <div key={f.id} className="dli-direct-media-item">
+                  {mediaKind(f.mime_type)?<>
+                    <button type="button" className="dli-direct-file-link" disabled={busy}
+                      onClick={()=>void playPrivateMedia(f)}>
+                      {mediaKind(f.mime_type)==='audio'?'🎙️ Play voice note':'🎥 Play video note'}
+                    </button>
+                    {playback[f.id]&&(mediaKind(f.mime_type)==='audio'
+                      ?<audio controls preload="metadata" src={playback[f.id]} aria-label="Private voice note"/>
+                      :<video controls playsInline preload="metadata" src={playback[f.id]} aria-label="Private video note"/>)}
+                  </>:<button type="button" className="dli-direct-file-link" disabled={busy}
+                    onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>}
+                </div>)}
               {mode!=='oversight'&&m.sender_id!==uid&&<button type="button" disabled={busy}
                 onClick={()=>void reportMessage(m)}><Flag size={13}/> Report</button>}
             </article>)}
