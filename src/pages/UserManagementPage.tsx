@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2, Clock3, LockKeyhole, RefreshCw, Search,
-  ShieldAlert, ShieldCheck, UserRoundCog, Users,
+  ShieldAlert, ShieldCheck, UserRoundCog, Users, Save, RotateCcw,
 } from 'lucide-react';
 import InviteUserPage from '../auth/InviteUserPage';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
-import { availableLifecycleActions, type LifecycleAction } from '../lib/userLifecycle';
+import { availableLifecycleActions } from '../lib/userLifecycle';
+import UserActionDialog, {type RegistryAction} from '../components/UserActionDialog';
+import { registryFailureMessage } from '../lib/registryFeedback';
 
 type UserStatus = 'pending' | 'active' | 'suspended' | 'revoked';
 type UserRecord = {
@@ -38,11 +40,6 @@ type AuditEvent = {
   created_at: string;
 };
 type AuditResponse = { events: AuditEvent[] };
-type AccountAction = 'change_role' | 'suspend' | 'reactivate' | 'revoke' | LifecycleAction;
-const lifecycleLabels: Record<LifecycleAction,string> = {
-  restore_revoked:'Restore access',archive:'Remove from register',unarchive:'Restore record to register',
-};
-
 function time(value: string): string {
   return new Intl.DateTimeFormat('en-NG', {
     timeZone: 'Africa/Lagos', dateStyle: 'medium', timeStyle: 'short',
@@ -71,12 +68,10 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserStatus>('all');
   const [selectedRoles, setSelectedRoles] = useState<Record<string, DliRole>>({});
-  const [confirmation, setConfirmation] = useState<{user:UserRecord; action:LifecycleAction}|null>(null);
-  const [confirmEmail, setConfirmEmail] = useState('');
-  const [reason, setReason] = useState('');
-  const canConfirm = Boolean(confirmation &&
-    confirmation.user.email.toLowerCase()===confirmEmail.trim().toLowerCase() &&
-    reason.trim().length>=12 && reason.trim().length<=500 && !saving);
+  const [pendingAction, setPendingAction] = useState<{
+    user:UserRecord; action:RegistryAction; newRole?:DliRole;
+  }|null>(null);
+  const [dialogError, setDialogError] = useState<string|null>(null);
 
   const loadUsers = useCallback(async (reset = true) => {
     if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
@@ -120,7 +115,7 @@ export default function UserManagementPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    setConfirmation(null);
+    setPendingAction(null);
     setUsers([]);
     (async () => {
       const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
@@ -148,55 +143,74 @@ export default function UserManagementPage() {
         item.full_name.toLowerCase().includes(q) || roleLabels[item.role].toLowerCase().includes(q);
   }), [users, search]);
 
-  function requestLifecycle(user:UserRecord, action:LifecycleAction) {
-    setConfirmation({user,action});
-    setConfirmEmail('');
-    setReason('');
+  function requestAction(user:UserRecord, action:RegistryAction) {
+    if (!account || saving || user.id===account.id ||
+        !roles.includes(user.role)) return;
+    if (['restore_revoked','archive','unarchive'].includes(action) &&
+        !['owner','admin'].includes(account.role)) return;
+    const chosen = selectedRoles[user.id] ?? user.role;
+    if (action==='change_role' && (chosen===user.role || !roles.includes(chosen) ||
+        user.status==='revoked' || Boolean(user.archived_at))) return;
+    setPendingAction({user,action,newRole:action==='change_role'?chosen:undefined});
+    setDialogError(null);
     setError(null);
     setNotice(null);
   }
 
-  async function updateUser(user: UserRecord, action: AccountAction, lifecycleReason?:string) {
-    if (!supabase || !account || saving) return;
-    if (user.id === account.id || !roles.includes(user.role)) return;
-    const role = selectedRoles[user.id] ?? user.role;
-    if (action === 'change_role' && (role === user.role || !roles.includes(role))) return;
-    const isLifecycle = action==='restore_revoked'||action==='archive'||action==='unarchive';
+  async function updateUser(user:UserRecord,action:RegistryAction,reason:string,newRole?:DliRole) {
+    if (!supabase || !account || saving || user.id===account.id ||
+        !roles.includes(user.role)) return;
+    if (action==='change_role' && (!newRole || newRole===user.role ||
+        !roles.includes(newRole))) return;
+    const isLifecycle=['restore_revoked','archive','unarchive'].includes(action);
     if (isLifecycle && (!['owner','admin'].includes(account.role) ||
-       !lifecycleReason || lifecycleReason.trim().length<12 ||
-       lifecycleReason.trim().length>500)) return;
-    const actionText = action === 'change_role' ? `change ${user.full_name}'s role to ${roleLabels[role]}`
-      : action === 'suspend' ? `suspend ${user.full_name}`
-      : action === 'reactivate' ? `reactivate ${user.full_name}`
-      : `revoke DLI access for ${user.full_name}`;
-    if (!isLifecycle && !window.confirm(`Confirm: ${actionText}?\nThis will be recorded in the audit trail.`)) return;
+      reason.length<12 || reason.length>500)) return;
 
     setSaving(user.id);
+    setDialogError(null);
     setError(null);
     setNotice(null);
-    const { error: requestError, data } = await supabase.functions.invoke(
-      'admin-manage-users', {
-        body: { action, user_id: user.id, ...(action === 'change_role' ? { role } : {}),
-          ...(isLifecycle ? {reason:lifecycleReason?.trim()} : {}) },
-      },
-    );
-    if (requestError || !data?.user) {
-      setError('The account change was not saved. Your permissions or the account status may have changed.');
-    } else {
-      setConfirmation(null);
-      setConfirmEmail('');
-      setReason('');
-      setNotice(action==='archive'
-        ? 'Record removed from the current register and preserved in Archived. Access remains revoked.'
-        : action==='unarchive'
-        ? 'Record returned to the revoked register. Access is still revoked.'
-        : action==='restore_revoked'
-        ? 'Verified account access restored. The user can sign in with their existing identity and assigned role.'
-        : 'Account change saved and audited. Access rules take effect on subsequent database requests.');
+    try {
+      const {data, error: requestError} =
+        await supabase.functions.invoke<{
+          user?:{id:string;role:DliRole;status:UserStatus;archived_at?:string|null};
+          error?:string;
+        }>('admin-manage-users', {
+          body:{action,user_id:user.id,
+            ...(action==='change_role'?{role:newRole}:{}),
+            ...(isLifecycle?{reason:reason.trim()}:{}),
+          },
+        });
+      if (requestError || !data?.user) {
+        setDialogError(await registryFailureMessage(requestError,data));
+        return;
+      }
+      if (data.user.id !== user.id ||
+          (action==='change_role' && data.user.role!==newRole)) {
+        setDialogError('The server did not confirm the requested account change. Refresh the registry and review the audit history before retrying.');
+        return;
+      }
+      const success:Record<RegistryAction,string> = {
+        change_role:`Saved: ${user.full_name}'s role is now ${roleLabels[newRole!]}. The change is recorded in the audit trail.`,
+        suspend:`Saved: ${user.full_name} is suspended and DLI access is blocked.`,
+        reactivate:`Saved: ${user.full_name} has been reactivated.`,
+        revoke:`Saved: ${user.full_name}'s access is revoked.`,
+        restore_revoked:`Saved: ${user.full_name}'s revoked account has been restored after identity verification.`,
+        archive:`Saved: ${user.full_name} was removed from the current register. The revoked record remains in Archived records.`,
+        unarchive:`Saved: ${user.full_name} was returned to the revoked register. Access is still blocked.`,
+      };
+      setNotice(success[action]);
+      setPendingAction(null);
+      setSelectedRoles(current=>{
+        const remaining={...current};delete remaining[user.id];return remaining;
+      });
       await loadUsers(true);
       await loadAudit();
+    } catch {
+      setDialogError('The server could not complete the request. No change has been confirmed. Check your connection and try again.');
+    } finally {
+      setSaving(null);
     }
-    setSaving(null);
   }
 
   function canManage(user: UserRecord) {
@@ -225,7 +239,11 @@ export default function UserManagementPage() {
       </div>
 
       {error && <p className="auth-feedback error" role="alert">{error}</p>}
-      {notice && <p className="auth-feedback success" role="status">{notice}</p>}
+      {notice && <div className="user-action-toast" role="status" aria-live="polite">
+        <CheckCircle2 size={19} aria-hidden="true"/>
+        <p>{notice}</p>
+        <button type="button" onClick={()=>setNotice(null)} aria-label="Dismiss confirmation">Dismiss</button>
+      </div>}
 
       <section className="panel user-registry">
         <div className="panel-heading">
@@ -247,29 +265,6 @@ export default function UserManagementPage() {
             onClick={()=>{setView('archived');setFilter('all');setSearch('');}}>Archived records</button>
         </div>
         <p className="user-caption">Archiving hides a revoked record from the current register; it does not erase the account, its identity or audit history.</p>
-        {confirmation && <section className="user-lifecycle-review" aria-labelledby="user-lifecycle-heading">
-          <h3 id="user-lifecycle-heading">{lifecycleLabels[confirmation.action]} — verify the account</h3>
-          <p>{confirmation.user.full_name} · {confirmation.user.email}</p>
-          <p>{confirmation.action==='restore_revoked'
-            ? 'This restores DLI access to the previously revoked identity, subject to the server verifying its email and your permissions.'
-            : confirmation.action==='archive'
-            ? 'The record will disappear from the current register but remain available under Archived records. No user data is deleted.'
-            : 'The record returns to the revoked register. This will not restore sign-in access.'}</p>
-          <label htmlFor="user-confirm-email">Type the account email to confirm</label>
-          <input id="user-confirm-email" type="text" autoComplete="off" spellCheck={false}
-            value={confirmEmail} onChange={event=>setConfirmEmail(event.target.value)} />
-          <label htmlFor="user-confirm-reason">Reason for this decision (12–500 characters)</label>
-          <textarea id="user-confirm-reason" rows={3} minLength={12} maxLength={500}
-            value={reason} onChange={event=>setReason(event.target.value)} />
-          <div className="user-confirm-actions">
-            <button type="button" className="user-outline-button user-confirm-primary" disabled={!canConfirm}
-              onClick={()=>{void updateUser(confirmation.user,confirmation.action,reason);}}>
-              Confirm {lifecycleLabels[confirmation.action]}</button>
-            <button type="button" className="user-outline-button" disabled={Boolean(saving)}
-              onClick={()=>{setConfirmation(null);setConfirmEmail('');setReason('');}}>Cancel</button>
-          </div>
-          <p className="user-caption">The decision and reason will be recorded in the audit trail.</p>
-        </section>}
         <div className="user-toolbar">
           <label className="user-search">
             <Search size={16}/>
@@ -308,7 +303,7 @@ export default function UserManagementPage() {
                   <div className="user-identity">
                     <strong>{user.full_name}</strong>
                     <span>{user.email}</span>
-                    <small>Added {time(user.created_at)}</small>
+                    <small>Added {time(user.created_at)} · Updated {time(user.updated_at)}</small>
                   </div>
                   <div className="user-tags">
                     <span className="user-role">{roleLabels[user.role]}</span>
@@ -323,46 +318,58 @@ export default function UserManagementPage() {
                     {!user.archived_at && user.status!=='revoked' && <label>
                       <span>Role</span>
                       <select value={chosenRole} disabled={Boolean(saving)}
+                        aria-label={`Select new role for ${user.full_name}`}
                         onChange={event=>setSelectedRoles(current => ({
                           ...current, [user.id]: event.target.value as DliRole,
                         }))}>
                         {roles.map(role => <option value={role} key={role}>{roleLabels[role]}</option>)}
                       </select>
                     </label>}
-                    {!user.archived_at && user.status!=='revoked' && <button className="user-outline-button" type="button"
-                      disabled={Boolean(saving) || chosenRole === user.role}
-                      onClick={() => { void updateUser(user, 'change_role'); }}>
-                      <UserRoundCog size={15}/> Change role
-                    </button>}
+                    {!user.archived_at && user.status!=='revoked' && <>
+                      {chosenRole!==user.role && <span className="user-pending-role" role="status">
+                        Unsaved: {roleLabels[user.role]} → {roleLabels[chosenRole]}
+                      </span>}
+                      <button className={chosenRole===user.role
+                        ? 'user-outline-button' : 'user-outline-button user-save-role'}
+                        type="button" disabled={Boolean(saving) || chosenRole === user.role}
+                        onClick={()=>requestAction(user,'change_role')}>
+                        <Save size={16}/> Save role change
+                      </button>
+                      {chosenRole!==user.role && <button className="user-outline-button" type="button"
+                        disabled={Boolean(saving)}
+                        onClick={()=>setSelectedRoles(current=>{
+                          const updated={...current};delete updated[user.id];return updated;
+                        })}><RotateCcw size={15}/> Discard selection</button>}
+                    </>}
                     {!user.archived_at && user.status === 'active' && (
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'suspend'); }}>
+                        onClick={() => requestAction(user, 'suspend')}>
                         <LockKeyhole size={15}/> Suspend
                       </button>
                     )}
                     {!user.archived_at && user.status === 'suspended' && (
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'reactivate'); }}>
+                        onClick={() => requestAction(user, 'reactivate')}>
                         <CheckCircle2 size={15}/> Reactivate
                       </button>
                     )}
                     {!user.archived_at && user.status !== 'revoked' && (
                       <button className="user-outline-button user-danger" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'revoke'); }}>
+                        onClick={() => requestAction(user, 'revoke')}>
                         <ShieldAlert size={15}/> Revoke
                       </button>
                     )}
                     {lifecycleAllowed.includes('restore_revoked') && <>
                         <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                          onClick={()=>requestLifecycle(user,'restore_revoked')}>
+                          onClick={()=>requestAction(user,'restore_revoked')}>
                           <CheckCircle2 size={15}/> Restore access</button>
                         <button className="user-outline-button user-danger" type="button" disabled={Boolean(saving)}
-                          onClick={()=>requestLifecycle(user,'archive')}>
+                          onClick={()=>requestAction(user,'archive')}>
                           <ShieldAlert size={15}/> Remove from register</button>
                       </>}
                     {lifecycleAllowed.includes('unarchive') &&
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                        onClick={()=>requestLifecycle(user,'unarchive')}>
+                        onClick={()=>requestAction(user,'unarchive')}>
                         <RefreshCw size={15}/> Restore record</button>}
                     {user.role==='student' && user.status==='active' && !user.archived_at &&
                       (account?.role==='owner'||account?.role==='admin') &&
@@ -424,6 +431,18 @@ export default function UserManagementPage() {
         </div>
       </section>
 
+      {pendingAction && <UserActionDialog
+        key={pendingAction.user.id+':'+pendingAction.action}
+        subject={pendingAction.user}
+        action={pendingAction.action}
+        selectedRole={pendingAction.newRole}
+        saving={saving===pendingAction.user.id}
+        error={dialogError}
+        onCancel={()=>{if(!saving){setPendingAction(null);setDialogError(null);}}}
+        onConfirm={reason=>{void updateUser(
+          pendingAction.user,pendingAction.action,reason,pendingAction.newRole,
+        );}}
+      />}
       <p className="module-footnote"><LockKeyhole size={15}/>
         Restoring access requires a verified identity and authorised staff approval. Removing a revoked record from the register archives it; no permanent deletion is performed.
         Never share invitation links or administrator credentials publicly.
