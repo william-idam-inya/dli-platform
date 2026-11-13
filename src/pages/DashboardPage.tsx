@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, BookOpen, CalendarClock, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { ArrowRight, Bell, BookOpen, CalendarClock, ChartNoAxesCombined, GraduationCap, LockKeyhole, MessageSquareText, RefreshCw, Settings, ShieldCheck, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { dashboardPriorityPaths } from '../data/roleNavigation';
 import { DliDashboardAnnouncements } from '../components/DliNoticeCenter';
 import './UnifiedDashboard.css';
 
@@ -15,6 +16,11 @@ const actions=[
   {title:'Messages',description:'Direct and subject conversations with safeguarded member contact.',path:'/communications',icon:MessageSquareText},
   {title:'Finance',description:'Documented rates and internal financial governance.',path:'/finance',icon:Wallet},
   {title:'Feedback & support',description:'Member reports, support requests and feedback review.',path:'/feedback',icon:MessageSquareText},
+  {title:'Free Demo & enrolment',description:'Choose a programme, academic level and approved subjects.',path:'/enrolment',icon:BookOpen},
+  {title:'Announcements',description:'Read published notices relevant to your DLI role.',path:'/announcements',icon:Bell},
+  {title:'Tutor payroll',description:'View assignment-derived pay and verified records.',path:'/payroll',icon:Wallet},
+  {title:'Reports & audit',description:'View authorised operational reports and activity.',path:'/reports',icon:ChartNoAxesCombined},
+  {title:'Settings',description:'Manage permitted institution and personal preferences.',path:'/settings',icon:Settings},
 ];
 type TeachingClass={id:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer'};
 
@@ -28,6 +34,21 @@ export default function DashboardPage(){
     .map(action=>action.path==='/feedback'&&account&&['owner','admin','assistant_admin'].includes(account.role)
       ? {...action,title:'Support inbox & reports',description:'Review learner and tutor reports, prioritise concerns and track review status.'}
       : action);
+  const prioritizedPaths = account
+    ? dashboardPriorityPaths(account, available.map(item => item.path)) : [];
+  const ordered = [...available].sort((a,b) => {
+    const rankA = prioritizedPaths.indexOf(a.path);
+    const rankB = prioritizedPaths.indexOf(b.path);
+    return (rankA < 0 ? 100 : rankA) - (rankB < 0 ? 100 : rankB);
+  });
+  const spotlight = ordered.slice(0, 4);
+  const remaining = ordered.slice(4);
+  const actionCard = (item: (typeof actions)[number]) =>
+    <Link className="module-card" to={item.path} key={item.path}>
+      <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
+      <div className="module-card-body"><h3>{item.title}</h3><p>{item.description}</p></div>
+      <span className="module-arrow" aria-hidden="true"><ArrowRight size={17}/></span>
+    </Link>;
   const refresh=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);setError(true);return;}
     setLoading(true);
@@ -85,16 +106,16 @@ export default function DashboardPage(){
     <DliDashboardAnnouncements/>
     <section className="section-block">
       <div className="section-heading">
-        <div><p className="section-kicker">YOUR WORKSPACE</p><h2>What would you like to manage?</h2></div>
-        <span className="section-note">Only tools authorised for your DLI role</span>
+        <div><p className="section-kicker">YOUR WORKSPACE</p><h2>Start with what matters most</h2></div>
+        <span className="section-note">Shortcuts matched to your role</span>
       </div>
       <div className="module-grid">
-        {available.map(item=><Link className="module-card" to={item.path} key={item.path}>
-          <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
-          <div className="module-card-body"><h3>{item.title}</h3><p>{item.description}</p></div>
-          <span className="module-arrow"><ArrowRight size={17}/></span>
-        </Link>)}
+        {spotlight.map(actionCard)}
       </div>
+      {remaining.length > 0 && <details className="dashboard-extra-tools">
+        <summary>Explore more authorised tools <span>{remaining.length} additional</span></summary>
+        <div className="module-grid">{remaining.map(actionCard)}</div>
+      </details>}
     </section>
     <p className="unified-overview-footnote"><LockKeyhole size={14}/>
       Group membership and private meeting links are protected by database permissions;
