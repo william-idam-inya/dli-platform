@@ -36,7 +36,8 @@
     "check:operational-tools": "node scripts/verify-operational-tools.mjs",
     "check:class-offering-link": "node scripts/verify-class-offering-link.mjs",
     "check:auth-guest-recovery": "node --experimental-strip-types scripts/verify-auth-guest-recovery.mjs",
-    "check:recovery-rate-limit": "node --experimental-strip-types scripts/verify-recovery-rate-limit.mjs"
+    "check:recovery-rate-limit": "node --experimental-strip-types scripts/verify-recovery-rate-limit.mjs",
+    "check:deployment-identity": "node --experimental-strip-types scripts/verify-deployment-identity.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
