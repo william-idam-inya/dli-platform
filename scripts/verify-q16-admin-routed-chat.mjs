@@ -34,7 +34,7 @@ for(const phrase of [
   "supabase.rpc('dli_direct_directory')",
   "supabase.from('dli_direct_threads')",
   "supabase.from('dli_direct_messages')",
-  "setThreads(old=>old.some(t=>t.id===result.data.id)",
+  "setThreads(old=>old.some(t=>t.id===newThread.id)",
   "setActiveId(result.data.id)",
   "ref={composeRef}",
   "threadRef.current?.scrollIntoView",
