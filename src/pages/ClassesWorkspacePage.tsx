@@ -208,7 +208,7 @@ export default function ClassesWorkspacePage(){
           <select id="classes-type" value={form.class_type}
            onChange={e=>{setChosen([]);setForm(v=>({...v,class_type:e.target.value as ClassType,class_group_id:''}));}}>
             <option value="free_demo">Free Demo · DLI-Scholars Club</option>
-            <option value="group_5_science">Group of 5 · Science</option>
+            <option value="group_5_science">Group of 5</option>
             <option value="group_10">Group of 10 Students</option>
             <option value="private_1_to_1">Completely Private · One Student</option>
           </select>
