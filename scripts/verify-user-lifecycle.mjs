@@ -25,7 +25,7 @@ for(const token of [
   "v_target.auth_user_id=p_actor_uid",
   "v_target.status<>'revoked'::public.dli_account_status",
   "pg_catalog.lower(u.email)=v_target.email",
-  "v_actor.role in ('owner'::public.dli_role,'admin'::public.dli_role)",
+  "and au.role in ('owner'::public.dli_role,'admin'::public.dli_role)",
   "v_event := 'user.access_restored'",
   "v_event := 'user.archived'",
   "v_event := 'user.unarchived'",
