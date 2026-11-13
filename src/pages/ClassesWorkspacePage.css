@@ -40,3 +40,13 @@
 @media(max-width:640px){.classes-time-row {grid-template-columns:1fr;}.classes-student-list{grid-template-columns:1fr;}.classes-card{padding:.85rem;}.classes-tabs button {flex:1 1 160px;}}
 
 .classes-selected-names {font-size:.81rem;color:var(--muted);line-height:1.5;overflow-wrap:anywhere;margin:0;}
+
+/* Q10 verified class ↔ course offering linkage. Display no implied entitlement. */
+.classes-academic-state{font-size:.86rem;color:var(--muted)}
+.classes-offering-link{display:grid;gap:.55rem;margin:.75rem 0;padding:.95rem;
+  border:1px solid var(--border);border-radius:12px;background:var(--surface-soft)}
+.classes-offering-link label{font-weight:700;font-size:.86rem}
+.classes-offering-link select{width:100%;min-width:0;padding:.65rem;
+  background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:9px}
+.classes-offering-link small{display:block;line-height:1.5;color:var(--muted)}
+.classes-offering-link button{justify-self:start}

@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { navigationSections } from '../data/navigation';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { navigationItems, permittedNavigation } from '../data/navigation';
+import { learningAreas, learningAreaUrl } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -10,10 +11,11 @@ import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
-  const permittedSections = navigationSections.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => account && canAccessPath(account.role, item.path,account.studentTier)),
-  })).filter((section) => section.items.length > 0);
+  const location = useLocation();
+  const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'lessons';
+  const permittedSections = permittedNavigation(path=>Boolean(
+    account && canAccessPath(account.role,path,account.studentTier),
+  ));
 
   return (
     <div className="sidebar-inner">
@@ -41,6 +43,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             {section.items.map((item) => {
               const Icon = item.icon;
               return (
+                <div key={item.path} className="sidebar-navigation-item">
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -51,6 +54,15 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   <Icon size={18} strokeWidth={1.8} />
                   <span>{item.label}</span>
                 </NavLink>
+                {item.path==='/study'&&<div className="sidebar-learning-links" aria-label="Learning sections">
+                  {learningAreas.map(area=><Link key={area.id} to={learningAreaUrl(area.id)}
+                    onClick={onNavigate}
+                    aria-current={location.pathname==='/study'&&selectedLearningArea===area.id?'page':undefined}
+                    className={'sidebar-learning-link'+(
+                      location.pathname==='/study'&&selectedLearningArea===area.id?' active':''
+                    )}>{area.label}</Link>)}
+                </div>}
+              </div>
               );
             })}
           </div>
@@ -154,8 +166,10 @@ export default function AppShell({ children }: AppShellProps) {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const activeItem = navigationSections.flatMap((section) => section.items)
-    .find((item) => item.path === location.pathname);
+  const activeItem = navigationItems.find(item=>item.path===location.pathname);
+  const activeLearningArea=location.pathname==='/study'
+    ?learningAreas.find(area=>area.id===(new URLSearchParams(location.search).get('tab')??'lessons'))
+    :undefined;
 
   return (
     <div className="app-layout">
@@ -192,6 +206,8 @@ export default function AppShell({ children }: AppShellProps) {
                 '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
                 '/my-classes':'Classes & timetable',
               } as Record<string,string>)[location.pathname] ?? 'Workspace'}</strong>
+              {activeLearningArea&&<><span className="breadcrumb-divider">/</span>
+                <strong>{activeLearningArea.label}</strong></>}
             </div>
           </div>
           <div className="topbar-actions">

@@ -150,7 +150,10 @@ export function DliDashboardAnnouncements(){
 export function DliMessageBadge(){
   const {account}=useAuth();
   const [unread,setUnread]=useState(0);
-  const eligible=account?.role==='tutor'||account?.role==='student';
+  // Free Students do not have class-chat permission; their header must not
+  // advertise a message route that silently opens the classes tab instead.
+  const eligible=account?.role==='tutor'||
+    (account?.role==='student'&&account.studentTier==='paid');
   const refresh=useCallback(async()=>{
     if(!supabase||!eligible){setUnread(0);return;}
     try{

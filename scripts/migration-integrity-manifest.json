@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "purpose": "Baseline of reviewed migration Git blob hashes. Initial 74 reviewed/applied on development and production; Q5 entry is production-only, verified via provider-applied migration (requires empty account registry).",
-  "verifiedDate": "2026-11-12",
+  "verifiedDate": "2026-11-13",
   "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
   "entries": [
     {
@@ -307,6 +307,14 @@
     {
       "file": "20261112160000_stage_q6_scoped_paid_enrolment.sql",
       "gitBlobSha1": "b1523ade448a0f32a18e2c00cf1a268777c6da29"
+    },
+    {
+      "file": "20261113135357_stage_q10_teaching_offering_link.sql",
+      "gitBlobSha1": "552a3107cf07598cb7b12a07890ca2cd65019f4e"
+    },
+    {
+      "file": "20261113140333_stage_q10a_linked_class_roster_reconcile.sql",
+      "gitBlobSha1": "8c7810a2579e519fea3df3e3100b0e5df97d181f"
     }
   ]
 }

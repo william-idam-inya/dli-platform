@@ -33,7 +33,13 @@
     "prepare:recovery-receipt": "node scripts/create-recovery-manifest.mjs",
     "check:guest-login": "node scripts/verify-guest-login.mjs",
     "check:deployment-identity": "node --experimental-strip-types scripts/verify-deployment-identity.mjs",
-    "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs"
+    "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs",
+    "check:enrolment-catalogue": "node scripts/verify-enrolment-catalogue.mjs",
+    "check:workspace-consistency": "node scripts/verify-workspace-consistency.mjs",
+    "check:operational-tools": "node scripts/verify-operational-tools.mjs",
+    "check:class-offering-link": "node scripts/verify-class-offering-link.mjs",
+    "check:recovery-rate-limit": "node --experimental-strip-types scripts/verify-recovery-rate-limit.mjs",
+    "check:password-visibility": "node scripts/verify-password-visibility.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

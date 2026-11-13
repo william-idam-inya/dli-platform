@@ -4,6 +4,7 @@ import {
   LockKeyhole, RefreshCw, Save, Settings2, ShieldCheck, Users,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './InstitutionalSettingsPage.css';
@@ -15,7 +16,6 @@ type GroupSetting = {
   invite_url: string | null;
   updated_at: string;
 };
-type ApprovalFlag = {key:string;enabled:boolean;reason:string};
 const SETTINGS: {key: SettingKey;label:string;description:string;icon:typeof BookOpen}[] = [
   {
     key:'dli_scholars_students',label:'DLI–Scholars Club · Students',
@@ -48,8 +48,7 @@ export default function InstitutionalSettingsPage(){
   const canView=mayViewGroupLinks||account?.role==='assistant_admin';
   const [links,setLinks]=useState<GroupSetting[]>([]);
   const [inputs,setInputs]=useState<Record<SettingKey,string>>(EMPTY);
-  const [publicationFlag,setPublicationFlag]=useState<ApprovalFlag|null>(null);
-  const [flagUnverified,setFlagUnverified]=useState(true);
+  const [noticesAvailable,setNoticesAvailable]=useState<boolean|null>(null);
   const [enrolmentOpen,setEnrolmentOpen]=useState<boolean|null>(null);
   const [enrolmentSaving,setEnrolmentSaving]=useState(false);
   const [loading,setLoading]=useState(true);
@@ -60,7 +59,7 @@ export default function InstitutionalSettingsPage(){
   const refresh=useCallback(async()=>{
     const client=supabase;
     if(!client||!canView){
-      setLinks([]);setPublicationFlag(null);setFlagUnverified(true);
+      setLinks([]);setNoticesAvailable(null);
       setError('Institutional settings are unavailable for this account.');
       setLoading(false);
       return;
@@ -68,13 +67,14 @@ export default function InstitutionalSettingsPage(){
     setLoading(true);
     setNotice(null);
     try{
-      const [groupResult,flagResult,enrolmentResult]=await Promise.all([
+      const [groupResult,noticeResult,enrolmentResult]=await Promise.all([
         mayViewGroupLinks?client.from('institutional_group_links')
           .select('setting_key,display_label,invite_url,updated_at')
           .order('setting_key'):Promise.resolve({data:[] as GroupSetting[],error:null}),
-        client.from('communication_feature_flags')
-          .select('key,enabled,reason')
-          .eq('key','in_app_publication').maybeSingle(),
+        // M1's active DLI broadcasts use dli_notices. The earlier H5
+        // communication_feature_flags switch belongs to a different legacy
+        // announcement table and MUST NOT mislabel this feature as disabled.
+        client.from('dli_notices').select('id',{count:'exact',head:true}),
         client.from('dli_operational_controls').select('is_enabled').eq('setting_key','paid_enrolment_open').maybeSingle(),
       ]);
       if(groupResult.error){
@@ -88,11 +88,10 @@ export default function InstitutionalSettingsPage(){
         }
         setInputs(values);setError(null);
       }
-      setPublicationFlag(flagResult.error?null:(flagResult.data as ApprovalFlag|null));
-      setFlagUnverified(Boolean(flagResult.error)||!flagResult.data);
+      setNoticesAvailable(noticeResult.error?null:true);
       setEnrolmentOpen(enrolmentResult.error||!enrolmentResult.data?null:Boolean(enrolmentResult.data.is_enabled));
     }catch{
-      setLinks([]);setPublicationFlag(null);setFlagUnverified(true);setEnrolmentOpen(null);
+      setLinks([]);setNoticesAvailable(null);setEnrolmentOpen(null);
       setError('Unable to reach Supabase. Governance status cannot be verified.');
     }finally{setLoading(false);}
   },[canView,mayViewGroupLinks]);
@@ -157,7 +156,7 @@ export default function InstitutionalSettingsPage(){
   }
 
   const configuredCount=links.filter(item=>item.invite_url!==null).length;
-  const publicationStatus=flagUnverified?'Unavailable':publicationFlag?.enabled?'Enabled':'Disabled';
+  const publicationStatus=noticesAvailable===null?'Verification unavailable':'Available';
 
   return <div className="module-page institutional-settings-page">
     <div className="module-page-hero">
@@ -191,7 +190,7 @@ export default function InstitutionalSettingsPage(){
         <span>Your setting access</span></div>
       <div><CalendarClock size={20}/>
         <strong>{publicationStatus}</strong>
-        <span>In-app notice publication</span></div>
+        <span>Current DLI notice centre</span></div>
     </div>
 
     <div className="institutional-settings-actions">
@@ -272,10 +271,14 @@ export default function InstitutionalSettingsPage(){
       </div></div>
       <div className="institutional-settings-safeguards">
         <div>
-          <strong>In-app publication</strong>
+          <strong>Current in-app notices</strong>
           <span>{publicationStatus}</span>
-          <p>{flagUnverified?'The database flag could not be verified; do not assume publication is enabled.':
-            publicationFlag?.reason??'Flag status read from the development database.'}</p>
+          <p>The current notice centre is backed by the role-scoped dli_notices
+            table, including manual activation, scheduling and withdrawal.
+            This is separate from the retired H5 publication flag, which
+            must not be presented as the status of current notices.
+            {' '}<Link to="/announcements">Open announcement centre</Link>.
+          </p>
         </div>
         <div><strong>Finance rates and payments</strong><span>Not configured here</span>
           <p>Financial policies remain subject to separate institutional approval.
@@ -283,9 +286,10 @@ export default function InstitutionalSettingsPage(){
         <div><strong>AI authoring integration</strong><span>Not connected here</span>
           <p>Stage I3 does not connect an AI API, submit learner data or
             change the existing Gemini compliance requirement.</p></div>
-        <div><strong>Sensitive data export</strong><span>Disabled here</span>
-          <p>No bulk export, user directory download or audit detail disclosure
-            is enabled by this settings module.</p></div>
+        <div><strong>Reporting exports</strong><span>Aggregate CSV available</span>
+          <p>Authorised staff can export verified non-identifying counts in
+            {' '}<Link to="/reports">Operational reports</Link>.
+            User-directory, payment evidence and raw audit exports remain restricted.</p></div>
       </div>
     </section>
     <p className="module-footnote"><ExternalLink size={15}/>
