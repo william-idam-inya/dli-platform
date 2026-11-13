@@ -1,7 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ChevronDown, Grid2X2, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { navigationSections } from '../data/navigation';
+import { mobilePriorityPaths } from '../data/roleNavigation';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -9,6 +10,7 @@ import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
+  const sidebarLocation = useLocation();
   const permittedSections = navigationSections.map((section) => ({
     ...section,
     items: section.items.filter((item) => account && canAccessPath(account.role, item.path,account.studentTier)),
@@ -28,15 +30,22 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <span className="workspace-avatar">D</span>
         <span className="workspace-copy">
           <strong>DLI Workspace</strong>
-          <small>Institutional workspace</small>
+          <small>{account ? accountRoleLabel(account) : 'Institutional workspace'}</small>
         </span>
-        <span className="workspace-chevron">⌄</span>
       </div>
 
       <nav className="primary-nav" aria-label="Main navigation">
         {permittedSections.map((section) => (
-          <div className="nav-section" key={section.label}>
-            <p className="nav-section-label">{section.label}</p>
+          <details
+            className="nav-section"
+            key={section.label + ':' + (section.items.some(item => item.path === sidebarLocation.pathname) ? 'active' : 'idle')}
+            defaultOpen={section.label === 'Workspace' ||
+              section.items.some(item => item.path === sidebarLocation.pathname)}
+          >
+            <summary className="nav-section-label nav-section-toggle">
+              <span>{section.label}</span><ChevronDown size={15} aria-hidden="true" />
+            </summary>
+            <div className="nav-section-links">
             {section.items.map((item) => {
               const Icon = item.icon;
               return (
@@ -52,7 +61,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 </NavLink>
               );
             })}
-          </div>
+            </div>
+          </details>
         ))}
       </nav>
 
@@ -84,6 +94,14 @@ export default function AppShell({ children }: AppShellProps) {
     if (error) setLogoutError('Could not sign out. Please retry.');
   };
   const [mobileOpen, setMobileOpen] = useState(false);
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const openNavigation = (trigger: HTMLButtonElement) => {
+    triggerRef.current = trigger;
+    setMobileOpen(true);
+  };
+  const closeNavigation = () => setMobileOpen(false);
   const [themeSyncing,setThemeSyncing]=useState(false);
   const [themeSyncWarning,setThemeSyncWarning]=useState<string|null>(null);
   const [darkMode, setDarkMode] = useState(() => {
@@ -153,8 +171,54 @@ export default function AppShell({ children }: AppShellProps) {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const activeItem = navigationSections.flatMap((section) => section.items)
-    .find((item) => item.path === location.pathname);
+  // Accessible small-screen drawer: restore focus, contain tab order and
+  // prevent the background from scrolling while navigation is open.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        triggerRef.current?.focus();
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onResize = () => {
+      if (window.innerWidth > 680) setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [mobileOpen]);
+
+  const allNavigation = navigationSections.flatMap((section) => section.items);
+  const activeItem = allNavigation.find((item) => item.path === location.pathname);
+  const allowedPaths = allNavigation.filter(item => account &&
+    canAccessPath(account.role, item.path, account.studentTier)).map(item => item.path);
+  const mobileItems = account
+    ? mobilePriorityPaths(account, allowedPaths)
+      .map(path => allNavigation.find(item => item.path === path))
+      .filter((item): item is (typeof allNavigation)[number] => Boolean(item))
+    : [];
 
   return (
     <div className="app-layout">
@@ -163,12 +227,14 @@ export default function AppShell({ children }: AppShellProps) {
       </aside>
 
       {mobileOpen && (
-        <div className="mobile-backdrop" role="presentation" onClick={() => setMobileOpen(false)}>
-          <aside className="mobile-sidebar" onClick={(event) => event.stopPropagation()}>
-            <button className="mobile-close icon-button" onClick={() => setMobileOpen(false)} aria-label="Close navigation">
+        <div className="mobile-backdrop" role="presentation" onClick={closeNavigation}>
+          <aside id="dli-mobile-navigation" className="mobile-sidebar" role="dialog" aria-modal="true"
+            aria-label="All DLI navigation" ref={drawerRef} onClick={(event) => event.stopPropagation()}>
+            <button ref={closeRef} type="button" className="mobile-close icon-button"
+              onClick={closeNavigation} aria-label="Close navigation">
               <X size={20} />
             </button>
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
+            <Sidebar onNavigate={closeNavigation} />
           </aside>
         </div>
       )}
@@ -176,7 +242,10 @@ export default function AppShell({ children }: AppShellProps) {
       <main className="main-area">
         <header className="topbar">
           <div className="topbar-left">
-            <button className="mobile-menu icon-button" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
+            <button type="button" className="mobile-menu icon-button"
+              onClick={(event) => openNavigation(event.currentTarget)}
+              aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation"
+              aria-label="Open all navigation">
               <Menu size={21} />
             </button>
             <div className="breadcrumb">
@@ -225,6 +294,26 @@ export default function AppShell({ children }: AppShellProps) {
           </footer>
         </div>
       </main>
+      {account && <nav className="mobile-bottom-nav" aria-label="Quick mobile navigation">
+        {mobileItems.map(item => <NavLink key={item.path} to={item.path} end={item.path === '/'}
+          className={({isActive}) => 'mobile-bottom-link' + (isActive ? ' active' : '')}>
+          <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
+          <span>{item.label === 'Free Demo & enrolment' ? 'Enrolment' :
+            item.label === 'Classes & timetable' ? 'Classes' :
+            item.label === 'Learning & results' ? 'Learning' :
+            item.label === 'Academic setup' ? 'Academics' :
+            item.label === 'Users & access' ? 'Users' :
+            item.label === 'Feedback & support' ? 'Support' :
+            item.label === 'Reports & audit' ? 'Reports' :
+            item.label === 'My profile' ? 'Profile' : item.label}</span>
+        </NavLink>)}
+        <button type="button" className={'mobile-bottom-link mobile-bottom-more' + (mobileOpen ? ' active' : '')}
+          onClick={(event) => openNavigation(event.currentTarget)}
+          aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation">
+          <Grid2X2 size={21} strokeWidth={1.9} aria-hidden="true" />
+          <span>More</span>
+        </button>
+      </nav>}
     </div>
   );
 }
