@@ -19,3 +19,61 @@
 .unified-module-group .module-grid{margin-top:0}
 
 .unified-learning-metric{display:inline-block;margin-top:.5rem;font-size:.77rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+
+
+/* DLI photographic dashboard: readable, decorative backgrounds only.
+   The image has no embedded text, controls or logos. All UI remains live HTML. */
+.unified-overview .welcome-row {
+  min-height: 238px;
+  background: linear-gradient(100deg, rgba(29, 20, 54, .99) 0%, rgba(35, 24, 65, .96) 43%, rgba(36, 26, 70, .50) 100%), url('/dli-students-hero.webp') 72% center / cover no-repeat;
+  border: 1px solid rgba(158, 133, 221, .25);
+}
+:root[data-theme='dark'] .unified-overview .welcome-row {
+  background: linear-gradient(100deg, rgba(29, 20, 54, .99) 0%, rgba(35, 24, 65, .96) 43%, rgba(36, 26, 70, .50) 100%), url('/dli-students-hero.webp') 72% center / cover no-repeat;
+}
+.unified-overview .welcome-row > div:first-child { position: relative; z-index: 1; }
+.unified-overview .welcome-row h1,
+:root[data-theme='dark'] .unified-overview .welcome-row h1 { color: #fff9fd; }
+.unified-overview .welcome-copy,
+:root[data-theme='dark'] .unified-overview .welcome-copy { color: #e0d8f0; }
+.unified-overview .eyebrow { color: #f1cf73; }
+.unified-overview .eyebrow-line { background: #e9bc43; }
+.unified-overview .welcome-art { z-index: 1; }
+
+.unified-overview .module-card {
+  background: linear-gradient(117deg, rgba(31, 23, 56, .97), rgba(48, 34, 83, .86)), url('/dli-students-hero.webp') 74% center / cover no-repeat;
+  border-color: rgba(171, 151, 221, .35);
+  color: #fff9fd;
+}
+.unified-overview .module-card:nth-child(3n + 2) { background-position: center, 90% center; }
+.unified-overview .module-card:nth-child(3n) { background-position: center, 55% center; }
+.unified-overview .module-card:hover {
+  border-color: #d8bd74;
+  box-shadow: 0 12px 30px rgba(19, 10, 44, .22);
+}
+.unified-overview .module-card h3 { color: #fff; }
+.unified-overview .module-card p { color: #ded8eb; }
+.unified-overview .module-icon.violet {
+  color: #f2d276;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .15);
+}
+.unified-overview .module-arrow,
+.unified-overview .module-card:hover .module-arrow { color: #f2d276; }
+
+.unified-overview .unified-overview-metrics > div {
+  background: linear-gradient(110deg, rgba(32, 24, 58, .96), rgba(49, 35, 85, .82)), url('/dli-students-hero.webp') right center / cover no-repeat;
+  border-color: rgba(154, 133, 211, .4);
+}
+.unified-overview .unified-overview-metrics strong { color: #fff; }
+.unified-overview .unified-overview-metrics span { color: #e0d9ec; }
+
+@media (max-width: 680px) {
+  .unified-overview .welcome-row,
+  :root[data-theme='dark'] .unified-overview .welcome-row {
+    min-height: 205px;
+    background: linear-gradient(100deg, rgba(29, 20, 54, .97), rgba(35, 24, 65, .89) 70%, rgba(36, 26, 70, .70)), url('/dli-students-hero.webp') 68% center / cover no-repeat;
+  }
+  .unified-overview .welcome-row > div:first-child { max-width: 100%; }
+}
