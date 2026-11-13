@@ -66,8 +66,15 @@ export default function MemberProfilePage(){
       if(!image.error&&image.data){
         const url=URL.createObjectURL(image.data);
         setPicture(previous=>{if(previous)URL.revokeObjectURL(previous);return url;});
+        setPhotoStatus(null);
+      }else{
+        setPicture(previous=>{if(previous)URL.revokeObjectURL(previous);return null;});
+        setPhotoStatus('A picture is registered to your account, but private cloud storage could not display it. Try Refresh or upload a replacement.');
       }
-    }else setPicture(previous=>{if(previous)URL.revokeObjectURL(previous);return null;});
+    }else {
+      setPicture(previous=>{if(previous)URL.revokeObjectURL(previous);return null;});
+      setPhotoStatus('No photo is currently saved to this profile.');
+    }
    }catch{setError('Profile service unavailable. Your changes have not been confirmed.');}
    finally{setLoading(false);}
  },[account?.id,account?.full_name]);

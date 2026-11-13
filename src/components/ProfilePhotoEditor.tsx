@@ -10,6 +10,8 @@ export default function ProfilePhotoEditor({file,disabled,onUpload,onCancel}:{
   file:File;disabled:boolean;onUpload:(image:Blob)=>Promise<void>;onCancel:()=>void;
 }){
   const [source,setSource]=useState<string|null>(null);
+  const [frameSize,setFrameSize]=useState(VIEW);
+  const viewportRef=useRef<HTMLDivElement|null>(null);
   const [dimensions,setDimensions]=useState<Dimensions|null>(null);
   const [zoom,setZoom]=useState(1);
   const [pan,setPan]=useState<Shift>({x:0,y:0});
@@ -18,22 +20,32 @@ export default function ProfilePhotoEditor({file,disabled,onUpload,onCancel}:{
   const imgRef=useRef<HTMLImageElement|null>(null);
   const drag=useRef<{x:number;y:number;start:Shift;id:number}|null>(null);
   useEffect(()=>{
+    const target=viewportRef.current;
+    if(!target)return;
+    const measure=()=>setFrameSize(target.getBoundingClientRect().width||VIEW);
+    measure();
+    if(typeof ResizeObserver==='undefined')return;
+    const observer=new ResizeObserver(measure);
+    observer.observe(target);
+    return()=>observer.disconnect();
+  },[]);
+  useEffect(()=>{
     const url=URL.createObjectURL(file);
     setSource(url);setDimensions(null);setZoom(1);setPan({x:0,y:0});setError(null);
     return()=>URL.revokeObjectURL(url);
   },[file]);
-  const cover=dimensions?Math.max(VIEW/dimensions.width,VIEW/dimensions.height):1;
-  const displayW=dimensions?dimensions.width*cover*zoom:VIEW;
-  const displayH=dimensions?dimensions.height*cover*zoom:VIEW;
-  const maxX=Math.max(0,(displayW-VIEW)/2);
-  const maxY=Math.max(0,(displayH-VIEW)/2);
+  const cover=dimensions?Math.max(frameSize/dimensions.width,frameSize/dimensions.height):1;
+  const displayW=dimensions?dimensions.width*cover*zoom:frameSize;
+  const displayH=dimensions?dimensions.height*cover*zoom:frameSize;
+  const maxX=Math.max(0,(displayW-frameSize)/2);
+  const maxY=Math.max(0,(displayH-frameSize)/2);
   const actualX=clamp(pan.x,maxX),actualY=clamp(pan.y,maxY);
   const changeZoom=(value:number)=>{
     if(!dimensions)return;
     const nextW=dimensions.width*cover*value, nextH=dimensions.height*cover*value;
     setZoom(value);setPan(pos=>({
-      x:clamp(pos.x,Math.max(0,(nextW-VIEW)/2)),
-      y:clamp(pos.y,Math.max(0,(nextH-VIEW)/2)),
+      x:clamp(pos.x,Math.max(0,(nextW-frameSize)/2)),
+      y:clamp(pos.y,Math.max(0,(nextH-frameSize)/2)),
     }));
   };
   function startDrag(e:ReactPointerEvent<HTMLDivElement>){
@@ -46,7 +58,7 @@ export default function ProfilePhotoEditor({file,disabled,onUpload,onCancel}:{
     if(!drag.current||drag.current.id!==e.pointerId)return;
     const start=drag.current;
     // Pointer coordinates are in CSS pixels; the viewport is responsive.
-    const factor=VIEW/e.currentTarget.getBoundingClientRect().width;
+    const factor=frameSize/e.currentTarget.getBoundingClientRect().width;
     setPan({x:clamp(start.start.x+(e.clientX-start.x)*factor,maxX),
             y:clamp(start.start.y+(e.clientY-start.y)*factor,maxY)});
   }
@@ -59,7 +71,7 @@ export default function ProfilePhotoEditor({file,disabled,onUpload,onCancel}:{
       canvas.width=OUTPUT;canvas.height=OUTPUT;
       const ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('Cropping is unavailable on this device. Try another browser.');
-      const scale=cover*zoom,side=VIEW/scale;
+      const scale=cover*zoom,side=frameSize/scale;
       const sx=dimensions.width/2-side/2-actualX/scale;
       const sy=dimensions.height/2-side/2-actualY/scale;
       ctx.drawImage(img,sx,sy,side,side,0,0,OUTPUT,OUTPUT);
@@ -74,7 +86,7 @@ export default function ProfilePhotoEditor({file,disabled,onUpload,onCancel}:{
   return <section className="member-photo-editor" aria-label="Crop and upload profile picture">
     <h3>Crop your profile picture</h3>
     <p><Move size={15} aria-hidden="true"/> Drag the image to centre your face. Zoom or use the sliders to adjust the crop. Your current saved picture stays unchanged until the new one is uploaded.</p>
-    <div className="member-photo-editor-viewport" onPointerDown={startDrag} onPointerMove={moveDrag}
+    <div ref={viewportRef} className="member-photo-editor-viewport" onPointerDown={startDrag} onPointerMove={moveDrag}
       onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}}
       aria-label="Profile photo cropping preview">
       {source&&<img ref={imgRef} src={source} alt="Photo ready to crop" draggable={false}
