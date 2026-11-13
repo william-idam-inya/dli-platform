@@ -35,3 +35,9 @@
 8. Confirm actual Cloudflare QA preview deployed commit SHA, the target Supabase is the **development** project, and production auto-deploy remains disabled.
 
 **Status:** Source checks and catalogue DB readback are necessary but not a substitute for authenticated, device-based end-to-end acceptance. Keep the release on hold until the above have been recorded.
+
+## QA build handoff
+- GitHub PR #50 runs the complete no-deploy CI suite on this audit branch and its release-candidate base. Source validation passed on the navigation/subject/group fixes.
+- Cloudflare Pages project `dli-platform-qa` has been verified to target **development Supabase**, with production auto-deploys disabled; this audit branch is now explicitly approved for QA preview builds.
+- A successful Pages deployment yields a branch preview URL. The domain `dli-platform-qa.pages.dev` may serve an older production-branch build; use only the exact successful audit-branch preview URL.
+- **Concurrent work caution:** PR #49 and the Q13 multi-subject branch are separate evolving proposals. Review/merge in an explicit order; never combine changes solely by branch name, and do not treat CI alone as phone acceptance.
