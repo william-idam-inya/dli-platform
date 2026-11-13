@@ -29,6 +29,7 @@ export default function DirectMessagesPage(){
   const [params]=useSearchParams();
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
+  const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
   const [threads,setThreads]=useState<Thread[]>([]);
   const [reports,setReports]=useState<Report[]>([]);
@@ -105,8 +106,11 @@ export default function DirectMessagesPage(){
   },[mode,moderator]);
   useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{
-    if(activeId&&mode==='inbox'&&window.matchMedia('(max-width: 750px)').matches){
-      threadRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+    if(activeId&&mode==='inbox'){
+      composeRef.current?.focus({preventScroll:true});
+      if(window.matchMedia('(max-width: 750px)').matches){
+        threadRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+      }
     }
   },[activeId,mode]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
@@ -362,7 +366,7 @@ export default function DirectMessagesPage(){
           </div>
           {mode==='inbox'?<form className="dli-direct-compose" onSubmit={e=>void send(e)}>
             <label htmlFor="direct-draft">Your message</label>
-            <textarea id="direct-draft" maxLength={2000} rows={2} value={draft}
+            <textarea id="direct-draft" ref={composeRef} maxLength={2000} rows={2} value={draft}
               placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
             <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
               Optional file (PDF, image, TXT, DOCX, XLSX, PPTX; up to 10 MB)
