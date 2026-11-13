@@ -15,7 +15,7 @@
 .unified-learning-restricted{display:inline-flex;align-items:center;gap:.35rem;margin-top:.55rem;color:var(--muted);font-size:.73rem;line-height:1.4}
 .unified-learning-restricted svg{flex-shrink:0}
 .unified-module-group{margin:1.25rem 0 1.75rem}
-.unified-module-group-label{font-size:.92rem;font-weight:750;color:var(--muted);margin:0 0:.65rem}
+.unified-module-group-label{font-size:.92rem;font-weight:750;color:var(--muted);margin:0 0 .65rem}
 .unified-module-group .module-grid{margin-top:0}
 
 .unified-learning-metric{display:inline-block;margin-top:.5rem;font-size:.77rem;color:var(--muted);font-variant-numeric:tabular-nums}
