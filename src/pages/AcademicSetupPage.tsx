@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  BookOpen, CheckCircle2, CircleOff, GraduationCap, Layers3, LibraryBig,
-  Plus, RefreshCw, School, ShieldCheck,
+  BookOpen, CheckCircle2, CircleOff, GraduationCap, LibraryBig,
+  Plus, RefreshCw, School, ShieldCheck, Settings2, ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -62,6 +62,8 @@ export default function AcademicSetupPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [viewProgramme, setViewProgramme] = useState('');
+  const [viewLevel, setViewLevel] = useState('');
 
   const [programmeName, setProgrammeName] = useState('');
   const [programmeDescription, setProgrammeDescription] = useState('');
@@ -108,6 +110,37 @@ export default function AcademicSetupPage() {
 
   const activeProgrammes = programmes.filter(item => item.is_active);
   const activeLevels = levels.filter(item => item.is_active);
+  // The learning pathway must have an actual active course offering; bare
+  // programme/subject catalogue entries are not proof of offered lessons.
+  const availableCourses = useMemo(() => courses.filter(course =>
+    course.is_active &&
+    programmes.some(item => item.id === course.programme_id && item.is_active) &&
+    levels.some(item => item.id === course.academic_level_id && item.is_active) &&
+    subjects.some(item => item.id === course.subject_id &&
+      item.academic_level_id === course.academic_level_id && item.is_active),
+  ), [courses, programmes, levels, subjects]);
+  const selectedProgramme = activeProgrammes.find(item => item.id === viewProgramme)
+    ?? activeProgrammes[0] ?? null;
+  const programmeCourses = availableCourses.filter(
+    item => item.programme_id === selectedProgramme?.id,
+  );
+  const offeredLevels = activeLevels.filter(
+    item => programmeCourses.some(course => course.academic_level_id === item.id),
+  );
+  const selectedLevel = offeredLevels.find(item => item.id === viewLevel)
+    ?? offeredLevels[0] ?? null;
+  const pathwayCourses = programmeCourses.filter(item =>
+    item.academic_level_id === selectedLevel?.id &&
+    programmeCourses.findIndex(other =>
+      other.academic_level_id === item.academic_level_id &&
+      other.subject_id === item.subject_id,
+    ) === programmeCourses.indexOf(item),
+  ).sort((a, b) => {
+    const first = subjects.find(item => item.id === a.subject_id)?.name ?? a.title;
+    const second = subjects.find(item => item.id === b.subject_id)?.name ?? b.title;
+    return first.localeCompare(second);
+  });
+
   const chosenLevelId = levels.some(item => item.id === chosenLevel)
     ? chosenLevel : levels[0]?.id ?? '';
   const courseProgrammeId = activeProgrammes.some(item => item.id === courseProgramme)
@@ -214,6 +247,11 @@ export default function AcademicSetupPage() {
       setError('Choose an active programme, level and subject, and enter a course title.');
       return;
     }
+    if (courses.some(item => item.programme_id === courseProgrammeId &&
+      item.academic_level_id === courseLevelId && item.subject_id === courseSubjectId)) {
+      setError('This programme, level and subject already have a course. Use the existing course in Catalogue management.');
+      return;
+    }
     void create('courses', {
       programme_id: courseProgrammeId,
       academic_level_id: courseLevelId,
@@ -234,36 +272,140 @@ export default function AcademicSetupPage() {
         <span className="module-page-icon"><School size={25}/></span>
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
-          <h1>Academic setup</h1>
-          <p>Maintain the institutional programme, level, subject and course catalogue.</p>
-        </div>
-        <span className="module-status"><span/> Stage D1</span>
-      </div>
-
-      <div className="module-notice">
-        <div className="notice-icon"><ShieldCheck size={20}/></div>
-        <div>
-          <strong>Real records, protected by Supabase permissions</strong>
-          <p>Only the Owner, Admin or Academic Coordinator may edit these catalogues.
-            Changes persist in PostgreSQL. Deactivation preserves the record.
-            Cohorts, tutor assignments and student enrolments are the next Stage D steps.</p>
+          <h1>Academic structure</h1>
+          <p>Choose a DLI programme and academic level to see exactly which subjects we offer.</p>
         </div>
       </div>
 
       {notice && <p role="status" className="auth-feedback success">{notice}</p>}
       <ErrorMessage message={error}/>
-      <div className="academic-summary">
-        <div><LibraryBig size={18}/><strong>{programmes.length}</strong><span>Programmes</span></div>
-        <div><Layers3 size={18}/><strong>{levels.length}</strong><span>Levels</span></div>
-        <div><BookOpen size={18}/><strong>{subjects.length}</strong><span>Subjects</span></div>
-        <div><GraduationCap size={18}/><strong>{courses.length}</strong><span>Courses</span></div>
-      </div>
+
       <div className="academic-top-actions">
-        <p>{loading ? 'Loading the live catalogue…' : 'Showing live DLI development records'}</p>
+        <p>{loading ? 'Loading the course catalogue…' : 'Current DLI catalogue · Live database records'}</p>
         <button type="button" className="user-outline-button" disabled={loading || Boolean(saving)}
-          onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh catalogue</button>
+          onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
       </div>
 
+      <div className="academic-overview-stats" aria-label="Academic catalogue totals">
+        <div><LibraryBig size={19}/><strong>{activeProgrammes.length}</strong><span>Active programmes</span></div>
+        <div><BookOpen size={19}/><strong>{subjects.filter(item => item.is_active).length}</strong><span>Subjects by level</span></div>
+        <div><GraduationCap size={19}/><strong>{availableCourses.length}</strong><span>Available courses</span></div>
+      </div>
+
+      {loading ? (
+        <section className="panel academic-pathway" role="status">Loading programmes, levels and subjects…</section>
+      ) : activeProgrammes.length === 0 ? (
+        <section className="panel academic-pathway">
+          <h2>No active programmes yet</h2>
+          <p>Open Catalogue management below to configure an approved DLI programme.</p>
+        </section>
+      ) : (
+        <section className="panel academic-pathway" aria-label="Programme and subject explorer">
+          <div className="academic-step">
+            <div className="academic-step-title">
+              <span className="academic-step-marker" aria-hidden="true">1</span>
+              <div><h2>Choose a programme</h2><p>Which DLI learning service do you want to view?</p></div>
+            </div>
+            <div className="academic-choice-grid" role="group" aria-label="Select a DLI programme">
+              {activeProgrammes.map(item => (
+                <button key={item.id} type="button"
+                  className={'academic-programme-choice' + (item.id === selectedProgramme?.id ? ' selected' : '')}
+                  aria-pressed={item.id === selectedProgramme?.id}
+                  onClick={() => { setViewProgramme(item.id); setViewLevel(''); }}>
+                  <span className="academic-choice-icon"><School size={20}/></span>
+                  <span className="academic-choice-copy">
+                    <strong>{item.name}</strong>
+                    <small>{item.code === 'dli-scholars-club' ? 'Free weekend lectures' :
+                      item.code === 'dli-online' ? 'DLI online learning' :
+                      item.description || 'DLI learning programme'}</small>
+                  </span>
+                  {item.id === selectedProgramme?.id && <CheckCircle2 size={19} className="academic-choice-check"/>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="academic-step">
+            <div className="academic-step-title">
+              <span className="academic-step-marker" aria-hidden="true">2</span>
+              <div><h2>Choose an academic level</h2><p>Only levels with an active course in the chosen programme appear here.</p></div>
+            </div>
+            {offeredLevels.length === 0 ? (
+              <p className="academic-empty">No academic levels are currently offered in this programme. Configure a course under Catalogue management.</p>
+            ) : (
+              <div className="academic-level-options" role="group" aria-label="Select an academic level">
+                {offeredLevels.map(level => (
+                  <button type="button" key={level.id}
+                    className={'academic-level-choice' + (level.id === selectedLevel?.id ? ' selected' : '')}
+                    aria-pressed={level.id === selectedLevel?.id}
+                    onClick={() => setViewLevel(level.id)}>
+                    {level.name}
+                    <span>{programmeCourses.filter(c => c.academic_level_id === level.id).length} subjects</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="academic-step academic-step-last">
+            <div className="academic-step-title">
+              <span className="academic-step-marker" aria-hidden="true">3</span>
+              <div><h2>Available subjects</h2>
+                <p>{selectedProgramme?.name}{selectedLevel ? ' · ' + selectedLevel.name : ''}</p>
+              </div>
+              <span className="academic-available-count">{pathwayCourses.length} available</span>
+            </div>
+            {pathwayCourses.length > 0 ? (
+              <div className="academic-subject-grid">
+                {pathwayCourses.map(course => (
+                  <div className="academic-subject-tile" key={course.id}>
+                    <span className="academic-subject-icon"><BookOpen size={18}/></span>
+                    <strong>{subjectNameFor(course.subject_id)}</strong>
+                    <CheckCircle2 size={17} className="academic-subject-check" aria-label="Available"/>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="academic-empty">No active subject offerings for this selection. Check Catalogue management below.</p>
+            )}
+          </div>
+
+          <div className="academic-definition">
+            <ShieldCheck size={19}/>
+            <div><strong>How do subjects and courses differ?</strong>
+              <p>A subject is what DLI teaches (such as Mathematics).
+                A course is that subject offered within a particular DLI programme and academic level.
+                These course records are used to organise teaching; they are not individual classes or quizzes.</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="academic-next-steps" aria-label="Where to go next">
+        <Link to="/classes" className="academic-next-link">
+          <span><strong>Organise classes &amp; timetable</strong><small>Set up lessons, sessions, tutors and students.</small></span>
+          <ArrowRight size={18}/>
+        </Link>
+        <Link to="/study" className="academic-next-link">
+          <span><strong>Learning &amp; results</strong><small>View lessons, assignments, quizzes and attendance.</small></span>
+          <ArrowRight size={18}/>
+        </Link>
+      </div>
+
+      <details className="academic-admin-drawer">
+        <summary>
+          <span className="academic-admin-summary-icon"><Settings2 size={20}/></span>
+          <span><strong>Catalogue management</strong>
+            <small>Advanced settings: create, activate or deactivate programmes, levels, subjects and courses</small>
+          </span>
+          <span className="academic-manage-label">Manage catalogue</span>
+        </summary>
+        <div className="academic-admin-content">
+          <p className="academic-admin-guidance">
+            These controls change the shared DLI academic catalogue. Use them only for
+            institutionally approved updates. Deactivating a record hides it from new choices
+            but preserves existing records. Class scheduling and assessments are managed separately.
+          </p>
       <div className="academic-columns">
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
@@ -402,8 +544,10 @@ export default function AcademicSetupPage() {
               <Plus size={15}/> {saving === 'courses' ? 'Saving course…' : 'Create course'}
             </button>
           </form>
+          <p className="academic-code-hint">Existing offerings for the programme and level selected above</p>
           <div className="academic-record-list academic-course-list">
-            {courses.map(item => <div className="academic-record" key={item.id}>
+            {courses.filter(item => item.programme_id === courseProgrammeId &&
+              item.academic_level_id === courseLevelId).map(item => <div className="academic-record" key={item.id}>
               <div className="academic-record-text">
                 <strong>{item.title}</strong>
                 <small>{programmeNameFor(item.programme_id)} · {levelNameFor(item.academic_level_id)}</small>
@@ -419,16 +563,8 @@ export default function AcademicSetupPage() {
           </div>
         </section>
       </div>
-      <div className="module-footnote">
-        <ShieldCheck size={15}/> Subjects and courses form the reusable learning catalogue.
-        Enrol one or multiple students and allocate a tutor through
-        <Link to="/classes" className="text-link"> Classes &amp; timetable</Link>.
-        For existing lesson-based courses, specialist setup remains under
-        <Link to="/cohorts" className="text-link"> Topics &amp; cohorts</Link>,
-        <Link to="/assignments" className="text-link"> Legacy offering assignments</Link>,
-        and <Link to="/schedule" className="text-link"> One-off sessions</Link>.
-        These are advanced curriculum tools, not a second individual/group class register.
-      </div>
+        </div>
+      </details>
     </div>
   );
 }
