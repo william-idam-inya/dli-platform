@@ -11,8 +11,10 @@ import './ClassesWorkspacePage.css';
 type Person = { id:string;auth_user_id:string;full_name:string;role:'student'|'tutor' };
 type Topic = {id:string;name:string};
 type Programme = {id:string;name:string;code:string};
+type AcademicOffering = {id:string;programme_id:string;course_id:string;is_active:boolean};
+type AcademicCourse = {id:string;title:string;subject_id:string};
 type ClassType='free_demo'|'group_5_science'|'group_10'|'private_1_to_1';
-type ClassRow = {id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer';class_type:ClassType;class_start_date:string;programme_id:string;class_group_id:string;class_group_name:string};
+type ClassRow = {id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;state:'draft'|'published'|'archived';billing_mode:'free'|'manual_transfer';class_type:ClassType;class_start_date:string;programme_id:string;class_group_id:string;class_group_name:string;offering_id:string|null};
 type Member = {id:string;class_id:string;student_id:string;student_name:string;is_active:boolean};
 type FormData = {subject_id:string;tutor_id:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string;class_type:ClassType;class_start_date:string;class_group_id:string;class_group_name:string};
 const WEEKDAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -33,6 +35,7 @@ export default function ClassesWorkspacePage(){
   const {account}=useAuth();
   const [params,setParams]=useSearchParams();
   const staff=Boolean(account&&STAFF.has(account.role));
+  const canLinkOffering=account?.role==='admin';
   const mayOpenAcademic=Boolean(account&&canAccessPath(account.role,'/academics',account.studentTier));
   const mayOpenUsers=Boolean(account&&canAccessPath(account.role,'/users',account.studentTier));
   const mayOpenLearning=Boolean(account&&canAccessPath(account.role,'/study',account.studentTier));
@@ -44,6 +47,9 @@ export default function ClassesWorkspacePage(){
   const [people,setPeople]=useState<Person[]>([]);
   const [topics,setTopics]=useState<Topic[]>([]);
   const [programmes,setProgrammes]=useState<Programme[]>([]);
+  const [academicOfferings,setAcademicOfferings]=useState<AcademicOffering[]>([]);
+  const [academicCourses,setAcademicCourses]=useState<AcademicCourse[]>([]);
+  const [linkSelection,setLinkSelection]=useState<Record<string,string>>({});
   const [paidStudents,setPaidStudents]=useState<string[]>([]);
   const [classes,setClasses]=useState<ClassRow[]>([]);
   const [members,setMembers]=useState<Member[]>([]);
@@ -61,24 +67,30 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,t,pr,paid]=await Promise.all([
-        supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name').limit(500),
+      const [c,m,p,t,pr,paid,academic,courses]=await Promise.all([
+        supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name,offering_id').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('subjects').select('id,name').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('programmes').select('id,name,code').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
+        canLinkOffering?supabase.from('course_offerings').select('id,programme_id,course_id,is_active')
+          .eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
+        canLinkOffering?supabase.from('courses').select('id,title,subject_id')
+          .eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
       ]);
-      if([c,m,p,t,pr,paid].some(x=>x.error)){setError('Could not read the authorised teaching register. Retry secure access.');}
+      if([c,m,p,t,pr,paid,academic,courses].some(x=>x.error)){setError('Could not read the authorised teaching register. Retry secure access.');}
       else{
         setClasses((c.data??[]) as ClassRow[]);setMembers((m.data??[]) as Member[]);
         setPeople((p.data??[]) as Person[]);setTopics((t.data??[]) as Topic[]);
         setProgrammes((pr.data??[]) as Programme[]);setPaidStudents((paid.data??[]).map(x=>x.student_id));
+        setAcademicOfferings((academic.data??[]) as AcademicOffering[]);
+        setAcademicCourses((courses.data??[]) as AcademicCourse[]);
         setError(null);
       }
     }catch{setError('The class register could not be reached. Check your internet connection.');}
     finally{setLoading(false);}
-  },[account?.id,staff]);
+  },[account?.id,staff,canLinkOffering]);
   useEffect(()=>{void refresh();},[refresh]);
   const students=people.filter(p=>p.role==='student');
   const tutors=people.filter(p=>p.role==='tutor');
@@ -151,6 +163,31 @@ export default function ClassesWorkspacePage(){
       cancelEdit();await refresh();
     }catch{
       setError('Class save could not be confirmed. Refresh the register before retrying.');
+    }finally{setBusy(false);}
+  }
+  async function linkClassOffering(c:ClassRow) {
+    if(!supabase||!canLinkOffering||busy||c.offering_id||c.class_type==='free_demo')return;
+    const offeringId=linkSelection[c.id];
+    if(!offeringId) {
+      setError('Select the approved academic offering for this class.');
+      return;
+    }
+    if(!window.confirm('Connect this paid class to the selected course offering? The approved tutor and paid learner roster must match exactly in both academic systems. This link cannot be reassigned.'))return;
+    setBusy(true);setError(null);setNotice(null);
+    try{
+      const {data,error:linkError}=await supabase.rpc('dli_link_class_to_offering',{
+        p_class_id:c.id,p_offering_id:offeringId,
+      });
+      if(linkError||!data){
+        setError(linkError?.code==='23514'
+          ?'Link rejected: the active programme, subject, tutor or paid student memberships do not match. Verify the offering and roster in Academic assignments before retrying.'
+          :'Could not connect this class. Only an authorised Admin can connect an approved course offering.');
+      }else{
+        setNotice('Teaching class connected to its approved academic offering. Private learning access still requires an active paid entitlement and matching memberships.');
+        await refresh();
+      }
+    }catch{
+      setError('Could not verify the academic link. Refresh the register before retrying.');
     }finally{setBusy(false);}
   }
   async function changeState(c:ClassRow,state:'published'|'archived'){
@@ -317,12 +354,43 @@ export default function ClassesWorkspacePage(){
             <p><GraduationCap size={15}/>Tutor: {c.tutor_name}</p>
             {(staff||account?.role==='tutor')&&<p><Users size={15}/>Students: {roster.map(m=>m.student_name).join(', ')||'None yet'}</p>}
             <p><LockKeyhole size={15}/>{c.class_type.replaceAll('_',' ')} · {c.billing_mode==='free'?'Free':'Paid / verified enrolment'}</p>
+            {c.class_type!=='free_demo'&&<p className="classes-academic-state">
+              <GraduationCap size={15}/>
+              {c.offering_id?'Academic course linked · access requires matching active enrolments':
+                'Academic course not linked · learning materials require separate approved enrolment'}
+            </p>}
+            {canLinkOffering&&!c.offering_id&&c.state!=='archived'&&c.class_type!=='free_demo'&&
+              <div className="classes-offering-link">
+                <label htmlFor={'class-offering-'+c.id}>Connect an approved course offering</label>
+                <select id={'class-offering-'+c.id} value={linkSelection[c.id]??''}
+                  onChange={e=>setLinkSelection(prev=>({...prev,[c.id]:e.target.value}))}>
+                  <option value="">Select matching programme and subject</option>
+                  {academicOfferings.filter(o=>o.programme_id===c.programme_id
+                      &&academicCourses.some(course=>course.id===o.course_id
+                        &&course.subject_id===c.subject_id)
+                      &&!classes.some(other=>other.offering_id===o.id))
+                    .map(o=><option key={o.id} value={o.id}>
+                      {academicCourses.find(course=>course.id===o.course_id)?.title??'Approved course'}
+                      {' · '+o.id.slice(0,8)}
+                    </option>)}
+                </select>
+                <button type="button" className="user-outline-button"
+                  disabled={busy||!linkSelection[c.id]}
+                  onClick={()=>void linkClassOffering(c)}>
+                  <GraduationCap size={15}/> Verify and connect
+                </button>
+                <small>First create the matching active cohort/offering and assign exactly
+                  the class tutor and paid students in <Link to="/assignments">Academic assignments</Link>.
+                  Linking never grants paid access automatically.</small>
+              </div>}
             <div className="classes-card-actions">
               {c.state==='published'&&<a href={c.meeting_url} target="_blank" rel="noopener noreferrer"><Video size={15}/> Google Meet</a>}
               {communicating&&c.state==='published'&&<Link to={'/communications?section=class&class='+encodeURIComponent(c.id)}>
                 <MessageCircle size={14}/> Subject chat
               </Link>}
               {(account?.role==='student'||account?.role==='tutor')&&c.state==='published'&&<Link to={'/feedback?class='+encodeURIComponent(c.id)}>Report a class issue</Link>}
+              {c.offering_id&&c.state==='published'&&mayOpenLearning&&
+                <Link to="/study?tab=lessons"><BookOpen size={14}/> Learning &amp; results</Link>}
               {staff&&c.state!=='archived'&&<>
                 <button type="button" disabled={busy} onClick={()=>editClass(c)}><Pencil size={14}/> Edit</button>
                 {c.state==='draft'&&<button type="button" disabled={busy} onClick={()=>void changeState(c,'published')}><CheckCircle2 size={14}/> Publish</button>}
