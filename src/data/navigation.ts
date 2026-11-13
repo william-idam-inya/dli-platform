@@ -51,6 +51,13 @@ export const navigationSections: NavigationSection[] = [
         group: 'Workspace',
       },
       {
+        label: 'Messages',
+        path: '/communications',
+        icon: MessageSquareText,
+        description: 'Safeguarded direct messaging with DLI staff and approved members.',
+        group: 'Workspace',
+      },
+      {
         label: 'Feedback & support',
         path: '/feedback',
         icon: MessageSquareText,
@@ -126,13 +133,6 @@ export const navigationSections: NavigationSection[] = [
         path: '/finance',
         icon: Wallet,
         description: 'Internal finance-policy proposals and document rates; private manual fee verification has its own section. Automated billing and payouts remain disabled.',
-        group: 'Operations',
-      },
-      {
-        label: 'Messages',
-        path: '/communications',
-        icon: MessageSquareText,
-        description: 'Institutional direct chat with safeguarded Student–Tutor contact and Founder/Admin oversight.',
         group: 'Operations',
       },
       {

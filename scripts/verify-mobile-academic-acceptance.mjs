@@ -25,8 +25,14 @@ for(const role of DLI_ROLES) for(const tier of role==='student'?['free','paid']:
 }
 const free=paths.filter(x=>canAccessPath('student',x,'free'));
 assert.deepEqual(mobilePriorityPaths({role:'student',studentTier:'free'},free),
-  ['/','/classes','/enrolment','/feedback']);
+  ['/','/communications','/classes','/enrolment']);
 assert.ok(!free.includes('/quizzes')&&!free.includes('/assignments'));
+for (const role of DLI_ROLES) for (const tier of role === 'student' ? ['free','paid'] : [undefined]) {
+ assert.equal(canAccessPath(role,'/communications',tier),true,`Missing Messages for ${role}/${tier}`);
+ const permitted=paths.filter(path=>canAccessPath(role,path,tier));
+ assert.ok(mobilePriorityPaths({role,studentTier:tier},permitted).includes('/communications'),`Missing mobile chat for ${role}/${tier}`);
+}
+assert.equal(nav.match(/path: '\/communications'/g)?.length,1,'One shared messages destination');
 const tutor=paths.filter(x=>canAccessPath('tutor',x));
 assert.ok(!mobilePriorityPaths({role:'tutor'},tutor).includes('/users'));
 const shell=read('src/components/AppShell.tsx');

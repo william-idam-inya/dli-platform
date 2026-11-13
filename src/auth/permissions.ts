@@ -47,7 +47,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/tutors': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/finance': ['owner', 'admin', 'finance_officer'],
   '/finance/reviews': ['owner', 'admin', 'finance_officer'],
-  '/communications': ['owner', 'admin', 'tutor', 'student'],
+  '/communications': DLI_ROLES,
   '/communications/drafts': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/communications/reviews': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/communications/templates': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
@@ -66,7 +66,7 @@ export function isDliRole(value: unknown): value is DliRole {
 // Free learners can inspect the common learning workspace, but the hub
 // intentionally DOES NOT mount protected lesson/assessment queries for them.
 // Direct /learning, /assessments, /quizzes and /attendance stay restricted.
-const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/study','/announcements']);
+const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/study','/announcements','/communications']);
 export function canAccessPath(role: DliRole, path: string, studentTier: 'free'|'paid'='paid'): boolean {
   if(role==='student'&&studentTier!=='paid'&&!FREE_STUDENT_ROUTES.has(path))return false;
   return routeRoles[path]?.includes(role) ?? false;
