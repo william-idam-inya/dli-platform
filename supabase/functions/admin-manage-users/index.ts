@@ -23,7 +23,12 @@ const roles = new Set([
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
   'finance_officer', 'tutor', 'student',
 ]);
-const actions = new Set(['list', 'audit', 'change_role', 'suspend', 'reactivate', 'revoke']);
+const actions = new Set([
+  'list','audit','change_role','suspend','reactivate','revoke',
+  'restore_revoked','archive','unarchive',
+]);
+const lifecycleActions = new Set(['restore_revoked','archive','unarchive']);
+const statuses = new Set(['pending','active','suspended','revoked']);
 
 function reply(status: number, data: Record<string, unknown>, origin: string) {
   return new Response(JSON.stringify(data), {
@@ -97,22 +102,34 @@ Deno.serve(async (req: Request) => {
     const page = typeof input.page === 'number' && Number.isSafeInteger(input.page) &&
       input.page >= 0 && input.page <= 10000 ? input.page : 0;
     const size = 50;
+    const view = input.view === 'archived' ? 'archived' : 'current';
+    const status = typeof input.status === 'string' ? input.status : 'all';
+    if (status !== 'all' && !statuses.has(status)) {
+      return reply(400, { error: 'Unknown account status filter.' }, origin);
+    }
     const { data: allowed, error: allowedError } = await admin.from('role_assignment_policies')
       .select('granted_role').eq('grantor_role', caller.role);
     if (allowedError) return reply(500, { error: 'Role permissions could not be loaded.' }, origin);
 
-    // requestClient carries the real user's JWT. PostgreSQL RLS determines
-    // which registry rows the caller can see, even if this function is bypassed.
-    const { data: users, error: listError } = await requestClient.from('authorised_users')
-      .select('id,email,full_name,role,status,created_at,updated_at')
-      .order('created_at', { ascending: false })
+    // The real caller JWT + RLS still constrain visible rows. An archived
+    // record never means the user was deleted or had access restored.
+    let query = requestClient.from('authorised_users')
+      .select('id,email,full_name,role,status,created_at,updated_at,archived_at',
+        { count: 'exact' })
+      .order('created_at', { ascending: false });
+    query = view === 'archived'
+      ? query.not('archived_at','is',null)
+      : query.is('archived_at',null);
+    if (view === 'current' && status !== 'all') query = query.eq('status',status);
+    const { data: users, count, error: listError } = await query
       .range(page * size, page * size + size);
     if (listError) return reply(500, { error: 'Could not load authorised users.' }, origin);
 
     return reply(200, {
-      users: (users ?? []).slice(0, size),
+      users: (users ?? []).slice(0,size),
+      total: count ?? 0,
       has_more: (users ?? []).length > size,
-      page,
+      page, view,
       allowed_roles: (allowed ?? []).map(item => item.granted_role),
     }, origin);
   }
@@ -132,19 +149,29 @@ Deno.serve(async (req: Request) => {
       (action === 'change_role' && !roles.has(newRole))) {
     return reply(400, { error: 'Choose a valid user and role.' }, origin);
   }
+  const isLifecycle = lifecycleActions.has(action);
+  const reason = typeof input.reason === 'string' ? input.reason.trim() : '';
+  if (isLifecycle && (reason.length < 12 || reason.length > 500)) {
+    return reply(400, { error: 'An administrative reason of 12–500 characters is required.' }, origin);
+  }
+  if (isLifecycle && !['owner','admin'].includes(caller.role)) {
+    return reply(403, { error: 'Only the Founder or Admin can manage revoked account records.' }, origin);
+  }
 
-  const { data: updated, error: updateError } = await admin.rpc('admin_manage_dli_user', {
-    p_actor_uid: actor.id,
-    p_registry_id: userId,
-    p_action: action,
-    p_new_role: action === 'change_role' ? newRole : null,
-  });
+  const { data: updated, error: updateError } = isLifecycle
+    ? await admin.rpc('admin_manage_dli_user_lifecycle',{
+        p_actor_uid: actor.id,p_registry_id:userId,p_action:action,p_reason:reason,
+      })
+    : await admin.rpc('admin_manage_dli_user', {
+        p_actor_uid: actor.id,p_registry_id:userId,p_action:action,
+        p_new_role: action === 'change_role' ? newRole : null,
+      });
   if (updateError) {
     if (updateError.code === '42501') {
       return reply(403, { error: 'You cannot manage that account or assign the selected role.' }, origin);
     }
     if (updateError.code === '22023' || updateError.message?.includes('last active DLI Owner')) {
-      return reply(409, { error: 'This change is not permitted in the account\'s current state.' }, origin);
+      return reply(409, { error: 'This account cannot be changed in its current state. Check the status, verified identity, role and archive requirements.' }, origin);
     }
     return reply(500, { error: 'The account was not updated. Please retry or contact the Founder.' }, origin);
   }
