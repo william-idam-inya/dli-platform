@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
 import { PasswordInput } from './PasswordInput';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
+import OfficialDliLogo from '../components/OfficialDliLogo';
 import { isRecoveryEmailRateLimited, recoveryRateLimitMessage } from './recoveryRateLimit';
 
 function AuthLayout({ title, intro, children }: {
@@ -13,7 +14,7 @@ function AuthLayout({ title, intro, children }: {
   return (
     <main className="auth-frame">
       <div className="auth-panel">
-        <div className="auth-mark">DLI</div>
+        <div className="auth-mark"><OfficialDliLogo /></div>
         <p className="auth-eyebrow">
           DETAILED LEARNING INSTITUTE · {deploymentIdentity.kind==='qa'
             ? 'QA TESTING' : deploymentIdentity.kind==='production'
