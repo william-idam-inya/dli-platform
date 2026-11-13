@@ -141,7 +141,7 @@ export default function TutorPayrollPage(){
    {filtered.map(c=><article key={c.engagement_key} className="payroll-cycle">
      <div className="payroll-cycle-head"><div>
        <strong>{c.tutor_name}</strong><p>{c.engagement_name}</p>
-       <small>{c.class_type.replaceAll('_',' ')} · {c.students_count} student(s) · {c.subjects_count} subject(s)</small>
+       <small>{({'group_5_science':'Group of 5','group_10':'Group of 10','private_1_to_1':'Private · 1 student','free_demo':'Free'}[c.class_type] ?? c.class_type.replaceAll('_',' '))} · {c.students_count} student(s) · {c.subjects_count} subject(s)</small>
       </div>
       <span className={'payroll-status payroll-'+c.payout_status}>{labels[c.payout_status]}</span>
      </div>
