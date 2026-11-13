@@ -5,12 +5,23 @@
 
 -- Assistant Admin may manage classes. Permit reading only active catalogue
 -- entries needed to choose the same programme/level/subject combinations as Admin.
-CREATE POLICY academic_levels_assistant_class_read
-  ON public.academic_levels FOR SELECT TO authenticated
-  USING (is_active AND private.current_role()='assistant_admin'::public.dli_role);
-CREATE POLICY courses_assistant_class_read
-  ON public.courses FOR SELECT TO authenticated
-  USING (is_active AND private.current_role()='assistant_admin'::public.dli_role);
+DO $q13_policies$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_policies
+                 WHERE schemaname='public' AND tablename='academic_levels'
+                   AND policyname='academic_levels_assistant_class_read') THEN
+    CREATE POLICY academic_levels_assistant_class_read
+      ON public.academic_levels FOR SELECT TO authenticated
+      USING (is_active AND private.current_role()='assistant_admin'::public.dli_role);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_policies
+                 WHERE schemaname='public' AND tablename='courses'
+                   AND policyname='courses_assistant_class_read') THEN
+    CREATE POLICY courses_assistant_class_read
+      ON public.courses FOR SELECT TO authenticated
+      USING (is_active AND private.current_role()='assistant_admin'::public.dli_role);
+  END IF;
+END $q13_policies$;
 
 CREATE OR REPLACE FUNCTION private.dli_check_teaching_group()
 RETURNS trigger
@@ -77,14 +88,25 @@ END $fn$;
 
 -- Deferred checks see the complete transaction, allowing atomic multi-subject
 -- updates but blocking legacy one-subject mutations that split a shared group.
-CREATE CONSTRAINT TRIGGER teaching_group_consistency
-AFTER INSERT OR UPDATE ON public.teaching_classes
-DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
-EXECUTE FUNCTION private.dli_check_teaching_group();
-CREATE CONSTRAINT TRIGGER teaching_group_member_consistency
-AFTER INSERT OR UPDATE ON public.teaching_class_members
-DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
-EXECUTE FUNCTION private.dli_check_teaching_group();
+DO $q13_triggers$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_trigger
+                 WHERE tgrelid='public.teaching_classes'::regclass
+                   AND tgname='teaching_group_consistency') THEN
+    CREATE CONSTRAINT TRIGGER teaching_group_consistency
+    AFTER INSERT OR UPDATE ON public.teaching_classes
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
+    EXECUTE FUNCTION private.dli_check_teaching_group();
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_trigger
+                 WHERE tgrelid='public.teaching_class_members'::regclass
+                   AND tgname='teaching_group_member_consistency') THEN
+    CREATE CONSTRAINT TRIGGER teaching_group_member_consistency
+    AFTER INSERT OR UPDATE ON public.teaching_class_members
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
+    EXECUTE FUNCTION private.dli_check_teaching_group();
+  END IF;
+END $q13_triggers$;
 
 CREATE OR REPLACE FUNCTION public.dli_save_teaching_group(
   p_group_id uuid,
