@@ -3,6 +3,7 @@ import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
+import { isRecoveryEmailRateLimited, recoveryRateLimitMessage } from './recoveryRateLimit';
 
 function AuthLayout({ title, intro, children }: {
   title: string; intro: string; children: ReactNode;
@@ -102,19 +103,34 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
   if (!supabase) return <MissingConfiguration />;
 
   const send = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase || pending) return;
+    if (!supabase || pending || rateLimited) return;
     setPending(true);
     setError(null);
-    const { error: sendError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/set-password`,
-    });
-    if (sendError) setError('Password recovery is currently unavailable. Contact DLI administration.');
-    else setSubmitted(true);
-    setPending(false);
+    try {
+      const { error: sendError } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: `${window.location.origin}/set-password` },
+      );
+      if (sendError) {
+        if (isRecoveryEmailRateLimited(sendError)) {
+          setRateLimited(true);
+          setError(recoveryRateLimitMessage);
+        } else {
+          setError('Password recovery could not be completed. Check with DLI administration if this continues.');
+        }
+      } else {
+        setSubmitted(true);
+      }
+    } catch {
+      setError('The recovery service could not be reached. Check your connection before trying again.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return <AuthLayout title="Password recovery" intro="Request a reset for an existing DLI account.">
@@ -125,8 +141,8 @@ export function ForgotPasswordPage() {
           <label htmlFor="recovery-email">Email address</label>
           <input id="recovery-email" type="email" required autoComplete="email"
             value={email} onChange={event => setEmail(event.target.value)} />
-          <button className="auth-submit" type="submit" disabled={pending}>
-            <KeyRound size={16} /> {pending ? 'Submitting…' : 'Request recovery'}
+          <button className="auth-submit" type="submit" disabled={pending || rateLimited}>
+            <KeyRound size={16} /> {pending ? 'Submitting…' : rateLimited ? 'Email limit reached' : 'Request recovery'}
           </button>
         </form>}
     <p className="auth-helper">On the Supabase Free default email sender, delivery may be limited to project-team addresses. Ask an administrator for assistance if no email arrives.</p>
