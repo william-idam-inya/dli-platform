@@ -3,8 +3,10 @@ import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
+import { PasswordInput } from './PasswordInput';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from '../components/OfficialDliLogo';
+import { isRecoveryEmailRateLimited, recoveryRateLimitMessage } from './recoveryRateLimit';
 
 function AuthLayout({ title, intro, children }: {
   title: string; intro: string; children: ReactNode;
@@ -85,8 +87,14 @@ export function LoginPage() {
     setPending(true);
     setError(null);
     clearNotice();
+    // Password managers can fill the native inputs without dispatching
+    // React change events. Read current form values at submit time so a
+    // visible autofill is never silently replaced by stale component state.
+    const formValues = new FormData(event.currentTarget);
+    const submittedEmail = String(formValues.get('username') ?? email).trim().toLowerCase();
+    const submittedPassword = String(formValues.get('password') ?? password);
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(), password,
+      email: submittedEmail, password: submittedPassword,
     });
     if (signInError) setError('Sign-in failed. Check your credentials and account verification.');
     setPending(false);
@@ -94,13 +102,15 @@ export function LoginPage() {
 
   return <AuthLayout title="Sign in to DLI" intro="Only authorised students and staff can access this workspace.">
     <Feedback error message={error || notice} />
-    <form className="auth-form" onSubmit={submit}>
+    <form className="auth-form" onSubmit={submit} autoComplete="on">
       <label htmlFor="login-email">Email address</label>
-      <input id="login-email" type="email" required autoComplete="username"
-        value={email} onChange={event => setEmail(event.target.value)} />
+      <input id="login-email" name="username" type="email" required autoComplete="username"
+        autoCapitalize="none" spellCheck={false}
+        value={email} onChange={event => setEmail(event.target.value)}
+        onInput={event => setEmail(event.currentTarget.value)} />
       <label htmlFor="login-password">Password</label>
-      <input id="login-password" type="password" required autoComplete="current-password"
-        value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="login-password" name="password" label="password"
+        autoComplete="current-password" value={password} onChange={setPassword} />
       <button className="auth-submit" type="submit" disabled={pending}>
         <LockKeyhole size={16} /> {pending ? 'Signing in…' : 'Sign in'}
       </button>
@@ -125,19 +135,34 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
   if (!supabase) return <MissingConfiguration />;
 
   const send = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase || pending) return;
+    if (!supabase || pending || rateLimited) return;
     setPending(true);
     setError(null);
-    const { error: sendError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/set-password`,
-    });
-    if (sendError) setError('Password recovery is currently unavailable. Contact DLI administration.');
-    else setSubmitted(true);
-    setPending(false);
+    try {
+      const { error: sendError } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: `${window.location.origin}/set-password` },
+      );
+      if (sendError) {
+        if (isRecoveryEmailRateLimited(sendError)) {
+          setRateLimited(true);
+          setError(recoveryRateLimitMessage);
+        } else {
+          setError('Password recovery could not be completed. Check with DLI administration if this continues.');
+        }
+      } else {
+        setSubmitted(true);
+      }
+    } catch {
+      setError('The recovery service could not be reached. Check your connection before trying again.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return <AuthLayout title="Password recovery" intro="Request a reset for an existing DLI account.">
@@ -148,8 +173,8 @@ export function ForgotPasswordPage() {
           <label htmlFor="recovery-email">Email address</label>
           <input id="recovery-email" type="email" required autoComplete="email"
             value={email} onChange={event => setEmail(event.target.value)} />
-          <button className="auth-submit" type="submit" disabled={pending}>
-            <KeyRound size={16} /> {pending ? 'Submitting…' : 'Request recovery'}
+          <button className="auth-submit" type="submit" disabled={pending || rateLimited}>
+            <KeyRound size={16} /> {pending ? 'Submitting…' : rateLimited ? 'Email limit reached' : 'Request recovery'}
           </button>
         </form>}
     <p className="auth-helper">On the Supabase Free default email sender, delivery may be limited to project-team addresses. Ask an administrator for assistance if no email arrives.</p>
@@ -224,11 +249,11 @@ export function SetPasswordPage() {
     <form className="auth-form" onSubmit={save}>
       <Feedback error message={error} />
       <label htmlFor="set-password">New password</label>
-      <input id="set-password" type="password" required minLength={12}
-        autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="set-password" label="new password" minLength={12}
+        autoComplete="new-password" value={password} onChange={setPassword} />
       <label htmlFor="set-password-again">Confirm new password</label>
-      <input id="set-password-again" type="password" required minLength={12}
-        autoComplete="new-password" value={repeat} onChange={event => setRepeat(event.target.value)} />
+      <PasswordInput id="set-password-again" label="confirmed password" minLength={12}
+        autoComplete="new-password" value={repeat} onChange={setRepeat} />
       <button className="auth-submit" type="submit" disabled={pending}>
         <KeyRound size={16} /> {pending ? 'Saving…' : 'Set password'}
       </button>
@@ -273,14 +298,14 @@ export function ChangePasswordPage() {
       <Feedback error message={error} />
       <Feedback message={message} />
       <label htmlFor="current-password">Current password</label>
-      <input id="current-password" type="password" required autoComplete="current-password"
-        value={current} onChange={event => setCurrent(event.target.value)} />
+      <PasswordInput id="current-password" label="current password" autoComplete="current-password"
+        value={current} onChange={setCurrent} />
       <label htmlFor="change-password">New password</label>
-      <input id="change-password" type="password" required minLength={12} autoComplete="new-password"
-        value={password} onChange={event => setPassword(event.target.value)} />
+      <PasswordInput id="change-password" label="new password" minLength={12}
+        autoComplete="new-password" value={password} onChange={setPassword} />
       <label htmlFor="change-repeat">Confirm new password</label>
-      <input id="change-repeat" type="password" required minLength={12} autoComplete="new-password"
-        value={repeat} onChange={event => setRepeat(event.target.value)} />
+      <PasswordInput id="change-repeat" label="confirmed password" minLength={12}
+        autoComplete="new-password" value={repeat} onChange={setRepeat} />
       <button type="submit" className="auth-submit" disabled={pending}>{pending ? 'Updating…' : 'Update password'}</button>
     </form>
   </div>;

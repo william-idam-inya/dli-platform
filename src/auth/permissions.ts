@@ -63,7 +63,10 @@ export function isDliRole(value: unknown): value is DliRole {
   return typeof value === 'string' && (DLI_ROLES as readonly string[]).includes(value);
 }
 
-const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes']);
+// Free learners can inspect the common learning workspace, but the hub
+// intentionally DOES NOT mount protected lesson/assessment queries for them.
+// Direct /learning, /assessments, /quizzes and /attendance stay restricted.
+const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/study','/announcements']);
 export function canAccessPath(role: DliRole, path: string, studentTier: 'free'|'paid'='paid'): boolean {
   if(role==='student'&&studentTier!=='paid'&&!FREE_STUDENT_ROUTES.has(path))return false;
   return routeRoles[path]?.includes(role) ?? false;

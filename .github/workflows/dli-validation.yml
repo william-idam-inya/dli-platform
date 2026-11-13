@@ -88,6 +88,9 @@ jobs:
       - name: Verify official DLI logo on all production surfaces
         run: npm run check:official-branding
 
+      - name: Verify safe role and mobile UI production parity
+        run: npm run check:q15-production-ui
+
       - name: Verify TypeScript
         run: npm run typecheck
 
