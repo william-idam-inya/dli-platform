@@ -24,6 +24,8 @@ export default function ChatMediaRecorder({
   const timerRef=useRef<number|null>(null);
   const urlRef=useRef<string|null>(null);
   const cancelled=useRef(false);
+  const mounted=useRef(true);
+  const starting=useRef(false);
   const elapsed=useRef(0);
 
   const stopTracks=()=>{
@@ -36,6 +38,7 @@ export default function ChatMediaRecorder({
     setPreview(null);
   };
   useEffect(()=>()=> {
+    mounted.current=false;
     cancelled.current=true;
     const recording=recorderRef.current;
     if(recording&&recording.state!=='inactive')recording.stop();
@@ -44,13 +47,16 @@ export default function ChatMediaRecorder({
   },[]);
 
   const start=async(next:Kind)=>{
-    if(disabled||kind)return;
+    if(disabled||kind||starting.current||!mounted.current)return;
+    starting.current=true;
     setError(null);
     if(typeof MediaRecorder==='undefined'||!navigator.mediaDevices?.getUserMedia){
-      setError('This browser cannot record media here. Use an updated HTTPS browser or attach a saved file.');return;
+      setError('This browser cannot record media here. Use an updated HTTPS browser or attach a saved file.');
+      starting.current=false;return;
     }
     const mime=choices[next].find(value=>MediaRecorder.isTypeSupported(value));
-    if(!mime){setError('This browser has no supported voice/video recording format. Try the attachment option.');return;}
+    if(!mime){setError('This browser has no supported voice/video recording format. Try the attachment option.');
+      starting.current=false;return;}
     releasePreview();onReady(null);
     cancelled.current=false;
     elapsed.current=0;setSeconds(0);
@@ -58,6 +64,10 @@ export default function ChatMediaRecorder({
       const stream=await navigator.mediaDevices.getUserMedia(next==='voice'
         ?{audio:{echoCancellation:true,noiseSuppression:true},video:false}
         :{audio:{echoCancellation:true},video:{width:{ideal:320},height:{ideal:320},frameRate:{ideal:12,max:15}}});
+      if(!mounted.current){
+        stream.getTracks().forEach(track=>track.stop());
+        starting.current=false;return;
+      }
       streamRef.current=stream;
       const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:next==='video'?380000:undefined,
         audioBitsPerSecond:next==='voice'?48000:undefined});
@@ -81,6 +91,7 @@ export default function ChatMediaRecorder({
         setPreview({kind:next,url,file});onReady(file);
       };
       recorder.start(1000);
+      starting.current=false;
       setKind(next);
       timerRef.current=window.setInterval(()=>{
         elapsed.current+=1;setSeconds(elapsed.current);
@@ -89,6 +100,7 @@ export default function ChatMediaRecorder({
         }
       },1000);
     }catch{
+      starting.current=false;
       stopTracks();
       setKind(null);
       setError('Microphone/camera permission was denied or the device is unavailable. Nothing was recorded.');
