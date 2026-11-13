@@ -339,6 +339,10 @@
     {
       "file": "20261114004500_stage_q18_private_chat_receipts_and_media.sql",
       "gitBlobSha1": "8e48435edcecfed73870c362f658a11c657bdb4a"
+    },
+    {
+      "file": "20261114005500_stage_q18b_chat_media_attachment_guard.sql",
+      "gitBlobSha1": "c01cd012495a9447004396ca39c293ec26f77f97"
     }
   ]
 }
