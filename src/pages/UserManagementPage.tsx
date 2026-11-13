@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2, Clock3, LockKeyhole, RefreshCw, Search,
-  ShieldAlert, ShieldCheck, UserRoundCog, Users, Save, RotateCcw,
+  ShieldAlert, ShieldCheck, Users, Save, RotateCcw,
 } from 'lucide-react';
 import InviteUserPage from '../auth/InviteUserPage';
 import { Link } from 'react-router-dom';
