@@ -15,7 +15,7 @@ import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth();
   const location = useLocation();
-  const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'lessons';
+  const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'tree';
   const [expandedSections,setExpandedSections] = useState<Record<string,boolean>>({});
   const permittedSections = permittedNavigation(path=>Boolean(
     account && canAccessPath(account.role,path,account.studentTier),

@@ -173,7 +173,8 @@ export default function SkillTreePage(){
  const graph:SkillGraph=demo?SAMPLE_GRAPH:realGraph;
  const units=[...new Set(graph.nodes.map(n=>n.unit))].sort((a,b)=>a-b);
  const activeUnit=units.includes(unit)?unit:units[0]??1;
- const unitNodes=graph.nodes.filter(n=>n.unit===activeUnit);
+ const unitNodes=graph.nodes.filter(n=>n.unit===activeUnit).map(n=>n.id===playing&&n.status==='active'
+   ?{...n,status:'in_progress' as const}:n);
  const selected=graph.nodes.find(n=>n.id===selectedId)??unitNodes.find(n=>n.status==='active')??unitNodes[0]??null;
  const activeLesson=graph.nodes.find(n=>n.id===playing)??null;
  const finished=demo?0:realGraph.nodes.filter(n=>n.status==='completed').length;
@@ -194,6 +195,7 @@ export default function SkillTreePage(){
  }
  async function markReviewed(){
   if(!supabase||!isStudent||freeStudent||!activeLesson||!readConfirmed||saving||activeLesson.status==='locked'||demo)return;
+  if(!activeLesson.content.trim()){setError('This lesson has no published reading content yet. Open the course resources instead.');return;}
   setSaving(true);setError('');setNotice('');
   try{
    const auth=await supabase.auth.getUser();

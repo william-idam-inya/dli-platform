@@ -10,7 +10,7 @@ const clamp=(n:number,low:number,high:number)=>Math.max(low,Math.min(high,n));
 export default function SkillTreeCanvas({mode,nodes,selectedId,activePath,onSelect,onLaunch,canLaunch}:Props){
  const desktop=mode==='desktop';
  const W=desktop?940:360, cx=W/2,dx=desktop?252:91,step=desktop?136:144;
- const minTier=Math.min(...nodes.map(n=>n.tier),1);
+ const minTier=nodes.length?Math.min(...nodes.map(n=>n.tier)):1;
  const maxTier=Math.max(1,...nodes.map(n=>n.tier));
  const H=Math.max(desktop?590:350,(maxTier-minTier+1)*step+110);
  const y=(n:SkillNode)=>78+(n.tier-minTier)*step;
