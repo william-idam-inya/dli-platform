@@ -33,7 +33,9 @@ for(const slug of ['admin-create-user','admin-manage-users']) {
  const s=read('supabase/functions/'+slug+'/index.ts');
  assert.match(s,/DLI_APP_ORIGINS'\) \|\| ''/);
  assert.doesNotMatch(s,/DLI_APP_ORIGINS'\) \|\| 'http:\/\/localhost/);
- assert.match(s,/allowedOrigins\.includes\(origin\)|origins\.includes\(origin\)/);
+ assert.match(s,/\b(?:allowedOrigins|origins)\.has\(origin\)/);
+ assert.match(s,/'https:\/\/dli-platform-prod\.pages\.dev'/);
+ assert.doesNotMatch(s,/Access-Control-Allow-Origin['"]?\s*:\s*['"]\*['"]/);
  assert.match(s,/auth\.getUser\(/);
  assert.match(s,/auth_user_id/);
 }
