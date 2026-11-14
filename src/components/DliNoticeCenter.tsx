@@ -184,7 +184,7 @@ export function DliNotificationBell(){
         <span>{tutorHasPending?'Check your bank account and confirm receipt or dispute the transfer.':'Review the tutor response and bank transfer record.'}</span>
       </Link>}
       {error&&<p role="alert">Could not refresh notices. Try again later.</p>}
-      {!visible.length&&!pendingPayments&&!pendingTutorPayouts&&<p>No current notifications.</p>
+      {!visible.length&&!pendingPayments&&!pendingTutorPayouts&&<p>No current notifications.</p>}
       {visible.slice(0,12).map(n=><button type="button" key={n.id}
         className={'dli-notification-item '+(!seenMap.get(n.id)?.read_at?'unread':'')}
         onClick={()=>{void mark(n,true);setOpen(false);}}>
