@@ -5,7 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
 const allowedRoles = new Set([
   'owner','admin','assistant_admin','academic_coordinator',
-  'finance_officer','tutor','student',
+  'tutor','student',
 ]);
 const allowedOrigins = (Deno.env.get('DLI_APP_ORIGINS') || '')
   .split(',').map((part) => part.trim()).filter(Boolean);
