@@ -40,7 +40,8 @@
     "check:q22-user-actions": "node scripts/verify-user-actions.mjs",
     "check:q22-user-lifecycle": "node scripts/verify-user-lifecycle.mjs",
     "check:q22-operational-tools": "node scripts/verify-operational-tools.mjs",
-    "check:q22-feature-reconciliation": "node scripts/verify-q22-feature-reconciliation.mjs"
+    "check:q22-feature-reconciliation": "node scripts/verify-q22-feature-reconciliation.mjs",
+    "check:q23-manual-payments": "node scripts/verify-q23-manual-payments.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

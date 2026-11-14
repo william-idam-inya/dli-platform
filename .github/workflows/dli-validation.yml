@@ -107,6 +107,9 @@ jobs:
       - name: Verify Q22 feature-by-feature production reconciliation
         run: npm run check:q22-feature-reconciliation
 
+      - name: Verify Q23 manual bank transfer and private receipt review
+        run: npm run check:q23-manual-payments
+
       - name: Verify TypeScript
         run: npm run typecheck
 
