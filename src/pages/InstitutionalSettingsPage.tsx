@@ -147,7 +147,7 @@ export default function InstitutionalSettingsPage(){
         .update({is_enabled:next}).eq('setting_key','paid_enrolment_open')
         .select('is_enabled').maybeSingle();
       if(result.error||!result.data){
-        setError('Could not confirm this admission setting. Refresh before trying again.');return;
+        setError(next?'Cannot reopen paid applications until Founder/Admin has saved and activated verified bank details under Paid enrolment.':'Could not confirm this admission setting. Refresh before trying again.');return;
       }
       setEnrolmentOpen(Boolean(result.data.is_enabled));
       setNotice(next?'New paid enrolment applications are open.':'New applications paused; existing requests can still be reviewed.');
@@ -253,6 +253,8 @@ export default function InstitutionalSettingsPage(){
         <div><strong>New applications</strong>
           <span>{enrolmentOpen===null?'Verification unavailable':enrolmentOpen?'Open':'Paused'}</span>
           <p>This is enforced when a learner submits an application in the database, not just in the browser.</p>
+          <p>Opening paid applications requires an active verified bank account. Receipt reviews remain accessible when applications are paused.</p>
+          {(account?.role==='owner'||account?.role==='admin')&&<p><Link to="/enrolment">Manage bank details and review uploaded receipts</Link></p>}
           <button type="button" className="user-outline-button"
             disabled={loading||enrolmentSaving||enrolmentOpen===null}
             onClick={()=>{void changeEnrolmentStatus();}}>
