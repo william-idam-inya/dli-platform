@@ -58,6 +58,6 @@ assert.ok(privateClasses.includes("'assistant_admin'"));
 assert.ok(bell.includes("tutorHasPending")&&bell.includes("pendingTutorPayouts"));
 assert.ok(bell.includes("to=\"/payroll\""));
 assert.ok(!roles.match(/^\s*'finance_officer',\s*'tutor'/m),'Retired role in sign-in/role list');
-assert.ok(roles.includes("isDliRole(value)"));
+assert.ok(roles.includes("export function isDliRole("));
 assert.ok(!edge.match(/^\s*'finance_officer',\s*'tutor'/m),'Retired role in admin API');
 console.log('Q24 role parity, manual tutor bank-transfer evidence, private receipt and non-bypassable Tutor acknowledgment guards verified.');
