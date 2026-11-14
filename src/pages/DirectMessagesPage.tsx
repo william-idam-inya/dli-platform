@@ -27,6 +27,7 @@ const stamp=(value:string)=>new Intl.DateTimeFormat('en-NG',{
   dateStyle:'short',timeStyle:'short',timeZone:'Africa/Lagos',
 }).format(new Date(value));
 const isOversight=(role?:string)=>role==='owner'||role==='admin';
+const STAFF_CONTACT_ROLES=new Set(['owner','admin','assistant_admin']);
 
 export default function DirectMessagesPage(){
   const {account}=useAuth();
@@ -79,6 +80,8 @@ export default function DirectMessagesPage(){
     }catch{setNotice('Browser permission could not be enabled. In-app alerts remain available.');}
   }
   const moderator=isOversight(account?.role);
+  const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
+  const permittedContacts=useMemo(()=>contacts.filter(c=>canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
   const current=threads.find(t=>t.id===activeId)??null;
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
@@ -214,6 +217,9 @@ export default function DirectMessagesPage(){
   async function openContact(c:Contact){
     if(!supabase||busy)return;
     if(!uid){setError('Your DLI account is still being verified. Select Refresh and retry.');return;}
+    if(!canStartWithAnyone&&!STAFF_CONTACT_ROLES.has(c.member_role)){
+      setError('Only Owner, Admin and Assistant Admin are available as your private chat contacts.');return;
+    }
     setBusy(true);setOpeningContactId(c.user_id);setNotice(null);setError(null);
     const [a,b]=[uid,c.user_id].sort((x,y)=>x.localeCompare(y));
     try{
@@ -401,7 +407,7 @@ export default function DirectMessagesPage(){
     </div>
     <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
       <strong>Institutional messaging with safeguarding oversight</strong>
-      <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is audited for safeguarding and abuse prevention. Always report unsafe messages.</p>
+      <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is separately audited for safeguarding and abuse prevention. Subject-group chats are paused. Always report unsafe messages.</p>
     </div></div>
     {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
       Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
@@ -428,7 +434,7 @@ export default function DirectMessagesPage(){
         </nav>}
         {mode==='inbox'&&<section className="dli-direct-contacts">
           <h2>Start a chat</h2>
-          {contacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
+          {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
             <button type="button" disabled={busy||loading||!uid} key={c.user_id}
               onClick={()=>void openContact(c)}
               aria-label={'Start a private chat with '+c.full_name}
@@ -440,7 +446,7 @@ export default function DirectMessagesPage(){
               </span>
             </button>)}
           {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
-          {!contacts.length&&!loading&&<p className="dli-direct-empty">No authorised contacts yet. Assigned tutors and students from your approved group classes appear after class and messaging approvals.</p>}
+          {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.</p>}
         </section>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
           {visible.map(t=>{
