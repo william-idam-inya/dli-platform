@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { buildSkillGraph, actualXp, dailyStreak, unitCompletion } from '../src/lib/skillTree.ts';
+import { SAMPLE_GRAPH, buildSkillGraph, actualXp, dailyStreak, unitCompletion } from '../src/lib/skillTree.ts';
+assert.equal(SAMPLE_GRAPH.nodes.find(n=>n.id==='sample-03').status,'active',
+ 'Both sample branches must unlock after their shared prerequisite is reviewed');
 const mk = (id,order)=>({id,offering_id:'course-a',title:id,content:'Lesson '+id,sort_order:order,is_published:true});
 const lessons=[mk('A',1),mk('B',2),mk('C',3),mk('D',4)];
 const config=[
