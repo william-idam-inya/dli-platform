@@ -3,6 +3,7 @@ import { CalendarClock, CheckCircle2, Clock3, RefreshCw, ShieldCheck, Wallet } f
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './TutorPayrollPage.css';
+import TutorPayoutWorkflow from '../components/TutorPayoutWorkflow';
 
 type Cycle={engagement_key:string;tutor_id:string;tutor_name:string;engagement_name:string;
  class_type:string;students_count:number;subjects_count:number;class_start_date:string;
@@ -29,7 +30,7 @@ const labels:Record<Cycle['payout_status'],string>={
 };
 export default function TutorPayrollPage(){
  const {account}=useAuth();
- const staff=account?.role==='owner'||account?.role==='admin';
+ const staff=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin';
  const [month,setMonth]=useState(()=>periodStart(1));
  const [rows,setRows]=useState<Cycle[]>([]);
  const [history,setHistory]=useState<PayoutHistory[]>([]);
@@ -40,8 +41,6 @@ export default function TutorPayrollPage(){
  const [notice,setNotice]=useState<string|null>(null);
  const [overrideAmount,setOverrideAmount]=useState<Record<string,string>>({});
  const [reason,setReason]=useState<Record<string,string>>({});
- const [paidOn,setPaidOn]=useState<Record<string,string>>({});
- const [transferRef,setTransferRef]=useState<Record<string,string>>({});
 
  const refresh=useCallback(async()=>{
   if(!supabase||!account){setLoading(false);return;}
@@ -92,24 +91,6 @@ export default function TutorPayrollPage(){
   }catch{setError('The rate change could not be confirmed.');}
   finally{setBusy(false);}
  }
- async function markPaid(c:Cycle){
-  if(!supabase||!staff||busy||c.payout_status==='paid')return;
-  const on=paidOn[c.engagement_key]??'';
-  const reference=(transferRef[c.engagement_key]??'').trim();
-  if(!on||reference.length<6){setError('Enter an actual bank payment date and transfer reference before marking Paid.');return;}
-  if(c.allocation_review){setError('Review the nonstandard subject allocation and approve its amount before recording payment.');return;}
-  if(!window.confirm('Have you checked the actual transfer to this tutor? This action records an immutable Paid event; it does not transfer money.'))return;
-  setBusy(true);setError(null);setNotice(null);
-  try{
-   const result=await supabase.rpc('dli_payroll_mark_paid',{
-    p_engagement:c.engagement_key,p_cycle:c.cycle_number,p_date:on,p_reference:reference,
-   });
-   if(result.error||result.data!==true){setError('Payment confirmation was rejected. Check the cycle and duplicate-payment history.');return;}
-   setNotice('Payment recorded with date and audit entry. The next monthly cycle remains calculated from the original class start date.');
-   await refresh();
-  }catch{setError('Payment confirmation could not be verified. Refresh before retrying.');}
-  finally{setBusy(false);}
- }
  return <div className="module-page tutor-payroll">
   <div className="module-page-hero"><span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI FINANCE</div>
@@ -118,7 +99,7 @@ export default function TutorPayrollPage(){
    </div></div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
    <strong>Audited manual payout confirmation</strong>
-   <p>The system calculates scheduled compensation and updates Paid/Due Today/Overdue automatically from stored dates. It never initiates a bank payment. Founder/Admin must verify transfers independently.</p>
+   <p>The system calculates scheduled compensation and updates Paid/Due Today/Overdue automatically from stored dates. It never initiates a bank payment. Owner, Admin or Assistant Admin uploads proof of an external transfer; the Tutor must confirm receiving it before payroll is marked Paid.</p>
   </div></div>
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
@@ -135,8 +116,9 @@ export default function TutorPayrollPage(){
     <div><Clock3 size={20}/><strong>{money(outstanding)}</strong><small>Not marked paid</small></div>
     <div><CheckCircle2 size={20}/><strong>{filtered.filter(x=>x.payout_status==='paid').length}</strong><small>Confirmed payouts</small></div>
   </div>
-  {report&&<p className="auth-feedback error">One or more engagements differ from the standard two-subject tutor allocation. Founder/Admin must approve a justified rate before confirming payment.</p>}
+  {report&&<p className="auth-feedback error">One or more engagements need compensation review by an authorised administrator before a payout can be submitted.</p>}
   {!loading&&!filtered.length&&<p className="academic-empty">No live paid teaching engagements have a payout due in this month. A class must be published with enrolled Paid Students and a recorded start date.</p>}
+  <TutorPayoutWorkflow cycles={filtered} staff={Boolean(staff)} month={month} onChanged={refresh}/>
   <section className="payroll-cycles">
    {filtered.map(c=><article key={c.engagement_key} className="payroll-cycle">
      <div className="payroll-cycle-head"><div>
@@ -161,13 +143,7 @@ export default function TutorPayrollPage(){
          value={reason[c.engagement_key]??''} onChange={e=>setReason(v=>({...v,[c.engagement_key]:e.target.value}))}/></label>
        <button type="button" disabled={busy} onClick={()=>void override(c)}>Approve rate</button>
       </details>
-      {c.payout_status!=='paid'&&<details><summary>Confirm verified tutor payout</summary>
-       <label>Actual transfer date<input type="date" max={new Date().toISOString().slice(0,10)}
-        value={paidOn[c.engagement_key]??''} onChange={e=>setPaidOn(v=>({...v,[c.engagement_key]:e.target.value}))}/></label>
-       <label>Bank transfer reference<input maxLength={120} value={transferRef[c.engagement_key]??''}
-         onChange={e=>setTransferRef(v=>({...v,[c.engagement_key]:e.target.value}))}/></label>
-       <button type="button" disabled={busy||c.allocation_review} onClick={()=>void markPaid(c)}>Mark Paid — verified transfer</button>
-      </details>}
+      {c.payout_status!=='paid'&&<p className="academic-code-hint">Use the verified transfer form above. This payout becomes Paid only after the Tutor confirms receiving it.</p>}
      </div>}
    </article>)}
   </section>
