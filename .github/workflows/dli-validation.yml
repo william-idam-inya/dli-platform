@@ -104,6 +104,9 @@ jobs:
       - name: Verify safe CSV and calendar export generation
         run: npm run check:q22-operational-tools
 
+      - name: Verify Q22 feature-by-feature production reconciliation
+        run: npm run check:q22-feature-reconciliation
+
       - name: Verify TypeScript
         run: npm run typecheck
 
