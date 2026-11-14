@@ -9,7 +9,7 @@ const styles=read('src/pages/AcademicSetupPage.css');
 const nav=read('src/data/navigation.ts');
 
 for(const text of [
-  'Choose a programme','Choose an academic level','Available subjects',
+  'Choose a programme','Choose an academic level','Catalogue subjects',
   'Select a DLI programme','Select an academic level',
   'availableCourses = useMemo','programmeCourses','offeredLevels','pathwayCourses',
   "item.id === selectedProgramme?.id","level.id === selectedLevel?.id",
