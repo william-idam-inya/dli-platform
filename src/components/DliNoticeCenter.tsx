@@ -77,7 +77,7 @@ export function DliNotificationBell(){
         if(!active||result.error||typeof result.count!=='number')return;
         if(previousTutorPayout.current!==null&&result.count>previousTutorPayout.current){
           setNewTutorPayout(true);
-          if(typeof Notification!=='undefined&&Notification.permission==='granted'&&document.hidden){
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
             try{new Notification(tutorHasPending?'DLI tutor transfer proof':'DLI disputed tutor payout',{
               body:tutorHasPending?'Review and acknowledge your transfer.':'A Tutor disputed receiving a payment.',
               tag:'dli-tutor-payout'
