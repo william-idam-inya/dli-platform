@@ -27,4 +27,20 @@ assert.ok(payment.includes('dli_review_paid')&&payroll.includes('dli_tutor_ackno
 for(const phrase of ['Real Tutor and Student accounts','No bank details','Paid admissions remain closed','QA password recovery redirect','Backup restoration','External provider credentials']){
  assert.ok(docs.includes(phrase),'Outstanding limitation not disclosed: '+phrase);
 }
+
+for (const edgePath of [
+  'supabase/functions/admin-create-user/index.ts',
+  'supabase/functions/admin-manage-users/index.ts',
+]) {
+  const edge = read(edgePath);
+  assert.ok(edge.includes("'https://dli-platform-prod.pages.dev'"),
+    'The canonical Pages origin must survive stale optional Edge secrets: ' + edgePath);
+  assert.ok(edge.includes("DLI_APP_ORIGINS"),
+    'Additional origins require an explicit server-side list: ' + edgePath);
+  assert.match(edge, /\b(?:origins|allowedOrigins)\.has\(origin\)/,
+    'CORS must use an exact-origin membership check: ' + edgePath);
+  assert.doesNotMatch(edge, /Access-Control-Allow-Origin['"]?\s*:\s*['"]\*['"]/,
+    'Never allow wildcard origins: ' + edgePath);
+}
+
 console.log('Q25 scoped privileged RPCs, explicit browser permissions and finance link parity verified.');

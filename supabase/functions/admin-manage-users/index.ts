@@ -2,8 +2,14 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // Stage C account management. All mutations are performed by one audited
 // database transaction; raw service keys never reach browser code.
-const origins = (Deno.env.get('DLI_APP_ORIGINS') || '')
-  .split(',').map(value => value.trim()).filter(Boolean);
+// The canonical production domain is fixed in source: an unset/stale
+// DLI_APP_ORIGINS secret must not block legitimate production preflights.
+// Other origins still require an explicit server-side allowlist entry.
+const origins = new Set([
+  'https://dli-platform-prod.pages.dev',
+  ...(Deno.env.get('DLI_APP_ORIGINS') || '').split(',')
+    .map(value => value.trim()).filter(Boolean),
+]);
 // Reconciled Q15 lifecycle operations; production origin allowlist remains authoritative.
 const roles = new Set([
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
@@ -23,7 +29,7 @@ function reply(status: number, data: Record<string, unknown>, origin: string) {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store',
       'Vary': 'Origin',
-      ...(origins.includes(origin) ? {
+      ...(origins.has(origin) ? {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -41,7 +47,7 @@ function defaultKey(name: string) {
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get('Origin') ?? '';
-  if (!origins.includes(origin)) return reply(403, { error: 'Origin not authorised.' }, origin);
+  if (!origins.has(origin)) return reply(403, { error: 'Origin not authorised.' }, origin);
   if (req.method === 'OPTIONS') return reply(200, { ok: true }, origin);
   if (req.method !== 'POST') return reply(405, { error: 'POST required.' }, origin);
 
