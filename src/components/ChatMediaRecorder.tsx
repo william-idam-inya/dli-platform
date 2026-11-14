@@ -16,6 +16,7 @@ export default function ChatMediaRecorder({
   disabled,onReady,
 }:{disabled:boolean;onReady:(file:File|null)=>void}){
   const [kind,setKind]=useState<Kind|null>(null);
+  const [requesting,setRequesting]=useState<Kind|null>(null);
   const [seconds,setSeconds]=useState(0);
   const [preview,setPreview]=useState<Preview|null>(null);
   const [error,setError]=useState<string|null>(null);
@@ -53,13 +54,14 @@ export default function ChatMediaRecorder({
     if(disabled||kind||starting.current||!mounted.current)return;
     starting.current=true;
     setError(null);
+    setRequesting(next);
     if(typeof MediaRecorder==='undefined'||!navigator.mediaDevices?.getUserMedia){
       setError('This browser cannot record media here. Use an updated HTTPS browser or attach a saved file.');
-      starting.current=false;return;
+      setRequesting(null);starting.current=false;return;
     }
     const mime=choices[next].find(value=>MediaRecorder.isTypeSupported(value));
     if(!mime){setError('This browser has no supported voice/video recording format. Try the attachment option.');
-      starting.current=false;return;}
+      setRequesting(null);starting.current=false;return;}
     releasePreview();onReady(null);
     cancelled.current=false;
     elapsed.current=0;setSeconds(0);
@@ -69,7 +71,7 @@ export default function ChatMediaRecorder({
         :{audio:{echoCancellation:true},video:{width:{ideal:320},height:{ideal:320},frameRate:{ideal:12,max:15}}});
       if(!mounted.current){
         stream.getTracks().forEach(track=>track.stop());
-        starting.current=false;return;
+        setRequesting(null);starting.current=false;return;
       }
       streamRef.current=stream;
       const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:next==='video'?380000:undefined,
@@ -95,6 +97,7 @@ export default function ChatMediaRecorder({
       };
       recorder.start(1000);
       starting.current=false;
+      setRequesting(null);
       setKind(next);
       timerRef.current=window.setInterval(()=>{
         elapsed.current+=1;setSeconds(elapsed.current);
@@ -102,11 +105,19 @@ export default function ChatMediaRecorder({
           if(recorder.state==='recording')recorder.stop();
         }
       },1000);
-    }catch{
+    }catch(cause){
       starting.current=false;
+      setRequesting(null);
       stopTracks();
       setKind(null);
-      setError('Microphone/camera permission was denied or the device is unavailable. Nothing was recorded.');
+      const reason=(cause as {name?:string}|null)?.name;
+      setError(reason==='NotAllowedError'||reason==='PermissionDeniedError'
+        ? 'Camera or microphone access was blocked. Open your browser site settings for this DLI website, allow Microphone and Camera, and try again.'
+        :reason==='NotFoundError'
+        ? 'No usable microphone or camera was detected. Check device access and retry.'
+        :reason==='NotReadableError'
+        ? 'This microphone or camera is busy or unavailable. Close other apps using it and retry.'
+        :'Recording could not start on this device. Try an updated browser or attach a saved audio/video file.');
     }
   };
   const stop=()=>{
@@ -115,14 +126,14 @@ export default function ChatMediaRecorder({
   };
   const discard=()=>{
     cancelled.current=true;stop();stopTracks();
-    releasePreview();onReady(null);setKind(null);setSeconds(0);setError(null);
+    releasePreview();onReady(null);setKind(null);setRequesting(null);setSeconds(0);setError(null);
   };
   return <div className="dli-chat-media-recorder" aria-label="Voice and video messages">
     <div className="dli-chat-recorder-actions">
-      {!kind&&<button type="button" disabled={disabled} onClick={()=>void start('voice')}>
+      {!kind&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('voice')}>
         <Mic size={18}/> Record voice
       </button>}
-      {!kind&&<button type="button" disabled={disabled} onClick={()=>void start('video')}>
+      {!kind&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('video')}>
         <Video size={18}/> Record video
       </button>}
       {kind&&<>
@@ -133,6 +144,7 @@ export default function ChatMediaRecorder({
         <button type="button" onClick={discard}><Trash2 size={16}/> Discard</button>
       </>}
     </div>
+    {requesting&&<p className="dli-direct-inline-feedback" role="status" aria-live="polite">Requesting {requesting==='voice'?'microphone':'camera and microphone'} permission from your browser…</p>}
     {preview&&!kind&&<div className="dli-chat-media-preview">
       <span><ShieldCheck size={15}/> Preview before sending · {(preview.file.size/1048576).toFixed(2)} MB</span>
       {preview.kind==='voice'

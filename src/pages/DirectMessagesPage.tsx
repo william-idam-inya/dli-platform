@@ -433,7 +433,8 @@ export default function DirectMessagesPage(){
           <span>{threads.length} chats</span>
         </nav>}
         {mode==='inbox'&&<section className="dli-direct-contacts">
-          <h2>Start a chat</h2>
+          <h2>Start a chat · {permittedContacts.length} available</h2>
+          {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
           {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
             <button type="button" disabled={busy||loading||!uid} key={c.user_id}
               onClick={()=>void openContact(c)}
