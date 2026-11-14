@@ -94,6 +94,19 @@ jobs:
       - name: Verify Q16 administrator-routed secure direct messaging
         run: npm run check:q16-admin-routed-chat
 
+
+      - name: Verify verified user actions and accessible confirmation dialogs
+        run: npm run check:q22-user-actions
+
+      - name: Verify audited registry archive and restoration safety
+        run: npm run check:q22-user-lifecycle
+
+      - name: Verify safe CSV and calendar export generation
+        run: npm run check:q22-operational-tools
+
+      - name: Verify Q22 feature-by-feature production reconciliation
+        run: npm run check:q22-feature-reconciliation
+
       - name: Verify TypeScript
         run: npm run typecheck
 

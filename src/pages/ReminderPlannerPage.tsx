@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  BellOff, CalendarClock, CheckCircle2, Clock3, FileText,
+  BellOff, CalendarClock, CheckCircle2, Clock3, Download, FileText,
   LockKeyhole, Pencil, RefreshCw, Save, ShieldCheck, X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import { createPersonalReminderIcs } from '../lib/manualExports';
 import './AcademicSetupPage.css';
 import './ReminderPlannerPage.css';
 
@@ -111,6 +112,28 @@ export default function ReminderPlannerPage(){
     return true;
   }),[reminders,filter]);
 
+  function downloadCalendar(item:Reminder){
+    // Keep personal reminder contents out of other accounts' calendars.
+    if(!account||item.author_id!==account.id)return;
+    try{
+      const calendar=createPersonalReminderIcs({
+        id:item.id,title:item.title,remindAt:item.remind_at,
+      });
+      const blob=new Blob([calendar],{type:'text/calendar;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a');
+      link.href=url;
+      link.download='dli-personal-reminder-'+item.id+'.ics';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setNotice('Personal calendar file created. Import it into your calendar to receive device reminders.');
+    }catch{
+      setError('Could not create a calendar file for this reminder.');
+    }
+  }
+
   function startEdit(item:Reminder){
     if(!account||item.author_id!==account.id)return;
     setEditingId(item.id);
@@ -190,11 +213,11 @@ export default function ReminderPlannerPage(){
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
       <div><strong>Reminder records only — no background scheduler</strong>
-        <p>Dates are stored in West Africa Time (UTC+1) and checked when you
-          open or refresh this page. The app does not run scheduled tasks
-          while it is closed, deliver notifications, send WhatsApp/email messages,
-          or notify intended audiences. Acknowledged means an internal task was
-          marked reviewed, not that a message was delivered.</p>
+        <p>Dates are stored in West Africa Time (UTC+1). Download a private calendar
+          event for a reminder you authored to use your own calendar alerts.
+          DLI does not send messages, notify intended audiences or run a
+          delivery service when this website is closed. Acknowledged only means
+          an internal task was reviewed.</p>
       </div>
     </div>
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -312,6 +335,10 @@ export default function ReminderPlannerPage(){
                 {' · '} No delivery confirmation</p>}
             {isMine&&<div className="reminder-actions">
               <button type="button" className="user-outline-button"
+                onClick={()=>downloadCalendar(item)}>
+                <Download size={15}/> Add to personal calendar (.ics)
+              </button>
+              <button type="button" className="user-outline-button"
                 disabled={saving||Boolean(changingId)}
                 onClick={()=>startEdit(item)}><Pencil size={15}/> Edit my reminder</button>
               <button type="button" className="user-outline-button"
@@ -327,7 +354,8 @@ export default function ReminderPlannerPage(){
       </div>
     </section>
     <p className="module-footnote"><BellOff size={15}/>
-      H4 does not issue notifications or run tasks while closed. Actual
+      A downloaded calendar file can trigger reminders through your chosen calendar
+      app, but DLI itself does not issue notifications while closed. Actual
       messages still require authoring in <Link to="/communications">Communications drafts</Link>,
       independent review, and a separate human decision to send them
       outside the platform. <LockKeyhole size={14}/>

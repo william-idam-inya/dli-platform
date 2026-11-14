@@ -36,7 +36,11 @@
     "check:academic-hierarchy": "node scripts/verify-academic-hierarchy.mjs",
     "check:official-branding": "node scripts/verify-official-branding.mjs",
     "check:q15-production-ui": "node scripts/verify-q15-production-ui.mjs",
-    "check:q16-admin-routed-chat": "node scripts/verify-q16-admin-routed-chat.mjs"
+    "check:q16-admin-routed-chat": "node scripts/verify-q16-admin-routed-chat.mjs",
+    "check:q22-user-actions": "node scripts/verify-user-actions.mjs",
+    "check:q22-user-lifecycle": "node scripts/verify-user-lifecycle.mjs",
+    "check:q22-operational-tools": "node scripts/verify-operational-tools.mjs",
+    "check:q22-feature-reconciliation": "node scripts/verify-q22-feature-reconciliation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, LockKeyhole, Plus, RefreshCw, ShieldCheck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../auth/AuthProvider';
+import { canAccessPath } from '../auth/permissions';
 import './AcademicSetupPage.css';
 import './AcademicAssignmentsPage.css';
 
@@ -14,6 +16,8 @@ type MemberLink = { id: string; offering_id: string; is_active: boolean; tutor_i
 type Table = 'tutor_assignments' | 'student_enrolments';
 
 export default function AcademicAssignmentsPage() {
+  const {account}=useAuth();
+  const canOpenUsers=Boolean(account&&canAccessPath(account.role,'/users',account.studentTier));
   const [members, setMembers] = useState<Member[]>([]);
   const [offerings, setOfferings] = useState<Offering[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -146,7 +150,7 @@ export default function AcademicAssignmentsPage() {
         </select>
         {!choices.length && <p className="academic-code-hint">
           No authorised {selectName} account exists yet. Invite only an approved DLI member
-          through <Link to="/users">Users &amp; access</Link>.
+          through {canOpenUsers?<Link to="/users">Users &amp; access</Link>:<strong>the Founder or Admin</strong>}.
         </p>}
         <button className="academic-submit" type="submit"
           disabled={loading||Boolean(busy)||!pickedOffering||!chosen}>
