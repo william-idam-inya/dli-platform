@@ -110,6 +110,9 @@ jobs:
       - name: Verify Q23 manual bank transfer and private receipt review
         run: npm run check:q23-manual-payments
 
+      - name: Verify two-party Tutor payouts and three equal admin finance roles
+        run: npm run check:q24-tutor-payout
+
       - name: Verify TypeScript
         run: npm run typecheck
 
