@@ -18,6 +18,7 @@ CREATE TABLE public.dli_tutor_bank_accounts (
  updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.dli_tutor_bank_accounts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.dli_tutor_bank_accounts FROM PUBLIC,anon;
 GRANT SELECT,INSERT,UPDATE ON public.dli_tutor_bank_accounts TO authenticated;
 CREATE POLICY tutor_bank_read ON public.dli_tutor_bank_accounts
  FOR SELECT TO authenticated USING(
@@ -84,6 +85,7 @@ CREATE UNIQUE INDEX dli_tutor_payout_one_active_cycle
  WHERE status IN('awaiting_tutor','confirmed');
 CREATE INDEX dli_tutor_payout_tutor_status ON public.dli_tutor_payout_proofs(tutor_id,status,submitted_at DESC);
 ALTER TABLE public.dli_tutor_payout_proofs ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.dli_tutor_payout_proofs FROM PUBLIC,anon;
 GRANT SELECT,INSERT ON public.dli_tutor_payout_proofs TO authenticated;
 CREATE POLICY payout_receipt_read ON public.dli_tutor_payout_proofs
  FOR SELECT TO authenticated USING(
