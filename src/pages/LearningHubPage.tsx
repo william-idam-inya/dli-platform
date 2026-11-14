@@ -5,7 +5,6 @@ import { useAuth } from '../auth/AuthProvider';
 import { learningAreas, type LearningTab } from '../data/learningAreas';
 import './LearningHubPage.css';
 
-const SkillTreePage=lazy(()=>import('./SkillTreePage'));
 const LearningPage=lazy(()=>import('./LearningPage'));
 const AssessmentPage=lazy(()=>import('./AssessmentPage'));
 const QuizPage=lazy(()=>import('./QuizPage'));
@@ -15,7 +14,7 @@ export default function LearningHubPage(){
  const {account}=useAuth();
  const [params,setParams]=useSearchParams();
  const selected=learningAreas.some(t=>t.id===params.get('tab'))
-  ?params.get('tab') as LearningTab:'tree';
+  ?params.get('tab') as LearningTab:'lessons';
  const freeStudent=account?.role==='student'&&account.studentTier!=='paid';
  const selectedArea=learningAreas.find(t=>t.id===selected)!;
  function choose(tab:LearningTab){
@@ -37,7 +36,7 @@ export default function LearningHubPage(){
     </button>)}
   </nav>
   <section aria-label={selectedArea.label}>
-    {freeStudent&&selected!=='tree'?
+    {freeStudent?
       <div className="panel learning-hub-access" role="status">
         <LockKeyhole size={24} aria-hidden="true"/>
         <div>
@@ -55,8 +54,7 @@ export default function LearningHubPage(){
         </div>
       </div>:
       <Suspense fallback={<p className="learning-hub-loading" role="status">Loading selected learning area…</p>}>
-        {selected==='tree'?<SkillTreePage/>:
-         selected==='lessons'?<LearningPage/>:
+        {selected==='lessons'?<LearningPage/>:
          selected==='assignments'?<AssessmentPage/>:
          selected==='quizzes'?<QuizPage/>:<AttendancePage/>}
       </Suspense>}
