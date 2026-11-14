@@ -6,6 +6,7 @@ import { roleLabels } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
 import RoleProfileFields from '../components/RoleProfileFields';
+import BrowserAlertPermission from '../components/BrowserAlertPermission';
 import './MemberProfilePage.css';
 
 function nigeriaToday():string{
@@ -238,6 +239,7 @@ export default function MemberProfilePage(){
    </form>
   </section>
   <RoleProfileFields/>
+  <BrowserAlertPermission/>
   <section className="panel member-profile-identity">
     <div className="panel-heading"><div><p className="section-kicker">VERIFIED INSTITUTIONAL ACCESS</p>
       <h2>Assigned by DLI administration</h2></div></div>
