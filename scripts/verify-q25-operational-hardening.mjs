@@ -37,7 +37,7 @@ for (const edgePath of [
     'The canonical Pages origin must survive stale optional Edge secrets: ' + edgePath);
   assert.ok(edge.includes("DLI_APP_ORIGINS"),
     'Additional origins require an explicit server-side list: ' + edgePath);
-  assert.match(edge, /Origins?\.has\(origin\)/,
+  assert.match(edge, /\b(?:origins|allowedOrigins)\.has\(origin\)/,
     'CORS must use an exact-origin membership check: ' + edgePath);
   assert.doesNotMatch(edge, /Access-Control-Allow-Origin['"]?\s*:\s*['"]\*['"]/,
     'Never allow wildcard origins: ' + edgePath);
