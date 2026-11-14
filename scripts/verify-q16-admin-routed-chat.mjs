@@ -8,6 +8,8 @@ const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const ui=read('src/pages/DirectMessagesPage.tsx');
 const css=read('src/pages/DirectMessagesPage.css');
 const recording=read('src/components/ChatMediaRecorder.tsx');
+const inlineMedia=read('src/components/ChatPrivateMedia.tsx');
+const mediaPolicy=read('supabase/migrations/20261114053500_stage_q21_private_chat_media_info_read.sql');
 const headers=read('public/_headers');
 const sql=read('supabase/migrations/20261113222549_stage_q16_staff_routed_direct_chat.sql');
 const oversight=read('supabase/migrations/20261113223204_stage_q16b_null_safe_messaging_moderation.sql');
@@ -85,4 +87,9 @@ assert.ok(headers.includes('microphone=(self), camera=(self)'), 'DLI recording p
 assert.ok(!headers.includes('microphone=()')&&!headers.includes('camera=()'), 'DLI recorder must not be blocked by the site header');
 assert.ok(recording.includes('Requesting {requesting'), 'Recorder must visibly acknowledge the permission prompt');
 assert.ok(ui.includes('permittedContacts.length'), 'Contact directory must clarify actual production account count');
+for(const token of ["'object.get_authenticated_info'","'object.get_authenticated'","storage.allow_any_operation","private.dli_direct_file_review_ok","private.dli_direct_allowed"]) assert.ok(mediaPolicy.includes(token),'Private media RLS missing '+token);
+assert.ok(!mediaPolicy.includes('TO anon'),'Private media must not become publicly accessible');
+assert.ok(inlineMedia.includes('IntersectionObserver'),'Voice player must load visible notes');
+assert.ok(inlineMedia.includes('<audio'),'Voice notes must use actual browser playback');
+assert.ok(ui.includes('<ChatPrivateMedia'),'Chat must mount the inline media player');
 console.log('Q16 admin-routed direct chat checks passed: verified routing, media permission policy, mobile feedback and RLS.');

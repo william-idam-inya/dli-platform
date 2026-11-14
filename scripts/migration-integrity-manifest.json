@@ -351,6 +351,10 @@
     {
       "file": "20261114005500_stage_q18b_chat_media_attachment_guard.sql",
       "gitBlobSha1": "c01cd012495a9447004396ca39c293ec26f77f97"
+    },
+    {
+      "file": "20261114053500_stage_q21_private_chat_media_info_read.sql",
+      "gitBlobSha1": "3cc801a4177b99751a1d5af4f5bd08fec7e2e4d0"
     }
   ]
 }

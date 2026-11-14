@@ -156,3 +156,33 @@
   .dli-direct-compose{padding:12px;gap:10px}
   .dli-direct-compose>div{flex-wrap:wrap}
 }
+
+/* Q21: compact, in-conversation private media controls. */
+.dli-direct-message-list article:has(.dli-inline-private-media){min-width:min(255px,80vw)}
+.dli-inline-private-media{display:grid;gap:8px;max-width:100%;min-width:0}
+.dli-private-voice{display:flex;align-items:center;gap:10px;width:min(295px,100%);min-width:0}
+.dli-direct-message-list article .dli-private-voice-toggle{
+  flex:0 0 43px;display:grid;place-items:center;height:43px;width:43px;
+  border-radius:50%;background:var(--purple);color:white;padding:0;border:0;cursor:pointer
+}
+.dli-private-voice-track{display:grid;gap:3px;min-width:0;flex:1}
+.dli-private-voice-bars{display:flex;align-items:center;gap:2px;height:24px;opacity:.78}
+.dli-private-voice-bars span{display:block;flex:1;min-width:1px;max-width:4px;border-radius:3px;background:var(--purple)}
+.dli-private-voice-track input[type="range"]{width:100%;height:14px;margin:0;accent-color:var(--purple);cursor:pointer}
+.dli-private-voice-track small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dli-private-voice-hidden{display:none}
+.dli-direct-message-list article .dli-private-media-save{
+  display:grid;place-items:center;flex:0 0 32px;width:32px;height:38px;
+  padding:0;color:var(--muted);border:0;background:transparent;cursor:pointer
+}
+.dli-private-video video{width:min(260px,100%);max-height:310px;border-radius:10px;display:block}
+.dli-direct-message-list article :is(.dli-private-video-load,.dli-private-media-download,.dli-private-media-error button){
+  display:inline-flex;align-items:center;gap:6px;color:var(--text);border:1px solid var(--border);
+  background:var(--surface-soft);border-radius:9px;font-weight:700;padding:9px;cursor:pointer
+}
+.dli-private-video{display:grid;gap:7px;justify-items:start}
+.dli-private-media-error{font-size:12px;color:var(--text);display:grid;gap:6px;line-height:1.5}
+.dli-private-media-error button{justify-self:start}
+.dli-media-loading{animation:dli-media-spin 1s linear infinite}
+@keyframes dli-media-spin{to{transform:rotate(360deg)}}
+@media(max-width:750px){.dli-private-voice{width:min(300px,100%)}}
