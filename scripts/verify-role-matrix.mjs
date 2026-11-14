@@ -18,6 +18,7 @@ for (const role of DLI_ROLES) {
 assert.equal(isDliRole('founder'), false, 'owner is the persisted Founder role');
 assert.equal(isDliRole(''), false);
 assert.equal(isDliRole(null), false);
+assert.equal(isDliRole('finance_officer'),false,'Retired Finance Officer role must never regain login privileges');
 
 const matrix = [
   ['owner','/users',true], ['owner','/settings',true], ['owner','/reports/audit',true],
@@ -25,9 +26,12 @@ const matrix = [
   ['assistant_admin','/settings',true], ['assistant_admin','/classes',true],
   ['assistant_admin','/tutors',true], ['assistant_admin','/users',false],
   ['assistant_admin','/reports/audit',false],
+  ['assistant_admin','/payroll',true], ['assistant_admin','/finance',true],
+  ['assistant_admin','/finance/reviews',true], ['assistant_admin','/enrolment',true],
+  ['assistant_admin','/private-classes',true],
   ['tutor','/payroll',true], ['tutor','/my-classes',true],
   ['tutor','/users',false], ['tutor','/settings',false], ['tutor','/finance',false],
-  ['finance_officer','/finance',true], ['finance_officer','/finance/reviews',true],
+  ['finance_officer','/finance',false], ['finance_officer','/finance/reviews',false],
   ['finance_officer','/users',false],
   ['academic_coordinator','/academics',true], ['academic_coordinator','/users',false],
 ];
