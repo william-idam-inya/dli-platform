@@ -327,6 +327,10 @@
     {
       "file": "20261114005000_stage_q18_skill_tree_progress.sql",
       "gitBlobSha1": "37775cdd52e52f20fc9df618327529ba55f0dc74"
+    },
+    {
+      "file": "20261114005300_stage_q18a_progress_timestamp_guard.sql",
+      "gitBlobSha1": "015c3d4646b6e9e3b4b5e90e97411a2374d1123d"
     }
   ]
 }
