@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2, Clock3, LockKeyhole, RefreshCw, Search,
-  ShieldAlert, ShieldCheck, UserRoundCog, Users,
+  ShieldAlert, ShieldCheck, Users, Save, RotateCcw,
 } from 'lucide-react';
 import InviteUserPage from '../auth/InviteUserPage';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import { availableLifecycleActions } from '../lib/userLifecycle';
+import UserActionDialog, {type RegistryAction} from '../components/UserActionDialog';
+import { registryFailureMessage } from '../lib/registryFeedback';
 
 type UserStatus = 'pending' | 'active' | 'suspended' | 'revoked';
 type UserRecord = {
@@ -18,12 +21,15 @@ type UserRecord = {
   status: UserStatus;
   created_at: string;
   updated_at: string;
+  archived_at: string | null;
 };
 type UserListResponse = {
   users: UserRecord[];
   allowed_roles: DliRole[];
   has_more: boolean;
   page: number;
+  total: number;
+  view: 'current' | 'archived';
 };
 type AuditEvent = {
   id: string;
@@ -34,8 +40,6 @@ type AuditEvent = {
   created_at: string;
 };
 type AuditResponse = { events: AuditEvent[] };
-type AccountAction = 'change_role' | 'suspend' | 'reactivate' | 'revoke';
-
 function time(value: string): string {
   return new Intl.DateTimeFormat('en-NG', {
     timeZone: 'Africa/Lagos', dateStyle: 'medium', timeStyle: 'short',
@@ -53,6 +57,8 @@ export default function UserManagementPage() {
   const [roles, setRoles] = useState<DliRole[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [view, setView] = useState<'current'|'archived'>('current');
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
@@ -63,6 +69,10 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserStatus>('all');
   const [selectedRoles, setSelectedRoles] = useState<Record<string, DliRole>>({});
+  const [pendingAction, setPendingAction] = useState<{
+    user:UserRecord; action:RegistryAction; newRole?:DliRole;
+  }|null>(null);
+  const [dialogError, setDialogError] = useState<string|null>(null);
 
   const loadUsers = useCallback(async (reset = true) => {
     if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
@@ -71,7 +81,7 @@ export default function UserManagementPage() {
     else setLoadingMore(true);
     const nextPage = reset ? 0 : page + 1;
     const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
-      'admin-manage-users', { body: { action: 'list', page: nextPage } },
+      'admin-manage-users', { body: { action: 'list', page: nextPage, view, status:filter } },
     );
     if (requestError || !data || !Array.isArray(data.users)) {
       setError('Could not load the account registry. Please retry.');
@@ -80,11 +90,12 @@ export default function UserManagementPage() {
         [...existing, ...data.users.filter(item => !existing.some(old => old.id === item.id))]);
       setRoles(data.allowed_roles ?? []);
       setHasMore(Boolean(data.has_more));
+      setTotal(data.total);
       setPage(nextPage);
     }
     setLoading(false);
     setLoadingMore(false);
-  }, [page]);
+  }, [page,view,filter]);
 
   const loadAudit = useCallback(async () => {
     if (!supabase) return;
@@ -103,9 +114,13 @@ export default function UserManagementPage() {
   useEffect(() => {
     if (!supabase) return;
     let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setPendingAction(null);
+    setUsers([]);
     (async () => {
       const { data, error: requestError } = await supabase.functions.invoke<UserListResponse>(
-        'admin-manage-users', { body: { action: 'list', page: 0 } },
+        'admin-manage-users', { body: { action: 'list', page: 0, view, status:filter } },
       );
       if (cancelled) return;
       if (requestError || !data || !Array.isArray(data.users)) {
@@ -114,13 +129,14 @@ export default function UserManagementPage() {
         setUsers(data.users);
         setRoles(data.allowed_roles ?? []);
         setHasMore(Boolean(data.has_more));
+        setTotal(data.total);
         setPage(0);
       }
       setLoading(false);
     })();
     void loadAudit();
     return () => { cancelled = true; };
-  }, [loadAudit]);
+  }, [loadAudit,view,filter]);
 
   useEffect(()=>{
     if(!supabase||!(account?.role==='owner'||account?.role==='admin')||!users.length)return;
@@ -136,42 +152,82 @@ export default function UserManagementPage() {
   },[users,account?.role]);
   const visible = useMemo(() => users.filter(item => {
     const q = search.trim().toLowerCase();
-    return (filter === 'all' || item.status === filter) &&
-      (!q || item.email.toLowerCase().includes(q) ||
-        item.full_name.toLowerCase().includes(q) || roleLabels[item.role].toLowerCase().includes(q));
-  }), [users, search, filter]);
+    return !q || item.email.toLowerCase().includes(q) ||
+        item.full_name.toLowerCase().includes(q) || roleLabels[item.role].toLowerCase().includes(q);
+  }), [users, search]);
 
-  async function updateUser(user: UserRecord, action: AccountAction) {
-    if (!supabase || !account || saving) return;
-    if (user.id === account.id || !roles.includes(user.role)) return;
-    const role = selectedRoles[user.id] ?? user.role;
-    if (action === 'change_role' && (role === user.role || !roles.includes(role))) return;
-    const actionText = action === 'change_role' ? `change ${user.full_name}'s role to ${roleLabels[role]}`
-      : action === 'suspend' ? `suspend ${user.full_name}`
-      : action === 'reactivate' ? `reactivate ${user.full_name}`
-      : `permanently revoke DLI access for ${user.full_name}`;
-    if (!window.confirm(`Confirm: ${actionText}?\nThis will be recorded in the audit trail.`)) return;
-
-    setSaving(user.id);
+  function requestAction(user:UserRecord, action:RegistryAction) {
+    if (!account || saving || user.id===account.id ||
+        !roles.includes(user.role)) return;
+    if (['restore_revoked','archive','unarchive'].includes(action) &&
+        !['owner','admin'].includes(account.role)) return;
+    const chosen = selectedRoles[user.id] ?? user.role;
+    if (action==='change_role' && (chosen===user.role || !roles.includes(chosen) ||
+        user.status==='revoked' || Boolean(user.archived_at))) return;
+    setPendingAction({user,action,newRole:action==='change_role'?chosen:undefined});
+    setDialogError(null);
     setError(null);
     setNotice(null);
-    const { error: requestError, data } = await supabase.functions.invoke(
-      'admin-manage-users', {
-        body: { action, user_id: user.id, ...(action === 'change_role' ? { role } : {}) },
-      },
-    );
-    if (requestError || !data?.user) {
-      setError('The account change was not saved. Your permissions or the account status may have changed.');
-    } else {
-      setNotice('Account change saved and audited. Access rules take effect on subsequent database requests.');
+  }
+
+  async function updateUser(user:UserRecord,action:RegistryAction,reason:string,newRole?:DliRole) {
+    if (!supabase || !account || saving || user.id===account.id ||
+        !roles.includes(user.role)) return;
+    if (action==='change_role' && (!newRole || newRole===user.role ||
+        !roles.includes(newRole))) return;
+    const isLifecycle=['restore_revoked','archive','unarchive'].includes(action);
+    if (isLifecycle && (!['owner','admin'].includes(account.role) ||
+      reason.length<12 || reason.length>500)) return;
+
+    setSaving(user.id);
+    setDialogError(null);
+    setError(null);
+    setNotice(null);
+    try {
+      const {data, error: requestError} =
+        await supabase.functions.invoke<{
+          user?:{id:string;role:DliRole;status:UserStatus;archived_at?:string|null};
+          error?:string;
+        }>('admin-manage-users', {
+          body:{action,user_id:user.id,
+            ...(action==='change_role'?{role:newRole}:{}),
+            ...(isLifecycle?{reason:reason.trim()}:{}),
+          },
+        });
+      if (requestError || !data?.user) {
+        setDialogError(await registryFailureMessage(requestError,data));
+        return;
+      }
+      if (data.user.id !== user.id ||
+          (action==='change_role' && data.user.role!==newRole)) {
+        setDialogError('The server did not confirm the requested account change. Refresh the registry and review the audit history before retrying.');
+        return;
+      }
+      const success:Record<RegistryAction,string> = {
+        change_role:`Saved: ${user.full_name}'s role is now ${roleLabels[newRole!]}. The change is recorded in the audit trail.`,
+        suspend:`Saved: ${user.full_name} is suspended and DLI access is blocked.`,
+        reactivate:`Saved: ${user.full_name} has been reactivated.`,
+        revoke:`Saved: ${user.full_name}'s access is revoked.`,
+        restore_revoked:`Saved: ${user.full_name}'s revoked account has been restored after identity verification.`,
+        archive:`Saved: ${user.full_name} was removed from the current register. The revoked record remains in Archived records.`,
+        unarchive:`Saved: ${user.full_name} was returned to the revoked register. Access is still blocked.`,
+      };
+      setNotice(success[action]);
+      setPendingAction(null);
+      setSelectedRoles(current=>{
+        const remaining={...current};delete remaining[user.id];return remaining;
+      });
       await loadUsers(true);
       await loadAudit();
+    } catch {
+      setDialogError('The server could not complete the request. No change has been confirmed. Check your connection and try again.');
+    } finally {
+      setSaving(null);
     }
-    setSaving(null);
   }
 
   function canManage(user: UserRecord) {
-    return account && user.id !== account.id && roles.includes(user.role) && user.status !== 'revoked';
+    return account && user.id !== account.id && roles.includes(user.role);
   }
 
   return (
@@ -196,27 +252,40 @@ export default function UserManagementPage() {
       </div>
 
       {error && <p className="auth-feedback error" role="alert">{error}</p>}
-      {notice && <p className="auth-feedback success" role="status">{notice}</p>}
+      {notice && <div className="user-action-toast" role="status" aria-live="polite">
+        <CheckCircle2 size={19} aria-hidden="true"/>
+        <p>{notice}</p>
+        <button type="button" onClick={()=>setNotice(null)} aria-label="Dismiss confirmation">Dismiss</button>
+      </div>}
 
       <section className="panel user-registry">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">AUTHORISED DIRECTORY</p>
             <h2>Account registry</h2>
-            <p className="user-caption">Displaying {users.length} accounts visible to your role. The list is not a system-wide total.</p>
+            <p className="user-caption">{error
+              ? 'The directory is temporarily unavailable; no account count has been verified.'
+              : `Showing ${users.length} of ${total} ${view==='archived'?'archived':'current'} accounts visible to your role. This is not a system-wide total.`}</p>
           </div>
           <button type="button" className="user-outline-button" onClick={() => { void loadUsers(true); void loadAudit(); }} disabled={loading || Boolean(saving)}>
             <RefreshCw size={16}/> Refresh
           </button>
         </div>
+        <div className="user-view-tabs" role="group" aria-label="Account directory view">
+          <button type="button" aria-pressed={view==='current'} className={view==='current'?'selected':''}
+            onClick={()=>{setView('current');setFilter('all');setSearch('');}}>Current register</button>
+          <button type="button" aria-pressed={view==='archived'} className={view==='archived'?'selected':''}
+            onClick={()=>{setView('archived');setFilter('all');setSearch('');}}>Archived records</button>
+        </div>
+        <p className="user-caption">Archiving hides a revoked record from the current register; it does not erase the account, its identity or audit history.</p>
         <div className="user-toolbar">
           <label className="user-search">
             <Search size={16}/>
             <span className="sr-only">Search loaded accounts</span>
             <input value={search} onChange={event=>setSearch(event.target.value)}
-              placeholder="Search loaded names, emails and roles…"/>
+              placeholder="Search names, emails and roles on loaded pages…"/>
           </label>
-          <label className="user-filter">
+          {view==='current' && <label className="user-filter">
             <span className="sr-only">Filter accounts by status</span>
             <select value={filter} onChange={event=>setFilter(event.target.value as 'all' | UserStatus)}>
               <option value="all">All statuses</option>
@@ -224,16 +293,22 @@ export default function UserManagementPage() {
                 <option value={value} key={value}>{statusLabels[value]}</option>
               ))}
             </select>
-          </label>
+          </label>}
         </div>
         {loading ? (
           <p role="status" className="user-empty"><Clock3 size={17}/> Loading authorised accounts…</p>
+        ) : error ? (
+          <p className="user-empty" role="status">The registry has not loaded. Select Refresh to try again; no account count is available.</p>
         ) : visible.length === 0 ? (
           <p className="user-empty">No accounts match this view.</p>
         ) : (
           <div className="user-list">
             {visible.map(user => {
               const permitted = Boolean(canManage(user));
+              const lifecycleAllowed = account ? availableLifecycleActions({
+                actorRole:account.role,status:user.status,archivedAt:user.archived_at,
+                isSelf:user.id===account.id,canManageRole:roles.includes(user.role),
+              }) : [];
               const chosenRole = selectedRoles[user.id] ?? user.role;
               return <article className="user-item" key={user.id}>
                 <div className="user-item-top">
@@ -241,53 +316,77 @@ export default function UserManagementPage() {
                   <div className="user-identity">
                     <strong>{user.full_name}</strong>
                     <span>{user.email}</span>
-                    <small>Added {time(user.created_at)}</small>
+                    <small>Added {time(user.created_at)} · Updated {time(user.updated_at)}</small>
                   </div>
                   <div className="user-tags">
-                    {(account?.role==='owner'||account?.role==='admin')&&registryAuthIds[user.id]&&
-                      <Link className="user-outline-button" to={'/members/'+encodeURIComponent(registryAuthIds[user.id])}>
-                        View full profile
-                      </Link>}
+                    {(account?.role==='owner'||account?.role==='admin')&&!user.archived_at&&registryAuthIds[user.id]&&
+                      <Link className="user-outline-button" to={'/members/'+encodeURIComponent(registryAuthIds[user.id])}>View full profile</Link>}
                     <span className="user-role">{roleLabels[user.role]}</span>
-                    <span className={`user-status user-status-${user.status}`}>{statusLabels[user.status]}</span>
+                    <span className={`user-status user-status-${user.archived_at?'archived':user.status}`}>
+                      {user.archived_at?'Archived':statusLabels[user.status]}
+                    </span>
                     {user.id === account?.id && <span className="user-self">You</span>}
                   </div>
                 </div>
                 {permitted && (
                   <div className="user-actions">
-                    <label>
+                    {!user.archived_at && user.status!=='revoked' && <label>
                       <span>Role</span>
                       <select value={chosenRole} disabled={Boolean(saving)}
+                        aria-label={`Select new role for ${user.full_name}`}
                         onChange={event=>setSelectedRoles(current => ({
                           ...current, [user.id]: event.target.value as DliRole,
                         }))}>
                         {roles.map(role => <option value={role} key={role}>{roleLabels[role]}</option>)}
                       </select>
-                    </label>
-                    <button className="user-outline-button" type="button"
-                      disabled={Boolean(saving) || chosenRole === user.role}
-                      onClick={() => { void updateUser(user, 'change_role'); }}>
-                      <UserRoundCog size={15}/> Change role
-                    </button>
-                    {user.status === 'active' && (
+                    </label>}
+                    {!user.archived_at && user.status!=='revoked' && <>
+                      {chosenRole!==user.role && <span className="user-pending-role" role="status">
+                        Unsaved: {roleLabels[user.role]} → {roleLabels[chosenRole]}
+                      </span>}
+                      <button className={chosenRole===user.role
+                        ? 'user-outline-button' : 'user-outline-button user-save-role'}
+                        type="button" disabled={Boolean(saving) || chosenRole === user.role}
+                        onClick={()=>requestAction(user,'change_role')}>
+                        <Save size={16}/> Save role change
+                      </button>
+                      {chosenRole!==user.role && <button className="user-outline-button" type="button"
+                        disabled={Boolean(saving)}
+                        onClick={()=>setSelectedRoles(current=>{
+                          const updated={...current};delete updated[user.id];return updated;
+                        })}><RotateCcw size={15}/> Discard selection</button>}
+                    </>}
+                    {!user.archived_at && user.status === 'active' && (
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'suspend'); }}>
+                        onClick={() => requestAction(user, 'suspend')}>
                         <LockKeyhole size={15}/> Suspend
                       </button>
                     )}
-                    {user.status === 'suspended' && (
+                    {!user.archived_at && user.status === 'suspended' && (
                       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'reactivate'); }}>
+                        onClick={() => requestAction(user, 'reactivate')}>
                         <CheckCircle2 size={15}/> Reactivate
                       </button>
                     )}
-                    {user.status !== 'revoked' && (
+                    {!user.archived_at && user.status !== 'revoked' && (
                       <button className="user-outline-button user-danger" type="button" disabled={Boolean(saving)}
-                        onClick={() => { void updateUser(user, 'revoke'); }}>
+                        onClick={() => requestAction(user, 'revoke')}>
                         <ShieldAlert size={15}/> Revoke
                       </button>
                     )}
-                    {user.role==='student' && user.status==='active' &&
+                    {lifecycleAllowed.includes('restore_revoked') && <>
+                        <button className="user-outline-button" type="button" disabled={Boolean(saving)}
+                          onClick={()=>requestAction(user,'restore_revoked')}>
+                          <CheckCircle2 size={15}/> Restore access</button>
+                        <button className="user-outline-button user-danger" type="button" disabled={Boolean(saving)}
+                          onClick={()=>requestAction(user,'archive')}>
+                          <ShieldAlert size={15}/> Remove from register</button>
+                      </>}
+                    {lifecycleAllowed.includes('unarchive') &&
+                      <button className="user-outline-button" type="button" disabled={Boolean(saving)}
+                        onClick={()=>requestAction(user,'unarchive')}>
+                        <RefreshCw size={15}/> Restore record</button>}
+                    {user.role==='student' && user.status==='active' && !user.archived_at &&
                       (account?.role==='owner'||account?.role==='admin') &&
                       <Link className="user-outline-button"
                         to={'/classes?registry='+encodeURIComponent(user.id)}>
@@ -296,6 +395,17 @@ export default function UserManagementPage() {
                     {saving === user.id && <span className="user-busy" role="status">Applying authorised change…</span>}
                   </div>
                 )}
+                <details className="user-item-history">
+                  <summary>Recent account history</summary>
+                  {audit.filter(event=>event.details?.registry_id===user.id).slice(0,6).length===0
+                    ? <p className="user-caption">No matching events among the latest 30 authorised audit entries.</p>
+                    : audit.filter(event=>event.details?.registry_id===user.id).slice(0,6)
+                      .map(event=><div key={event.id} className="user-history-event">
+                        <strong>{event.event_type.replaceAll('.',' · ').replaceAll('_',' ')}</strong>
+                        <small>{time(event.created_at)}</small>
+                        {typeof event.details?.reason==='string' && <p>Reason: {event.details.reason}</p>}
+                      </div>)}
+                </details>
               </article>;
             })}
           </div>
@@ -336,8 +446,20 @@ export default function UserManagementPage() {
         </div>
       </section>
 
+      {pendingAction && <UserActionDialog
+        key={pendingAction.user.id+':'+pendingAction.action}
+        subject={pendingAction.user}
+        action={pendingAction.action}
+        selectedRole={pendingAction.newRole}
+        saving={saving===pendingAction.user.id}
+        error={dialogError}
+        onCancel={()=>{if(!saving){setPendingAction(null);setDialogError(null);}}}
+        onConfirm={reason=>{void updateUser(
+          pendingAction.user,pendingAction.action,reason,pendingAction.newRole,
+        );}}
+      />}
       <p className="module-footnote"><LockKeyhole size={15}/>
-        Access revocation retains audit history and is not reversible through this screen.
+        Restoring access requires a verified identity and authorised staff approval. Removing a revoked record from the register archives it; no permanent deletion is performed.
         Never share invitation links or administrator credentials publicly.
       </p>
     </div>
