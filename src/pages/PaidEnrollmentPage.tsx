@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { BookOpen, CheckCircle2, Download, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -43,6 +43,9 @@ export default function PaidEnrollmentPage(){
  const [studentNames,setStudentNames]=useState<Record<string,string>>({});
  const [proofs,setProofs]=useState<Proof[]>([]);
  const [bank,setBank]=useState<Bank|null>(null);
+ const [bankDraft,setBankDraft]=useState({bank_name:'',account_name:'',account_number:'',is_active:false});
+ const [preview,setPreview]=useState<{url:string;name:string;mime:string}|null>(null);
+ const previewUrl=useRef<string|null>(null);
  const [demos,setDemos]=useState<Demo[]>([]);
  const [applicationsOpen,setApplicationsOpen]=useState<boolean|null>(null);
  const [studentProfileReady,setStudentProfileReady]=useState<boolean|null>(null);
@@ -80,7 +83,7 @@ export default function PaidEnrollmentPage(){
    setCatalogue(rows);
    setSubjects([...new Map(rows.filter(item=>item.subject_id&&item.subject_name)
      .map(item=>[item.subject_id!,{id:item.subject_id!,name:item.subject_name!}])).values()]);
-   setRequests((r.data??[]) as Request[]);
+   setRequests(([...(r.data??[])] as Request[]).sort((a,b)=>Number(b.status==='submitted')-Number(a.status==='submitted') || b.submitted_at.localeCompare(a.submitted_at)));
    if(isManager){
      const studentIds=[...new Set((r.data??[]).map(item=>item.student_id))];
      if(studentIds.length){
@@ -93,6 +96,11 @@ export default function PaidEnrollmentPage(){
    }
    setProofs((p.data??[]) as Proof[]);
    setBank((b.data??null) as Bank|null);
+   if(isManager){
+     const value=(b.data??null) as Bank|null;
+     setBankDraft(value?{bank_name:value.bank_name,account_name:value.account_name,account_number:value.account_number,is_active:value.is_active}:
+       {bank_name:'',account_name:'',account_number:'',is_active:false});
+   }
    setDemos((d.data??[]) as Demo[]);
    setApplicationsOpen(Boolean(control.data.is_enabled));
    if(isStudent){
@@ -108,9 +116,11 @@ export default function PaidEnrollmentPage(){
    setError(null);
   }catch{setError('The enrolment service is temporarily unreachable.');}
   finally{setLoading(false);}
- },[account?.id,isStudent]);
+ },[account?.id,isStudent,isManager]);
+ useEffect(()=>()=>{if(previewUrl.current)URL.revokeObjectURL(previewUrl.current);},[]);
  useEffect(()=>{void load();},[load]);
- const current=requests.find(r=>r.status==='awaiting_payment'||r.status==='submitted'||r.status==='approved');
+ const current=requests.find(r=>r.status==='awaiting_payment'||r.status==='submitted'||r.status==='approved'||r.status==='rejected');
+ const pendingCount=requests.filter(r=>r.status==='submitted').length;
  const picked=plans.find(p=>p.id===plan)??plans[0];
  const programmes=programmeChoices(catalogue);
  const levels=levelChoices(catalogue,programme);
@@ -196,6 +206,81 @@ export default function PaidEnrollmentPage(){
   }catch{setError('The review result could not be confirmed. Refresh before retrying.');}
   finally{setBusy(false);}
  }
+ async function saveBank(event:FormEvent<HTMLFormElement>){
+  event.preventDefault();
+  if(!supabase||!isManager||busy||loading)return;
+  const values={bank_name:bankDraft.bank_name.trim(),account_name:bankDraft.account_name.trim(),
+    account_number:bankDraft.account_number.trim(),is_active:bankDraft.is_active};
+  if(values.bank_name.length<2||values.bank_name.length>120||
+      values.account_name.length<3||values.account_name.length>140||
+      !/^[0-9]{10}$/.test(values.account_number)){
+    setError('Enter the bank name, account holder name and a valid 10-digit account number.');return;
+  }
+  if(applicationsOpen===true&&!values.is_active){
+    setError('Pause new paid applications before hiding the active transfer account.');return;
+  }
+  if((values.is_active||bank?.is_active)&&
+    !window.confirm('Confirm the bank and account holder independently. Changes affect the transfer instructions students see; verify any transfers already in progress against the account the student used. Save these details?'))return;
+  setBusy(true);setError(null);setNotice(null);
+  try{
+    const result=bank?await supabase.from('private_bank_details').update(values)
+      .eq('id',true).select('id').maybeSingle():
+      await supabase.from('private_bank_details').insert({id:true,...values}).select('id').maybeSingle();
+    if(result.error||!result.data){setError('Bank details could not be saved. Confirm your Founder/Admin access and refresh.');return;}
+    await load();
+    setNotice(values.is_active
+      ?'Verified bank instructions saved and activated. Open new paid applications below when ready.'
+      :'Bank details saved as inactive. Students will not be instructed to transfer to this account.');
+  }catch{setError('The bank change was not confirmed. Refresh before trying again.');}
+  finally{setBusy(false);}
+ }
+ async function changeAdmissions(){
+  if(!supabase||!isManager||busy||loading||applicationsOpen===null)return;
+  const enable=!applicationsOpen;
+  if(enable&&!bank?.is_active){
+    setError('Add and activate a verified bank account before opening applications.');return;
+  }
+  if(!window.confirm(enable
+    ?'Open new Paid Student applications using the verified bank details? No payment is automatically collected or approved.'
+    :'Pause NEW Paid Student applications? Existing applications and receipts will remain available for review.'))return;
+  setBusy(true);setError(null);setNotice(null);
+  try{
+    const result=await supabase.from('dli_operational_controls')
+      .update({is_enabled:enable}).eq('setting_key','paid_enrolment_open')
+      .select('is_enabled').maybeSingle();
+    if(result.error||!result.data||Boolean(result.data.is_enabled)!==enable){
+      setError('The server did not confirm this setting. Ensure an active verified bank account and refresh.');return;
+    }
+    await load();
+    setNotice(enable?'New paid enrolment applications are open. Transfers still require manual verification.'
+      :'New paid applications are paused. Existing payment reviews are still available.');
+  }catch{setError('The enrolment-window change was not confirmed.');}
+  finally{setBusy(false);}
+ }
+ async function previewReceipt(proof:Proof){
+  if(!supabase||!isManager||busy)return;
+  setBusy(true);setError(null);
+  try{
+    const r=await supabase.storage.from('dli-enrolment-proofs').download(proof.object_path);
+    if(r.error||!r.data){setError('Unable to view this private receipt. Check your authorised account and try again.');return;}
+    if(previewUrl.current){URL.revokeObjectURL(previewUrl.current);previewUrl.current=null;}
+    const url=URL.createObjectURL(r.data);
+    previewUrl.current=url;
+    const ext=proof.object_path.split('.').at(-1)?.toLowerCase();
+    setPreview({url,name:'DLI receipt '+proof.id,mime:ext==='pdf'?'application/pdf':r.data.type.startsWith('image/')?r.data.type:'image/jpeg'});
+  }catch{setError('The receipt preview could not be loaded. Retry or download the file.');}
+  finally{setBusy(false);}
+ }
+ function closePreview(){
+  setPreview(null);
+  if(previewUrl.current){URL.revokeObjectURL(previewUrl.current);previewUrl.current=null;}
+ }
+ async function copyAccount(){
+  if(!bank?.account_number)return;
+  try{await navigator.clipboard.writeText(bank.account_number);setNotice('Bank account number copied. Confirm the recipient name in your banking app.');}
+  catch{setError('Could not copy automatically. You can select the displayed bank account number.');}
+ }
+
  function toggle(id:string){setSelected(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);}
  return <div className="module-page paid-upgrade">
   <div className="module-page-hero">
@@ -282,10 +367,11 @@ export default function PaidEnrollmentPage(){
    <p className="upgrade-amount">{money(current.amount_ngn)} / month</p>
    <p>Subjects: {current.subject_ids.map(id=>subjects.find(s=>s.id===id)?.name??'Selected subject').join(' · ')}</p>
    {current.review_note&&<p>Admin note: {current.review_note}</p>}
-   {current.status==='awaiting_payment'&&<div className="upgrade-bank">
-    {bank?.is_active?<><h3>Verified DLI transfer instructions</h3>
+   {(current.status==='awaiting_payment'||current.status==='rejected')&&<div className="upgrade-bank" id="dli-transfer-instructions">
+    {bank?.is_active?<><h3>{current.status==='rejected'?'Resubmit payment evidence':'Verified DLI transfer instructions'}</h3>
+      {current.status==='rejected'&&<p>Your previous proof was rejected. Check the Admin note, then upload a corrected receipt for this same application.</p>}
       <p>Bank: <strong>{bank.bank_name}</strong></p><p>Name: <strong>{bank.account_name}</strong></p>
-      <p>Account number: <strong>{bank.account_number}</strong></p>
+      <p>Account number: <strong>{bank.account_number}</strong> <button type="button" className="user-outline-button" onClick={()=>void copyAccount()}><Copy size={14}/> Copy</button></p>
       <label htmlFor="upgrade-proof">Upload payment evidence · PDF, JPEG or PNG (max 5 MB)</label>
       <input id="upgrade-proof" type="file" accept=".pdf,.jpg,.jpeg,.png"
        onChange={e=>setFile(e.target.files?.[0]??null)}/>
@@ -295,10 +381,37 @@ export default function PaidEnrollmentPage(){
    </div>}
   </section>}
 
+  {isManager&&<section className="panel" id="enrolment-bank-settings">
+   <div className="panel-heading"><div><p className="section-kicker">MANUAL BANK TRANSFER</p>
+    <h2>Institutional bank details</h2>
+    <p className="user-caption">Founder/Admin may add or change the verified recipient account shown to applicants. Do not publish a personal or unconfirmed account.</p>
+   </div></div>
+   <form className="upgrade-bank-form" onSubmit={e=>void saveBank(e)}>
+    <label>Bank name<input required minLength={2} maxLength={120} value={bankDraft.bank_name}
+      onChange={e=>setBankDraft(v=>({...v,bank_name:e.target.value}))}/></label>
+    <label>Account holder name<input required minLength={3} maxLength={140} value={bankDraft.account_name}
+      onChange={e=>setBankDraft(v=>({...v,account_name:e.target.value}))}/></label>
+    <label>Account number (10 digits)<input required inputMode="numeric" pattern="[0-9]{10}"
+      minLength={10} maxLength={10} value={bankDraft.account_number}
+      onChange={e=>setBankDraft(v=>({...v,account_number:e.target.value.replace(/[^0-9]/g,'').slice(0,10)}))}/></label>
+    <label className="upgrade-bank-checkbox"><input type="checkbox" checked={bankDraft.is_active}
+      onChange={e=>setBankDraft(v=>({...v,is_active:e.target.checked}))}/>
+      Publish this independently verified account to eligible paid applicants</label>
+    <button className="academic-submit" type="submit" disabled={busy||loading}>
+     <Banknote size={17}/> {bank?'Save bank account changes':'Add transfer bank account'}</button>
+   </form>
+   <div className="upgrade-admissions-status">
+    <p><strong>New Paid Student applications: {applicationsOpen===null?'Cannot verify':applicationsOpen?'Open':'Paused'}</strong></p>
+    <p>Applicants can only apply while this switch is open and a valid bank account is active. A submitted receipt never activates paid access automatically.</p>
+    <button type="button" className="user-outline-button" disabled={busy||loading||applicationsOpen===null||(!bank?.is_active&&!applicationsOpen)}
+      onClick={()=>void changeAdmissions()}>{applicationsOpen?'Pause new paid applications':'Open new paid applications'}</button>
+   </div>
+  </section>}
+
   {isManager&&<section className="panel">
    <div className="panel-heading"><div><p className="section-kicker">PAYMENT VERIFICATION</p>
     <h2>Incoming paid-enrolment applications</h2>
-    <p className="user-caption">Select an application, download its proof, verify the actual bank credit outside the app and decide. No approval is automatic.</p>
+    <p className="user-caption">{pendingCount} receipt{pendingCount===1?'':'s'} awaiting your review. View evidence, independently confirm the credit in the bank account and then approve or reject. Tutor assignment is separate.</p>
    </div></div>
    {!requests.length&&!loading&&<p className="academic-empty">No paid-enrolment applications have been received.</p>}
    <div className="upgrade-requests">{requests.map(req=><article key={req.id}>
@@ -310,8 +423,10 @@ export default function PaidEnrollmentPage(){
      </Link>
      <small>Requested subjects: {req.subject_ids.length}</small>
     </div>
-    {proofs.filter(p=>p.request_id===req.id).map(p=><button type="button" key={p.id}
-      className="user-outline-button" disabled={busy} onClick={()=>void download(p)}><Download size={14}/> Download receipt</button>)}
+    {proofs.filter(p=>p.request_id===req.id).map(p=><div className="upgrade-proof-actions" key={p.id}>
+      <button type="button" className="user-outline-button" disabled={busy} onClick={()=>void previewReceipt(p)}><Eye size={14}/> View receipt</button>
+      <button type="button" className="user-outline-button" disabled={busy} onClick={()=>void download(p)}><Download size={14}/> Download receipt</button>
+     </div>)}
     {req.status==='submitted'&&<div className="upgrade-review-form">
      <label>Review note<input maxLength={500} value={reviewNotes[req.id]??''}
        onChange={e=>setReviewNotes(v=>({...v,[req.id]:e.target.value}))}/></label>
@@ -324,5 +439,17 @@ export default function PaidEnrollmentPage(){
     </div>}
    </article>)}</div>
   </section>}
+  {preview&&<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
+    <div className="upgrade-receipt-modal" role="dialog" aria-modal="true" aria-label="Review private payment receipt">
+      <div className="upgrade-receipt-heading"><strong>{preview.name}</strong>
+        <button type="button" className="user-outline-button" onClick={closePreview}>Close</button></div>
+      <p>Review the document, then independently confirm the matching bank credit. An uploaded screenshot is not proof of payment.</p>
+      {preview.mime==='application/pdf'
+        ?<iframe title="Private DLI receipt PDF" src={preview.url}/>
+        :<img src={preview.url} alt="Uploaded private transfer receipt"/>}
+      <a className="user-outline-button" href={preview.url} download={preview.name+(preview.mime==='application/pdf'?'.pdf':'.jpg')}>
+       <Download size={14}/> Save receipt</a>
+    </div>
+  </div>}
  </div>;
 }
