@@ -16,7 +16,7 @@ type Slot = {id:string;student_id:string;student_name:string;subject_id:string;s
 type Bank = {id:boolean;bank_name:string;account_name:string;account_number:string;is_active:boolean};
 const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const formatNGN=(v:string|number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:2}).format(Number(v));
-const roleStaff=new Set(['owner','admin']);
+const roleStaff=new Set(['owner','admin','assistant_admin']);
 const billingStatus:Record<Fee['payment_status'],string>={assigned:'Awaiting transfer',submitted:'Proof awaiting verification',verified:'Verified by DLI',rejected:'Proof rejected; resubmit'};
 function validMeet(value:string) {return /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(value);}
 function feedback(error:unknown):string {

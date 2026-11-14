@@ -36,7 +36,7 @@ const FOUNDER_ACTIONS: {value: ReviewAction; label: string}[] = [
 const FOUNDER_OUTCOMES = new Set<ReviewAction>(
   FOUNDER_ACTIONS.map(item=>item.value),
 );
-const ROLE_SET = new Set(['owner','admin','finance_officer']);
+const ROLE_SET = new Set(['owner','admin','assistant_admin']);
 const TIME = new Intl.DateTimeFormat('en-NG',{
   timeZone:'Africa/Lagos',month:'short',day:'numeric',
   year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true,
@@ -52,7 +52,7 @@ function actionLabel(action:ReviewAction):string{
 export default function FinanceReviewPage(){
   const {account}=useAuth();
   const canReview=Boolean(account&&ROLE_SET.has(account.role));
-  const isFounder=account?.role==='owner';
+  const canSetFinanceOutcome=Boolean(account&&ROLE_SET.has(account.role));
   const [proposals,setProposals]=useState<Proposal[]>([]);
   const [reviews,setReviews]=useState<Review[]>([]);
   const [selectedProposal,setSelectedProposal]=useState('');
@@ -94,8 +94,8 @@ export default function FinanceReviewPage(){
   const reviewedIds=new Set(outcomes.map(o=>o.proposal_id));
   const thisOutcome=currentReviews.find(r=>FOUNDER_OUTCOMES.has(r.review_action));
   const allowedActions=useMemo(
-    ()=>isFounder&&!thisOutcome?[...GENERAL_ACTIONS,...FOUNDER_ACTIONS]:GENERAL_ACTIONS,
-    [isFounder,thisOutcome],
+    ()=>canSetFinanceOutcome&&!thisOutcome?[...GENERAL_ACTIONS,...FOUNDER_ACTIONS]:GENERAL_ACTIONS,
+    [canSetFinanceOutcome,thisOutcome],
   );
   const chosenAction=allowedActions.some(a=>a.value===action)
     ?action:'comment';
@@ -108,8 +108,8 @@ export default function FinanceReviewPage(){
       setError('Enter a review note between 10 and 5,000 characters.');return;
     }
     if(FOUNDER_OUTCOMES.has(chosenAction)){
-      if(!isFounder||thisOutcome){
-        setError('Only the Founder can record one non-binding planning outcome per proposal.');return;
+      if(!canSetFinanceOutcome||thisOutcome){
+        setError('Only one authorised Owner, Admin or Assistant Admin can record a planning outcome per proposal.');return;
       }
       if(!window.confirm(
         'Record this Founder planning outcome? It is not a fee approval and activates no financial process. Only one Founder outcome can be recorded per proposal.'
@@ -137,15 +137,15 @@ export default function FinanceReviewPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance proposal review</h1>
-        <p>Record comments and Founder planning outcomes without approving financial transactions.</p>
+        <p>Record comments and Leadership planning outcomes without approving financial transactions.</p>
       </div>
       <span className="module-status"><span/> Stage G2</span>
     </div>
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Founder review is not financial approval</strong>
-        <p>Admins and Finance Officers may add comments and recommendations. Only the Founder
-          can record one planning outcome per proposal. All parent proposals remain
+      <div><strong>Leadership review is not financial approval</strong>
+        <p>Owner, Admin and Assistant Admin may add comments and recommendations. Each may
+          record one non-binding planning outcome per proposal. All parent proposals remain
           Pending Approval; neither review nor shortlisting enables charges, invoices,
           bank transfers, receipts or payouts.</p>
       </div>
@@ -211,7 +211,7 @@ export default function FinanceReviewPage(){
           FOUNDER_OUTCOMES.has(r.review_action)?'Founder planning outcome':'Internal review note'}</small>
       </article>)}
       {thisOutcome&&<p className="finance-review-lock">
-        <LockKeyhole size={15}/> Founder outcome recorded.
+        <LockKeyhole size={15}/> Leadership outcome recorded.
         Further Founder outcomes require a separately drafted proposal.
       </p>}
     </section>}

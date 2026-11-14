@@ -27,7 +27,7 @@ const statusText:Record<Request['status'],string>={
  rejected:'Evidence rejected · contact DLI support',
 };
 const money=(v:number|string)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v));
-const managerRoles=['owner','admin'];
+const managerRoles=['owner','admin','assistant_admin'];
 
 export default function PaidEnrollmentPage(){
  const {account,refresh:refreshAccess}=useAuth();
@@ -293,7 +293,7 @@ export default function PaidEnrollmentPage(){
   </div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
    <strong>Invite-only accounts · independently verified payments</strong>
-   <p>Uploading a transfer screenshot does not confirm payment. Access upgrades happen only after Founder/Admin checks the actual bank credit and approves the application.</p>
+   <p>Uploading a transfer screenshot does not confirm payment. Access upgrades happen only after Owner, Admin or Assistant Admin checks the actual bank credit and approves the application.</p>
   </div></div>
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
@@ -384,7 +384,7 @@ export default function PaidEnrollmentPage(){
   {isManager&&<section className="panel" id="enrolment-bank-settings">
    <div className="panel-heading"><div><p className="section-kicker">MANUAL BANK TRANSFER</p>
     <h2>Institutional bank details</h2>
-    <p className="user-caption">Founder/Admin may add or change the verified recipient account shown to applicants. Do not publish a personal or unconfirmed account.</p>
+    <p className="user-caption">Owner, Admin and Assistant Admin may add or change the verified recipient account shown to applicants. Do not publish a personal or unconfirmed account.</p>
    </div></div>
    <form className="upgrade-bank-form" onSubmit={e=>void saveBank(e)}>
     <label>Bank name<input required minLength={2} maxLength={120} value={bankDraft.bank_name}

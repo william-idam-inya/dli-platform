@@ -56,7 +56,7 @@ export function DliNotificationBell(){
   const [pendingPayments,setPendingPayments]=useState(0);
   const [newPayment,setNewPayment]=useState(false);
   const previousPending=useRef<number|null>(null);
-  const canReviewPayments=account?.role==='owner'||account?.role==='admin';
+  const canReviewPayments=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin';
   useEffect(()=>{
     if(!supabase||!canReviewPayments){setPendingPayments(0);previousPending.current=null;return;}
     const client=supabase;

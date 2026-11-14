@@ -41,7 +41,7 @@ const PROPOSAL_TYPES: {value: ProposalType; label: string}[] = [
   { value: 'currency_policy', label: 'Currency-handling policy' },
   { value: 'other', label: 'Other finance governance item' },
 ];
-const FINANCE_ROLES = new Set(['owner', 'admin', 'finance_officer']);
+const FINANCE_ROLES = new Set(['owner', 'admin', 'assistant_admin']);
 const WAT = new Intl.DateTimeFormat('en-NG', {
   timeZone: 'Africa/Lagos', month: 'short', day: 'numeric',
   year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true,
@@ -152,9 +152,9 @@ export default function FinancePage() {
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
       <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Only the Founder, Admin and Finance Officer may view or submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
+        <p>Owner, Admin and Assistant Admin may equally view and submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
           ?<Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link>
-          :<strong>Classes &amp; timetable · Payments (Admin only)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
+          :<strong>Classes &amp; timetable · Payments (authorised administrators)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
       </div>
     </div>
 
@@ -279,7 +279,7 @@ export default function FinancePage() {
       </form>
     </section>}
 
-    {(account?.role==='owner'||account?.role==='admin')&&<TutorPayrollPage/>}
+    {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<TutorPayrollPage/>}
 
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
@@ -312,7 +312,7 @@ export default function FinancePage() {
       and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
       and credit-date verification are handled in {canOpenClassPayments
         ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
-        :<strong>the Admin-only class finance workspace</strong>}.
+        :<strong>the authorised class finance workspace</strong>}.
       No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
   </div>;
 }
