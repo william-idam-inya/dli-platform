@@ -3,6 +3,7 @@ import { BellRing, Check, CheckCheck, ChevronLeft, Download, Flag, LockKeyhole, 
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import ChatMediaRecorder from '../components/ChatMediaRecorder';
+import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import { Link } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
@@ -45,8 +46,6 @@ export default function DirectMessagesPage(){
   const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
   const [mediaReset,setMediaReset]=useState(0);
   const [pins,setPins]=useState<string[]>([]);
-  const [playback,setPlayback]=useState<Record<string,string>>({});
-  const playableUrls=useRef<string[]>([]);
   const [attachment,setAttachment]=useState<File|null>(null);
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
@@ -56,7 +55,6 @@ export default function DirectMessagesPage(){
   const [openingContactId,setOpeningContactId]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
-  useEffect(()=>()=>{playableUrls.current.forEach(url=>URL.revokeObjectURL(url));},[]);
   useEffect(()=>{
     if(!uid)return;
     try{
@@ -347,29 +345,6 @@ export default function DirectMessagesPage(){
     }catch{setError('Could not confirm file download access.');}
     finally{setBusy(false);}
   }
-  async function playPrivateMedia(file:DirectFile){
-    if(!supabase||busy)return;
-    if(playback[file.id])return;
-    setBusy(true);setError(null);
-    try{
-      if(mode==='oversight'){
-        const ticket=await supabase.rpc('dli_direct_authorise_file_review',{p_file:file.id});
-        if(ticket.error||ticket.data!==true){
-          setError('Audited media-review permission was not granted.');return;
-        }
-      }
-      // No public or shareable media URL: fetch via the member's JWT,
-      // then generate a local-only blob URL for explicit inline playback.
-      const response=await supabase.storage.from('dli-chat-files').download(file.object_path);
-      if(response.error||!response.data){
-        setError('This private recording is not accessible to your account.');return;
-      }
-      const url=URL.createObjectURL(response.data);
-      playableUrls.current.push(url);
-      setPlayback(prev=>({...prev,[file.id]:url}));
-    }catch{setError('The private recording could not be loaded.');}
-    finally{setBusy(false);}
-  }
   async function reportMessage(message:DirectMessage){
     if(!supabase||busy||mode==='oversight')return;
     const reason=window.prompt('Briefly describe the concern (spam, abuse or safety). Do not include sensitive unrelated information.','');
@@ -521,18 +496,11 @@ export default function DirectMessagesPage(){
                     ?<CheckCheck size={15}/>:<Check size={15}/>}
                   </span>}
               </small>
-              <p>{m.body}</p>
+              {!(m.file_id&&(m.body==='🎙️ Voice note'||m.body==='🎥 Video note'))&&<p>{m.body}</p>}
               {m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
                 <div key={f.id} className="dli-direct-media-item">
-                  {mediaKind(f.mime_type)?<>
-                    <button type="button" className="dli-direct-file-link" disabled={busy}
-                      onClick={()=>void playPrivateMedia(f)}>
-                      {mediaKind(f.mime_type)==='audio'?'🎙️ Play voice note':'🎥 Play video note'}
-                    </button>
-                    {playback[f.id]&&(mediaKind(f.mime_type)==='audio'
-                      ?<audio controls preload="metadata" src={playback[f.id]} aria-label="Private voice note"/>
-                      :<video controls playsInline preload="metadata" src={playback[f.id]} aria-label="Private video note"/>)}
-                  </>:<button type="button" className="dli-direct-file-link" disabled={busy}
+                  {mediaKind(f.mime_type)?<ChatPrivateMedia file={f} oversight={mode==='oversight'}/>:
+                  <button type="button" className="dli-direct-file-link" disabled={busy}
                     onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>}
                 </div>)}
               {mode!=='oversight'&&m.sender_id!==uid&&<button type="button" disabled={busy}
