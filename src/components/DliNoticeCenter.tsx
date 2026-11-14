@@ -51,13 +51,50 @@ function useVisibleNotices(withReceipts:boolean) {
 }
 
 export function DliNotificationBell(){
+  const {account}=useAuth();
   const {visible,seen,error,refresh}=useVisibleNotices(true);
+  const [pendingPayments,setPendingPayments]=useState(0);
+  const [newPayment,setNewPayment]=useState(false);
+  const previousPending=useRef<number|null>(null);
+  const canReviewPayments=account?.role==='owner'||account?.role==='admin';
+  useEffect(()=>{
+    if(!supabase||!canReviewPayments){setPendingPayments(0);previousPending.current=null;return;}
+    const client=supabase;
+    let active=true;
+    const refreshPayments=async()=>{
+      try{
+        // The request table's RLS restricts count access to authorised staff.
+        // Only status/count are read: no bank details, receipts, or names.
+        const result=await client.from('dli_enrollment_requests')
+          .select('id',{count:'exact',head:true}).eq('status','submitted');
+        if(!active||result.error||typeof result.count!=='number')return;
+        const count=result.count;
+        if(previousPending.current!==null&&count>previousPending.current){
+          setNewPayment(true);
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
+            try{new Notification('DLI receipt awaiting review',{body:'Open Paid enrolment to verify a bank transfer.',tag:'dli-payment-review'});}
+            catch{/* User/system browser notifications are optional. */}
+          }
+        }
+        previousPending.current=count;
+        setPendingPayments(count);
+      }catch{/* Keep last known count until the connection recovers. */}
+    };
+    void refreshPayments();
+    const interval=window.setInterval(()=>{void refreshPayments();},20000);
+    const focus=()=>{void refreshPayments();};
+    window.addEventListener('focus',focus);
+    const channel=client.channel('dli-payment-reviews-'+account?.id)
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'dli_enrollment_requests'},()=>{void refreshPayments();}).subscribe();
+    return()=>{active=false;window.clearInterval(interval);window.removeEventListener('focus',focus);void client.removeChannel(channel);};
+  },[account?.id,account?.role,canReviewPayments]);
   const [open,setOpen]=useState(false);
   const [popup,setPopup]=useState<string|null>(null);
   const [sessionDismissed,setSessionDismissed]=useState<string[]>([]);
   const [busy,setBusy]=useState<string|null>(null);
   const seenMap=new Map(seen.map(s=>[s.notice_id,s]));
   const unread=visible.filter(n=>!seenMap.get(n.id)?.read_at);
+  const totalAlerts=unread.length+pendingPayments;
   useEffect(()=>{
     // A new published, non-dismissed notice appears in the login overlay.
     // The backend stores the dismissal; user can still find the notice later.
@@ -89,19 +126,23 @@ export function DliNotificationBell(){
   }
   return <div className="dli-notification-widget">
     <button type="button" className="icon-button dli-bell-button"
-      aria-label={'Announcements'+(unread.length?' — '+unread.length+' unread':'')}
+      aria-label={'Notifications'+(totalAlerts?' — '+totalAlerts+' requiring attention':'')}
       title="Announcements and notifications" aria-expanded={open}
       onClick={()=>setOpen(value=>!value)}>
-      {unread.length?<BellRing size={20}/>:<Bell size={20}/>}
-      {unread.length>0&&<span className="dli-notification-count">{unread.length>99?'99+':unread.length}</span>}
+      {totalAlerts?<BellRing size={20}/>:<Bell size={20}/>}
+      {totalAlerts>0&&<span className="dli-notification-count">{totalAlerts>99?'99+':totalAlerts}</span>}
     </button>
     {open&&<div className="dli-notification-panel" role="region" aria-label="Recent announcements">
       <div className="dli-notification-panel-heading">
-        <strong>Announcements</strong>
+        <strong>Notifications</strong>
         <button type="button" onClick={()=>setOpen(false)} aria-label="Close notifications"><X size={17}/></button>
       </div>
+      {canReviewPayments&&pendingPayments>0&&<Link className="dli-payment-review-alert" to="/enrolment" onClick={()=>{setOpen(false);setNewPayment(false);}}>
+        <strong>{pendingPayments} payment receipt{pendingPayments===1?'':'s'} awaiting verification</strong>
+        <span>View private evidence and confirm actual bank credit before approving Paid Student access.</span>
+      </Link>}
       {error&&<p role="alert">Could not refresh notices. Try again later.</p>}
-      {!visible.length&&<p>No current announcements.</p>}
+      {!visible.length&&!pendingPayments&&<p>No current notifications.</p>}
       {visible.slice(0,12).map(n=><button type="button" key={n.id}
         className={'dli-notification-item '+(!seenMap.get(n.id)?.read_at?'unread':'')}
         onClick={()=>{void mark(n,true);setOpen(false);}}>
@@ -110,6 +151,12 @@ export function DliNotificationBell(){
         <small>{stamp(n.publish_at)}</small>
       </button>)}
       <Link to="/announcements" onClick={()=>setOpen(false)}>View all announcements</Link>
+    </div>}
+    {canReviewPayments&&newPayment&&pendingPayments>0&&<div className="dli-payment-review-toast" role="status" aria-live="polite">
+      <strong>New payment evidence</strong>
+      <span>{pendingPayments} receipt{pendingPayments===1?'':'s'} waiting for bank-credit review.</span>
+      <Link to="/enrolment" onClick={()=>setNewPayment(false)}>Review</Link>
+      <button type="button" onClick={()=>setNewPayment(false)} aria-label="Dismiss payment notification"><X size={16}/></button>
     </div>}
     {item&&<div className="dli-announcement-shade" role="presentation">
       <div role="dialog" aria-modal="true" aria-labelledby="dli-announcement-popup-title"
