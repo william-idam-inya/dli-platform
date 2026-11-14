@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+// Q25 read-only release checks. No real users, payment transactions or provider actions.
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const sql=read('supabase/migrations/20261114163000_stage_q25_private_profile_and_geocode_rpcs.sql');
+const profile=read('src/pages/MemberProfilePage.tsx');
+const notices=read('src/components/BrowserAlertPermission.tsx');
+const settings=read('src/pages/InstitutionalSettingsPage.tsx');
+const payment=read('src/pages/PaidEnrollmentPage.tsx');
+const payroll=read('src/components/TutorPayoutWorkflow.tsx');
+const docs=read('docs/q25-operational-completion-status-20261114.md');
+for(const name of ['dli_log_profile_view','dli_reserve_geocode_slot']){
+ assert.ok(sql.includes('ALTER FUNCTION public.'+name),'Move privileged implementation: '+name);
+ assert.ok(sql.includes('SELECT private.'+name),'Keep role-checked implementation: '+name);
+ assert.ok(sql.includes('REVOKE ALL ON FUNCTION public.'+name),'Revoke public API function access: '+name);
+}
+assert.ok((sql.match(/SECURITY INVOKER/g)||[]).length>=2,'Public wrappers must not be privileged');
+assert.ok((sql.match(/TO authenticated/g)||[]).length>=2,'Authenticated API role only');
+assert.ok(profile.includes('<BrowserAlertPermission/>'),'Real permission control must be present');
+assert.ok(notices.includes('Notification.requestPermission()'),'Browser notification prompt needed');
+assert.ok(notices.includes('onClick={()=>void enable()}'),'Request permission only on direct click');
+assert.ok(notices.includes('This does not enable push delivery after the browser is completely closed'),'Do not advertise offline delivery');
+assert.ok(settings.includes("account?.role==='assistant_admin')&&<p><Link to=\"/enrolment\""),'Assistant Admin finance route missing');
+assert.ok(settings.includes('Manual Student bank-transfer evidence and Tutor payout confirmations'),'Payment status text misleading');
+assert.ok(payment.includes('dli_review_paid')&&payroll.includes('dli_tutor_acknowledge_payout'),'Protect manual payment confirmations');
+for(const phrase of ['Real Tutor and Student accounts','No bank details','Paid admissions remain closed','QA password recovery redirect','Backup restoration','External provider credentials']){
+ assert.ok(docs.includes(phrase),'Outstanding limitation not disclosed: '+phrase);
+}
+console.log('Q25 scoped privileged RPCs, explicit browser permissions and finance link parity verified.');

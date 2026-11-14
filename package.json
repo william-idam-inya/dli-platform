@@ -42,7 +42,8 @@
     "check:q22-operational-tools": "node scripts/verify-operational-tools.mjs",
     "check:q22-feature-reconciliation": "node scripts/verify-q22-feature-reconciliation.mjs",
     "check:q23-manual-payments": "node scripts/verify-q23-manual-payments.mjs",
-    "check:q24-tutor-payout": "node scripts/verify-q24-tutor-payout.mjs"
+    "check:q24-tutor-payout": "node scripts/verify-q24-tutor-payout.mjs",
+    "check:q25-operational-hardening": "node scripts/verify-q25-operational-hardening.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
