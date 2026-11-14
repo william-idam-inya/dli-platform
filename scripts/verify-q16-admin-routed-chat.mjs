@@ -7,6 +7,8 @@ import {DLI_ROLES,canAccessPath} from '../src/auth/permissions.ts';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const ui=read('src/pages/DirectMessagesPage.tsx');
 const css=read('src/pages/DirectMessagesPage.css');
+const recording=read('src/components/ChatMediaRecorder.tsx');
+const headers=read('public/_headers');
 const sql=read('supabase/migrations/20261113222549_stage_q16_staff_routed_direct_chat.sql');
 const oversight=read('supabase/migrations/20261113223204_stage_q16b_null_safe_messaging_moderation.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
@@ -79,4 +81,8 @@ for(const name of [
   '20261113223204_stage_q16b_null_safe_messaging_moderation.sql',
 ]) assert.ok(manifest.entries.some(e=>e.file===name&&/^[a-f0-9]{40}$/.test(e.gitBlobSha1)),
   'Q16 migration not Git blob hash-pinned: '+name);
-console.log('Q16 admin-routed direct chat checks passed: verified role routing, composer, RLS and null-safe oversight.');
+assert.ok(headers.includes('microphone=(self), camera=(self)'), 'DLI recording permission policy must permit this site to request mic/camera consent');
+assert.ok(!headers.includes('microphone=()')&&!headers.includes('camera=()'), 'DLI recorder must not be blocked by the site header');
+assert.ok(recording.includes('Requesting {requesting'), 'Recorder must visibly acknowledge the permission prompt');
+assert.ok(ui.includes('permittedContacts.length'), 'Contact directory must clarify actual production account count');
+console.log('Q16 admin-routed direct chat checks passed: verified routing, media permission policy, mobile feedback and RLS.');
