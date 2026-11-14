@@ -325,6 +325,10 @@
       "gitBlobSha1": "c477312ab85d8274644fe1b7d21a48fc4ce95740"
     },
     {
+      "file": "20261113222000_stage_q15_reversible_registry_lifecycle.sql",
+      "gitBlobSha1": "4b36bee1ad62dc76336c1416d214e6d58bccc8c9"
+    },
+    {
       "file": "20261113222549_stage_q16_staff_routed_direct_chat.sql",
       "gitBlobSha1": "d614f1e3e937a22b5c6eb4826b29554c42e3ff3e"
     },
