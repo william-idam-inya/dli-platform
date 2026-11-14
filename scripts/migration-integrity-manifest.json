@@ -367,6 +367,10 @@
     {
       "file": "20261114122000_stage_q24_tutor_payout_ack_and_finance_roles.sql",
       "gitBlobSha1": "510f6745726c152b2361bca4b399691b42ef6ea6"
+    },
+    {
+      "file": "20261114125500_stage_q24b_private_tutor_acknowledgement_rpc.sql",
+      "gitBlobSha1": "172497c454aaf396f6fec93da98182a912fdb49b"
     }
   ]
 }

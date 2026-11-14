@@ -38,6 +38,13 @@ const checks=[
 for(const [name,phrase] of checks)assert.ok(sql.includes(phrase),name+' is not enforced');
 assert.ok(sql.includes("GRANT EXECUTE ON FUNCTION public.dli_tutor_acknowledge_payout(uuid,boolean,text) TO authenticated"));
 assert.ok(sql.includes('REVOKE ALL ON FUNCTION private.dli_confirm_payroll'));
+const safeApi=get('supabase/migrations/20261114125500_stage_q24b_private_tutor_acknowledgement_rpc.sql');
+assert.ok(safeApi.includes('ALTER FUNCTION public.dli_tutor_acknowledge_payout(uuid,boolean,text)'));
+assert.ok(safeApi.includes('SET SCHEMA private'));
+assert.ok(safeApi.includes('SECURITY INVOKER'));
+assert.ok(safeApi.includes('REVOKE ALL ON FUNCTION public.dli_tutor_acknowledge_payout'));
+assert.ok(safeApi.includes('TO authenticated'));
+
 assert.ok(sql.includes('storage.allow_any_operation(ARRAY['));
 assert.ok(!sql.includes('CREATE POLICY payout_receipt_read FOR SELECT TO anon'));
 assert.doesNotMatch(sql,/DROP\s+TABLE/i);
