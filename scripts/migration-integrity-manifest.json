@@ -371,6 +371,10 @@
     {
       "file": "20261114125500_stage_q24b_private_tutor_acknowledgement_rpc.sql",
       "gitBlobSha1": "172497c454aaf396f6fec93da98182a912fdb49b"
+    },
+    {
+      "file": "20261114163000_stage_q25_private_profile_and_geocode_rpcs.sql",
+      "gitBlobSha1": "e5f92e8ed7804893a30a1afcf0e194ebdb2471c8"
     }
   ]
 }

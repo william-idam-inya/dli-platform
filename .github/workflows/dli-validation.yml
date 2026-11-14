@@ -113,6 +113,9 @@ jobs:
       - name: Verify two-party Tutor payouts and three equal admin finance roles
         run: npm run check:q24-tutor-payout
 
+      - name: Verify Q25 privileged API hardening and operational transparency
+        run: npm run check:q25-operational-hardening
+
       - name: Verify TypeScript
         run: npm run typecheck
 

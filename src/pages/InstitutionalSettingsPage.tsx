@@ -147,7 +147,7 @@ export default function InstitutionalSettingsPage(){
         .update({is_enabled:next}).eq('setting_key','paid_enrolment_open')
         .select('is_enabled').maybeSingle();
       if(result.error||!result.data){
-        setError(next?'Cannot reopen paid applications until Founder/Admin has saved and activated verified bank details under Paid enrolment.':'Could not confirm this admission setting. Refresh before trying again.');return;
+        setError(next?'Cannot reopen paid applications until authorised administration has saved and activated verified bank details under Paid enrolment.':'Could not confirm this admission setting. Refresh before trying again.');return;
       }
       setEnrolmentOpen(Boolean(result.data.is_enabled));
       setNotice(next?'New paid enrolment applications are open.':'New applications paused; existing requests can still be reviewed.');
@@ -166,7 +166,7 @@ export default function InstitutionalSettingsPage(){
         <h1>Institutional settings</h1>
         <p>Live admission controls, role-scoped group invitations and release safeguards.</p>
       </div>
-      <span className="module-status"><span/> Stage I3</span>
+      <span className="module-status"><span/> Live controls</span>
     </div>
 
     <div className="module-notice">
@@ -254,7 +254,7 @@ export default function InstitutionalSettingsPage(){
           <span>{enrolmentOpen===null?'Verification unavailable':enrolmentOpen?'Open':'Paused'}</span>
           <p>This is enforced when a learner submits an application in the database, not just in the browser.</p>
           <p>Opening paid applications requires an active verified bank account. Receipt reviews remain accessible when applications are paused.</p>
-          {(account?.role==='owner'||account?.role==='admin')&&<p><Link to="/enrolment">Manage bank details and review uploaded receipts</Link></p>}
+          {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p><Link to="/enrolment">Manage bank details and review uploaded receipts</Link></p>}
           <button type="button" className="user-outline-button"
             disabled={loading||enrolmentSaving||enrolmentOpen===null}
             onClick={()=>{void changeEnrolmentStatus();}}>
@@ -284,7 +284,7 @@ export default function InstitutionalSettingsPage(){
         </div>
         <div><strong>Finance rates and payments</strong><span>Not configured here</span>
           <p>Financial policies remain subject to separate institutional approval.
-            No invoice, collection or payout feature is enabled by I3.</p></div>
+            Manual Student bank-transfer evidence and Tutor payout confirmations are available in <Link to="/enrolment">Paid enrolment</Link> and <Link to="/payroll">Tutor payroll</Link>. Real transfers still require independent verification. Automatic bank collection and payouts are not connected.</p></div>
         <div><strong>AI authoring integration</strong><span>Not connected here</span>
           <p>Stage I3 does not connect an AI API, submit learner data or
             change the existing Gemini compliance requirement.</p></div>
