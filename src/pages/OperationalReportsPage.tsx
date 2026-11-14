@@ -31,7 +31,7 @@ type ReportItem = {
 };
 type ReportValue = {count: number | null; error: boolean};
 const ACADEMIC_ROLES = ['owner','admin','academic_coordinator'];
-const FINANCE_ROLES = ['owner','admin','finance_officer'];
+const FINANCE_ROLES = ['owner','admin','assistant_admin'];
 
 const ITEMS: ReportItem[] = [
   {id:'teaching_classes',category:'academic',label:'Published individual & group classes',
@@ -85,7 +85,7 @@ export default function OperationalReportsPage(){
     (item.category === 'academic' && academic)
     || (item.category === 'finance' && finance &&
       (!['private_student_fees','private_payment_receipts'].includes(item.id)
-        || account?.role==='owner'||account?.role==='admin')));
+        || account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')));
   const [values,setValues] = useState<Partial<Record<ReportId,ReportValue>>>({});
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState<string|null>(null);

@@ -3,8 +3,8 @@ export const DLI_ROLES = [
   'tutor', 'student',
 ] as const;
 
-// Historical Finance Officer role remains a database enum but is no longer assignable or usable.
-export type DliRole = (typeof DLI_ROLES)[number] | 'finance_officer';
+// The legacy Finance Officer enum label is retained only inside PostgreSQL migration history.
+export type DliRole = (typeof DLI_ROLES)[number];
 
 export type Account = {
   id: string;
@@ -20,7 +20,6 @@ export const roleLabels: Record<DliRole, string> = {
   admin: 'Admin',
   assistant_admin: 'Assistant Admin',
   academic_coordinator: 'Academic Coordinator',
-  finance_officer: 'Retired Finance Officer',
   tutor: 'Tutor',
   student: 'Student',
 };

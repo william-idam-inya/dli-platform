@@ -112,7 +112,7 @@ export default function FinanceReviewPage(){
         setError('Only one authorised Owner, Admin or Assistant Admin can record a planning outcome per proposal.');return;
       }
       if(!window.confirm(
-        'Record this Founder planning outcome? It is not a fee approval and activates no financial process. Only one Founder outcome can be recorded per proposal.'
+        'Record this non-binding administrative planning outcome? This is not a payment approval. Only one outcome is allowed per proposal.'
       ))return;
     }
     setSaving(true);setError(null);setNotice(null);
@@ -156,7 +156,7 @@ export default function FinanceReviewPage(){
     <div className="finance-review-summary">
       <div><FileText size={19}/><strong>{proposals.length}</strong><span>Unapproved proposals</span></div>
       <div><MessageSquareText size={19}/><strong>{reviews.length}</strong><span>Recorded review notes</span></div>
-      <div><ThumbsUp size={19}/><strong>{reviewedIds.size}</strong><span>Founder planning outcomes</span></div>
+      <div><ThumbsUp size={19}/><strong>{reviewedIds.size}</strong><span>Recorded administrative planning outcomes</span></div>
     </div>
     <div className="academic-top-actions">
       <p role="status">{loading?'Loading restricted review ledger…'
@@ -208,11 +208,11 @@ export default function FinanceReviewPage(){
         </div>
         <p className="finance-review-note">{r.note}</p>
         <small>{r.reviewer_id===account?.id?'Recorded by you':
-          FOUNDER_OUTCOMES.has(r.review_action)?'Founder planning outcome':'Internal review note'}</small>
+          FOUNDER_OUTCOMES.has(r.review_action)?'Administrative planning outcome':'Internal review note'}</small>
       </article>)}
       {thisOutcome&&<p className="finance-review-lock">
         <LockKeyhole size={15}/> Leadership outcome recorded.
-        Further Founder outcomes require a separately drafted proposal.
+        Further planning outcomes require a separate proposal.
       </p>}
     </section>}
     {canReview&&currentProposal&&<section className="panel finance-review-editor">

@@ -6,9 +6,8 @@ import type { Account, DliRole } from '../auth/permissions';
 const ROLE_PRIORITY: Record<DliRole, readonly string[]> = {
   owner: ['/', '/academics', '/users', '/reports'],
   admin: ['/', '/classes', '/academics', '/users'],
-  assistant_admin: ['/', '/classes', '/settings', '/feedback'],
+  assistant_admin: ['/', '/finance', '/payroll', '/classes'],
   academic_coordinator: ['/', '/academics', '/study', '/reports'],
-  finance_officer: ['/', '/finance', '/reports', '/profile'],
   tutor: ['/', '/classes', '/study', '/communications'],
   student: ['/', '/classes', '/study', '/communications'],
 };

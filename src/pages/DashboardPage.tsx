@@ -88,7 +88,6 @@ export default function DashboardPage(){
   const drafts=classes.filter(c=>c.state==='draft').length;
   const headline=account?.role==='student'?'Your learning workspace.':
     account?.role==='tutor'?'Your teaching workspace.':
-    account?.role==='finance_officer'?'Your finance workspace.':
     account?.role==='academic_coordinator'?'Your academic workspace.':
     isManager?'Manage DLI in one place.':'Your DLI workspace.';
 
