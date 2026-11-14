@@ -7,7 +7,7 @@ const origins = (Deno.env.get('DLI_APP_ORIGINS') || '')
 // Reconciled Q15 lifecycle operations; production origin allowlist remains authoritative.
 const roles = new Set([
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
-  'finance_officer', 'tutor', 'student',
+  'tutor', 'student',
 ]);
 const actions = new Set([
   'list','audit','change_role','suspend','reactivate','revoke',

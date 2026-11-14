@@ -7,7 +7,7 @@ const settings=read('src/pages/InstitutionalSettingsPage.tsx');
 const bell=read('src/components/DliNoticeCenter.tsx');
 const migration=read('supabase/migrations/20261114094000_stage_q23_bank_verified_manual_enrolment.sql');
 for(const marker of [
-  "const managerRoles=['owner','admin']",
+  "const managerRoles=['owner','admin','assistant_admin']",
   "supabase.from('private_bank_details').update(values)",
   "supabase.from('private_bank_details').insert({id:true,...values})",
   "Publish this independently verified account",
@@ -30,7 +30,7 @@ assert.ok(!paid.includes("from('dli_student_entitlements').upsert("),'Client mus
 assert.ok(settings.includes('Manage bank details and review uploaded receipts'));
 assert.ok(bell.includes('pendingPayments')&&bell.includes("eq('status','submitted')"));
 assert.ok(bell.includes('dli-payment-review-alert')&&bell.includes('to="/enrolment"'));
-assert.ok(bell.includes("role==='owner'||account?.role==='admin'"),
+assert.ok(bell.includes("role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'"),
   'Payment alerts must be role-restricted');
 for(const marker of [
   'dli_require_bank_for_new_enrolment',

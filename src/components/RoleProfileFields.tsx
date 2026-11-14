@@ -106,10 +106,6 @@ export default function RoleProfileFields(){
     <label htmlFor="dli-staff-responsibilities">Responsibilities (optional)</label>
     <textarea id="dli-staff-responsibilities" maxLength={600} rows={3}
      value={draft.role_responsibilities} onChange={e=>set('role_responsibilities',e.target.value)}/>
-    {account.role==='finance_officer'&&<>
-      <label htmlFor="dli-finance-qualification">Finance qualification (optional)</label>
-      <input id="dli-finance-qualification" maxLength={180} value={draft.qualification} onChange={e=>set('qualification',e.target.value)}/>
-    </>}
    </>}
    <h3>Location (city level only)</h3>
    <p className="dli-location-advice"><ShieldCheck size={16}/> Please select your city, not your residence or school address. DLI will not save precise map coordinates.</p>

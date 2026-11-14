@@ -1,8 +1,9 @@
 export const DLI_ROLES = [
   'owner', 'admin', 'assistant_admin', 'academic_coordinator',
-  'finance_officer', 'tutor', 'student',
+  'tutor', 'student',
 ] as const;
 
+// The legacy Finance Officer enum label is retained only inside PostgreSQL migration history.
 export type DliRole = (typeof DLI_ROLES)[number];
 
 export type Account = {
@@ -19,7 +20,6 @@ export const roleLabels: Record<DliRole, string> = {
   admin: 'Admin',
   assistant_admin: 'Assistant Admin',
   academic_coordinator: 'Academic Coordinator',
-  finance_officer: 'Finance Officer',
   tutor: 'Tutor',
   student: 'Student',
 };
@@ -29,14 +29,14 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/': DLI_ROLES,
   '/feedback': DLI_ROLES,
   '/profile': DLI_ROLES,
-  '/enrolment': ['student','owner','admin'],
-  '/payroll': ['owner','admin','tutor'],
+  '/enrolment': ['student','owner','admin','assistant_admin'],
+  '/payroll': ['owner','admin','assistant_admin','tutor'],
   '/academics': ['owner', 'admin', 'academic_coordinator'],
   '/cohorts': ['owner', 'admin', 'academic_coordinator'],
   '/assignments': ['owner', 'admin', 'academic_coordinator'],
   '/classes': ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
   '/my-classes': ['tutor', 'student'],
-  '/private-classes': ['owner', 'admin', 'student', 'tutor'],
+  '/private-classes': ['owner', 'admin', 'assistant_admin', 'student', 'tutor'],
   '/study': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/learning': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/assessments': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
@@ -45,15 +45,15 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/attendance': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
   '/users': ['owner', 'admin'],
   '/tutors': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
-  '/finance': ['owner', 'admin', 'finance_officer'],
-  '/finance/reviews': ['owner', 'admin', 'finance_officer'],
+  '/finance': ['owner', 'admin', 'assistant_admin'],
+  '/finance/reviews': ['owner', 'admin', 'assistant_admin'],
   '/communications': DLI_ROLES, // Per-contact RLS restricts non-admin roles to three administrators.
   '/communications/drafts': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/communications/reviews': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/communications/templates': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
   '/announcements': DLI_ROLES,
-  '/reports': ['owner', 'admin', 'academic_coordinator', 'finance_officer'],
+  '/reports': ['owner', 'admin', 'assistant_admin', 'academic_coordinator'],
   '/reports/audit': ['owner', 'admin'],
   '/settings': ['owner', 'admin', 'assistant_admin'],
   '/change-password': DLI_ROLES,
