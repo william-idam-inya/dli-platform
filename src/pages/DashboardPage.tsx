@@ -151,7 +151,7 @@ export default function DashboardPage(){
         <div><p className="section-kicker">ACADEMIC WORKSPACE</p>
           <h2>Lessons, assignments, quizzes &amp; attendance</h2>
           <p className="user-caption">{isFreeStudent
-            ?'All four learning areas are visible. Paid coursework and results remain locked until your enrolment is approved.'
+            ?'All five learning areas are visible. Paid coursework and results remain locked until your enrolment is approved.'
             :'Open an academic area to view your assigned resources and results. Counters reflect only records visible to this account.'}</p>
         </div>
         {!isFreeStudent&&<button type="button" className="user-outline-button"
@@ -165,13 +165,15 @@ export default function DashboardPage(){
           <div className="module-icon violet"><item.icon size={21} strokeWidth={1.8}/></div>
           <div className="module-card-body">
             <h3>{item.label}</h3><p>{item.description}</p>
-            {isFreeStudent
-              ?<small className="unified-learning-restricted"><LockKeyhole size={13}/> Preview only · enrolled access required</small>
-              :<small className="unified-learning-metric" role="status">
-                {academicLoading?'Checking visible records…':
-                  academicCounts?.[item.id]===null||academicCounts?.[item.id]===undefined
-                    ?'Count unavailable':academicCounts[item.id]+' visible records'}
-              </small>}
+            {item.id==='tree'
+              ?<small className="unified-learning-metric">{isFreeStudent?'Sample preview only · live content restricted':'Interactive course pathway'}</small>
+              :isFreeStudent
+                ?<small className="unified-learning-restricted"><LockKeyhole size={13}/> Preview only · enrolled access required</small>
+                :<small className="unified-learning-metric" role="status">
+                   {academicLoading?'Checking visible records…':
+                     academicCounts?.[item.id]===null||academicCounts?.[item.id]===undefined
+                     ?'Count unavailable':academicCounts[item.id]+' visible records'}
+                 </small>}
           </div>
           <span className="module-arrow"><ArrowRight size={17}/></span>
         </Link>)}

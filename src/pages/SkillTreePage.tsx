@@ -129,6 +129,7 @@ export default function SkillTreePage(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
+ const [resumeVisible,setResumeVisible]=useState(false);
 
  const refresh=useCallback(async()=>{
   if(!supabase||!account){setLoading(false);return;}
@@ -211,6 +212,17 @@ export default function SkillTreePage(){
   finally{setSaving(false);}
  }
  const activeGraphNode=unitNodes.find(n=>n.status==='active');
+ useEffect(()=>{
+  if(!activeGraphNode){setResumeVisible(false);return;}
+  const element=document.querySelector('.skill-tree-viewport.is-mobile [data-skill-active="true"]');
+  if(!(element instanceof HTMLElement)){setResumeVisible(false);return;}
+  if(typeof IntersectionObserver==='undefined'){setResumeVisible(true);return;}
+  const observer=new IntersectionObserver(entries=>{
+    setResumeVisible(!entries[0]?.isIntersecting);
+  },{rootMargin:'-75px 0px -75px 0px',threshold:.2});
+  observer.observe(element);
+  return()=>observer.disconnect();
+ },[activeGraphNode?.id,activeUnit,loading,demo]);
  return <div className="skill-tree-page" id="skill-tree-home">
   <header className="skill-tree-top">
    <div className="skill-tree-subject">
@@ -287,7 +299,7 @@ export default function SkillTreePage(){
     <Trophy size={18}/> Leaderboard</button>
    <Link to="/profile"><BookOpen size={18}/> Profile</Link>
   </div>
-  {activeGraphNode&&<button className="skill-tree-resume" type="button" onClick={resume}>
+  {activeGraphNode&&resumeVisible&&<button className="skill-tree-resume" type="button" onClick={resume}>
    <ArrowRight size={17}/> Resume next skill</button>}
   <div className={'skill-tree-mobile-sheet '+(selectedId?'is-open':'')} role="region" aria-label="Skill preview">
    <button className="skill-sheet-close" type="button" aria-label="Close skill preview"
