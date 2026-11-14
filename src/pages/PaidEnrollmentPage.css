@@ -14,3 +14,25 @@
 .upgrade-review-form>div{display:flex;gap:.55rem;flex-wrap:wrap}
 .upgrade-review-form button{border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);padding:.7rem;font:inherit;font-weight:700;cursor:pointer}
 .paid-upgrade button:disabled{opacity:.55;cursor:not-allowed}
+
+
+/* Q23 manual bank transfer and evidence review. All bank values come from protected Supabase rows. */
+.upgrade-bank-form{display:grid;gap:12px;max-width:610px;margin-bottom:16px}
+.upgrade-bank-form>label{display:grid;gap:6px;font-size:13px;font-weight:700}
+.upgrade-bank-form input:not([type="checkbox"]){width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);font:inherit;font-size:16px}
+.upgrade-bank-form .upgrade-bank-checkbox{display:flex;align-items:center;gap:10px;font-weight:650;line-height:1.55}
+.upgrade-bank-checkbox input{width:20px;height:20px;flex:0 0 20px;accent-color:var(--purple)}
+.upgrade-bank-form .academic-submit{justify-self:start}
+.upgrade-admissions-status{margin-top:18px;display:grid;gap:8px;border-top:1px solid var(--border);padding-top:16px;max-width:650px}
+.upgrade-admissions-status p{margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+.upgrade-admissions-status strong{color:var(--text)}
+.upgrade-admissions-status button{justify-self:start;min-height:44px}
+.upgrade-proof-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.upgrade-receipt-overlay{position:fixed;inset:0;z-index:11000;display:grid;place-items:center;background:rgba(6,8,24,.78);padding:16px;overscroll-behavior:contain}
+.upgrade-receipt-modal{width:min(880px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:16px;border-radius:16px;background:var(--surface);color:var(--text);display:grid;gap:12px;box-shadow:0 25px 80px rgba(0,0,0,.35)}
+.upgrade-receipt-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.upgrade-receipt-modal p{font-size:12px;color:var(--muted);line-height:1.55;margin:0}
+.upgrade-receipt-modal iframe,.upgrade-receipt-modal img{width:100%;height:min(65dvh,650px);max-height:65dvh;background:white;border:1px solid var(--border);border-radius:10px;object-fit:contain}
+.upgrade-receipt-modal a{justify-self:start}
+.paid-upgrade .upgrade-bank button{min-height:40px}
+@media(max-width:680px){.upgrade-receipt-modal{padding:12px}.upgrade-receipt-modal iframe,.upgrade-receipt-modal img{height:58dvh}.upgrade-bank-form .academic-submit{width:100%}}
