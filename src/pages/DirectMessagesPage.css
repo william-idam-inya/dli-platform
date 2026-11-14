@@ -58,46 +58,101 @@
 .dli-direct-drafts-link{font-size:.78rem;color:var(--muted);margin:.65rem 0}
 .dli-direct-drafts-link a{color:var(--purple);font-weight:750}
 
-
-/* Q16: staff-routed direct chat: clear action state, reachable composer. */
-.dli-direct-contacts section>button,
-.dli-direct-conversations button {min-height:46px;}
-.dli-direct-sidebar section>button:focus-visible,
-.dli-direct-compose textarea:focus-visible {
-  outline:2px solid var(--purple);
-  outline-offset:2px;
+/* Direct-chat state is displayed beside the conversation, not above the viewport. */
+.dli-direct-working {
+  margin:.6rem 0 0;padding:.6rem .7rem;
+  border:1px solid var(--border);border-radius:9px;
+  background:var(--surface-soft);color:var(--text);
+  font-size:.78rem;line-height:1.5;
 }
-.dli-direct-thread {
-  scroll-margin-top:80px;
+.dli-direct-inline-feedback {
+  margin:1rem 1rem 0;padding:.8rem 1rem;
+  border-radius:10px;border:1px solid var(--border);
+  font-size:.82rem;line-height:1.55;
+  overflow-wrap:anywhere;
 }
-.dli-direct-compose textarea {
-  box-sizing:border-box;
-  width:100%;
-  min-height:82px;
-  font-size:14px;
+.dli-direct-inline-feedback.error {
+  color:var(--text);background:var(--surface-soft);border-color:#b75f71;
 }
-.dli-direct-compose button {
-  min-height:44px;
-  justify-content:center;
+.dli-direct-inline-feedback.success {
+  color:var(--text);background:var(--surface-soft);border-color:#5fa981;
 }
-.dli-direct-class-paused {
-  padding:14px 16px;
-  border:1px solid var(--border);
-  border-radius:11px;
-  color:var(--text);
-  background:var(--surface-soft);
-  line-height:1.5;
-  font-size:.85rem;
+.dli-direct-contacts>button:focus-visible,
+.dli-direct-conversations>button:focus-visible,
+.dli-direct-compose :is(textarea,button):focus-visible {
+  outline:2px solid var(--purple);outline-offset:2px;
 }
+.dli-direct-contacts>button {min-height:46px;}
+.dli-direct-thread {scroll-margin-top:80px;}
+.dli-direct-compose textarea {box-sizing:border-box;width:100%;min-height:80px;font-size:16px;}
+.dli-direct-compose button {min-height:44px;}
 @media(max-width:750px) {
-  .dli-direct-layout{grid-template-columns:minmax(0,1fr);}
-  .dli-direct-sidebar{max-height:270px;}
-  .dli-direct-thread{min-height:480px;}
-  .dli-direct-message-list{min-height:180px;max-height:370px;}
-  .dli-direct-compose{padding:12px;}
-  .dli-direct-compose>div{flex-wrap:wrap;}
-  .dli-direct-compose button{min-width:105px;}
+  .dli-direct-sidebar {max-height:280px;}
+  .dli-direct-thread {min-height:440px;}
+  .dli-direct-compose>div {flex-wrap:wrap;}
+  .dli-direct-compose button {min-width:112px;}
 }
 @media(max-width:380px) {
-  .dli-direct-compose button{width:100%;}
+  .dli-direct-compose button {width:100%;justify-content:center;}
+}
+
+
+/* Q18 — mobile-first chat layout, read receipts, unread filters and private notes */
+.dli-direct-chat-filters{display:flex;align-items:center;gap:8px;margin:12px 0;}
+.dli-direct-chat-filters button{font:inherit;font-size:12px;font-weight:750;color:var(--text);
+ border:1px solid var(--border);border-radius:16px;background:var(--surface-soft);padding:9px 14px;min-height:44px;cursor:pointer}
+.dli-direct-chat-filters button.selected{color:white;border-color:var(--purple);background:var(--purple)}
+.dli-direct-chat-filters>span{margin-left:auto;font-size:11px;color:var(--muted)}
+.dli-direct-chat-list-row{display:flex;align-items:center;border-radius:12px;margin-bottom:4px;
+ background:transparent;transition:background .15s}
+.dli-direct-chat-list-row.selected,.dli-direct-chat-list-row:hover{background:var(--surface-soft)}
+.dli-direct-sidebar .dli-direct-chat-list-open{flex:1;display:flex;align-items:center;text-align:left;
+ min-height:68px;min-width:0;padding:10px 4px;background:none;border:0;font:inherit;color:var(--text);cursor:pointer}
+.dli-direct-chat-list-main{display:grid;gap:4px;flex:1;min-width:0}
+.dli-direct-chat-list-main strong,.dli-direct-chat-list-main small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dli-direct-chat-list-meta{display:grid;gap:6px;justify-items:end;min-width:55px;margin-left:auto}
+.dli-direct-chat-list-meta small{font-size:10px;white-space:nowrap}
+.dli-direct-unread-pill{background:var(--purple);color:white;min-width:23px;height:23px;border-radius:20px;
+ display:grid;place-items:center;padding:0 5px;font-size:11px;font-weight:800}
+.dli-direct-pin-button{display:grid;place-items:center;width:44px;min-width:44px;height:44px;color:var(--muted);
+ cursor:pointer;border:0;background:transparent;border-radius:8px}
+.dli-direct-pin-button[aria-pressed='true']{color:var(--purple)}
+.dli-direct-read-status{display:inline-flex;vertical-align:middle;margin-left:6px;color:var(--muted)}
+.dli-direct-read-status.read{color:#239bd1}
+.dli-direct-media-item{display:grid;gap:8px;margin:6px 0}
+.dli-direct-media-item audio,.dli-direct-media-item video{display:block;max-width:100%;width:min(310px,100%);border-radius:10px}
+.dli-direct-emoji-bar{display:flex;gap:4px;flex-wrap:wrap}
+.dli-direct-emoji-bar button{width:44px;height:44px;padding:6px;border:1px solid var(--border);
+ display:grid;place-items:center;border-radius:10px;background:var(--surface-soft);
+ font-size:20px;cursor:pointer}
+.dli-direct-compose>.dli-chat-media-recorder{display:grid;gap:10px;border:1px solid var(--border);border-radius:12px;
+ padding:12px;background:var(--surface-soft)}
+.dli-chat-recorder-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.dli-direct-compose .dli-chat-recorder-actions button,.dli-chat-media-preview button{
+ background:var(--surface);border:1px solid var(--border);color:var(--text);min-height:44px;
+ display:inline-flex;align-items:center;gap:7px;border-radius:9px;padding:10px 12px;
+ font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.dli-chat-recording-live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:750}
+.dli-chat-recording-dot{width:9px;height:9px;border-radius:50%;background:#c32f43;animation:dli-pulse 1s infinite}
+@keyframes dli-pulse{50%{opacity:.45}}
+.dli-chat-media-preview{display:grid;gap:9px}
+.dli-chat-media-preview>span{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:750}
+.dli-chat-media-preview audio,.dli-chat-media-preview video{width:min(340px,100%);max-height:275px;border-radius:10px}
+.dli-chat-media-preview button{justify-self:start}
+.dli-chat-media-preview small{font-size:11px;color:var(--muted)}
+.dli-direct-back{display:none;min-height:44px;border:0;background:transparent;color:var(--purple);
+ font-weight:750;align-items:center;gap:3px;cursor:pointer}
+.dli-direct-sidebar button:focus-visible,.dli-direct-chat-filters button:focus-visible,
+.dli-direct-pin-button:focus-visible,.dli-chat-recorder-actions button:focus-visible{
+ outline:2px solid var(--purple);outline-offset:2px}
+@media(max-width:750px){
+  .dli-direct-layout{grid-template-columns:minmax(0,1fr)}
+  .dli-direct-sidebar{max-height:none;min-height:58vh;overflow:visible}
+  .dli-direct-layout:not(.has-active-chat) .dli-direct-thread{display:none}
+  .dli-direct-layout.has-active-chat .dli-direct-sidebar{display:none}
+  .dli-direct-thread{min-height:calc(100dvh - 230px)}
+  .dli-direct-back{display:inline-flex}
+  .dli-direct-message-list{max-height:60dvh}
+  .dli-direct-compose{padding:12px;gap:10px}
+  .dli-direct-compose>div{flex-wrap:wrap}
 }

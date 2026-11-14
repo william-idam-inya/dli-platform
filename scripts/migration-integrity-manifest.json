@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "purpose": "Baseline of reviewed migration Git blob hashes. Initial 74 reviewed/applied on development and production; Q5 entry is production-only, verified via provider-applied migration (requires empty account registry).",
-  "verifiedDate": "2026-11-12",
+  "purpose": "Reviewed Git migration file hashes for the Q19 unified candidate. Contains production baseline plus staged additive Q10/Q12/Q13/Q17/Q18 SQL. Manifest verification does NOT mean these new migrations have been applied in production; production DB migration and permission tests must precede public deployment.",
+  "verifiedDate": "2026-11-14",
   "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
   "entries": [
     {
@@ -309,6 +309,22 @@
       "gitBlobSha1": "b1523ade448a0f32a18e2c00cf1a268777c6da29"
     },
     {
+      "file": "20261113135357_stage_q10_teaching_offering_link.sql",
+      "gitBlobSha1": "552a3107cf07598cb7b12a07890ca2cd65019f4e"
+    },
+    {
+      "file": "20261113140333_stage_q10a_linked_class_roster_reconcile.sql",
+      "gitBlobSha1": "8c7810a2579e519fea3df3e3100b0e5df97d181f"
+    },
+    {
+      "file": "20261113201934_stage_q12_null_safe_paid_class_rpc_guards.sql",
+      "gitBlobSha1": "11bada3147a735531656fdd1efd50080c412181f"
+    },
+    {
+      "file": "20261113203621_stage_q13_unified_multisubject_teaching_groups.sql",
+      "gitBlobSha1": "c477312ab85d8274644fe1b7d21a48fc4ce95740"
+    },
+    {
       "file": "20261113222549_stage_q16_staff_routed_direct_chat.sql",
       "gitBlobSha1": "d614f1e3e937a22b5c6eb4826b29554c42e3ff3e"
     },
@@ -321,8 +337,20 @@
       "gitBlobSha1": "8beeae927025f9adc331c549628a874e732345e1"
     },
     {
+      "file": "20261114000001_stage_q17_direct_message_audit_field_guard.sql",
+      "gitBlobSha1": "e1e781ff7e465595ad0bb45f453d74614a65171e"
+    },
+    {
       "file": "20261114000200_stage_q17_role_profiles_directory_geocoding.sql",
       "gitBlobSha1": "70cbfaa6d4b51801714a604ce3ec14b5aea6cce1"
+    },
+    {
+      "file": "20261114004500_stage_q18_private_chat_receipts_and_media.sql",
+      "gitBlobSha1": "8e48435edcecfed73870c362f658a11c657bdb4a"
+    },
+    {
+      "file": "20261114005500_stage_q18b_chat_media_attachment_guard.sql",
+      "gitBlobSha1": "c01cd012495a9447004396ca39c293ec26f77f97"
     }
   ]
 }

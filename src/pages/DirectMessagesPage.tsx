@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { CheckCheck, Download, Flag, LockKeyhole, MessageCircle, Paperclip, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Download, Flag, LockKeyhole, MessageCircle, Paperclip, Pin, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import { Link, useSearchParams } from 'react-router-dom';
+import ChatMediaRecorder from '../components/ChatMediaRecorder';
+import { Link } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
 type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
+type DirectRead={thread_id:string;reader_id:string;seen_at:string};
+const mediaKind=(mime:string):'audio'|'video'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':null;
 const fileSuffix:Record<string,string>={
   'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp',
   'text/plain':'txt',
+  'audio/webm':'webm','audio/mp4':'m4a','audio/ogg':'ogg',
+  'video/webm':'webm','video/mp4':'mp4',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xlsx',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
@@ -26,7 +31,6 @@ const STAFF_CONTACT_ROLES=new Set(['owner','admin','assistant_admin']);
 
 export default function DirectMessagesPage(){
   const {account}=useAuth();
-  const [params]=useSearchParams();
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
@@ -36,18 +40,48 @@ export default function DirectMessagesPage(){
   const [activeId,setActiveId]=useState('');
   const [messages,setMessages]=useState<DirectMessage[]>([]);
   const [files,setFiles]=useState<DirectFile[]>([]);
+  const [reads,setReads]=useState<DirectRead[]>([]);
+  const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
+  const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
+  const [mediaReset,setMediaReset]=useState(0);
+  const [pins,setPins]=useState<string[]>([]);
+  const [playback,setPlayback]=useState<Record<string,string>>({});
+  const playableUrls=useRef<string[]>([]);
   const [attachment,setAttachment]=useState<File|null>(null);
   const [draft,setDraft]=useState('');
   const [search,setSearch]=useState('');
   const [mode,setMode]=useState<'inbox'|'oversight'>('inbox');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
+  const [openingContactId,setOpeningContactId]=useState<string|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
+  useEffect(()=>()=>{playableUrls.current.forEach(url=>URL.revokeObjectURL(url));},[]);
+  useEffect(()=>{
+    if(!uid)return;
+    try{
+      const saved=JSON.parse(localStorage.getItem('dli-chat-pins:'+uid)??'[]') as unknown;
+      setPins(Array.isArray(saved)?saved.filter((x):x is string=>typeof x==='string').slice(0,50):[]);
+    }catch{setPins([]);}
+  },[uid]);
+  const togglePin=(id:string)=>{
+    const next=pins.includes(id)?pins.filter(x=>x!==id):[...pins,id];
+    setPins(next);
+    try{localStorage.setItem('dli-chat-pins:'+uid,JSON.stringify(next));}catch{/* Optional local pins. */}
+  };
+  async function enableAlerts(){
+    if(typeof Notification==='undefined'){
+      setNotice('Browser notifications are unavailable on this device. In-app message alerts still work.');return;
+    }
+    try{
+      const result=await Notification.requestPermission();
+      setNotice(result==='granted'?'Browser alerts enabled while DLI is open.':
+        'Browser alerts were not enabled. In-app notifications remain available.');
+    }catch{setNotice('Browser permission could not be enabled. In-app alerts remain available.');}
+  }
   const moderator=isOversight(account?.role);
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
-  const permittedContacts=useMemo(()=>contacts.filter(c=>
-    canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
+  const permittedContacts=useMemo(()=>contacts.filter(c=>canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
   const current=threads.find(t=>t.id===activeId)??null;
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
@@ -56,111 +90,177 @@ export default function DirectMessagesPage(){
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [auth,directory,inbox,flags]=await Promise.all([
+      const [auth,directory,inbox,flags,readRows,headMessages]=await Promise.all([
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
         moderator?supabase.from('dli_direct_reports').select('id,message_id,thread_id,reason,status,created_at').order('created_at',{ascending:false}).limit(100):
           Promise.resolve({data:[],error:null}),
+        supabase.from('dli_direct_reads').select('thread_id,reader_id,seen_at').limit(500),
+        supabase.from('dli_direct_messages')
+          .select('id,thread_id,sender_id,body,created_at,file_id')
+          .order('created_at',{ascending:false}).limit(700),
       ]);
-      if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error){
+      if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
         setError('The messaging directory could not be verified. Retry while signed in.');return;
       }
       setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
       setThreads((inbox.data??[]) as Thread[]);
       setReports((flags.data??[]) as Report[]);
+      setReads((readRows.data??[]) as DirectRead[]);
+      setRecentMessages((headMessages.data??[]) as DirectMessage[]);
       setError(null);
     }catch{setError('Messaging is temporarily unreachable.');}
     finally{setLoading(false);}
   },[account?.id,moderator]);
   useEffect(()=>{void load();const timer=window.setInterval(()=>{void load();},20000);return()=>window.clearInterval(timer);},[load]);
 
+  const lastMessage=useMemo(()=>{
+    const index=new Map<string,DirectMessage>();
+    for(const msg of recentMessages)if(!index.has(msg.thread_id))index.set(msg.thread_id,msg);
+    return index;
+  },[recentMessages]);
+  const readIndex=useMemo(()=>new Map(reads.map(r=>[r.thread_id+'|'+r.reader_id,r.seen_at])),[reads]);
+  const unreadInThread=(threadId:string)=>recentMessages.filter(msg=>
+    msg.thread_id===threadId && msg.sender_id!==uid &&
+    (!readIndex.get(threadId+'|'+uid) ||
+      new Date(msg.created_at)>new Date(readIndex.get(threadId+'|'+uid)!))).length;
   const visible=useMemo(()=>threads.filter(t=>mode==='oversight'||
     t.participant_a===uid||t.participant_b===uid).filter(t=>{
+    if(chatFilter==='unread'&&mode==='inbox'&&!recentMessages.some(m=>
+      m.thread_id===t.id&&m.sender_id!==uid&&
+      (!readIndex.get(t.id+'|'+uid)||new Date(m.created_at)>new Date(readIndex.get(t.id+'|'+uid)!))))return false;
     if(!search.trim())return true;
     const text=(memberName(t.participant_a)+' '+memberName(t.participant_b)).toLowerCase();
     return text.includes(search.toLowerCase().trim());
-  }),[threads,uid,contacts,search,mode]);
+  }).sort((a,b)=>{
+    const pinned=Number(pins.includes(b.id))-Number(pins.includes(a.id));
+    return pinned||new Date(lastMessage.get(b.id)?.created_at??b.created_at).getTime()-
+      new Date(lastMessage.get(a.id)?.created_at??a.created_at).getTime();
+  }),[threads,uid,contacts,search,mode,chatFilter,reads,recentMessages,pins,lastMessage,readIndex]);
 
   const loadThread=useCallback(async(id:string)=>{
     if(!supabase||!id)return;
     try{
+      let loadedMessages:DirectMessage[]=[];
       if(mode==='oversight'&&moderator){
         const result=await supabase.rpc('dli_direct_moderation_messages',{p_thread:id});
         if(result.error){setError('This oversight view was denied or unavailable.');return;}
-        setMessages(((result.data??[]) as DirectMessage[]).reverse());
+        loadedMessages=((result.data??[]) as DirectMessage[]).reverse();
+        setMessages(loadedMessages);
       }else{
         const result=await supabase.from('dli_direct_messages')
           .select('id,thread_id,sender_id,body,created_at,file_id')
           .eq('thread_id',id).order('created_at',{ascending:true}).limit(100);
         if(result.error){setError('This conversation cannot be opened with your current permissions.');return;}
-        setMessages((result.data??[]) as DirectMessage[]);
+        loadedMessages=(result.data??[]) as DirectMessage[];
+        setMessages(loadedMessages);
       }
       const attachments=await supabase.from('dli_direct_files')
         .select('id,thread_id,original_name,object_path,mime_type,size_bytes,is_ready')
         .eq('thread_id',id).eq('is_ready',true).limit(100);
       if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
       setFiles((attachments.data??[]) as DirectFile[]);
-    }catch{setError('Could not confirm that messages were loaded.');}
-  },[mode,moderator]);
-  useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
-  useEffect(()=>{
-    if(activeId&&mode==='inbox'){
-      composeRef.current?.focus({preventScroll:true});
-      if(window.matchMedia('(max-width: 750px)').matches){
-        threadRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+      const newestIncoming=loadedMessages.filter(msg=>msg.sender_id!==uid).at(-1);
+      if(mode==='inbox'&&uid&&newestIncoming){
+        // Polling an already-read thread must never issue continuous writes.
+        // Read the current server cursor before acknowledging new incoming data.
+        const cursor=await supabase.from('dli_direct_reads')
+          .select('seen_at').eq('thread_id',id).eq('reader_id',uid).maybeSingle();
+        if(cursor.error || (cursor.data?.seen_at&&
+            new Date(cursor.data.seen_at)>=new Date(newestIncoming.created_at)))return;
+        // The DB stamps the write and independently checks this user/thread.
+        const updated=await supabase.from('dli_direct_reads')
+          .update({seen_at:new Date().toISOString()})
+          .eq('thread_id',id).eq('reader_id',uid)
+          .select('thread_id,reader_id,seen_at').maybeSingle();
+        let saved=updated.data;
+        if(!updated.error&&!saved){
+          const created=await supabase.from('dli_direct_reads')
+            .insert({thread_id:id,reader_id:uid})
+            .select('thread_id,reader_id,seen_at').maybeSingle();
+          if(!created.error)saved=created.data;
+          else if(created.error.code==='23505'){
+            const retry=await supabase.from('dli_direct_reads')
+              .update({seen_at:new Date().toISOString()})
+              .eq('thread_id',id).eq('reader_id',uid)
+              .select('thread_id,reader_id,seen_at').maybeSingle();
+            if(!retry.error)saved=retry.data;
+          }
+        }
+        if(saved){
+          setReads(prev=>[...prev.filter(r=>!(r.thread_id===id&&r.reader_id===uid)),saved]);
+          window.dispatchEvent(new Event('dli-direct-messages-changed'));
+        }
       }
-    }
-  },[activeId,mode]);
+    }catch{setError('Could not confirm that messages were loaded.');}
+  },[mode,moderator,uid]);
+  useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
+  useEffect(()=>{
+    if(error){
+      threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  },[error]);
+  useEffect(()=>{
+    if(!activeId||mode!=='inbox')return;
+    // A confirmed conversation should reveal its composer, even when the
+    // directory is scrolled or the layout is stacked on a phone.
+    const frame=window.requestAnimationFrame(()=>{
+      threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
+      composeRef.current?.focus({preventScroll:true});
+    });
+    return()=>window.cancelAnimationFrame(frame);
+  },[activeId,mode]);
   async function openContact(c:Contact){
     if(!supabase||busy)return;
-    if(!uid){setError('Your account is still being verified. Refresh Messages and retry.');return;}
+    if(!uid){setError('Your DLI account is still being verified. Select Refresh and retry.');return;}
     if(!canStartWithAnyone&&!STAFF_CONTACT_ROLES.has(c.member_role)){
-      setError('Only Owner, Admin and Assistant Admin are available for direct chat.');return;
+      setError('Only Owner, Admin and Assistant Admin are available as your private chat contacts.');return;
     }
-    setBusy(true);setNotice(null);setError(null);
+    setBusy(true);setOpeningContactId(c.user_id);setNotice(null);setError(null);
     const [a,b]=[uid,c.user_id].sort((x,y)=>x.localeCompare(y));
     try{
+      const showThread=(thread:Thread)=>{
+        setThreads(previous=>previous.some(item=>item.id===thread.id)
+          ? previous : [thread,...previous]);
+        setMode('inbox');setActiveId(thread.id);
+        setNotice('Conversation opened. You can type a message below; nothing has been sent yet.');
+      };
       const existing=threads.find(t=>t.participant_a===a&&t.participant_b===b);
-      if(existing){setMode('inbox');setActiveId(existing.id);return;}
+      if(existing){showThread(existing);return;}
       const result=await supabase.from('dli_direct_threads')
-        .insert({participant_a:a,participant_b:b}).select('id').maybeSingle();
+        .insert({participant_a:a,participant_b:b})
+        .select('id,participant_a,participant_b,created_at').maybeSingle();
       if(result.error||!result.data){
         if(result.error?.code==='23505'){
-          // Another device created the same chat. Open the verified server row.
+          // Another session created the same conversation: recover its
+          // verified row without blindly sending another insert.
           const duplicate=await supabase.from('dli_direct_threads')
             .select('id,participant_a,participant_b,created_at')
             .eq('participant_a',a).eq('participant_b',b).maybeSingle();
-          const found=duplicate.data;
-          if(!duplicate.error&&found){
-            setThreads(old=>old.some(t=>t.id===found.id)?old:[found,...old]);
-            setMode('inbox');setActiveId(found.id);
-            return;
-          }
+          if(!duplicate.error&&duplicate.data){showThread(duplicate.data);return;}
         }
         if(result.error?.code==='42501'||result.error?.code==='42503'){
-          setError('This chat was denied by your current DLI permissions. Refresh the directory or contact Admin.');
+          setError('DLI denied this conversation for your current account or contact. Refresh the directory and confirm both accounts are active.');
         }else if(result.error?.code==='PGRST301'){
-          setError('Your login session needs renewal. Sign in again and try Messages.');
+          setError('Your sign-in session needs renewal before starting a conversation.');
         }else{
-          setError('This chat could not be created on the server. Nothing was sent. Select Refresh and try again.');
+          setError('The server did not confirm that this conversation opened. Refresh and retry. Nothing was sent.');
         }
         return;
       }
-      // Display the working composer straight away, without waiting on an inbox
-      // refresh or assuming a newly-created thread is already in React state.
-      const newThread=result.data;
-      setThreads(old=>old.some(t=>t.id===newThread.id)?old:[
-        {id:newThread.id,participant_a:a,participant_b:b,created_at:new Date().toISOString()},
-        ...old,
-      ]);
-      setMode('inbox');setActiveId(newThread.id);
+      // Keep the server-confirmed thread in view immediately; an inbox
+      // refresh may run later and must not hide the new composer.
+      showThread(result.data);
       await load();
-    }catch{setError('The secure chat service could not open a conversation. Nothing was sent.');}
-    finally{setBusy(false);}
+    }catch{
+      setError('The conversation request could not be confirmed. Nothing was sent. Check your connection and retry.');
+    }finally{
+      setBusy(false);setOpeningContactId(null);
+    }
   }
   async function cleanupFile(path:string,id:string):Promise<boolean>{
     if(!supabase)return false;
@@ -210,7 +310,9 @@ export default function DirectMessagesPage(){
             'File readiness could not be confirmed and cleanup did not complete. Contact DLI administration before retrying.');return;
         }
       }
-      const messageBody=body||'📎 '+attachment!.name;
+      const messageBody=body||(attachment&&attachment.type.startsWith('audio/')?'🎙️ Voice note':
+        attachment&&attachment.type.startsWith('video/')?'🎥 Video note':
+        '📎 '+attachment!.name);
       const payload={thread_id:current.id,body:messageBody,...(fileId?{file_id:fileId}:{})};
       const result=await supabase.from('dli_direct_messages').insert(payload).select('id').maybeSingle();
       if(result.error||!result.data){
@@ -218,7 +320,8 @@ export default function DirectMessagesPage(){
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
-      setDraft('');setAttachment(null);await loadThread(current.id);
+      setDraft('');setAttachment(null);setMediaReset(value=>value+1);await loadThread(current.id);
+      window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
       const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
       setError(cleaned?'The message request was interrupted. Refresh to confirm its status before retrying.':
@@ -242,6 +345,29 @@ export default function DirectMessagesPage(){
       document.body.appendChild(link);link.click();link.remove();
       window.setTimeout(()=>URL.revokeObjectURL(url),30000);
     }catch{setError('Could not confirm file download access.');}
+    finally{setBusy(false);}
+  }
+  async function playPrivateMedia(file:DirectFile){
+    if(!supabase||busy)return;
+    if(playback[file.id])return;
+    setBusy(true);setError(null);
+    try{
+      if(mode==='oversight'){
+        const ticket=await supabase.rpc('dli_direct_authorise_file_review',{p_file:file.id});
+        if(ticket.error||ticket.data!==true){
+          setError('Audited media-review permission was not granted.');return;
+        }
+      }
+      // No public or shareable media URL: fetch via the member's JWT,
+      // then generate a local-only blob URL for explicit inline playback.
+      const response=await supabase.storage.from('dli-chat-files').download(file.object_path);
+      if(response.error||!response.data){
+        setError('This private recording is not accessible to your account.');return;
+      }
+      const url=URL.createObjectURL(response.data);
+      playableUrls.current.push(url);
+      setPlayback(prev=>({...prev,[file.id]:url}));
+    }catch{setError('The private recording could not be loaded.');}
     finally{setBusy(false);}
   }
   async function reportMessage(message:DirectMessage){
@@ -275,23 +401,17 @@ export default function DirectMessagesPage(){
       <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
         <h1>Messages</h1><p>Private conversations with authorised DLI members, in any language.</p>
       </div>
-      <span className="module-status"><span/> Stage N1</span>
+      <button type="button" className="user-outline-button" onClick={()=>void enableAlerts()}>
+        <BellRing size={16}/> Enable browser alerts
+      </button>
     </div>
     <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
       <strong>Institutional messaging with safeguarding oversight</strong>
-      <p>Owner, Admin and Assistant Admin may start a private chat with any active DLI member.
-        Students, tutors and other staff may message only those three administrative roles, and may reply in those conversations.
-        Founder/Admin oversight is separately audited. Peer and subject-group chats are not enabled.</p>
+      <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is separately audited for safeguarding and abuse prevention. Subject-group chats are paused. Always report unsafe messages.</p>
     </div></div>
     {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
       Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
     </p>}
-    {params.get('section')==='class'&&<p role="status" className="dli-direct-class-paused">
-      Subject-group chats are paused under the administrator-only contact policy. Choose Owner, Admin or Assistant Admin below for a private conversation.
-    </p>}
-    <>
-    {error&&<p role="alert" className="auth-feedback error">{error}</p>}
-    {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="dli-direct-controls">
       <div className="dli-direct-modes">
         <button type="button" className={mode==='inbox'?'selected':''} onClick={()=>{setMode('inbox');setActiveId('');}}>My chats</button>
@@ -301,28 +421,60 @@ export default function DirectMessagesPage(){
         <RefreshCw size={15}/> Refresh
       </button>
     </div>
-    <div className="dli-direct-layout">
+    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')}>
       <aside className="dli-direct-sidebar" aria-label="Conversation directory">
         <label htmlFor="direct-search"><Search size={16}/> Find a person or conversation</label>
         <input id="direct-search" placeholder="Search by name…" value={search} onChange={e=>setSearch(e.target.value)}/>
+        {mode==='inbox'&&<nav className="dli-direct-chat-filters" aria-label="Filter conversations">
+          <button type="button" className={chatFilter==='all'?'selected':''} aria-pressed={chatFilter==='all'}
+            onClick={()=>setChatFilter('all')}>All</button>
+          <button type="button" className={chatFilter==='unread'?'selected':''} aria-pressed={chatFilter==='unread'}
+            onClick={()=>setChatFilter('unread')}>Unread</button>
+          <span>{threads.length} chats</span>
+        </nav>}
         {mode==='inbox'&&<section className="dli-direct-contacts">
           <h2>Start a chat</h2>
           {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
-            <button type="button" disabled={busy||loading||!uid} key={c.user_id} onClick={()=>void openContact(c)} aria-label={'Start a private chat with '+c.full_name}>
+            <button type="button" disabled={busy||loading||!uid} key={c.user_id}
+              onClick={()=>void openContact(c)}
+              aria-label={'Start a private chat with '+c.full_name}
+              aria-busy={openingContactId===c.user_id}
+              className={current&&(current.participant_a===c.user_id||current.participant_b===c.user_id)?'selected':''}>
               <span className="dli-direct-avatar">{c.full_name.charAt(0).toUpperCase()}</span>
-              <span><strong>{c.full_name}</strong><small>{c.member_role.replaceAll('_',' ')}</small></span>
+              <span><strong>{c.full_name}</strong>
+                <small>{openingContactId===c.user_id?'Opening conversation…':c.member_role.replaceAll('_',' ')}</small>
+              </span>
             </button>)}
-          {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Only active authorised DLI accounts appear here.</p>}
+          {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
+          {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.</p>}
         </section>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
           {visible.map(t=>{
             const other=participant(t);
-            return <button key={t.id} type="button" className={activeId===t.id?'selected':''}
-              onClick={()=>setActiveId(t.id)}>
-              <span className="dli-direct-avatar">{memberName(other).charAt(0).toUpperCase()}</span>
-              <span><strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                <small>{mode==='oversight'?'Moderation view':memberRole(other)}</small></span>
-            </button>;
+            const latest=lastMessage.get(t.id);
+            const unread=mode==='inbox'?unreadInThread(t.id):0;
+            return <div className={'dli-direct-chat-list-row'+(activeId===t.id?' selected':'')} key={t.id}>
+              <button type="button" className="dli-direct-chat-list-open"
+                aria-label={'Open conversation with '+memberName(other)+(unread?' ('+unread+' unread)':'')}
+                onClick={()=>setActiveId(t.id)}>
+                <span className="dli-direct-avatar">{memberName(other).charAt(0).toUpperCase()}</span>
+                <span className="dli-direct-chat-list-main">
+                  <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
+                  <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
+                </span>
+                <span className="dli-direct-chat-list-meta">
+                  <small>{latest?stamp(latest.created_at):''}</small>
+                  {unread>0&&<span className="dli-direct-unread-pill">{unread>99?'99+':unread}</span>}
+                </span>
+              </button>
+              {mode==='inbox'&&<button type="button" className="dli-direct-pin-button"
+                aria-pressed={pins.includes(t.id)}
+                aria-label={pins.includes(t.id)?'Unpin conversation':'Pin conversation'}
+                title={pins.includes(t.id)?'Unpin':'Pin on this device'}
+                onClick={()=>togglePin(t.id)}>
+                <Pin size={16} fill={pins.includes(t.id)?'currentColor':'none'}/>
+              </button>}
+            </div>;
           })}
           {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations in this view.</p>}
         </section>
@@ -339,11 +491,15 @@ export default function DirectMessagesPage(){
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
       </aside>
-      <section className="dli-direct-thread" ref={threadRef} aria-label="Selected conversation">
+      <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
+        {error&&<p role="alert" className="dli-direct-inline-feedback error">{error}</p>}
+        {notice&&!error&&<p role="status" className="dli-direct-inline-feedback success">{notice}</p>}
         {!current?<div className="dli-direct-placeholder"><MessageCircle size={35}/>
           <h2>Select a conversation</h2>
           <p>Search for an authorised DLI member and open a private chat.</p></div>:<>
           <header className="dli-direct-thread-head">
+            <button type="button" className="dli-direct-back" aria-label="Back to chats"
+              onClick={()=>{setActiveId('');setError(null);}}><ChevronLeft size={20}/> Chats</button>
             <span className="dli-direct-avatar">{memberName(participant(current)).charAt(0).toUpperCase()}</span>
             <div><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
               <small>{mode==='oversight'?'Read-only institutional review':'Private institutional conversation'}</small></div>
@@ -351,11 +507,33 @@ export default function DirectMessagesPage(){
           </header>
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
             {messages.map(m=><article key={m.id} className={m.sender_id===uid&&mode!=='oversight'?'mine':''}>
-              <small>{memberName(m.sender_id)} · {stamp(m.created_at)}</small>
+              <small>{memberName(m.sender_id)} · {stamp(m.created_at)}
+                {mode==='inbox'&&m.sender_id===uid&&
+                  <span className={'dli-direct-read-status'+(
+                    readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?' read':'')} aria-label={readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?'Read':'Sent'}>
+                    {readIndex.get(m.thread_id+'|'+participant(current))&&
+                    new Date(readIndex.get(m.thread_id+'|'+participant(current))!)>=new Date(m.created_at)
+                    ?<CheckCheck size={15}/>:<Check size={15}/>}
+                  </span>}
+              </small>
               <p>{m.body}</p>
               {m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
-                <button type="button" className="dli-direct-file-link" key={f.id} disabled={busy}
-                  onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
+                <div key={f.id} className="dli-direct-media-item">
+                  {mediaKind(f.mime_type)?<>
+                    <button type="button" className="dli-direct-file-link" disabled={busy}
+                      onClick={()=>void playPrivateMedia(f)}>
+                      {mediaKind(f.mime_type)==='audio'?'🎙️ Play voice note':'🎥 Play video note'}
+                    </button>
+                    {playback[f.id]&&(mediaKind(f.mime_type)==='audio'
+                      ?<audio controls preload="metadata" src={playback[f.id]} aria-label="Private voice note"/>
+                      :<video controls playsInline preload="metadata" src={playback[f.id]} aria-label="Private video note"/>)}
+                  </>:<button type="button" className="dli-direct-file-link" disabled={busy}
+                    onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>}
+                </div>)}
               {mode!=='oversight'&&m.sender_id!==uid&&<button type="button" disabled={busy}
                 onClick={()=>void reportMessage(m)}><Flag size={13}/> Report</button>}
             </article>)}
@@ -370,11 +548,18 @@ export default function DirectMessagesPage(){
             <label htmlFor="direct-draft">Your message</label>
             <textarea id="direct-draft" ref={composeRef} maxLength={2000} rows={2} value={draft}
               placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
+            <div className="dli-direct-emoji-bar" role="group" aria-label="Insert an emoji">
+              {['😊','👍','👏','❤️','🙏','🎓'].map(emoji=><button type="button" key={emoji}
+                disabled={busy||draft.length+emoji.length>2000}
+                aria-label={'Insert '+emoji} onClick={()=>setDraft(text=>text+emoji)}>{emoji}</button>)}
+            </div>
+            <ChatMediaRecorder key={mediaReset} disabled={busy}
+              onReady={file=>setAttachment(file)}/>
             <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
-              Optional file (PDF, image, TXT, DOCX, XLSX, PPTX; up to 10 MB)
+              Attach a private file or saved recording (10 MB maximum)
             </label>
             <input id="direct-attachment" type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx,.webm,.ogg,.mp4,.m4a,audio/*,video/*"
               onChange={e=>setAttachment(e.target.files?.[0]??null)}/>
             {attachment&&<small className="dli-direct-selected-file">{attachment.name} · {(attachment.size/1024/1024).toFixed(2)} MB</small>}
             <div><small>{draft.length}/2,000 · 30 messages/hour · 20 files/day</small>
@@ -383,7 +568,6 @@ export default function DirectMessagesPage(){
         </>}
       </section>
     </div>
-    </>
-    <p className="module-footnote"><Users size={14}/> Only permitted one-to-one conversations appear here. Direct-chat files use private download rules. Group chats, push notifications and delivery/read receipts are not enabled.</p>
+    <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
   </div>;
 }

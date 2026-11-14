@@ -34,11 +34,11 @@ for(const phrase of [
   "supabase.rpc('dli_direct_directory')",
   "supabase.from('dli_direct_threads')",
   "supabase.from('dli_direct_messages')",
-  "setThreads(old=>old.some(t=>t.id===newThread.id)",
-  "setActiveId(newThread.id)",
+  "setThreads(previous=>previous.some(item=>item.id===thread.id)",
+  "setActiveId(thread.id)",
   "ref={composeRef}",
   "threadRef.current?.scrollIntoView",
-  "This chat could not be created on the server",
+  "The server did not confirm that this conversation opened",
   "No permitted contacts are currently available",
   "Founder/Admin oversight is separately audited",
   "Subject-group chats are paused",
@@ -46,7 +46,9 @@ for(const phrase of [
 assert.ok(!ui.includes('DliClassCommunication'), 'Obsolete student-tutor subject chat must not mount');
 assert.ok(!ui.includes('Student–Tutor contact also requires'));
 assert.ok(css.includes('@media(max-width:750px)'));
-assert.ok(css.includes('.dli-direct-class-paused'));
+assert.ok(css.includes('.dli-direct-chat-list-row'));
+assert.ok(css.includes('.dli-chat-media-recorder'));
+assert.ok(!ui.includes('Subject conversations'), 'Peer/subject chat cannot be surfaced through the unified messages page');
 for(const phrase of [
   'CREATE OR REPLACE FUNCTION private.dli_direct_allowed',
   "pa.status='active'::public.dli_account_status",
