@@ -1,0 +1,24 @@
+
+.dli-payout-workflow{display:grid;gap:16px}
+.dli-payout-bank-form,.dli-payout-queue,.dli-payout-upload-form,.dli-payout-ack{display:grid;gap:12px}
+.dli-payout-bank-form{max-width:600px;border:1px solid var(--border);border-radius:12px;padding:16px}
+.dli-payout-workflow h3{display:flex;align-items:center;gap:9px;margin:0;font-size:16px}
+.dli-payout-workflow label{display:grid;gap:6px;font-size:13px;font-weight:700}
+.dli-payout-workflow input{width:100%;min-height:43px;padding:9px 11px;background:var(--surface-soft);border:1px solid var(--border);border-radius:9px;font:inherit;color:var(--text);font-size:16px}
+.dli-payout-bank-form .academic-submit{justify-self:start}
+.dli-payout-workflow small,.dli-payout-workflow .dli-payout-status{font-size:12px;color:var(--muted);line-height:1.6}
+.dli-payout-queue-card{display:grid;gap:8px;padding:15px;border:1px solid var(--border);border-radius:12px;min-width:0}
+.dli-payout-queue-card>strong{font-size:15px}.dli-payout-queue-card>span{font-size:13px}
+.dli-payout-bank-details{display:grid;gap:4px;border-radius:9px;background:var(--surface-soft);padding:12px;font-size:13px;overflow-wrap:anywhere}
+.dli-payout-upload-form,.dli-payout-ack{padding:14px;background:var(--surface-soft);border-radius:10px}
+.dli-payout-workflow button:not(.user-outline-button){min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;padding:9px 14px;font-weight:750;cursor:pointer}
+.dli-payout-workflow button:disabled{opacity:.55;cursor:not-allowed}
+.dli-payout-upload-form button,.dli-payout-ack button{justify-self:start;background:var(--purple);color:white;border:0}
+.dli-payout-ack button+button{background:transparent;border:1px solid var(--border);color:var(--text)}
+.dli-payout-queue-card>.user-outline-button{justify-self:start}
+.dli-payout-preview-overlay{position:fixed;inset:0;display:grid;place-items:center;z-index:11000;background:rgba(5,8,24,.8);padding:16px}
+.dli-payout-preview{display:grid;gap:12px;max-height:calc(100dvh - 32px);overflow:auto;padding:16px;width:min(900px,100%);background:var(--surface);border-radius:16px}
+.dli-payout-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dli-payout-preview iframe,.dli-payout-preview img{display:block;width:100%;height:min(65dvh,700px);border:1px solid var(--border);border-radius:9px;object-fit:contain;background:white}
+.dli-payout-preview>a{justify-self:start}
+@media(max-width:650px){.dli-payout-bank-form,.dli-payout-queue-card{padding:12px}.dli-payout-preview{padding:12px}.dli-payout-preview iframe,.dli-payout-preview img{height:58dvh}.dli-payout-upload-form button,.dli-payout-ack button{width:100%}}
