@@ -1,14 +1,19 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 // No service/secret key is ever delivered to the browser or recorded in an audit log.
-// Production fails closed until DLI_APP_ORIGINS is configured with approved HTTPS origin(s).
+// Only the exact canonical production origin and explicitly configured HTTPS origins are accepted.
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
 const allowedRoles = new Set([
   'owner','admin','assistant_admin','academic_coordinator',
   'tutor','student',
 ]);
-const allowedOrigins = (Deno.env.get('DLI_APP_ORIGINS') || '')
-  .split(',').map((part) => part.trim()).filter(Boolean);
+// Keep the live Pages domain accessible if the deployment's optional
+// DLI_APP_ORIGINS setting is absent or has become stale.
+const allowedOrigins = new Set([
+  'https://dli-platform-prod.pages.dev',
+  ...(Deno.env.get('DLI_APP_ORIGINS') || '').split(',')
+    .map(part => part.trim()).filter(Boolean),
+]);
 
 function response(status: number, body: Record<string, unknown>, origin?: string) {
   return new Response(JSON.stringify(body), {
@@ -17,7 +22,7 @@ function response(status: number, body: Record<string, unknown>, origin?: string
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store',
       'Vary': 'Origin',
-      ...(origin && allowedOrigins.includes(origin) ? {
+      ...(origin && allowedOrigins.has(origin) ? {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -37,7 +42,7 @@ function defaultKey(variableName: string): string | undefined {
 
 Deno.serve(async (request: Request) => {
   const origin = request.headers.get('Origin') ?? '';
-  if (!allowedOrigins.includes(origin)) {
+  if (!allowedOrigins.has(origin)) {
     return response(403, { error: 'This application origin is not permitted.' });
   }
   if (request.method === 'OPTIONS') return response(200, { ok: true }, origin);
