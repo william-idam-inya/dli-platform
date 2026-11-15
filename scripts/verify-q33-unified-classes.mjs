@@ -8,6 +8,7 @@ const nav=read('src/data/navigation.ts');
 const app=read('src/App.tsx');
 const acad=read('src/pages/AcademicSetupPage.tsx');
 const sql=read('supabase/migrations/20261115180000_stage_q33_unified_classes_academic_assignments.sql');
+const audit=read('supabase/migrations/20261115183000_stage_q33a_class_audit_trigger_fix.sql');
 for(const token of [
  'type CoTutor','type ClassCurriculum','second_tutor_id:string',
  "dli_save_unified_class","dli_set_unified_class_state",
@@ -65,4 +66,18 @@ assert.ok(sql.indexOf("public.dli_save_teaching_group(")<sql.indexOf("INSERT INT
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 assert.ok(manifest.entries.some(e=>e.file==='20261115180000_stage_q33_unified_classes_academic_assignments.sql'),
  'Migration must be tracked in audited integrity manifest');
+for(const token of [
+  'CREATE OR REPLACE FUNCTION private.audit_teaching()',
+  "IF TG_TABLE_NAME='teaching_classes' THEN",
+  "ELSIF TG_TABLE_NAME='teaching_class_members' THEN",
+  'v_subject:=NEW.student_id',
+  "'teaching.class_created'",
+  "'teaching.student_added'",
+  'INSERT INTO public.audit_logs',
+]) assert.ok(audit.includes(token),'Q33a audit trigger must branch on real row type: '+token);
+assert.ok(audit.indexOf("ELSIF TG_TABLE_NAME='teaching_class_members'")<
+  audit.indexOf('v_subject:=NEW.student_id'),
+  'Never evaluate NEW.student_id for teaching_classes records');
+assert.ok(manifest.entries.some(e=>e.file==='20261115183000_stage_q33a_class_audit_trigger_fix.sql'),
+ 'Include verified class audit repair in migration manifest');
 console.log('Q33 verified: unified approved-course class wizard, two tutor rules, automatic linked academic assignments, gated legacy redirect and privacy/security checks.');
