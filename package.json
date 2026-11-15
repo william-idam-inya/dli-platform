@@ -44,7 +44,8 @@
     "check:q23-manual-payments": "node scripts/verify-q23-manual-payments.mjs",
     "check:q24-tutor-payout": "node scripts/verify-q24-tutor-payout.mjs",
     "check:q25-operational-hardening": "node scripts/verify-q25-operational-hardening.mjs",
-    "check:q27-academic-pro": "node scripts/verify-academic-pro-design.mjs"
+    "check:q27-academic-pro": "node scripts/verify-academic-pro-design.mjs",
+    "check:q28-reference-dashboard": "node scripts/verify-reference-dashboard.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
