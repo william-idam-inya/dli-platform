@@ -4,7 +4,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 // Only the exact canonical production origin and explicitly configured HTTPS origins are accepted.
 // This is the minimal invitation issuer for Stage B. Stage C adds full user management.
 const allowedRoles = new Set([
-  'owner','admin','assistant_admin','academic_coordinator',
+  'owner','admin','assistant_admin',
   'tutor','student',
 ]);
 // Keep the live Pages domain accessible if the deployment's optional
