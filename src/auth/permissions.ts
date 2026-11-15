@@ -1,6 +1,5 @@
 export const DLI_ROLES = [
-  'owner', 'admin', 'assistant_admin', 'academic_coordinator',
-  'tutor', 'student',
+  'owner', 'admin', 'assistant_admin', 'tutor', 'student',
 ] as const;
 
 // The legacy Finance Officer enum label is retained only inside PostgreSQL migration history.
@@ -19,7 +18,6 @@ export const roleLabels: Record<DliRole, string> = {
   owner: 'Owner / Founder',
   admin: 'Admin',
   assistant_admin: 'Assistant Admin',
-  academic_coordinator: 'Academic Coordinator',
   tutor: 'Tutor',
   student: 'Student',
 };
@@ -31,29 +29,29 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/profile': DLI_ROLES,
   '/enrolment': ['student','owner','admin','assistant_admin'],
   '/payroll': ['owner','admin','assistant_admin','tutor'],
-  '/academics': ['owner', 'admin', 'academic_coordinator'],
-  '/cohorts': ['owner', 'admin', 'academic_coordinator'],
-  '/assignments': ['owner', 'admin', 'academic_coordinator'], // legacy route redirects to unified classes.
+  '/academics': ['owner', 'admin'],
+  '/cohorts': ['owner', 'admin'],
+  '/assignments': ['owner', 'admin'], // legacy route redirects to unified classes.
   '/classes': ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
   '/my-classes': ['tutor', 'student'],
   '/private-classes': ['owner', 'admin', 'assistant_admin', 'student', 'tutor'],
-  '/study': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/learning': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/assessments': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/quizzes': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/schedule': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/attendance': ['owner', 'admin', 'academic_coordinator', 'tutor', 'student'],
-  '/users': ['owner', 'admin'],
-  '/tutors': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
+  '/study': ['owner', 'admin', 'tutor', 'student'],
+  '/learning': ['owner', 'admin', 'tutor', 'student'],
+  '/assessments': ['owner', 'admin', 'tutor', 'student'],
+  '/quizzes': ['owner', 'admin', 'tutor', 'student'],
+  '/schedule': ['owner', 'admin', 'tutor', 'student'],
+  '/attendance': ['owner', 'admin', 'tutor', 'student'],
+  '/users': ['owner', 'admin', 'assistant_admin'],
+  '/tutors': ['owner', 'admin', 'assistant_admin', 'tutor'],
   '/finance': ['owner', 'admin', 'assistant_admin'],
   '/finance/reviews': ['owner', 'admin', 'assistant_admin'],
   '/communications': DLI_ROLES, // Per-contact RLS restricts non-admin roles to three administrators.
-  '/communications/drafts': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
-  '/communications/reviews': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
-  '/communications/templates': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
-  '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor'],
+  '/communications/drafts': ['owner', 'admin', 'assistant_admin', 'tutor'],
+  '/communications/reviews': ['owner', 'admin', 'assistant_admin', 'tutor'],
+  '/communications/templates': ['owner', 'admin', 'assistant_admin', 'tutor'],
+  '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'tutor'],
   '/announcements': DLI_ROLES,
-  '/reports': ['owner', 'admin', 'assistant_admin', 'academic_coordinator'],
+  '/reports': ['owner', 'admin', 'assistant_admin'],
   '/reports/audit': ['owner', 'admin'],
   '/settings': ['owner', 'admin', 'assistant_admin'],
   '/change-password': DLI_ROLES,
@@ -63,13 +61,10 @@ export function isDliRole(value: unknown): value is DliRole {
   return typeof value === 'string' && (DLI_ROLES as readonly string[]).includes(value);
 }
 
-// Free learners can inspect the common learning workspace, but the hub
-// intentionally DOES NOT mount protected lesson/assessment queries for them.
-// Direct /learning, /assessments, /quizzes and /attendance stay restricted.
-const FREE_STUDENT_ROUTES=new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/study','/communications','/announcements']);
-export function canAccessPath(role: DliRole, path: string, studentTier: 'free'|'paid'='paid'): boolean {
-  if(role==='student'&&studentTier!=='paid'&&!FREE_STUDENT_ROUTES.has(path))return false;
-  return routeRoles[path]?.includes(role) ?? false;
+// Free and Paid Students use the same academic routes; PostgreSQL limits
+// each learner to their assigned published classes and content.
+export function canAccessPath(role:DliRole,path:string,_studentTier:'free'|'paid'='paid'):boolean{
+  return routeRoles[path]?.includes(role)??false;
 }
 export function accountRoleLabel(account:Account):string{
  return account.role==='student'
