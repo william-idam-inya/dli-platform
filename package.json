@@ -52,7 +52,8 @@
     "check:q32-chat-profiles": "node scripts/verify-q32-chat-profiles.mjs",
     "check:q33-unified-classes": "node scripts/verify-q33-unified-classes.mjs",
     "check:q34-curriculum-telegram": "node scripts/verify-q34-curriculum-telegram.mjs",
-    "check:q35-global-focus-realtime": "node scripts/verify-q35-global-focus-roles-realtime.mjs"
+    "check:q35-global-focus-realtime": "node scripts/verify-q35-global-focus-roles-realtime.mjs",
+    "check:q36-chat-focus-theme": "node scripts/verify-q36-chat-focus-theme.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

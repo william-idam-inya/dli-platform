@@ -143,6 +143,9 @@ jobs:
       - name: Verify Q35 global compact workspaces, five roles, Free Student learning and protected Realtime
         run: npm run check:q35-global-focus-realtime
 
+      - name: Verify Q36 new-chat filtering, single-row workspaces and shared background
+        run: npm run check:q36-chat-focus-theme
+
       - name: Verify TypeScript
         run: npm run typecheck
 
