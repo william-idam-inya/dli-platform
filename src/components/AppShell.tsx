@@ -12,7 +12,7 @@ import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut?: () => void }) {
   const { account } = useAuth();
   const location = useLocation();
   const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'lessons';
@@ -93,6 +93,12 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
+      <div className="ref-sidebar-actions">
+        <NavLink to="/profile" onClick={onNavigate}><span aria-hidden="true">⚙</span> My profile &amp; appearance</NavLink>
+        <button type="button" onClick={()=>{onSignOut?.();onNavigate?.();}}>
+          <LogOut size={17} aria-hidden="true"/> Sign out
+        </button>
+      </div>
       <div className="sidebar-footer">
         <div className="sidebar-help-icon">?</div>
         <div>
@@ -239,6 +245,12 @@ export default function AppShell({ children }: AppShellProps) {
     };
   }, [mobileOpen]);
 
+  const hourInLagos=Number(new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Africa/Lagos',hour:'2-digit',hourCycle:'h23'
+  }).format(new Date()));
+  const greeting=hourInLagos<12?'Good morning':hourInLagos<17?'Good afternoon':'Good evening';
+  const firstName=account?.full_name.trim().split(/\s+/)[0]||'Scholar';
+  const shortGreeting=greeting+', '+firstName;
   const activeItem = navigationItems.find(item=>item.path===location.pathname);
   const allowedPaths = navigationItems.filter(item => Boolean(account &&
     canAccessPath(account.role,item.path,account.studentTier))).map(item=>item.path);
@@ -254,7 +266,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-layout">
       <aside className="desktop-sidebar">
-        <Sidebar />
+        <Sidebar onSignOut={()=>{void signOut();}}/>
       </aside>
 
       {mobileOpen && (
@@ -266,7 +278,7 @@ export default function AppShell({ children }: AppShellProps) {
               onClick={closeNavigation} aria-label="Close navigation">
               <X size={20} />
             </button>
-            <Sidebar onNavigate={closeNavigation} />
+            <Sidebar onNavigate={closeNavigation} onSignOut={()=>{void signOut();}} />
           </aside>
         </div>
       )}
@@ -280,7 +292,22 @@ export default function AppShell({ children }: AppShellProps) {
               aria-label="Open all navigation">
               <Menu size={21} />
             </button>
-            <div className="breadcrumb">
+            <div className="ref-mobile-identity">
+              <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
+              <NavLink to="/profile" className="ref-mobile-avatar" aria-label="My profile">
+                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:<span className="profile-placeholder">D</span>}
+              </NavLink>
+              <div className="ref-mobile-greeting">
+                <strong>{shortGreeting}</strong>
+                <small>{account?accountRoleLabel(account):'Detailed Learning Institute'}</small>
+              </div>
+            </div>
+            {location.pathname==='/'&&account
+              ?<div className="ref-desktop-greeting">
+                <strong>{shortGreeting}</strong>
+                <small>DLI Platform · {accountRoleLabel(account)} workspace</small>
+              </div>
+              :<div className="breadcrumb">
               <span>DLI Workspace</span>
               <span className="breadcrumb-divider">/</span>
               <strong>{activeItem?.label ?? ({
@@ -294,7 +321,7 @@ export default function AppShell({ children }: AppShellProps) {
               } as Record<string,string>)[location.pathname] ?? 'Workspace'}</strong>
               {activeLearningArea&&<><span className="breadcrumb-divider">/</span>
                 <strong>{activeLearningArea.label}</strong></>}
-            </div>
+            </div>}
           </div>
           <div className="topbar-actions">
             <DliMessageBadge/>
