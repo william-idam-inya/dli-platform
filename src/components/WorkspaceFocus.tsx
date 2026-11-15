@@ -40,7 +40,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    '.module-page .panel, .learning-hub .panel, .module-page > section, .module-page > .academic-columns > section, .dashboard-page .panel, .dashboard-page > .section-block, .ref-dashboard-layout .ref-surface'
   )];
   const unique=[...new Set(panelNodes)].filter(p=>
-   !p.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
+   !p.parentElement?.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
    &&!p.parentElement?.closest('.panel'));
   sectionMap.current.clear();
   const next:FocusSection[]=[];
