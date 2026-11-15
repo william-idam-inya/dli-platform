@@ -128,6 +128,9 @@ jobs:
       - name: Verify Q30 immediately accessible finance plan edit controls
         run: npm run check:q30-finance-editor
 
+      - name: Verify Q31 sidebar navigation layout and accessibility
+        run: npm run check:q31-sidebar-navigation
+
       - name: Verify TypeScript
         run: npm run typecheck
 
