@@ -10,7 +10,7 @@ const ROLE_PRIORITY: Record<DliRole, readonly string[]> = {
   tutor: ['/', '/classes', '/communications', '/profile'],
   student: ['/', '/classes', '/communications', '/profile'],
 };
-const FREE_STUDENT_PRIORITY = ['/', '/classes', '/communications', '/profile'] as const;
+const FREE_STUDENT_PRIORITY = ['/', '/study', '/classes', '/communications'] as const;
 
 export function mobilePriorityPaths(
   account: Pick<Account, 'role' | 'studentTier'>,
