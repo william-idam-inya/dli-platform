@@ -383,6 +383,10 @@
     {
       "file": "20261115160000_stage_q32_chat_profile_access.sql",
       "gitBlobSha1": "3a05b73bbfda0013bef3e3dd18b17eabab2322b2"
+    },
+    {
+      "file": "20261115180000_stage_q33_unified_classes_academic_assignments.sql",
+      "gitBlobSha1": "72202d7669579be66344c31f60d2572b932f0bfb"
     }
   ]
 }
