@@ -8,6 +8,7 @@ const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const ui=read('src/pages/DirectMessagesPage.tsx');
 const css=read('src/pages/DirectMessagesPage.css');
 const recording=read('src/components/ChatMediaRecorder.tsx');
+const composer=read('src/components/DirectMessageComposer.tsx');
 const inlineMedia=read('src/components/ChatPrivateMedia.tsx');
 const mediaPolicy=read('supabase/migrations/20261114053500_stage_q21_private_chat_media_info_read.sql');
 const headers=read('public/_headers');
@@ -40,13 +41,14 @@ for(const phrase of [
   "supabase.from('dli_direct_messages')",
   "setThreads(previous=>previous.some(item=>item.id===thread.id)",
   "setActiveId(thread.id)",
-  "ref={composeRef}",
+  "composeRef={composeRef}",
   "threadRef.current?.scrollIntoView",
   "The server did not confirm that this conversation opened",
   "No permitted contacts are currently available",
   "Founder/Admin oversight is separately audited",
   "Subject-group chats are paused",
 ]) assert.ok(ui.includes(phrase),'Q16 direct-chat UI missing '+phrase);
+assert.ok(composer.includes('ref={composeRef}'), 'Q34 Telegram composer must keep an autofocus-capable message text area');
 assert.ok(!ui.includes('DliClassCommunication'), 'Obsolete student-tutor subject chat must not mount');
 assert.ok(!ui.includes('Student–Tutor contact also requires'));
 assert.ok(css.includes('@media(max-width:750px)'));
