@@ -93,4 +93,23 @@ for(const f of [
  '20261115214500_stage_q35_role_people_private_realtime.sql'
 ])assert.ok(manifest.entries.some(x=>x.file===f&&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)),
  'Missing hash-pinned development migration '+f);
+const conf=read('src/pages/ConferenceRoomsPage.tsx');
+const confSql=read('supabase/migrations/20261115220000_stage_q35c_conference_governance.sql');
+for(const token of ['student_seminar','tutors_conference','admin_leadership',
+ 'Free Students','Paid Students','dli_conference_create',
+ 'dli_conference_join','dli_conference_action','dli_conference_send',
+ 'Media streams not yet provisioned','Host actions are stored as server-side moderation requests'])
+ assert.ok(conf.includes(token),'Role conference governance missing '+token);
+for(const token of ['CREATE TABLE public.dli_conference_rooms',
+ 'CREATE TABLE public.dli_conference_attendees','CREATE TABLE public.dli_conference_chat',
+ 'private.dli_conference_eligible','private.dli_is_paid(auth.uid())',
+ "r.room_type='admin_leadership'","r.room_type='tutors_conference'",
+ "c.state='published'","m.student_id=auth.uid()",
+ 'dli_conference_is_host','dli_conference_action_impl','dli_conference_send_impl',
+ 'dli_conference_rooms_read','dli_conference_chat_read','SECURITY INVOKER'])
+ assert.ok(confSql.includes(token),'Conference server permission missing '+token);
+assert.ok(manifest.entries.some(x=>x.file==='20261115220000_stage_q35c_conference_governance.sql'
+ &&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)),'Conference migration hash pin missing');
+assert.ok(nav.includes("path: '/conferences'")&&app.includes('<ConferenceRoomsPage />'),
+ 'Conferencing governance route must be accessible by every active role');
 console.log('Q35 source checks passed: 5 roles, scoped Free Student learning, finance policies, compact UI, secure People, Presence, Broadcast, WebRTC and inline password eye.');
