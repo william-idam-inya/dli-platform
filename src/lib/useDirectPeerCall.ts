@@ -87,7 +87,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
     update({...callRef.current!,state:'failed',error:'The private signaling channel is not connected.'});
    }
   }catch(err){
-   if(callRef.current?.id!==id)return;
+   if((callRef.current as CallSession|null)?.id!==id)return;
    stop();update({id,mode,direction:'outgoing',state:'failed',
     error:(err as Error)?.name==='NotAllowedError'
      ?'Camera or microphone permission was denied. Check browser site settings.'
