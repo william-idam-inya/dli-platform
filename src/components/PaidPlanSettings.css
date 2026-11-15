@@ -41,3 +41,41 @@
  .paid-plan-editor>header{flex-wrap:wrap;}
  .paid-plan-editor-actions button{width:100%;}
 }
+
+/* Q30: editing controls are visible at the top of each card, not hidden
+   below a full-page list of technical reference terms. */
+.finance-source-plans .source-plan-card {
+  display:flex; flex-direction:column; gap:11px;
+}
+.finance-source-plans .source-plan-description{min-height:0;margin:0;}
+.paid-plan-top-edit{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:46px;padding:11px 14px;
+  border:1px solid var(--purple);border-radius:11px;
+  background:var(--purple);color:#fff;font-size:13px;font-weight:800;
+  cursor:pointer;
+}
+.paid-plan-top-edit:hover{filter:brightness(.91);}
+.paid-plan-top-edit:focus-visible{outline:3px solid var(--dli-focus);outline-offset:3px;}
+.paid-plan-edit-guidance{
+  display:flex;align-items:flex-start;gap:9px;margin:15px 0;
+  padding:12px 15px;border-radius:12px;
+  border:1px solid var(--border);background:var(--purple-soft);
+  color:var(--text);line-height:1.6;font-size:13px;
+}
+.paid-plan-edit-guidance svg{flex:0 0 auto;color:var(--purple);margin-top:3px;}
+.paid-plan-more{border-top:1px solid var(--border);padding-top:9px;}
+.paid-plan-more>summary{
+  min-height:42px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;color:var(--purple-dark);font-weight:750;font-size:13px;
+}
+.paid-plan-more>summary::after{content:'+';font-weight:800;font-size:20px;margin-left:10px;}
+.paid-plan-more[open]>summary::after{content:'−';}
+.paid-plan-more>summary:focus-visible{outline:3px solid var(--dli-focus);outline-offset:3px;}
+.paid-plan-more .source-plan-details{margin-top:6px;}
+.finance-source-plans #dli-plan-editor{scroll-margin-top:92px;}
+.finance-source-plans .paid-plan-meta{margin-top:auto;padding-top:7px;}
+@media(max-width:680px){
+ .paid-plan-edit-guidance{font-size:12px;}
+ .paid-plan-top-edit{min-height:48px;}
+}
