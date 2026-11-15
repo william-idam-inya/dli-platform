@@ -169,9 +169,11 @@ export default function MemberProfilePage(){
     <p>Complete your personal details once and use the same profile when you sign in on another device.</p>
    </div></div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-    <strong>Private account details</strong>
-    <p>Only you can read and edit your birth date and private profile photo. Your Admin-approved role and
-      registered email are not editable here. For a name correction to your institutional account, contact an administrator.</p>
+    <strong>Protected account and profile details</strong>
+    <p>Only you can edit your personal details or upload a new photo. Your saved photo may appear to
+      authorised DLI chat contacts, while opening another member's profile requires approved role and
+      active-class permissions. Your registered email and institutional role cannot be edited here.
+      For corrections to your institutional identity, contact DLI administration.</p>
    </div></div>
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
