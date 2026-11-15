@@ -91,3 +91,30 @@
  .classes-group-session {flex-direction:column;align-items:flex-start;}
  .classes-form-actions>* {width:100%;justify-content:center;}
 }
+
+
+/* Q34 — Cohort-driven topic pacing and conditional fee assignment */
+.classes-workspace .classes-cohort-billing{padding:1rem 1.1rem;margin:1rem 0}
+.classes-cohort-billing summary{display:flex;gap:.7rem;align-items:center;min-height:44px;cursor:pointer;
+  font-weight:800;color:var(--text);font-size:1rem;list-style:none}
+.classes-cohort-billing summary::-webkit-details-marker{display:none}
+.classes-cohort-billing summary svg{flex-shrink:0;color:var(--purple)}
+.classes-cohort-billing>p{font-size:.87rem;line-height:1.6;color:var(--muted);max-width:750px}
+.classes-free-billing-note{display:flex;align-items:center;gap:.5rem;font-size:.85rem;
+  padding:1rem;background:var(--surface-soft);border:1px solid var(--border);
+  color:var(--text);border-radius:10px;margin:1rem 0}
+.classes-free-billing-note svg{color:#10b981}
+.classes-pacing-control{display:grid;gap:.5rem;font-weight:700;font-size:.85rem;margin:.7rem 0}
+.classes-pacing-control select{min-height:44px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);border-radius:9px;padding:.65rem}
+.classes-pacing-preview,.classes-delivery-list{display:grid;gap:.4rem;max-height:260px;overflow:auto;
+  margin-top:.8rem;border:1px solid var(--border);background:var(--surface-soft);
+  border-radius:10px;padding:.8rem}
+.classes-pacing-preview>strong,.classes-delivery-list>strong{font-size:.81rem}
+.classes-pacing-preview>div,.classes-delivery-list>span{display:flex;align-items:flex-start;gap:.7rem;
+  font-size:.79rem;line-height:1.45;padding:.4rem 0;border-top:1px solid var(--border)}
+.classes-pacing-preview time,.classes-delivery-list time{white-space:nowrap;font-weight:800;color:var(--purple)}
+@media(max-width:650px){
+ .classes-pacing-preview>div,.classes-delivery-list>span{flex-direction:column;gap:.2rem}
+ .classes-workspace .classes-cohort-billing{padding:.8rem}
+}
