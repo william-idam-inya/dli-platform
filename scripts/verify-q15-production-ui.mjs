@@ -28,8 +28,8 @@ for(const phrase of ["programmeChoices(catalogue)","levelChoices(catalogue,progr
   assert.ok(enrollment.includes(phrase),'Q15 enrolment hierarchy missing: '+phrase);
 assert.ok(nav.includes('permittedNavigation'));
 const classSource=read('src/pages/ClassesWorkspacePage.tsx');
-assert.ok(classSource.includes('>Group of 5</option>') || classSource.includes("label:'Group of 5'"),
-  'Q15 class tier must display the neutral Group of 5 label');
+assert.ok(classSource.includes("label:'Group of 5 Students'"),
+  'Q15 class tier must display the approved Group of 5 Students label');
 assert.ok(!read('src/pages/ClassesWorkspacePage.tsx').includes('Group of 5 · Science'));
 assert.ok(read('src/pages/AcademicSetupPage.tsx').includes('Choose an academic level'));
 assert.ok(read('src/auth/permissions.ts').includes("FREE_STUDENT_ROUTES"));
