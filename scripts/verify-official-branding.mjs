@@ -26,10 +26,12 @@ const home = read('src/pages/DashboardPage.tsx');
 for (const page of [shell, auth, home]) {
   assert.match(page, /OfficialDliLogo/, 'Brand image missing from a major app surface.');
 }
-assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 2,
-  'Both the sidebar logo and workspace mark must show the official emblem.');
+assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 3,
+  'Sidebar, workspace and mobile header must share the official emblem.');
 assert.match(auth, /<div className="auth-mark"><OfficialDliLogo/);
-assert.match(home, /<div className="art-cap"><OfficialDliLogo decorative/);
+assert.match(home, /<span className="ref-hero-emblem"><OfficialDliLogo decorative/);
+assert.match(home, /<ReferenceHeroArtwork role=/);
+assert.match(shell, /className="ref-mobile-mark"/);
 assert.doesNotMatch(shell, /className="brand-mark">DLI</);
 assert.doesNotMatch(auth, /className="auth-mark">DLI</);
 assert.doesNotMatch(home, /className="art-cap"><GraduationCap/);
