@@ -1,0 +1,129 @@
+/* Q31 — Navigation usability fix.
+   One vertical scroll region per desktop sidebar. Learning links are
+   proper stacked targets, not inline text that creates horizontal overflow. */
+.desktop-sidebar {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #55749b transparent;
+}
+.desktop-sidebar::-webkit-scrollbar { width: 7px; }
+.desktop-sidebar::-webkit-scrollbar-track { background: transparent; }
+.desktop-sidebar::-webkit-scrollbar-thumb {
+  background: #55749b;
+  border-radius: 8px;
+}
+.desktop-sidebar .sidebar-inner {
+  height: auto;
+  min-height: 100%;
+  min-width: 0;
+  width: 100%;
+}
+.desktop-sidebar .primary-nav {
+  flex: 0 0 auto;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+  padding: 0 2px 12px;
+  overscroll-behavior: auto;
+}
+.desktop-sidebar .sidebar-footer {
+  margin-top: 14px;
+}
+.desktop-sidebar .ref-sidebar-actions {
+  margin-top: 8px;
+}
+.sidebar-inner,
+.sidebar-inner .nav-section,
+.sidebar-inner .nav-section-links,
+.sidebar-inner .sidebar-navigation-item,
+.sidebar-inner .nav-link {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+.sidebar-inner .nav-section-toggle {
+  min-width: 0;
+  width: 100%;
+}
+.sidebar-inner .nav-section-toggle > span {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: break-word;
+}
+.sidebar-inner .nav-link {
+  width: 100%;
+}
+.sidebar-inner .nav-link > span {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+.sidebar-inner .nav-link > svg {
+  flex: 0 0 auto;
+}
+/* Learning & Results exposes four distinct full-width, accessible links. */
+.sidebar-inner .sidebar-learning-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+  min-width: 0;
+  max-width: calc(100% - 36px);
+  margin: 4px 0 10px 36px;
+  padding: 2px 0 2px 10px;
+  border-left: 1px solid rgba(149, 171, 201, .45);
+}
+.sidebar-inner .sidebar-learning-link {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: calc(12px * var(--dli-text-scale));
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-decoration: none;
+  color: var(--muted);
+}
+.sidebar-inner .sidebar-learning-link:hover {
+  background: var(--purple-soft);
+  color: var(--purple-dark);
+}
+.sidebar-inner .sidebar-learning-link.active,
+.sidebar-inner .sidebar-learning-link[aria-current='page'] {
+  background: var(--purple-soft);
+  color: var(--purple-dark);
+  font-weight: 750;
+}
+.sidebar-inner .sidebar-learning-link:focus-visible {
+  outline: 3px solid var(--dli-focus);
+  outline-offset: 2px;
+}
+/* Reference dark navy sidebar stays readable; this affects styling,
+   never route availability or role-based navigation. */
+@media (min-width: 681px) {
+  .desktop-sidebar .sidebar-learning-link { color: #d4e3f5; }
+  .desktop-sidebar .sidebar-learning-link:hover {
+    background: #173f77;
+    color: #fff;
+  }
+  .desktop-sidebar .sidebar-learning-link.active,
+  .desktop-sidebar .sidebar-learning-link[aria-current='page'] {
+    background: #1d559b;
+    color: #fff;
+  }
+}
+/* The mobile drawer already scrolls as a whole; never re-introduce
+   nested x/y scrolling on the menu inside it. */
+@media (max-width: 680px) {
+  .mobile-sidebar { overflow-x: hidden; }
+  .mobile-sidebar .primary-nav { flex: 0 0 auto; overflow: visible; }
+  .mobile-sidebar .sidebar-inner { min-width: 0; width: 100%; }
+}
