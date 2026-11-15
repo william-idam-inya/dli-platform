@@ -10,6 +10,7 @@
   "tutorPayoutsEnabled": false,
   "groupFeeInterpretation": "Student's fee, monthly, as labelled by the document; no payment charge has been activated.",
   "notes": [
+    "The first group is now named Group of 5 Students per DLI administrative correction; the unchanged id group_5_science is a legacy stable identifier.",
     "The document does not specify payment due dates, refunds, discounts beyond the named group rate, or invoicing/collection procedures.",
     "The private plan describes six subjects in the introductory text but its teaching mode specifies two selected subjects. The inconsistency requires a decision before operational use.",
     "This general DLI paid learning schedule does not silently supersede separately documented programmes such as the JAMB bootcamp."
@@ -17,7 +18,7 @@
   "plans": [
     {
       "id": "group_5_science",
-      "name": "Group of 5 (Science)",
+      "name": "Group of 5 Students",
       "teachingModel": "Five students in the same class or preparing for the same exam.",
       "studentCount": 5,
       "tutors": 3,
