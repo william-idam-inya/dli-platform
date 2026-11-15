@@ -205,23 +205,67 @@ CREATE FUNCTION public.dli_chat_profile_preview(p_target uuid)
 RETURNS jsonb LANGUAGE sql VOLATILE SECURITY INVOKER SET search_path TO ''
 AS $q32$ SELECT private.dli_chat_profile_preview_impl(p_target); $q32$;
 
+-- Profile-only class directory. This does NOT grant student-tutor chat:
+-- direct messaging remains administrator-routed.
+CREATE FUNCTION private.dli_chat_class_profiles_impl()
+RETURNS TABLE(user_id uuid,full_name text,member_role text,subjects text[])
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
+AS $q32$
+ SELECT target.auth_user_id,COALESCE(NULLIF(p.personal_name,''),target.full_name),
+        target.role::text,
+        ARRAY(
+          SELECT DISTINCT c.subject_name
+          FROM public.teaching_class_members m
+          JOIN public.teaching_classes c ON c.id=m.class_id
+          WHERE m.is_active AND m.class_is_published AND c.state='published'
+            AND (
+              (private.current_role()='tutor'::public.dli_role
+                AND c.tutor_id=auth.uid() AND m.student_id=target.auth_user_id)
+              OR
+              (private.current_role()='student'::public.dli_role
+                AND m.student_id=auth.uid() AND c.tutor_id=target.auth_user_id)
+            )
+          ORDER BY c.subject_name
+        )
+ FROM public.authorised_users target
+ LEFT JOIN public.dli_member_profiles p ON p.user_id=target.auth_user_id
+ WHERE target.status='active'::public.dli_account_status
+   AND target.auth_user_id<>auth.uid()
+   AND (
+     (private.current_role()='tutor'::public.dli_role AND target.role='student'::public.dli_role)
+     OR (private.current_role()='student'::public.dli_role AND target.role='tutor'::public.dli_role)
+   )
+   AND private.dli_chat_profile_allowed(target.auth_user_id)
+ ORDER BY 2
+ LIMIT 250;
+$q32$;
+
+CREATE FUNCTION public.dli_chat_class_profiles()
+RETURNS TABLE(user_id uuid,full_name text,member_role text,subjects text[])
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path TO ''
+AS $q32$ SELECT * FROM private.dli_chat_class_profiles_impl(); $q32$;
+
 -- Security-definer implementations stay in the unexposed private schema;
 -- public wrappers are invoker only. No anonymous grants.
 REVOKE ALL ON FUNCTION private.dli_chat_profile_allowed(uuid),
   private.dli_chat_avatar_allowed(uuid),
   private.dli_chat_avatar_object_allowed(text),
   private.dli_chat_avatar_path_impl(uuid),
-  private.dli_chat_profile_preview_impl(uuid)
+  private.dli_chat_profile_preview_impl(uuid),
+  private.dli_chat_class_profiles_impl()
 FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION private.dli_chat_profile_allowed(uuid),
   private.dli_chat_avatar_allowed(uuid),
   private.dli_chat_avatar_object_allowed(text),
   private.dli_chat_avatar_path_impl(uuid),
-  private.dli_chat_profile_preview_impl(uuid)
+  private.dli_chat_profile_preview_impl(uuid),
+  private.dli_chat_class_profiles_impl()
 TO authenticated;
 REVOKE ALL ON FUNCTION public.dli_chat_avatar_path(uuid),
-  public.dli_chat_profile_preview(uuid)
+  public.dli_chat_profile_preview(uuid),
+  public.dli_chat_class_profiles()
 FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.dli_chat_avatar_path(uuid),
-  public.dli_chat_profile_preview(uuid)
+  public.dli_chat_profile_preview(uuid),
+  public.dli_chat_class_profiles()
 TO authenticated;
