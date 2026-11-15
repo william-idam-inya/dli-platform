@@ -24,7 +24,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   const host=root.current;
   if(!host)return;
   const panelNodes=[...host.querySelectorAll<HTMLElement>(
-   '.module-page .panel, .learning-hub .panel, .module-page > section, .module-page > .academic-columns > section'
+   '.module-page .panel, .learning-hub .panel, .module-page > section, .module-page > .academic-columns > section, .dashboard-page .panel, .dashboard-page > .section-block, .ref-dashboard-layout .ref-surface'
   )];
   const unique=[...new Set(panelNodes)].filter(p=>
    !p.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
@@ -66,12 +66,14 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    if(compressed&&count>0){
     if(active===key){
      panel.setAttribute('data-dli-focus-active','true');
-     panel.removeAttribute('role');
+     panel.setAttribute('role','dialog');
+     panel.setAttribute('aria-modal','true');
      panel.removeAttribute('tabindex');
-     panel.removeAttribute('aria-label');
+     panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
      panel.removeAttribute('aria-expanded');
     }else{
      panel.removeAttribute('data-dli-focus-active');
+     panel.removeAttribute('aria-modal');
      panel.setAttribute('role','button');
      panel.setAttribute('tabindex','0');
      panel.setAttribute('aria-label','Open '+(panel.getAttribute('data-dli-focus-title')||'workspace section'));
@@ -79,8 +81,9 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
     }
    }else{
     panel.removeAttribute('data-dli-focus-active');
-    panel.removeAttribute('role');panel.removeAttribute('tabindex');
-    panel.removeAttribute('aria-label');panel.removeAttribute('aria-expanded');
+    panel.removeAttribute('role');panel.removeAttribute('aria-modal');
+    panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
+    panel.removeAttribute('aria-expanded');
    }
   }
  },[active,compressed,count,location.pathname]);
