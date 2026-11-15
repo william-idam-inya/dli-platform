@@ -91,15 +91,34 @@ export default function DashboardPage(){
     account?.role==='academic_coordinator'?'Your academic workspace.':
     isManager?'Manage DLI in one place.':'Your DLI workspace.';
 
-  return <div className="dashboard-page unified-overview">
+  const welcomeSummary = account?.role === 'student'
+    ? 'Your classes, lessons, results and messages in one place. Start with the next learning step.'
+    : account?.role === 'tutor'
+      ? 'Prepare classes, guide your learners, review assessments and keep teaching organised.'
+      : account?.role === 'academic_coordinator'
+        ? 'Coordinate teaching, curriculum and academic progress with the right tools close at hand.'
+        : 'Keep classes, people, finances and institutional activity organised in one secure workspace.';
+  const heroPath = account?.role === 'academic_coordinator' ? '/academics' : '/classes';
+  const heroAction = account?.role === 'student' ? 'My classes'
+    : account?.role === 'tutor' ? 'Open teaching classes'
+    : account?.role === 'academic_coordinator' ? 'Academic setup'
+    : 'Manage classes';
+
+  return <div className="dashboard-page unified-overview" data-dli-role={account?.role ?? 'guest'}>
     <section className="welcome-row">
       <div>
         <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
         <h1>{headline}</h1>
         <p className="welcome-copy">
-          {account?accountRoleLabel(account):''} · One DLI system for teaching,
-          learning, institutional administration and authorised member services.
+          {account ? accountRoleLabel(account) + ' · ' : ''}{welcomeSummary}
         </p>
+        <div className="dli-role-actions">
+          {account && canAccessPath(account.role,heroPath,account.studentTier) &&
+            <Link to={heroPath} className="dli-hero-action">
+              {heroAction} <ArrowRight size={16} aria-hidden="true"/>
+            </Link>}
+          <span className="dli-hero-note">Learn • Improve • Excel</span>
+        </div>
       </div>
       <div className="welcome-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/>
         <div className="art-cap"><OfficialDliLogo decorative /></div>
@@ -109,9 +128,9 @@ export default function DashboardPage(){
       <div className="status-banner-icon"><ShieldCheck size={20}/></div>
       <div className="status-banner-copy">
         <strong>One platform, role-scoped access</strong>
-        <span>Every role uses the same navigation model; only verified permissions
-          and academic entitlements determine accessible records. Development testing
-          does not activate payments or invitations.</span>
+        <span>Your dashboard shows only authorised tools and records. Student access,
+          manual payment confirmations and teaching assignments require independent
+          verification before they become active.</span>
       </div>
     </section>
     {priorityItems.length>0&&<section className="section-block unified-priority-section">
