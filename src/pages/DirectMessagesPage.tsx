@@ -522,17 +522,25 @@ export default function DirectMessagesPage(){
     </p>}
     <div className="dli-direct-controls">
       <div className="dli-direct-modes">
-        <button type="button" className={mode==='inbox'?'selected':''} onClick={()=>{setMode('inbox');setActiveId('');}}>My chats</button>
-        {moderator&&<button type="button" className={mode==='oversight'?'selected':''} onClick={()=>{setMode('oversight');setActiveId('');}}>Communication oversight</button>}
+        <button type="button" className={mode==='inbox'?'selected':''} onClick={()=>{setMode('inbox');setActiveId('');setComposeOpen(false);}}>My chats</button>
+        {moderator&&<button type="button" className={mode==='oversight'?'selected':''} onClick={()=>{setMode('oversight');setActiveId('');setComposeOpen(false);}}>Communication oversight</button>}
       </div>
       <button type="button" className="user-outline-button" disabled={loading||busy} onClick={()=>void load()}>
         <RefreshCw size={15}/> Refresh
       </button>
     </div>
-    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')}>
+    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')+(composeOpen?' compose-open':'')}>
       <aside className="dli-direct-sidebar" aria-label="Conversation directory">
-        <label htmlFor="direct-search"><Search size={16}/> Find a person or conversation</label>
-        <input id="direct-search" placeholder="Search by name…" value={search} onChange={e=>setSearch(e.target.value)}/>
+         {mode==='inbox'&&<div className="dli-telegram-sidebar-header">
+           <h2>Chats</h2>
+           <button className="dli-telegram-new-message" type="button"
+             aria-label="New message" aria-expanded={composeOpen}
+             onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
+             {composeOpen?<X size={20}/>:<Pencil size={20}/>}
+           </button>
+         </div>}
+        <label htmlFor="direct-search"><Search size={16}/> Search conversations</label>
+        <input id="direct-search" placeholder={composeOpen?"Search permitted contacts…":"Search conversations…"} value={search} onChange={e=>setSearch(e.target.value)}/>
         {mode==='inbox'&&<nav className="dli-direct-chat-filters" aria-label="Filter conversations">
           <button type="button" className={chatFilter==='all'?'selected':''} aria-pressed={chatFilter==='all'}
             onClick={()=>setChatFilter('all')}>All</button>
@@ -540,8 +548,49 @@ export default function DirectMessagesPage(){
             onClick={()=>setChatFilter('unread')}>Unread</button>
           <span>{threads.length} chats</span>
         </nav>}
-        {mode==='inbox'&&<section className="dli-direct-contacts">
-          <h2>Start a chat · {permittedContacts.length} available</h2>
+        <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
+          {visible.map(t=>{
+            const other=participant(t);
+            const latest=lastMessage.get(t.id);
+            const unread=mode==='inbox'?unreadInThread(t.id):0;
+            return <div className={'dli-direct-chat-list-row'+(activeId===t.id?' selected':'')} key={t.id}>
+              <button type="button" className="dli-chat-avatar-trigger"
+                aria-label={'View '+memberName(mode==='oversight'?t.participant_a:other)+' profile'}
+                onClick={()=>openMemberProfile(mode==='oversight'?t.participant_a:other,
+                  memberName(mode==='oversight'?t.participant_a:other))}>
+                <ChatMemberAvatar userId={mode==='oversight'?t.participant_a:other}
+                  name={memberName(mode==='oversight'?t.participant_a:other)}/>
+              </button>
+              <button type="button" className="dli-direct-chat-list-open"
+                aria-label={'Open conversation with '+memberName(other)+(unread?' ('+unread+' unread)':'')}
+                onClick={()=>setActiveId(t.id)}>
+                <span className="dli-direct-chat-list-main">
+                  <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
+                  <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
+                </span>
+                <span className="dli-direct-chat-list-meta">
+                  <small>{latest?stamp(latest.created_at):''}</small>
+                  {unread>0&&<span className="dli-direct-unread-pill">{unread>99?'99+':unread}</span>}
+                </span>
+              </button>
+              {mode==='inbox'&&<button type="button" className="dli-direct-pin-button"
+                aria-pressed={pins.includes(t.id)}
+                aria-label={pins.includes(t.id)?'Unpin conversation':'Pin conversation'}
+                title={pins.includes(t.id)?'Unpin':'Pin on this device'}
+                onClick={()=>togglePin(t.id)}>
+                <Pin size={16} fill={pins.includes(t.id)?'currentColor':'none'}/>
+              </button>}
+            </div>;
+          })}
+          {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations yet. Tap the pencil icon to start a private message with an authorised contact.</p>}
+        </section>
+        {mode==='inbox'&&composeOpen&&<div className="dli-telegram-contacts-panel" role="region"
+          aria-label="Choose an authorised contact to message">
+          <div className="dli-telegram-contacts-title"><strong>New message</strong>
+            <button type="button" aria-label="Close new message contacts" onClick={()=>setComposeOpen(false)}><X size={17}/></button>
+          </div>
+          {mode==='inbox'&&<section className="dli-direct-contacts">
+          <h2>New message · {permittedContacts.length} permitted contacts</h2>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
           {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
             <div className={'dli-direct-contact-row'+(
@@ -584,42 +633,8 @@ export default function DirectMessagesPage(){
             {classProfilesError&&<p className="dli-direct-empty" role="status">
               Class profiles could not be verified. Refresh after checking your class assignments.</p>}
           </section>}
-        <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
-          {visible.map(t=>{
-            const other=participant(t);
-            const latest=lastMessage.get(t.id);
-            const unread=mode==='inbox'?unreadInThread(t.id):0;
-            return <div className={'dli-direct-chat-list-row'+(activeId===t.id?' selected':'')} key={t.id}>
-              <button type="button" className="dli-chat-avatar-trigger"
-                aria-label={'View '+memberName(mode==='oversight'?t.participant_a:other)+' profile'}
-                onClick={()=>openMemberProfile(mode==='oversight'?t.participant_a:other,
-                  memberName(mode==='oversight'?t.participant_a:other))}>
-                <ChatMemberAvatar userId={mode==='oversight'?t.participant_a:other}
-                  name={memberName(mode==='oversight'?t.participant_a:other)}/>
-              </button>
-              <button type="button" className="dli-direct-chat-list-open"
-                aria-label={'Open conversation with '+memberName(other)+(unread?' ('+unread+' unread)':'')}
-                onClick={()=>setActiveId(t.id)}>
-                <span className="dli-direct-chat-list-main">
-                  <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                  <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
-                </span>
-                <span className="dli-direct-chat-list-meta">
-                  <small>{latest?stamp(latest.created_at):''}</small>
-                  {unread>0&&<span className="dli-direct-unread-pill">{unread>99?'99+':unread}</span>}
-                </span>
-              </button>
-              {mode==='inbox'&&<button type="button" className="dli-direct-pin-button"
-                aria-pressed={pins.includes(t.id)}
-                aria-label={pins.includes(t.id)?'Unpin conversation':'Pin conversation'}
-                title={pins.includes(t.id)?'Unpin':'Pin on this device'}
-                onClick={()=>togglePin(t.id)}>
-                <Pin size={16} fill={pins.includes(t.id)?'currentColor':'none'}/>
-              </button>}
-            </div>;
-          })}
-          {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations in this view.</p>}
-        </section>
+        
+        </div>}
         {moderator&&mode==='oversight'&&<section className="dli-direct-reports">
           <h2><Flag size={14}/> Message reports</h2>
           {reports.filter(r=>r.status==='open').map(r=><div key={r.id}>
@@ -632,6 +647,11 @@ export default function DirectMessagesPage(){
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
+        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" type="button"
+          aria-label={composeOpen?'Close contacts':'Compose new message'}
+          onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
+          {composeOpen?<X size={22}/>:<Pencil size={22}/>}
+        </button>}
       </aside>
       <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
         {error&&<p role="alert" className="dli-direct-inline-feedback error">{error}</p>}
@@ -688,27 +708,15 @@ export default function DirectMessagesPage(){
                 onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
             </aside>}
           </div>
-          {mode==='inbox'?<form className="dli-direct-compose" onSubmit={e=>void send(e)}>
-            <label htmlFor="direct-draft">Your message</label>
-            <textarea id="direct-draft" ref={composeRef} maxLength={2000} rows={2} value={draft}
-              placeholder="Type your message in any language…" onChange={e=>setDraft(e.target.value)}/>
-            <div className="dli-direct-emoji-bar" role="group" aria-label="Insert an emoji">
-              {['😊','👍','👏','❤️','🙏','🎓'].map(emoji=><button type="button" key={emoji}
-                disabled={busy||draft.length+emoji.length>2000}
-                aria-label={'Insert '+emoji} onClick={()=>setDraft(text=>text+emoji)}>{emoji}</button>)}
-            </div>
-            <ChatMediaRecorder key={mediaReset} disabled={busy}
-              onReady={file=>setAttachment(file)}/>
-            <label htmlFor="direct-attachment" className="dli-direct-attach-label"><Paperclip size={16}/>
-              Attach a private file or saved recording (10 MB maximum)
-            </label>
-            <input id="direct-attachment" type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx,.webm,.ogg,.mp4,.m4a,audio/*,video/*"
-              onChange={e=>setAttachment(e.target.files?.[0]??null)}/>
-            {attachment&&<small className="dli-direct-selected-file">{attachment.name} · {(attachment.size/1024/1024).toFixed(2)} MB</small>}
-            <div><small>{draft.length}/2,000 · 30 messages/hour · 20 files/day</small>
-              <button type="submit" disabled={busy||(!draft.trim()&&!attachment)}><Send size={16}/> Send</button></div>
-          </form>:<p className="dli-direct-oversight-note"><CheckCheck size={16}/> Read-only oversight. You cannot send on someone else's behalf.</p>}
+          {mode==='inbox'?<DirectMessageComposer
+             draft={draft} setDraft={setDraft}
+             attachment={attachment} setAttachment={setAttachment}
+             reply={editTarget
+               ?{id:editTarget.id,name:'your message (editing)',body:editTarget.body}
+               :replyTarget?{id:replyTarget.id,name:memberName(replyTarget.sender_id),body:replyTarget.body}:null}
+             onCancelReply={()=>{setReplyTarget(null);setEditTarget(null);setDraft('');}}
+             busy={busy} mediaReset={mediaReset} onSubmit={e=>void send(e)}
+             composeRef={composeRef}/>:<p className="dli-direct-oversight-note"><CheckCheck size={16}/> Read-only oversight. You cannot send on someone else's behalf.</p>}
         </>}
       </section>
     </div>
