@@ -379,6 +379,10 @@
     {
       "file": "20261115140000_stage_q29_editable_paid_plan_reference.sql",
       "gitBlobSha1": "503b7bfb10558fe3fb87be972df33209a5e4cc7c"
+    },
+    {
+      "file": "20261115160000_stage_q32_chat_profile_access.sql",
+      "gitBlobSha1": "b0a48787e2650209522f0b51e1a76561476363cb"
     }
   ]
 }
