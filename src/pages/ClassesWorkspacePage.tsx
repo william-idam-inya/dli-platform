@@ -236,8 +236,9 @@ export default function ClassesWorkspacePage(){
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function cancelEdit(){
-    setEditing(null);setForm(EMPTY);setLessons([newLesson()]);
-    setChosen([]);setError(null);
+    setEditing(null);
+    if(selectedCohortId)chooseCohort(selectedCohortId);
+    else {setForm(EMPTY);setLessons([newLesson()]);setChosen([]);setError(null);}
   }
   function chooseCohort(id:string){
     const cohort=cohorts.find(h=>h.id===id);
@@ -320,10 +321,10 @@ export default function ClassesWorkspacePage(){
           ({subject_id,tutor_id,second_tutor_id,topics_per_meeting,weekday,starts_at,ends_at})), 
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
-        'Class draft created with '+lessons.length+' approved course'+(lessons.length===1?'':'s')+
-        '. Publishing synchronises its academic tutor assignments and enrolled students.');
       cancelEdit();
+      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
+        'Cohort class draft created with '+lessons.length+' course'+(lessons.length===1?'':'s')+
+        '. Publishing assigns teaching dates for each ordered topic.');
       await refresh();
     }catch{setError('The class could not be saved. Refresh the register before trying again.');}
     finally{setBusy(false);}
@@ -359,13 +360,13 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Build one class from approved courses with two tutors per subject, shared student enrolment and one Google Meet link.':
+        <p>{staff?'Select a completed cohort: its courses and ordered topics populate the weekly timetable automatically.':
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
     <div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
       <div><strong>One class · approved courses · two tutors per subject</strong>
-        <p>Each class combines approved courses, a shared roster, two tutors per subject and a weekly timetable.
+        <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
           Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
       </div>
     </div>
@@ -391,7 +392,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
-          <p className="user-caption">Select courses from Academic Setup, assign two different tutors per course, enrol students and schedule sessions. Publishing creates the linked academic assignments automatically.</p>
+          <p className="user-caption">Choose a completed cohort, configure tutors and a delivery pace for every course, then publish the dated schedule.</p>
         </div></div>
         {draftGroups.length>0&&<div className="classes-draft-picker">
           <label htmlFor="classes-draft">Continue an existing draft</label>
@@ -404,16 +405,16 @@ export default function ClassesWorkspacePage(){
           </select>
         </div>}
         <form className="academic-form classes-form" onSubmit={e=>void save(e)}>
-          <div className="classes-section-heading"><span>1</span><div><h3>Class type</h3><p>Choose the class capacity, independently of its subjects or academic level.</p></div></div>
+          <div className="classes-section-heading"><span>1</span><div><h3>Billing mode &amp; class capacity</h3><p>{paidCohort?'Select the paid class capacity. Payment assignments are available below.':'Scholars Club cohorts are free and need no payment assignment.'}</p></div></div>
           <div className="classes-tier-grid" role="group" aria-label="Class type">
-            {CLASS_TYPES.map(type=><button key={type.id} type="button" disabled={busy||Boolean(editing)}
+            {CLASS_TYPES.filter(type=>selectedCohort&&(paidCohort?type.id!=='free_demo':type.id==='free_demo')).map(type=><button key={type.id} type="button" disabled={busy||Boolean(editing)}
               aria-pressed={form.class_type===type.id}
               className={'classes-tier'+(form.class_type===type.id?' selected':'')}
               onClick={()=>chooseType(type.id)}>
               <strong>{type.label}</strong><small>{type.hint}</small>
             </button>)}
           </div>
-          <p className="academic-code-hint">Programme: <strong>{programmes.find(p=>p.id===programmeId)?.name??'Unavailable'}</strong>. Paid classes require approved Paid Students before publication.</p>
+          <p className="academic-code-hint">Programme: <strong>{cohortProgramme?.name??'Choose a cohort first'}</strong>. Paid students must have verified access before publication.</p>
 
           <div className="classes-section-heading"><span>2</span><div><h3>Academic level and group identity</h3><p>Choose JSS, SS or another approved level; subjects will be filtered accordingly.</p></div></div>
           <label htmlFor="classes-level">Academic level</label>
@@ -464,7 +465,7 @@ export default function ClassesWorkspacePage(){
             </div>
           </fieldset>
 
-          <div className="classes-section-heading"><span>4</span><div><h3>Approved courses, tutors and timetable</h3>
+          <div className="classes-section-heading"><span>4</span><div><h3>Cohort courses, tutors &amp; topic pacing</h3>
             <p>Assign two different tutors for each course and one weekly time. The same tutor may help teach more than one course.</p>
           </div></div>
           <div className="classes-lesson-list">
