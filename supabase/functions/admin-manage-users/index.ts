@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
     // The real caller JWT + RLS still constrain visible rows. An archived
     // record never means the user was deleted or had access restored.
     let query = requestClient.from('authorised_users')
-      .select('id,email,full_name,role,status,created_at,updated_at,archived_at',
+      .select('id,auth_user_id,email,full_name,role,status,created_at,updated_at,archived_at',
         { count: 'exact' })
       .order('created_at', { ascending: false });
     query = view === 'archived'
@@ -116,8 +116,19 @@ Deno.serve(async (req: Request) => {
       .range(page * size, page * size + size);
     if (listError) return reply(500, { error: 'Could not load authorised users.' }, origin);
 
+    const studentIds=(users??[]).filter(u=>u.role==='student'&&u.auth_user_id)
+      .map(u=>u.auth_user_id as string);
+    const entitlements=studentIds.length
+      ?await admin.from('dli_student_entitlements').select('student_id,tier')
+        .in('student_id',studentIds)
+      :{data:[],error:null};
+    if(entitlements.error)return reply(500,{error:'Student tiers could not be verified.'},origin);
+    const tiers=new Map((entitlements.data??[]).map(row=>[row.student_id,row.tier]));
     return reply(200, {
-      users: (users ?? []).slice(0,size),
+      users: (users ?? []).slice(0,size).map(({auth_user_id,...user})=>({
+        ...user,student_tier:user.role==='student'?
+          (tiers.get(auth_user_id as string)==='paid'?'paid':'free'):null,
+      })),
       total: count ?? 0,
       has_more: (users ?? []).length > size,
       page, view,
