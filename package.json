@@ -49,7 +49,8 @@
     "check:q29-editable-paid-plans": "node scripts/verify-q29-editable-paid-plans.mjs",
     "check:q30-finance-editor": "node scripts/verify-q30-finance-editor.mjs",
     "check:q31-sidebar-navigation": "node scripts/verify-q31-sidebar-navigation.mjs",
-    "check:q32-chat-profiles": "node scripts/verify-q32-chat-profiles.mjs"
+    "check:q32-chat-profiles": "node scripts/verify-q32-chat-profiles.mjs",
+    "check:q33-unified-classes": "node scripts/verify-q33-unified-classes.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
