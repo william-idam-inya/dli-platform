@@ -436,3 +436,26 @@
  color:var(--muted);font-size:10px;font-weight:600;text-transform:none;letter-spacing:normal}
 .dli-telegram-role-contacts{display:grid;gap:3px;margin-bottom:8px}
 .dli-direct-conversations>.dli-telegram-role-threads{min-width:0}
+
+
+/* Q35 live Presence/Broadcast and privacy-limited 1:1 calls */
+.dli-direct-page .dli-chat-avatar-trigger{position:relative}
+.dli-live-chat-header{display:grid;gap:3px;flex:1;min-width:0}
+.dli-live-chat-header>strong{font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dli-live-chat-header>small{font-size:.72rem;color:var(--purple);min-height:16px}
+.dli-live-call-actions{display:flex;align-items:center;gap:4px;margin-left:auto}
+.dli-live-call-actions button{display:grid;place-items:center;width:42px;height:42px;
+ border-radius:50%;border:1px solid var(--border);background:var(--surface-soft);
+ color:var(--purple);cursor:pointer}
+.dli-live-call-actions button:disabled{opacity:.35;cursor:not-allowed}
+.dli-live-online-dot{position:absolute;bottom:3px;right:3px;display:block;width:12px;height:12px;
+ border-radius:50%;background:#10b981;border:2px solid var(--surface)}
+.dli-live-online-toast{position:fixed;right:18px;top:78px;z-index:1180;
+ display:flex;align-items:center;gap:8px;max-width:min(360px,calc(100vw - 24px));
+ background:var(--surface);border:1px solid var(--border);border-radius:12px;
+ padding:11px 13px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:12px;color:var(--text)}
+.dli-live-online-toast .dli-live-online-dot{position:static;flex:0 0 11px}
+.dli-live-online-toast button{margin-left:auto;border:0;background:transparent;color:var(--muted);
+ width:30px;height:30px;cursor:pointer;font-size:18px}
+@media(max-width:700px){.dli-live-call-actions button{width:38px;height:38px}
+ .dli-live-chat-header>strong{font-size:.83rem}}
