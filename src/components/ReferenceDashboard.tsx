@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode, type CSSProperties } from 'react';
 import {
   ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2,
   ClipboardCheck, Coins, FileCheck2, GraduationCap, LayoutDashboard,
-  MessageCircle, ShieldCheck, Users, Wallet,
+  ShieldCheck, Users, Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -235,7 +235,7 @@ function LearningProgress({account,academicCounts,academicLoading,metrics}:{
   return <section className="ref-surface ref-progress-panel">
     <SectionHead title="My learning progress" action={{to:'/study',label:'See learning'}}/>
     <div className="ref-progress-content">
-      <div className="ref-progress-ring" style={{'--ref-progress':ratio===null?'0%':ratio+'%'} as React.CSSProperties}>
+      <div className="ref-progress-ring" style={{'--ref-progress':ratio===null?'0%':ratio+'%'} as CSSProperties}>
         <span>{free?'Free':academicLoading?'…':ratio===null?'—':ratio+'%'}</span>
         <small>{free?'Demo access':'Quiz participation'}</small>
       </div>
