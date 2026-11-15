@@ -1,0 +1,145 @@
+/* Q28 reference-aligned shell, applied across every route, not only Home.
+   It respects original brand, user preference colours and protected navigation. */
+.ref-mobile-identity{display:none;}
+.ref-desktop-greeting{display:grid;gap:4px;min-width:0;}
+.ref-desktop-greeting strong{
+ font:750 15px/1.2 Manrope,'DM Sans',sans-serif;
+ color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ref-desktop-greeting small{
+ color:var(--muted);font-size:11px;line-height:1.35;
+}
+.ref-sidebar-actions{display:grid;gap:6px;margin:12px 0;}
+.ref-sidebar-actions>a,.ref-sidebar-actions>button{
+ display:flex;align-items:center;gap:10px;min-height:43px;
+ padding:10px 12px;border-radius:11px;
+ background:transparent;border:1px solid transparent;
+ color:var(--text);font-size:12px;font-weight:650;text-align:left;
+ text-decoration:none;cursor:pointer;
+}
+.ref-sidebar-actions :is(a,button):hover{background:var(--purple-soft);color:var(--purple-dark);}
+.ref-sidebar-actions :is(a,button):focus-visible{outline:3px solid var(--dli-focus);outline-offset:2px;}
+@media(min-width:681px){
+ .desktop-sidebar{background:#092953;border-right-color:#184172;color:#f8fbff;}
+ .desktop-sidebar .brand-copy strong{color:#fff;}
+ .desktop-sidebar .brand-copy small{color:#b8d6f8;}
+ .desktop-sidebar .brand-mark{background:#fff;border:1px solid rgba(226,182,79,.65);}
+ .desktop-sidebar .workspace-switcher{background:#0f3667;border-color:#205080;}
+ .desktop-sidebar .workspace-copy strong{color:#fff;}
+ .desktop-sidebar .workspace-copy small{color:#ccdef2;}
+ .desktop-sidebar .workspace-chevron{color:#c7dbf5;}
+ .desktop-sidebar .nav-section-label{color:#c0d6ec;}
+ .desktop-sidebar .nav-link{color:#d5e4f5;}
+ .desktop-sidebar .nav-link:hover{color:#fff;background:#133f75;}
+ .desktop-sidebar .nav-link.active{background:#1365d0;color:#fff;box-shadow:inset 3px 0 #f0c354;}
+ .desktop-sidebar .nav-link.active svg{color:#fff;}
+ .desktop-sidebar .nav-section-toggle{color:#c0d6ec;}
+ .desktop-sidebar .nav-section-toggle:hover{color:#fff;background:#123c73;}
+ .desktop-sidebar .sidebar-footer{background:#0f3667;border-color:#205080;color:#fff;}
+ .desktop-sidebar .sidebar-footer p{color:#bdd4ed;}
+ .desktop-sidebar .sidebar-help-icon{background:#215b9e;color:#fff;}
+ .desktop-sidebar .sidebar-version{color:#bdd4ed;}
+ .desktop-sidebar .sidebar-learning-link{color:#d0e1f1;}
+ .desktop-sidebar .ref-sidebar-actions>a,.desktop-sidebar .ref-sidebar-actions>button{color:#d5e4f5;}
+ .desktop-sidebar .ref-sidebar-actions :is(a,button):hover{color:#fff;background:#133f75;}
+}
+@media(max-width:680px){
+ .topbar{
+  height:70px;min-height:70px;padding:0 14px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+ }
+ .topbar-left{min-width:0;flex:1;gap:0;}
+ .topbar-actions{gap:7px;flex:0 0 auto;}
+ .topbar .mobile-menu{display:none;}
+ .topbar .breadcrumb,.topbar .ref-desktop-greeting{display:none;}
+ .ref-mobile-identity{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+ .ref-mobile-mark{
+  display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;
+  border-radius:9px;background:#fff;border:1px solid #dae5f0;
+  padding:2px;
+ }
+ .ref-mobile-mark .official-dli-logo{width:100%;height:100%;object-fit:contain;}
+ .ref-mobile-avatar{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;}
+ .ref-mobile-avatar .profile-placeholder{width:34px;height:34px;border-radius:50%;overflow:hidden;}
+ .ref-mobile-avatar .profile-placeholder img{width:100%;height:100%;object-fit:cover;}
+ .ref-mobile-greeting{display:grid;gap:2px;min-width:0;flex:1;}
+ .ref-mobile-greeting strong{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--text);font-size:clamp(11px,3.1vw,13px);font-weight:800;letter-spacing:-.02em;
+ }
+ .ref-mobile-greeting small{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--muted);font-size:10px;
+ }
+ .topbar-actions .theme-toggle{display:none;}
+ .topbar-actions>button[aria-label="Sign out"]{display:none;}
+ .topbar-actions>.account-mini{display:none;}
+ .topbar-actions .icon-button,.topbar-actions a{min-width:38px;min-height:38px;}
+ .mobile-bottom-nav{
+  border-top:1px solid #d8e5f5;box-shadow:0 -5px 22px rgba(13,44,83,.08);
+  background:var(--surface);
+ }
+ .mobile-bottom-link{color:var(--muted);font-size:10px;}
+ .mobile-bottom-link.active{background:var(--purple-soft);color:var(--purple-dark);}
+ .mobile-bottom-link.active svg{stroke-width:2.4;}
+ .mobile-sidebar .ref-sidebar-actions>a,
+ .mobile-sidebar .ref-sidebar-actions>button{color:var(--text);}
+ .page-content{padding-top:18px;}
+}
+@media(max-width:365px){
+ .topbar{padding:0 9px;}
+ .ref-mobile-mark{width:30px;height:30px;flex-basis:30px;}
+ .ref-mobile-avatar,.ref-mobile-avatar .profile-placeholder{width:29px;height:29px;flex-basis:29px;}
+ .ref-mobile-greeting strong{font-size:11px;}
+ .topbar-actions{gap:1px;}
+ .topbar-actions .icon-button{min-width:35px;min-height:35px;}
+}
+/* A subject-appropriate illustrated banner for each real, authorised class.
+   Never contains invented course content or synthetic engagement figures. */
+.ref-course-banner{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:15px;min-height:124px;padding:17px 20px;margin:12px 0;
+ border-radius:15px;overflow:hidden;position:relative;
+ color:#fff;background:
+  radial-gradient(circle at 83% 25%,rgba(38,203,225,.3),transparent 37%),
+  linear-gradient(115deg,#07346c 0%,#0d5ba2 65%,#097e99 100%);
+}
+.ref-course-banner:after{
+ content:"";position:absolute;pointer-events:none;right:-25px;top:-82px;
+ width:220px;height:220px;border:2px solid rgba(255,255,255,.12);
+ border-radius:50%;box-shadow:0 0 0 25px rgba(255,255,255,.045),0 0 0 55px rgba(255,255,255,.03);
+}
+.ref-course-banner-content{display:grid;gap:7px;min-width:0;position:relative;z-index:1;}
+.ref-course-banner-content small{
+ font-size:10px;font-weight:780;letter-spacing:.09em;color:#f5d379;text-transform:uppercase;
+}
+.ref-course-banner-content strong{
+ font:800 clamp(17px,2vw,22px)/1.25 Manrope,'DM Sans',sans-serif;
+ color:#fff;overflow-wrap:anywhere;
+}
+.ref-course-banner-content span{font-size:12px;color:#d3e8fd;line-height:1.45;}
+.ref-course-banner-art{
+ flex:0 0 85px;width:85px;height:85px;display:grid;place-items:center;
+ transform:rotate(-10deg);z-index:1;filter:drop-shadow(0 10px 10px rgba(0,10,40,.22));
+}
+.ref-course-banner-art .dli-subject-art{
+ width:74px;height:74px;border-radius:19px;
+ border:2px solid #f0d178;background:linear-gradient(150deg,#f5fbff,#bddbf7);color:#13538d;
+}
+.ref-course-banner-art .dli-subject-art svg{width:44px;height:44px;}
+.ref-course-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 13px;}
+.ref-course-tabs a{
+ display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;
+ border:1px solid var(--border);border-radius:10px;
+ color:var(--purple-dark);background:var(--surface);
+ font-size:11px;font-weight:700;text-decoration:none;
+}
+.ref-course-tabs a:hover{border-color:var(--purple);background:var(--purple-soft);}
+@media(max-width:480px){
+ .ref-course-banner{min-height:108px;padding:15px;}
+ .ref-course-banner-art{flex-basis:57px;width:57px;height:57px;}
+ .ref-course-banner-art .dli-subject-art{width:54px;height:54px;border-radius:14px;}
+ .ref-course-banner-art .dli-subject-art svg{width:30px;height:30px;}
+ .ref-course-tabs{gap:5px;}
+ .ref-course-tabs a{min-height:34px;font-size:10px;padding:7px 10px;}
+}

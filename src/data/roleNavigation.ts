@@ -4,14 +4,14 @@ import type { Account, DliRole } from '../auth/permissions';
 // presentation preference, not an authorisation policy: the caller must pass
 // the paths permitted by canAccessPath() from the existing RBAC matrix.
 const ROLE_PRIORITY: Record<DliRole, readonly string[]> = {
-  owner: ['/', '/academics', '/users', '/reports'],
-  admin: ['/', '/classes', '/academics', '/users'],
-  assistant_admin: ['/', '/finance', '/payroll', '/classes'],
-  academic_coordinator: ['/', '/academics', '/study', '/reports'],
-  tutor: ['/', '/classes', '/study', '/communications'],
-  student: ['/', '/classes', '/study', '/communications'],
+  owner: ['/', '/users', '/finance', '/reports'],
+  admin: ['/', '/users', '/finance', '/classes'],
+  assistant_admin: ['/', '/classes', '/finance', '/payroll'],
+  academic_coordinator: ['/', '/academics', '/study', '/profile'],
+  tutor: ['/', '/classes', '/communications', '/profile'],
+  student: ['/', '/classes', '/communications', '/profile'],
 };
-const FREE_STUDENT_PRIORITY = ['/', '/classes', '/enrolment', '/feedback'] as const;
+const FREE_STUDENT_PRIORITY = ['/', '/classes', '/communications', '/profile'] as const;
 
 export function mobilePriorityPaths(
   account: Pick<Account, 'role' | 'studentTier'>,
