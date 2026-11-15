@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
 import SubjectArtwork from '../components/SubjectArtwork';
+import {makeTopicPacingPreview} from '../lib/topicPacing';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
 
@@ -26,8 +27,14 @@ type ClassRow = {
 };
 type Member = { id:string;class_id:string;student_id:string;student_name:string;is_active:boolean };
 type CoTutor = {class_id:string;tutor_id:string;tutor_name:string;is_active:boolean};
+type Cohort = {id:string;name:string;programme_id:string;academic_level_id:string;is_active:boolean};
+type Offering = {id:string;cohort_id:string;course_id:string;is_active:boolean};
+type Topic = {id:string;course_id:string;title:string;is_active:boolean};
+type CohortPlan = {cohort_id:string;course_id:string;topic_id:string;position:number};
+type Pacing = {class_id:string;topics_per_meeting:number};
+type TopicDelivery = {class_id:string;course_id:string;topic_id:string;topic_order:number;meeting_number:number;meeting_date:string};
 type ClassCurriculum = {class_group_id:string;cohort_id:string};
-type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;weekday:number;starts_at:string;ends_at:string };
+type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;topics_per_meeting:number;weekday:number;starts_at:string;ends_at:string };
 type GroupDetails = {
   class_type:ClassType;class_start_date:string;class_group_name:string;
   class_group_id:string;academic_level_id:string;meeting_url:string;
@@ -42,7 +49,7 @@ const CLASS_TYPES: {id:ClassType;label:string;hint:string;capacity:number|null}[
 ];
 const STAFF=new Set(['admin','assistant_admin']);
 const EMPTY:GroupDetails={class_type:'group_5_science',class_start_date:'',class_group_name:'',class_group_id:'',academic_level_id:'',meeting_url:''};
-const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
+const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',topics_per_meeting:1,weekday:1,starts_at:'16:00',ends_at:'17:00'});
 const meetValid=(url:string)=>/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(url);
 const tier=(type:ClassType)=>CLASS_TYPES.find(t=>t.id===type)??CLASS_TYPES[0];
 const dayTime=(c:ClassRow)=>WEEKDAYS[c.weekday]+' · '+c.starts_at.slice(0,5)+'–'+c.ends_at.slice(0,5)+' WAT';
@@ -66,7 +73,7 @@ export default function ClassesWorkspacePage(){
   const {account}=useAuth();
   const [params,setParams]=useSearchParams();
   const staff=Boolean(account&&STAFF.has(account.role));
-  const paying=account?.role==='owner'||account?.role==='admin'||(account?.role==='student'&&account.studentTier==='paid');
+  const paying=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'||(account?.role==='student'&&account.studentTier==='paid');
   const communicating=account?.role==='owner'||account?.role==='admin'||
     (account?.role==='student'&&account.studentTier==='paid')||account?.role==='tutor';
   const tab=params.get('tab')==='payments'&&paying?'payments':
@@ -82,6 +89,13 @@ export default function ClassesWorkspacePage(){
   const [members,setMembers]=useState<Member[]>([]);
   const [coTutors,setCoTutors]=useState<CoTutor[]>([]);
   const [classCurricula,setClassCurricula]=useState<ClassCurriculum[]>([]);
+  const [cohorts,setCohorts]=useState<Cohort[]>([]);
+  const [offerings,setOfferings]=useState<Offering[]>([]);
+  const [topics,setTopics]=useState<Topic[]>([]);
+  const [cohortPlans,setCohortPlans]=useState<CohortPlan[]>([]);
+  const [pacingRows,setPacingRows]=useState<Pacing[]>([]);
+  const [deliveryRows,setDeliveryRows]=useState<TopicDelivery[]>([]);
+  const [selectedCohortId,setSelectedCohortId]=useState(params.get('cohort')??'');
   const [chosen,setChosen]=useState<string[]>([]);
   const [form,setForm]=useState<GroupDetails>(EMPTY);
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
@@ -98,7 +112,7 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows]=await Promise.all([
+      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,t,sequence,pacing,delivery]=await Promise.all([
         supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name,offering_id').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
@@ -109,14 +123,26 @@ export default function ClassesWorkspacePage(){
         staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
         supabase.from('dli_class_co_tutors').select('class_id,tutor_id,tutor_name,is_active').limit(1000),
         staff?supabase.from('dli_class_curricula').select('class_group_id,cohort_id').limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('cohorts').select('id,name,programme_id,academic_level_id,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('course_offerings').select('id,cohort_id,course_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('topics').select('id,course_id,title,is_active').eq('is_active',true).limit(1000):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('dli_cohort_topic_plan').select('cohort_id,course_id,topic_id,position').order('position').limit(2000):Promise.resolve({data:[],error:null}),
+        supabase.from('dli_class_topic_pacing').select('class_id,topics_per_meeting').limit(1000),
+        supabase.from('dli_class_topic_delivery').select('class_id,course_id,topic_id,topic_order,meeting_number,meeting_date').order('meeting_date').limit(3000),
       ]);
-      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows].some(x=>x.error)){
+      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,t,sequence,pacing,delivery].some(x=>x.error)){
         setError('Could not load the class register or approved academic subjects. Check permissions and refresh.');
       }else{
         setClasses((c.data??[]) as ClassRow[]);
         setMembers((m.data??[]) as Member[]);
         setCoTutors((coRows.data??[]) as CoTutor[]);
         setClassCurricula((curriculumRows.data??[]) as ClassCurriculum[]);
+        setCohorts((h.data??[]) as Cohort[]);
+        setOfferings((o.data??[]) as Offering[]);
+        setTopics((t.data??[]) as Topic[]);
+        setCohortPlans((sequence.data??[]) as CohortPlan[]);
+        setPacingRows((pacing.data??[]) as Pacing[]);
+        setDeliveryRows((delivery.data??[]) as TopicDelivery[]);
         setPeople((p.data??[]) as Person[]);
         setSubjects((s.data??[]) as Subject[]);
         setLevels((l.data??[]) as AcademicLevel[]);
