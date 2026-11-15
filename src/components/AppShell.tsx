@@ -70,7 +70,7 @@ function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/'}
+                  end
                   onClick={onNavigate}
                   className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
                 >
