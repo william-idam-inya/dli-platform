@@ -419,6 +419,10 @@
     {
       "file": "20261115220000_stage_q35c_conference_governance.sql",
       "gitBlobSha1": "162edae6cb40bab406a9ccaf18fe57acdda7ca5b"
+    },
+    {
+      "file": "20261115223000_stage_q35d_retire_role_grants.sql",
+      "gitBlobSha1": "f44aee7acdcc505c851549330285483218ce4cef"
     }
   ]
 }
