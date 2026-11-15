@@ -415,6 +415,10 @@
     {
       "file": "20261115214500_stage_q35_role_people_private_realtime.sql",
       "gitBlobSha1": "abd7b2ad729eb80c7879df78eacb149e6c127f0b"
+    },
+    {
+      "file": "20261115220000_stage_q35c_conference_governance.sql",
+      "gitBlobSha1": "162edae6cb40bab406a9ccaf18fe57acdda7ca5b"
     }
   ]
 }
