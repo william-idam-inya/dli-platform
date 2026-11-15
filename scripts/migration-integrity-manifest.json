@@ -387,6 +387,10 @@
     {
       "file": "20261115180000_stage_q33_unified_classes_academic_assignments.sql",
       "gitBlobSha1": "72202d7669579be66344c31f60d2572b932f0bfb"
+    },
+    {
+      "file": "20261115183000_stage_q33a_class_audit_trigger_fix.sql",
+      "gitBlobSha1": "8cb75308ed90c3bf55c9bfa21d9d1f58dc7f0023"
     }
   ]
 }
