@@ -33,7 +33,7 @@ type GroupDetails = {
 type ClassGroup = { id:string;rows:ClassRow[];first:ClassRow;state:'draft'|'published'|'archived' };
 const WEEKDAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const CLASS_TYPES: {id:ClassType;label:string;hint:string;capacity:number|null}[]=[
-  {id:'group_5_science',label:'Group of 5',hint:'Up to five paid students; any approved subject combination',capacity:5},
+  {id:'group_5_science',label:'Group of 5 Students',hint:'Up to five paid students; any approved subject combination',capacity:5},
   {id:'group_10',label:'Group of 10',hint:'Up to ten paid students; any approved subject combination',capacity:10},
   {id:'private_1_to_1',label:'Private · 1 student',hint:'One student with a personalised subject timetable',capacity:1},
   {id:'free_demo',label:'Free · Scholars Club',hint:'Free classes; an individual student roster is optional',capacity:null},
