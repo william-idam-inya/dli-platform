@@ -119,6 +119,9 @@ jobs:
       - name: Verify Q27 Academic Pro visual and accessibility contracts
         run: npm run check:q27-academic-pro
 
+      - name: Verify Q28 reference UI, real data and role-safe dashboards
+        run: npm run check:q28-reference-dashboard
+
       - name: Verify TypeScript
         run: npm run typecheck
 
