@@ -84,7 +84,7 @@ for(const t of ['private:true','presence:{key:uid}',"event:'dli_activity'",
  assert.ok(live.includes(t),'Presence/Broadcast missing security or auto-clear '+t);
 for(const t of ['RTCPeerConnection','getUserMedia','getDisplayMedia','replaceTrack',
   "iceServers:[{urls:'stun:stun.l.google.com:19302'}]","kind:'candidate'",
-  'track.stop()', 'sendRef.current'])
+  't.stop()', 'sendRef.current'])
  assert.ok(rtc.includes(t),'Private P2P WebRTC media/signal controls missing '+t);
 assert.ok(overlay.includes('role="dialog"')&&overlay.includes('onAnswer')
   &&overlay.includes('onScreen'),'Focus call UI missing necessary controls');
