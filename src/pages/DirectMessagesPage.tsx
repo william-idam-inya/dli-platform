@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { BellRing, Check, CheckCheck, ChevronLeft, Download, Flag, LockKeyhole, MessageCircle, Paperclip, Pin, RefreshCw, Search, Send, ShieldCheck, Users } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, Heart, LockKeyhole, MessageCircle, MoreHorizontal, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import ChatMediaRecorder from '../components/ChatMediaRecorder';
+import DirectMessageComposer from '../components/DirectMessageComposer';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -12,7 +12,8 @@ import './DirectMessagesPage.css';
 type Contact={user_id:string;full_name:string;member_role:string};
 type ClassProfile=Contact&{subjects:string[]};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
-type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null};
+type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null;reply_to_id?:string|null;forwarded_from_id?:string|null;edited_at?:string|null;deleted_at?:string|null};
+type DirectReaction={message_id:string;reactor_id:string;emoji:string;created_at:string};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
 type DirectRead={thread_id:string;reader_id:string;seen_at:string};
 const mediaKind=(mime:string):'audio'|'video'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':null;
@@ -26,6 +27,8 @@ const fileSuffix:Record<string,string>={
   'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
 };
 const maxFileBytes=10*1024*1024;
+const quickReactions=['👍','❤️','😂','👏','🙏','🔥'];
+const extendedReactions=['😍','😊','😮','😢','😡','💯','🤔','🥳','💪','✅','🎉','😎','🙌','🎓'];
 type Report={id:string;message_id:string;thread_id:string;reason:string;status:'open'|'reviewed';created_at:string};
 const stamp=(value:string)=>new Intl.DateTimeFormat('en-NG',{
   dateStyle:'short',timeStyle:'short',timeZone:'Africa/Lagos',
@@ -49,6 +52,15 @@ export default function DirectMessagesPage(){
   const [files,setFiles]=useState<DirectFile[]>([]);
   const [reads,setReads]=useState<DirectRead[]>([]);
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
+  const [reactions,setReactions]=useState<DirectReaction[]>([]);
+  const [composeOpen,setComposeOpen]=useState(false);
+  const [menuTarget,setMenuTarget]=useState<string|null>(null);
+  const [expandedReactions,setExpandedReactions]=useState(false);
+  const [replyTarget,setReplyTarget]=useState<DirectMessage|null>(null);
+  const [editTarget,setEditTarget]=useState<DirectMessage|null>(null);
+  const [forwardTarget,setForwardTarget]=useState<DirectMessage|null>(null);
+  const longPressTimer=useRef<number|null>(null);
+  const lastTap=useRef<{id:string;at:number}|null>(null);
   const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
   const [mediaReset,setMediaReset]=useState(0);
   const [pins,setPins]=useState<string[]>([]);
@@ -104,7 +116,7 @@ export default function DirectMessagesPage(){
           Promise.resolve({data:[],error:null}),
         supabase.from('dli_direct_reads').select('thread_id,reader_id,seen_at').limit(500),
         supabase.from('dli_direct_messages')
-          .select('id,thread_id,sender_id,body,created_at,file_id')
+          .select('id,thread_id,sender_id,body,created_at,file_id,reply_to_id,forwarded_from_id,edited_at,deleted_at')
           .order('created_at',{ascending:false}).limit(700),
         account.role==='tutor'||account.role==='student'
           ?supabase.rpc('dli_chat_class_profiles')
@@ -162,7 +174,7 @@ export default function DirectMessagesPage(){
         setMessages(loadedMessages);
       }else{
         const result=await supabase.from('dli_direct_messages')
-          .select('id,thread_id,sender_id,body,created_at,file_id')
+          .select('id,thread_id,sender_id,body,created_at,file_id,reply_to_id,forwarded_from_id,edited_at,deleted_at')
           .eq('thread_id',id).order('created_at',{ascending:true}).limit(100);
         if(result.error){setError('This conversation cannot be opened with your current permissions.');return;}
         loadedMessages=(result.data??[]) as DirectMessage[];
@@ -173,6 +185,13 @@ export default function DirectMessagesPage(){
         .eq('thread_id',id).eq('is_ready',true).limit(100);
       if(attachments.error){setError('Messages loaded, but file metadata could not be retrieved.');return;}
       setFiles((attachments.data??[]) as DirectFile[]);
+      if(loadedMessages.length){
+        const reactionResult=await supabase.from('dli_direct_reactions')
+          .select('message_id,reactor_id,emoji,created_at')
+          .in('message_id',loadedMessages.map(m=>m.id));
+        if(reactionResult.error)setError('Reactions could not be loaded for this conversation.');
+        else setReactions((reactionResult.data??[]) as DirectReaction[]);
+      }else setReactions([]);
       const newestIncoming=loadedMessages.filter(msg=>msg.sender_id!==uid).at(-1);
       if(mode==='inbox'&&uid&&newestIncoming){
         // Polling an already-read thread must never issue continuous writes.
@@ -207,7 +226,8 @@ export default function DirectMessagesPage(){
       }
     }catch{setError('Could not confirm that messages were loaded.');}
   },[mode,moderator,uid]);
-  useEffect(()=>{setMessages([]);setFiles([]);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
+  useEffect(()=>{setMessages([]);setFiles([]);setReactions([]);setMenuTarget(null);
+    setReplyTarget(null);setEditTarget(null);if(activeId)void loadThread(activeId);},[activeId,loadThread]);
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
   useEffect(()=>{
@@ -237,7 +257,7 @@ export default function DirectMessagesPage(){
       const showThread=(thread:Thread)=>{
         setThreads(previous=>previous.some(item=>item.id===thread.id)
           ? previous : [thread,...previous]);
-        setMode('inbox');setActiveId(thread.id);
+        setMode('inbox');setComposeOpen(false);setActiveId(thread.id);
         setNotice('Conversation opened. You can type a message below; nothing has been sent yet.');
       };
       const existing=threads.find(t=>t.participant_a===a&&t.participant_b===b);
@@ -324,14 +344,16 @@ export default function DirectMessagesPage(){
       const messageBody=body||(attachment&&attachment.type.startsWith('audio/')?'🎙️ Voice note':
         attachment&&attachment.type.startsWith('video/')?'🎥 Video note':
         '📎 '+attachment!.name);
-      const payload={thread_id:current.id,body:messageBody,...(fileId?{file_id:fileId}:{})};
+      const payload={thread_id:current.id,body:messageBody,
+        ...(replyTarget?{reply_to_id:replyTarget.id}:{}),...(fileId?{file_id:fileId}:{})};
       const result=await supabase.from('dli_direct_messages').insert(payload).select('id').maybeSingle();
       if(result.error||!result.data){
         const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
-      setDraft('');setAttachment(null);setMediaReset(value=>value+1);await loadThread(current.id);
+      setDraft('');setAttachment(null);setReplyTarget(null);setMediaReset(value=>value+1);
+      await loadThread(current.id);
       window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
       const cleaned=fileId&&path?await cleanupFile(path,fileId):true;
