@@ -134,6 +134,9 @@ jobs:
       - name: Verify Q32 private chat-profile privacy and photo access
         run: npm run check:q32-chat-profiles
 
+      - name: Verify Q33 unified Classes timetable and two-tutor academic assignments
+        run: npm run check:q33-unified-classes
+
       - name: Verify TypeScript
         run: npm run typecheck
 
