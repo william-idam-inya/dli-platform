@@ -3,7 +3,7 @@ import { Clock3, LockKeyhole, Pencil, RefreshCw, Save, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import source from '../data/paidLearningPlans.json';
-import './PaidLearningPlans.css';
+import '../pages/PaidLearningPlans.css';
 import './PaidPlanSettings.css';
 
 type PlanRow = {
