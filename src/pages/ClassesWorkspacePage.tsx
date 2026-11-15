@@ -257,6 +257,12 @@ export default function ClassesWorkspacePage(){
     setLessons(sessions.length?sessions:[newLesson()]);
     setError(null);setNotice(null);
   }
+  useEffect(()=>{
+    const wanted=params.get('cohort');
+    if(wanted&&selectedCohortId===wanted&&!editing&&!form.class_group_name&&
+      cohorts.some(h=>h.id===wanted))chooseCohort(wanted);
+  },[cohorts,selectedCohortId,form.class_group_name,editing,params]);
+
   function chooseType(type:ClassType){
     if(!selectedCohort||Boolean(editing))return;
     if((!paidCohort&&type!=='free_demo')||(paidCohort&&type==='free_demo'))return;
@@ -405,7 +411,24 @@ export default function ClassesWorkspacePage(){
           </select>
         </div>}
         <form className="academic-form classes-form" onSubmit={e=>void save(e)}>
-          <div className="classes-section-heading"><span>1</span><div><h3>Billing mode &amp; class capacity</h3><p>{paidCohort?'Select the paid class capacity. Payment assignments are available below.':'Scholars Club cohorts are free and need no payment assignment.'}</p></div></div>
+          <div className="classes-section-heading"><span>1</span><div><h3>Select cohort</h3>
+            <p>Only courses and ordered topics saved in Advanced Curriculum are available here.</p>
+          </div></div>
+          <label htmlFor="classes-cohort">Academic cohort
+            <select id="classes-cohort" required value={selectedCohort?.id??''}
+              disabled={busy||Boolean(editing)} onChange={e=>chooseCohort(e.target.value)}>
+              <option value="">Choose a cohort</option>
+              {cohorts.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </label>
+          {!selectedCohort&&<p className="academic-code-hint">
+            Create a cohort, assign its courses and save the topic order in <Link to="/cohorts">Advanced Curriculum</Link>.
+          </p>}
+          {selectedCohort&&!cohortReady&&<p className="auth-feedback error" role="status">
+            This cohort is not ready. Every assigned course must have an ordered topic plan.
+            <Link to="/cohorts"> Complete the curriculum</Link> before scheduling.
+          </p>}
+          <div className="classes-section-heading"><span>2</span><div><h3>Billing mode &amp; class capacity</h3><p>{paidCohort?'Select the paid class capacity. Payment assignments are available below.':'Scholars Club cohorts are free and need no payment assignment.'}</p></div></div>
           <div className="classes-tier-grid" role="group" aria-label="Class type">
             {CLASS_TYPES.filter(type=>selectedCohort&&(paidCohort?type.id!=='free_demo':type.id==='free_demo')).map(type=><button key={type.id} type="button" disabled={busy||Boolean(editing)}
               aria-pressed={form.class_type===type.id}
@@ -416,13 +439,10 @@ export default function ClassesWorkspacePage(){
           </div>
           <p className="academic-code-hint">Programme: <strong>{cohortProgramme?.name??'Choose a cohort first'}</strong>. Paid students must have verified access before publication.</p>
 
-          <div className="classes-section-heading"><span>2</span><div><h3>Academic level and group identity</h3><p>Choose JSS, SS or another approved level; subjects will be filtered accordingly.</p></div></div>
-          <label htmlFor="classes-level">Academic level</label>
-          <select id="classes-level" value={levelId} required disabled={busy||Boolean(editing)}
-            onChange={e=>chooseLevel(e.target.value)}>
-            {offeredLevels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-          {!offeredLevels.length&&<p className="academic-code-hint">No approved active courses exist for this programme. Configure them in <Link to="/academics">Academic Structure</Link>.</p>}
+          <div className="classes-section-heading"><span>3</span><div><h3>Class start date and identity</h3>
+            <p>The programme and academic level are inherited from the selected cohort.</p></div></div>
+          <p className="academic-code-hint">Academic level:
+            <strong> {levels.find(l=>l.id===levelId)?.name??'Choose a cohort first'}</strong></p>
           <div className="classes-field-pair">
             <label htmlFor="classes-start-date">Class start date (WAT)
               <input id="classes-start-date" type="date" required value={form.class_start_date}
@@ -436,7 +456,7 @@ export default function ClassesWorkspacePage(){
             </label>
           </div>
 
-          <div className="classes-section-heading"><span>3</span><div><h3>Choose students</h3><p>Each selected student will belong to all subjects in this class. You may save a draft before students are available.</p></div></div>
+          <div className="classes-section-heading"><span>4</span><div><h3>Choose students</h3><p>Each selected student will belong to all subjects in this class. You may save a draft before students are available.</p></div></div>
           <fieldset className="classes-student-picker">
             <legend>{capacity===null?'Free class · no fixed student limit':'Students · '+chosen.length+' of '+capacity+' seats'}</legend>
             <input type="search" placeholder="Search eligible students by name…" value={search}
@@ -465,16 +485,16 @@ export default function ClassesWorkspacePage(){
             </div>
           </fieldset>
 
-          <div className="classes-section-heading"><span>4</span><div><h3>Cohort courses, tutors &amp; topic pacing</h3>
-            <p>Assign two different tutors for each course and one weekly time. The same tutor may help teach more than one course.</p>
+          <div className="classes-section-heading"><span>5</span><div><h3>Cohort courses, tutors &amp; topic pacing</h3>
+            <p>Courses and topics come from the cohort. Set two tutors, a weekly day/time, and how many ordered topics are taught per meeting.</p>
           </div></div>
           <div className="classes-lesson-list">
             {lessons.map((lesson,index)=><fieldset className="classes-lesson-card" key={lesson.key}>
               <legend>Subject {index+1}</legend>
               <div className="classes-field-pair">
                 <label htmlFor={'classes-subject-'+lesson.key}>Course / subject
-                  <select id={'classes-subject-'+lesson.key} required value={lesson.subject_id}
-                    onChange={e=>setLesson(lesson.key,{subject_id:e.target.value})}>
+                  <select id={'classes-subject-'+lesson.key} required disabled value={lesson.subject_id}
+                    aria-label={'Course imported from cohort '+(index+1)}>
                     <option value="">Choose subject</option>
                     {availableSubjects.map(s=><option key={s.id} value={s.id}
                       disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{courses.find(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&c.subject_id===s.id)?.title??s.name}</option>)}
@@ -497,6 +517,15 @@ export default function ClassesWorkspacePage(){
                   </select>
                 </label>
               </div>
+              <label className="classes-pacing-control" htmlFor={'classes-pacing-'+lesson.key}>
+                Topic pacing · delivery rate
+                <select id={'classes-pacing-'+lesson.key} value={lesson.topics_per_meeting} required
+                  onChange={e=>setLesson(lesson.key,{topics_per_meeting:Number(e.target.value)})}>
+                  {[1,2,3,4,5,6,7,8,9,10].map(rate=><option key={rate} value={rate}>
+                    {rate} topic{rate===1?'':'s'} per meeting
+                  </option>)}
+                </select>
+              </label>
               <div className="classes-schedule-grid">
                 <label htmlFor={'classes-weekday-'+lesson.key}>Weekly day
                   <select id={'classes-weekday-'+lesson.key} value={lesson.weekday}
@@ -513,20 +542,25 @@ export default function ClassesWorkspacePage(){
                     onChange={e=>setLesson(lesson.key,{ends_at:e.target.value})}/>
                 </label>
               </div>
-              {lessons.length>1&&<button className="classes-remove-lesson" type="button" disabled={busy}
-                onClick={()=>setLessons(old=>old.filter(l=>l.key!==lesson.key))}>
-                <Trash2 size={15}/> Remove subject
-              </button>}
+              <div className="classes-pacing-preview" aria-label="Planned topic teaching dates">
+                <strong>Scheduled topic sequence</strong>
+                {makeTopicPacingPreview(form.class_start_date,lesson.weekday,
+                  cohortPlans.filter(p=>p.cohort_id===selectedCohortId&&
+                    cohortOfferings.some(o=>courses.some(c=>c.id===o.course_id&&c.subject_id===lesson.subject_id&&c.id===p.course_id)))
+                    .sort((a,b)=>a.position-b.position)
+                    .map(p=>({id:p.topic_id,title:topics.find(t=>t.id===p.topic_id)?.title??'Topic'})),
+                  lesson.topics_per_meeting).map(week=><div key={week.meeting}>
+                    <time dateTime={week.date}>{week.date}</time>
+                    <span>Meeting {week.meeting}: {week.topics.map(t=>t.title).join(' · ')}</span>
+                  </div>)}
+              </div>}
             </fieldset>)}
           </div>
-          <button className="user-outline-button classes-add-subject" type="button"
-            disabled={busy||lessons.length>=15||lessons.length>=availableSubjects.length}
-            onClick={()=>setLessons(old=>[...old,newLesson()])}>
-            <Plus size={16}/> Add another subject
-          </button>
+          <p className="academic-code-hint">Courses and their order are controlled in
+            <Link to="/cohorts"> Advanced Curriculum</Link>. Changes there are read here automatically on refresh.</p>
           {tutors.length<2&&<p className="academic-code-hint">At least two active tutors are required. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
 
-          <div className="classes-section-heading"><span>5</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
+          <div className="classes-section-heading"><span>6</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
           <label htmlFor="classes-meet">Google Meet link for the entire group</label>
           <input id="classes-meet" type="url" required maxLength={2048}
             placeholder="https://meet.google.com/abc-defg-hij" value={form.meeting_url}
@@ -535,7 +569,7 @@ export default function ClassesWorkspacePage(){
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
-                !availableSubjects.length||tutors.length<2}>
+                !selectedCohort||!cohortReady||!availableSubjects.length||tutors.length<2}>
               {editing?<Pencil size={16}/>:<Plus size={16}/>}
               {busy?'Saving entire class…':editing?'Save all class changes':'Create class draft'}
             </button>
