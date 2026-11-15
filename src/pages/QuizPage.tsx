@@ -18,7 +18,7 @@ type Attempt={id:string;quiz_id:string;student_id:string;correct_count:number;
  total_count:number;submitted_at:string};
 type Answer={id:string;attempt_id:string;question_id:string;selected_option:string;is_correct:boolean};
 type Option='A'|'B'|'C'|'D';
-const EDIT_ROLES=new Set(['owner','admin','academic_coordinator','tutor']);
+const EDIT_ROLES=new Set(['owner','admin','assistant_admin','tutor']);
 const OPTIONS:Option[]=['A','B','C','D'];
 function safeTime(value:string){const d=new Date(value);return Number.isNaN(d.getTime())?'Time unavailable':d.toLocaleString();}
 
