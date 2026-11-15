@@ -19,7 +19,7 @@ const MemberProfilePage = lazy(() => import('./pages/MemberProfilePage'));
 const MemberDetailPage = lazy(() => import('./pages/MemberDetailPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const AcademicSetupPage = lazy(() => import('./pages/AcademicSetupPage'));
-const AcademicRelationsPage = lazy(() => import('./pages/AcademicRelationsPage'));
+const CohortCurriculumPage = lazy(() => import('./pages/CohortCurriculumPage'));
 const ClassesWorkspacePage = lazy(() => import('./pages/ClassesWorkspacePage'));
 const LearningPage = lazy(() => import('./pages/LearningPage'));
 const LearningHubPage = lazy(() => import('./pages/LearningHubPage'));
@@ -113,7 +113,7 @@ function Workspace() {
         <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
-        <Route path="/cohorts" element={<AllowedArea path="/cohorts"><AcademicRelationsPage /></AllowedArea>} />
+        <Route path="/cohorts" element={<AllowedArea path="/cohorts"><CohortCurriculumPage /></AllowedArea>} />
         <Route path="/assignments" element={<Navigate to="/classes" replace />} />
         <Route path="/classes" element={<AllowedArea path="/classes"><ClassesWorkspacePage /></AllowedArea>} />
         <Route path="/my-classes" element={<Navigate to="/classes" replace />} />
