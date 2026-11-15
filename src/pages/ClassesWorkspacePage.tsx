@@ -553,7 +553,7 @@ export default function ClassesWorkspacePage(){
                     <time dateTime={week.date}>{week.date}</time>
                     <span>Meeting {week.meeting}: {week.topics.map(t=>t.title).join(' · ')}</span>
                   </div>)}
-              </div>}
+              </div>
             </fieldset>)}
           </div>
           <p className="academic-code-hint">Courses and their order are controlled in
