@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  BookOpen, CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
+  CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
   Plus, RefreshCw, Users, Video, Wallet, MessageCircle, Trash2,
 } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
