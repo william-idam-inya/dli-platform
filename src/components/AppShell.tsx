@@ -361,7 +361,7 @@ export default function AppShell({ children }: AppShellProps) {
           end={item.path==='/'}
           className={({isActive}) => 'mobile-bottom-link'+(isActive?' active':'')}>
           <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>{item.label === 'Free Demo & enrolment' ? 'Enrolment' :
+          <span>{item.label === 'Free Students & enrolment' ? 'Enrolment' :
             item.label === 'Classes & timetable' ? 'Classes' :
             item.label === 'Learning & results' ? 'Learning' :
             item.label === 'Academic setup' ? 'Academics' :
