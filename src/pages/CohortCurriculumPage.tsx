@@ -73,7 +73,6 @@ export default function CohortCurriculumPage(){
  const ordered=plans.filter(p=>p.cohort_id===selected?.id&&p.course_id===chosenCourse)
   .sort((a,b)=>a.position-b.position).filter(p=>courseTopics.some(t=>t.id===p.topic_id));
  const available=courseTopics.filter(t=>!ordered.some(p=>p.topic_id===t.id));
- const pendingCourses=cohortCourses.filter(c=>!assigned.some(o=>o.course_id===c.id));
  const allReady=assigned.length>0&&assigned.every(o=>plans.some(p=>
    p.cohort_id===selected?.id&&p.course_id===o.course_id));
  const memberTitle=(id:string)=>courses.find(c=>c.id===id)?.title??'Course unavailable';
