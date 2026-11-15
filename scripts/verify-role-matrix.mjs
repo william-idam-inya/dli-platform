@@ -39,7 +39,7 @@ for (const [role,path,expected] of matrix) {
   assert.equal(canAccessPath(role,path),expected,role + ' ' + path);
 }
 
-const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/my-classes','/study','/learning','/assessments','/quizzes','/schedule','/attendance','/communications','/announcements','/people']);
+const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/my-classes','/study','/learning','/assessments','/quizzes','/schedule','/attendance','/communications','/announcements','/people','/conferences']);
 const appSource = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const guardedRoutes = [...appSource.matchAll(/<AllowedArea path="([^"]+)"/g)].map(m=>m[1]);
 assert.ok(guardedRoutes.length > 20, 'the app must still guard its business routes');
