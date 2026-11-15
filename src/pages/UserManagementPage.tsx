@@ -6,7 +6,7 @@ import {
 import InviteUserPage from '../auth/InviteUserPage';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { roleLabels, type DliRole } from '../auth/permissions';
+import { isDliRole, roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import { availableLifecycleActions } from '../lib/userLifecycle';
 import UserActionDialog, {type RegistryAction} from '../components/UserActionDialog';
@@ -18,6 +18,7 @@ type UserRecord = {
   email: string;
   full_name: string;
   role: DliRole;
+  student_tier?: 'free'|'paid'|null;
   status: UserStatus;
   created_at: string;
   updated_at: string;
@@ -69,6 +70,15 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserStatus>('all');
   const [selectedRoles, setSelectedRoles] = useState<Record<string, DliRole>>({});
+  const directoryGroups=[
+    {key:'owner',title:'Owner'},
+    {key:'admin',title:'Admin'},
+    {key:'assistant_admin',title:'Assistant Admin'},
+    {key:'tutor',title:'Tutors'},
+    {key:'free',title:'Free Students'},
+    {key:'paid',title:'Paid Students'},
+    {key:'legacy',title:'Retired-role records requiring administrative reconciliation'},
+  ];
   const [pendingAction, setPendingAction] = useState<{
     user:UserRecord; action:RegistryAction; newRole?:DliRole;
   }|null>(null);
@@ -88,7 +98,7 @@ export default function UserManagementPage() {
     } else {
       setUsers(existing => reset ? data.users :
         [...existing, ...data.users.filter(item => !existing.some(old => old.id === item.id))]);
-      setRoles(data.allowed_roles ?? []);
+      setRoles((data.allowed_roles ?? []).filter(isDliRole));
       setHasMore(Boolean(data.has_more));
       setTotal(data.total);
       setPage(nextPage);
@@ -127,7 +137,7 @@ export default function UserManagementPage() {
         setError('Could not load the account registry. Please retry.');
       } else {
         setUsers(data.users);
-        setRoles(data.allowed_roles ?? []);
+        setRoles((data.allowed_roles ?? []).filter(isDliRole));
         setHasMore(Boolean(data.has_more));
         setTotal(data.total);
         setPage(0);
@@ -153,8 +163,14 @@ export default function UserManagementPage() {
   const visible = useMemo(() => users.filter(item => {
     const q = search.trim().toLowerCase();
     return !q || item.email.toLowerCase().includes(q) ||
-        item.full_name.toLowerCase().includes(q) || roleLabels[item.role].toLowerCase().includes(q);
+        item.full_name.toLowerCase().includes(q) || (roleLabels[item.role]??'Retired role').toLowerCase().includes(q);
   }), [users, search]);
+  const groupFor=(user:UserRecord)=>{
+    if(!isDliRole(user.role))return 'legacy';
+    if(user.role!=='student')return user.role;
+    // Never infer a paid entitlement from a missing or stale client cache.
+    return user.student_tier==='paid'?'paid':'free';
+  };
 
   function requestAction(user:UserRecord, action:RegistryAction) {
     if (!account || saving || user.id===account.id ||
@@ -306,7 +322,12 @@ export default function UserManagementPage() {
           <p className="user-empty">No accounts match this view.</p>
         ) : (
           <div className="user-list">
-            {visible.map(user => {
+            {directoryGroups.map(group=>{
+              const groupUsers=visible.filter(user=>groupFor(user)===group.key);
+              if(!groupUsers.length)return null;
+              return <section className="dli-registry-role-group" key={group.key}>
+                <h3>{group.title} <span>{groupUsers.length} account{groupUsers.length===1?'':'s'}</span></h3>
+                {groupUsers.map(user => {
               const permitted = Boolean(canManage(user));
               const lifecycleAllowed = account ? availableLifecycleActions({
                 actorRole:account.role,status:user.status,archivedAt:user.archived_at,
@@ -314,6 +335,9 @@ export default function UserManagementPage() {
               }) : [];
               const chosenRole = selectedRoles[user.id] ?? user.role;
               return <article className="user-item" key={user.id}>
+                {!isDliRole(user.role)&&<p className="auth-feedback error" role="status">
+                  This account has a retired organisational role. Its access remains restricted until an authorised Owner reconciles the role; no privileges are assigned automatically.
+                </p>}
                 <div className="user-item-top">
                   <span className="user-initial" aria-hidden="true">{user.full_name.charAt(0).toUpperCase()}</span>
                   <div className="user-identity">
@@ -324,7 +348,9 @@ export default function UserManagementPage() {
                   <div className="user-tags">
                     {(account?.role==='owner'||account?.role==='admin')&&!user.archived_at&&registryAuthIds[user.id]&&
                       <Link className="user-outline-button" to={'/members/'+encodeURIComponent(registryAuthIds[user.id])}>View full profile</Link>}
-                    <span className="user-role">{roleLabels[user.role]}</span>
+                    <span className="user-role">{isDliRole(user.role)?user.role==='student'
+  ?user.student_tier==='paid'?'Paid Student':'Free Student'
+  :roleLabels[user.role]:'Retired role'}</span>
                     <span className={`user-status user-status-${user.archived_at?'archived':user.status}`}>
                       {user.archived_at?'Archived':statusLabels[user.status]}
                     </span>
@@ -410,6 +436,8 @@ export default function UserManagementPage() {
                       </div>)}
                 </details>
               </article>;
+                })}
+              </section>;
             })}
           </div>
         )}
