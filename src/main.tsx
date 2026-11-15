@@ -8,6 +8,7 @@ import './styles.css';
 import './design-system.css';
 import './academic-pro.css';
 import './reference-shell.css';
+import './sidebar-navigation-fix.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 
 // Apply saved visual preferences before React paints the authorised workspace.
