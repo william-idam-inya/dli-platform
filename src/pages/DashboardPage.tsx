@@ -90,20 +90,16 @@ export default function DashboardPage(){
   const drafts=classes.filter(c=>c.state==='draft').length;
   const headline=account?.role==='student'?'Welcome to DLI':
     account?.role==='tutor'?'Tutor Workspace':
-    account?.role==='academic_coordinator'?'Academic Workspace':
     isManager?'Admin Dashboard':'Your DLI Workspace';
 
   const welcomeSummary = account?.role === 'student'
     ? 'Your classes, lessons, results and messages in one place. Start with the next learning step.'
     : account?.role === 'tutor'
       ? 'Prepare classes, guide your learners, review assessments and keep teaching organised.'
-      : account?.role === 'academic_coordinator'
-        ? 'Coordinate teaching, curriculum and academic progress with the right tools close at hand.'
         : 'Keep classes, people, finances and institutional activity organised in one secure workspace.';
-  const heroPath = account?.role === 'academic_coordinator' ? '/academics' : '/classes';
+  const heroPath = '/classes';
   const heroAction = account?.role === 'student' ? 'My classes'
     : account?.role === 'tutor' ? 'Open teaching classes'
-    : account?.role === 'academic_coordinator' ? 'Academic setup'
     : 'Manage classes';
 
   return <div className="dashboard-page unified-overview" data-dli-role={account?.role ?? 'guest'}>
