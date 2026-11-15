@@ -36,6 +36,8 @@ for(const plan of data.plans){
   expected.delete(plan.id);
 }
 assert.equal(expected.size,0);
+assert.equal(data.plans.find(p=>p.id==='group_5_science')?.name,'Group of 5 Students',
+ 'The user-approved neutral group title must persist in the offline fallback');
 const privatePlan=data.plans.find(p=>p.id==='private_one_to_one');
 assert.ok(typeof privatePlan.ambiguity==='string' &&
   privatePlan.ambiguity.includes('six subjects') &&

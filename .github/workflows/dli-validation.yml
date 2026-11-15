@@ -122,6 +122,9 @@ jobs:
       - name: Verify Q28 reference UI, real data and role-safe dashboards
         run: npm run check:q28-reference-dashboard
 
+      - name: Verify Q29 audited owner-admin paid plan settings
+        run: npm run check:q29-editable-paid-plans
+
       - name: Verify TypeScript
         run: npm run typecheck
 

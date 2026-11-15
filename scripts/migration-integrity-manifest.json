@@ -375,6 +375,10 @@
     {
       "file": "20261114163000_stage_q25_private_profile_and_geocode_rpcs.sql",
       "gitBlobSha1": "e5f92e8ed7804893a30a1afcf0e194ebdb2471c8"
+    },
+    {
+      "file": "20261115140000_stage_q29_editable_paid_plan_reference.sql",
+      "gitBlobSha1": "503b7bfb10558fe3fb87be972df33209a5e4cc7c"
     }
   ]
 }
