@@ -305,13 +305,13 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Build one class with several subjects, a timetable and tutor for each, and a single Google Meet link.':
+        <p>{staff?'Build one class from approved courses with two tutors per subject, shared student enrolment and one Google Meet link.':
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
     <div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
-      <div><strong>One class · multiple subjects · one meeting link</strong>
-        <p>A class is a group of students studying selected subjects. Each subject has its own weekly time and assigned tutor.
+      <div><strong>One class · approved courses · two tutors per subject</strong>
+        <p>Each class combines approved courses, a shared roster, two tutors per subject and a weekly timetable.
           Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
       </div>
     </div>
@@ -337,7 +337,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
-          <p className="user-caption">Students, one meeting link and a start date belong to the whole class. Tutors and weekly times belong to each subject.</p>
+          <p className="user-caption">Select courses from Academic Setup, assign two different tutors per course, enrol students and schedule sessions. Publishing creates the linked academic assignments automatically.</p>
         </div></div>
         {draftGroups.length>0&&<div className="classes-draft-picker">
           <label htmlFor="classes-draft">Continue an existing draft</label>
@@ -367,7 +367,7 @@ export default function ClassesWorkspacePage(){
             onChange={e=>chooseLevel(e.target.value)}>
             {offeredLevels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
-          {!offeredLevels.length&&<p className="academic-code-hint">No course offerings exist for this programme. Configure approved subjects in <Link to="/academics">Academic Structure</Link>.</p>}
+          {!offeredLevels.length&&<p className="academic-code-hint">No approved active courses exist for this programme. Configure them in <Link to="/academics">Academic Structure</Link>.</p>}
           <div className="classes-field-pair">
             <label htmlFor="classes-start-date">Class start date (WAT)
               <input id="classes-start-date" type="date" required value={form.class_start_date}
@@ -410,26 +410,35 @@ export default function ClassesWorkspacePage(){
             </div>
           </fieldset>
 
-          <div className="classes-section-heading"><span>4</span><div><h3>Subjects, tutors and timetable</h3>
-            <p>Add as many approved subjects as you need. Assign a tutor and weekly time to each subject; the same tutor may teach several subjects.</p>
+          <div className="classes-section-heading"><span>4</span><div><h3>Approved courses, tutors and timetable</h3>
+            <p>Assign two different tutors for each course and one weekly time. The same tutor may help teach more than one course.</p>
           </div></div>
           <div className="classes-lesson-list">
             {lessons.map((lesson,index)=><fieldset className="classes-lesson-card" key={lesson.key}>
               <legend>Subject {index+1}</legend>
               <div className="classes-field-pair">
-                <label htmlFor={'classes-subject-'+lesson.key}>Subject
+                <label htmlFor={'classes-subject-'+lesson.key}>Course / subject
                   <select id={'classes-subject-'+lesson.key} required value={lesson.subject_id}
                     onChange={e=>setLesson(lesson.key,{subject_id:e.target.value})}>
                     <option value="">Choose subject</option>
                     {availableSubjects.map(s=><option key={s.id} value={s.id}
-                      disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{s.name}</option>)}
+                      disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{courses.find(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&c.subject_id===s.id)?.title??s.name}</option>)}
                   </select>
                 </label>
-                <label htmlFor={'classes-tutor-'+lesson.key}>Assigned tutor
+                <label htmlFor={'classes-tutor-'+lesson.key}>Primary tutor
                   <select id={'classes-tutor-'+lesson.key} required value={lesson.tutor_id}
                     onChange={e=>setLesson(lesson.key,{tutor_id:e.target.value})}>
                     <option value="">Choose tutor</option>
-                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}>{t.full_name}</option>)}
+                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}
+                      disabled={t.auth_user_id===lesson.second_tutor_id}>{t.full_name}</option>)}
+                  </select>
+                </label>
+                <label htmlFor={'classes-second-tutor-'+lesson.key}>Second tutor
+                  <select id={'classes-second-tutor-'+lesson.key} required value={lesson.second_tutor_id}
+                    onChange={e=>setLesson(lesson.key,{second_tutor_id:e.target.value})}>
+                    <option value="">Choose second tutor</option>
+                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}
+                      disabled={t.auth_user_id===lesson.tutor_id}>{t.full_name}</option>)}
                   </select>
                 </label>
               </div>
@@ -460,7 +469,7 @@ export default function ClassesWorkspacePage(){
             onClick={()=>setLessons(old=>[...old,newLesson()])}>
             <Plus size={16}/> Add another subject
           </button>
-          {!tutors.length&&<p className="academic-code-hint">No active tutors. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
+          {tutors.length<2&&<p className="academic-code-hint">At least two active tutors are required. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
 
           <div className="classes-section-heading"><span>5</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
           <label htmlFor="classes-meet">Google Meet link for the entire group</label>
@@ -471,7 +480,7 @@ export default function ClassesWorkspacePage(){
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
-                !availableSubjects.length||!tutors.length}>
+                !availableSubjects.length||tutors.length<2}>
               {editing?<Pencil size={16}/>:<Plus size={16}/>}
               {busy?'Saving entire class…':editing?'Save all class changes':'Create class draft'}
             </button>
@@ -484,7 +493,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">CLASS REGISTER</p>
           <h2>{staff?'All individual and group classes':account?.role==='tutor'?'My assigned subject sessions':'My subject timetable'}</h2>
-          <p className="user-caption">Each group has one student list and one Meet link. Its subjects may have different tutors and times.</p>
+          <p className="user-caption">Each group has one student list and one Meet link. Every course has two tutors and its own timetable.</p>
         </div></div>
         {staff&&<div className="classes-filters">
           <label>Tutor<select value={tutorFilter} onChange={e=>setTutorFilter(e.target.value)}>
@@ -534,7 +543,9 @@ export default function ClassesWorkspacePage(){
               {group.rows.map(c=><div className="classes-group-session" key={c.id}>
                 <div><strong><SubjectArtwork subject={c.subject_name}/>{c.subject_name}</strong>
                   <small>{dayTime(c)}</small>
-                  <small>Tutor: {c.tutor_name}</small>
+                  <small>Primary tutor: {c.tutor_name}</small>
+                  {coTutors.find(co=>co.class_id===c.id&&co.is_active)&&<small>Second tutor: {coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_name}</small>}
+                  {staff&&c.offering_id&&<small>Linked academic offering · tutor assignments verified</small>}
                 </div>
                 {c.state==='archived'&&<span className="classes-state archived">Archived</span>}
                 {communicating&&c.state==='published'&&
@@ -559,7 +570,7 @@ export default function ClassesWorkspacePage(){
           </article>;
         })}</div>
       </section>
-      <p className="module-footnote"><Link to="/academics">Academic Structure</Link> defines which subjects can be offered.
+      <p className="module-footnote"><Link to="/academics">Academic Setup</Link> defines the course catalogue. Classes &amp; Timetable handles teaching assignments and student enrolments.
         Lessons, quizzes and attendance are organised under <Link to="/study">Learning &amp; results</Link>.</p>
     </>}
   </div>;
