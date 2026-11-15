@@ -131,6 +131,9 @@ jobs:
       - name: Verify Q31 sidebar navigation layout and accessibility
         run: npm run check:q31-sidebar-navigation
 
+      - name: Verify Q32 private chat-profile privacy and photo access
+        run: npm run check:q32-chat-profiles
+
       - name: Verify TypeScript
         run: npm run typecheck
 
