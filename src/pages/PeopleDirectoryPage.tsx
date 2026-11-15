@@ -18,6 +18,7 @@ const groups=[
 export default function PeopleDirectoryPage(){
  const {account}=useAuth();
  const [people,setPeople]=useState<Person[]>([]);
+ const [authUserId,setAuthUserId]=useState('');
  const [search,setSearch]=useState('');
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState<string|null>(null);
@@ -27,9 +28,9 @@ export default function PeopleDirectoryPage(){
   if(!supabase){setLoading(false);setError('DLI people directory is not configured.');return;}
   setLoading(true);
   try{
-   const response=await supabase.rpc('dli_people_directory');
-   if(response.error){setError('The verified people directory is unavailable for this account.');return;}
-   setPeople((response.data??[]) as Person[]);setError(null);
+   const [response,auth]=await Promise.all([supabase.rpc('dli_people_directory'),supabase.auth.getUser()]);
+   if(response.error||auth.error||!auth.data.user){setError('The verified people directory is unavailable for this account.');return;}
+   setAuthUserId(auth.data.user.id);setPeople((response.data??[]) as Person[]);setError(null);
   }catch{setError('Could not load permitted members.');}
   finally{setLoading(false);}
  },[]);
@@ -82,8 +83,8 @@ export default function PeopleDirectoryPage(){
       {members.filter(m=>m.user_id!==undefined).map(member=><div className="dli-people-row" key={member.user_id}>
        <ChatMemberAvatar userId={member.user_id} name={member.full_name}/>
        <div><strong>{member.full_name}</strong>
-        <small>{member.user_id===account?.id?'You':group.title}</small></div>
-       {member.user_id!==account?.id&&
+        <small>{member.user_id===authUserId?'You':group.title}</small></div>
+       {member.user_id!==authUserId&&
         <Link className="dli-people-chat" to={'/communications?compose='+encodeURIComponent(member.user_id)}
          aria-label={'Message '+member.full_name}><MessageSquareText size={17}/> Chat</Link>}
       </div>)}
