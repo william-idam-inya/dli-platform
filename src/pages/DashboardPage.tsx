@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import OfficialDliLogo from '../components/OfficialDliLogo';
+import ReferenceHeroArtwork from '../components/ReferenceHeroArtwork';
+import ReferenceDashboard from '../components/ReferenceDashboard';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
@@ -86,10 +87,10 @@ export default function DashboardPage(){
   useEffect(()=>{void refreshAcademic();},[refreshAcademic]);
   const published=classes.filter(c=>c.state==='published').length;
   const drafts=classes.filter(c=>c.state==='draft').length;
-  const headline=account?.role==='student'?'Your learning workspace.':
-    account?.role==='tutor'?'Your teaching workspace.':
-    account?.role==='academic_coordinator'?'Your academic workspace.':
-    isManager?'Manage DLI in one place.':'Your DLI workspace.';
+  const headline=account?.role==='student'?'Welcome to DLI':
+    account?.role==='tutor'?'Tutor Workspace':
+    account?.role==='academic_coordinator'?'Academic Workspace':
+    isManager?'Admin Dashboard':'Your DLI Workspace';
 
   const welcomeSummary = account?.role === 'student'
     ? 'Your classes, lessons, results and messages in one place. Start with the next learning step.'
@@ -123,10 +124,14 @@ export default function DashboardPage(){
           <span className="dli-hero-note">Learn • Improve • Excel</span>
         </div>
       </div>
-      <div className="welcome-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/>
-        <div className="art-cap"><OfficialDliLogo decorative /></div>
-      </div>
+      <ReferenceHeroArtwork role={account?.role ?? 'student'}/>
     </section>
+    {account&&<ReferenceDashboard account={account}
+      academicCounts={academicCounts} academicLoading={academicLoading}/>}
+    <DliDashboardAnnouncements/>
+    <details className="ref-existing-tools">
+      <summary>Explore all authorised DLI tools and detailed reports <ArrowRight size={17}/></summary>
+      <div className="ref-existing-body">
     <section className="status-banner">
       <div className="status-banner-icon"><ShieldCheck size={20}/></div>
       <div className="status-banner-copy">
@@ -166,7 +171,6 @@ export default function DashboardPage(){
         {isManager?'Manage classes and assignments':'Open my timetable'} <ArrowRight size={15}/>
       </Link>
     </section>}
-    <DliDashboardAnnouncements/>
     {canOpenLearning&&<section className="section-block unified-learning-section">
       <div className="section-heading">
         <div><p className="section-kicker">ACADEMIC WORKSPACE</p>
@@ -223,5 +227,7 @@ export default function DashboardPage(){
     <p className="unified-overview-footnote"><LockKeyhole size={14}/>
       Sidebar links and dashboard cards never grant privileges. PostgreSQL row-level
       security and verified membership govern private academic records.</p>
+      </div>
+    </details>
   </div>;
 }
