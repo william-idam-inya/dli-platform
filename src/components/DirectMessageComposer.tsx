@@ -7,6 +7,7 @@ type Props={
  draft:string;setDraft:(text:string)=>void;
  attachment:File|null;setAttachment:(file:File|null)=>void;
  reply:Reply|null;onCancelReply:()=>void;busy:boolean;mediaReset:number;
+ onActivity:(kind:'typing'|'recording_audio'|'recording_video'|null)=>void;
  onSubmit:(event:FormEvent<HTMLFormElement>)=>void;
  composeRef:RefObject<HTMLTextAreaElement|null>;
 };
@@ -18,7 +19,7 @@ const categoryAccept={private:'.pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx,.pptx
  documents:'.pdf,.txt,.docx,.xlsx,.pptx'} as const;
 type Category=keyof typeof categoryAccept;
 export default function DirectMessageComposer({
- draft,setDraft,attachment,setAttachment,reply,onCancelReply,busy,mediaReset,onSubmit,composeRef
+ draft,setDraft,attachment,setAttachment,reply,onCancelReply,busy,mediaReset,onSubmit,composeRef,onActivity
 }:Props){
  const [panel,setPanel]=useState<'emojis'|'stickers'|'gifs'|null>(null);
  const [sheet,setSheet]=useState(false);
@@ -102,6 +103,7 @@ export default function DirectMessageComposer({
      onClick={()=>{setAttachment(null);recorder.current?.discard();}}><Trash2 size={15}/></button>
   </div>}
   <ChatMediaRecorder ref={recorder} key={mediaReset} compact disabled={busy}
+    onRecordingChange={kind=>onActivity(kind==='voice'?'recording_audio':kind==='video'?'recording_video':null)}
     onReady={file=>setAttachment(file)}/>
   <div className="dli-telegram-compose-row">
    <div className="dli-telegram-input-pill">
@@ -113,7 +115,7 @@ export default function DirectMessageComposer({
     <textarea id="direct-draft" ref={composeRef} rows={1} maxLength={2000}
       placeholder="Message" value={draft} disabled={busy}
       onChange={e=>{
-       setDraft(e.target.value);e.target.style.height='auto';
+       setDraft(e.target.value);onActivity(e.target.value.trim()?'typing':null);e.target.style.height='auto';
        e.target.style.height=Math.min(e.target.scrollHeight,144)+'px';
       }} onKeyDown={keyDown}/>
     <button type="button" className="dli-telegram-inside-button" disabled={busy}
