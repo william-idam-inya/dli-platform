@@ -186,3 +186,89 @@
 .dli-media-loading{animation:dli-media-spin 1s linear infinite}
 @keyframes dli-media-spin{to{transform:rotate(360deg)}}
 @media(max-width:750px){.dli-private-voice{width:min(300px,100%)}}
+
+
+/* Q32: display each contact's real private profile photo; the photo button
+   opens a role-scoped overlay while the adjacent button opens the chat. */
+.dli-chat-person-avatar{
+  overflow:hidden;border:1px solid rgba(255,255,255,.25);
+  background:var(--purple);color:#fff;user-select:none;
+}
+.dli-chat-person-avatar img{
+  display:block;width:100%;height:100%;object-fit:cover;
+  border-radius:50%;background:var(--surface-soft);
+}
+.dli-chat-person-avatar>span{display:grid;place-items:center;width:100%;height:100%;}
+.dli-direct-page .dli-chat-avatar-trigger{
+  display:grid;place-items:center;flex:0 0 45px;
+  width:45px;height:45px;padding:3px;
+  border:1px solid transparent;border-radius:50%;
+  background:transparent;color:var(--text);cursor:pointer;
+}
+.dli-direct-page .dli-chat-avatar-trigger:hover{
+  border-color:var(--purple);background:var(--purple-soft);
+}
+.dli-direct-page .dli-chat-avatar-trigger:focus-visible{
+  outline:3px solid var(--dli-focus);outline-offset:2px;
+}
+.dli-direct-page .dli-chat-avatar-trigger .dli-chat-person-avatar{
+  width:37px;height:37px;flex:0 0 37px;
+}
+.dli-direct-page .dli-chat-header-avatar{
+  flex-basis:49px;width:49px;height:49px;
+}
+.dli-direct-page .dli-chat-header-avatar .dli-chat-person-avatar{
+  width:42px;height:42px;flex-basis:42px;
+}
+.dli-direct-contact-row{
+  display:flex;align-items:center;gap:7px;min-height:62px;
+  width:100%;padding:3px 4px;border-radius:11px;
+  transition:background .15s;
+}
+.dli-direct-contact-row:hover,.dli-direct-contact-row.selected{
+  background:var(--surface-soft);
+}
+.dli-direct-sidebar .dli-direct-contact-open{
+  display:flex;flex:1;align-items:center;min-width:0;min-height:51px;
+  gap:7px;padding:7px 3px;border:0;background:transparent;
+  text-align:left;color:var(--text);cursor:pointer;font:inherit;
+}
+.dli-direct-contact-open>span{display:grid;gap:4px;min-width:0;}
+.dli-direct-contact-open strong{
+  display:block;font-size:13px;overflow-wrap:anywhere;
+}
+.dli-direct-contact-open small{font-size:11px;color:var(--muted);}
+.dli-direct-page .dli-direct-chat-list-row .dli-chat-avatar-trigger{margin-right:5px;}
+.dli-direct-page .dli-direct-chat-list-row .dli-direct-chat-list-open{padding-left:0;}
+.dli-direct-class-profiles{display:grid;gap:8px;}
+.dli-direct-sidebar .dli-direct-class-profiles>button{
+  display:flex;align-items:center;gap:10px;
+  min-height:63px;width:100%;padding:7px 5px;
+  text-align:left;border:1px solid transparent;
+  border-radius:12px;background:transparent;color:var(--text);
+  cursor:pointer;
+}
+.dli-direct-sidebar .dli-direct-class-profiles>button:hover{
+  border-color:var(--border);background:var(--surface-soft);
+}
+.dli-direct-class-profiles>button>span:last-child{display:grid;gap:4px;min-width:0;}
+.dli-direct-class-profiles>button strong{font-size:13px;}
+.dli-direct-class-profiles>button small{
+  font-size:11px;color:var(--muted);
+  line-height:1.4;overflow-wrap:anywhere;
+}
+.dli-direct-page .dli-chat-oversight-profile{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--surface-soft);border:1px solid var(--border);
+  min-height:40px;padding:8px 10px;border-radius:9px;
+  font-size:11px;color:var(--text);cursor:pointer;
+}
+.dli-direct-page .dli-chat-oversight-profile:focus-visible,
+.dli-direct-page .dli-direct-contact-open:focus-visible{
+  outline:3px solid var(--dli-focus);outline-offset:2px;
+}
+@media(max-width:680px){
+  .dli-direct-page .dli-chat-avatar-trigger{min-width:45px;min-height:45px;}
+  .dli-direct-page .dli-chat-oversight-profile{font-size:0;min-width:43px;justify-content:center;}
+  .dli-direct-page .dli-chat-oversight-profile svg{width:17px;height:17px;}
+}
