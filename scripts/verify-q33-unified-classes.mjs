@@ -11,7 +11,7 @@ const sql=read('supabase/migrations/20261115180000_stage_q33_unified_classes_aca
 const audit=read('supabase/migrations/20261115183000_stage_q33a_class_audit_trigger_fix.sql');
 for(const token of [
  'type CoTutor','type ClassCurriculum','second_tutor_id:string',
- "dli_save_unified_class","dli_set_unified_class_state",
+ "dli_save_cohort_class","dli_set_unified_class_state",
  'classCurricula.some','class_id,tutor_id,tutor_name,is_active',
  "'courses').select('id,title,programme_id,academic_level_id,subject_id,is_active'",
  'Course / subject','Primary tutor','Second tutor','Choose second tutor',

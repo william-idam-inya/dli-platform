@@ -272,3 +272,154 @@
   .dli-direct-page .dli-chat-oversight-profile{font-size:0;min-width:43px;justify-content:center;}
   .dli-direct-page .dli-chat-oversight-profile svg{width:17px;height:17px;}
 }
+
+
+/* Q34 — Telegram-pattern chats, contextual message actions and mobile composer. */
+.dli-direct-sidebar{position:relative}
+.dli-telegram-sidebar-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px}
+.dli-telegram-sidebar-header h2{margin:0;font-size:1.15rem}
+.dli-telegram-new-message,.dli-telegram-contacts-title button{
+  display:grid;place-items:center;min-width:43px;min-height:43px;
+  border:1px solid var(--border);background:var(--surface-soft);color:var(--purple);
+  border-radius:11px;cursor:pointer
+}
+.dli-direct-conversations{order:1}
+.dli-telegram-contacts-panel{order:2;position:relative;max-height:440px;overflow:auto;
+  margin:12px 0;background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.13)}
+.dli-telegram-contacts-title{display:flex;align-items:center;justify-content:space-between;
+  padding:3px 4px 9px;color:var(--text)}
+.dli-telegram-contacts-panel .dli-direct-contacts{border:0;padding:0;margin:0}
+.dli-telegram-mobile-compose{display:none}
+.dli-telegram-composer{display:grid;gap:7px;position:relative;padding:12px 13px 8px;
+  border-top:1px solid var(--border);background:var(--surface);min-width:0;z-index:1}
+.dli-telegram-compose-row{display:flex;align-items:flex-end;gap:9px}
+.dli-telegram-input-pill{display:flex;align-items:flex-end;gap:3px;flex:1;min-width:0;
+  padding:5px 6px;border:1px solid var(--border);border-radius:24px;background:var(--surface-soft);
+  transition:border-color .18s}
+.dli-telegram-input-pill:focus-within{border-color:var(--purple)}
+.dli-telegram-inside-button{display:grid;place-items:center;flex:0 0 39px;
+  width:39px;height:39px;padding:0;border:0;border-radius:50%;background:transparent;
+  color:var(--muted);cursor:pointer}
+.dli-telegram-input-pill textarea{display:block;box-sizing:border-box;
+  flex:1;min-width:0;resize:none;max-height:144px;min-height:39px;line-height:1.5;
+  margin:0;padding:9px 3px;font:inherit;font-size:16px;color:var(--text);
+  border:0;outline:0;background:transparent;overflow-y:auto}
+.dli-telegram-input-pill textarea:focus{outline:none}
+.dli-telegram-action{display:grid;place-items:center;flex:0 0 49px;width:49px;height:49px;
+  border:0;border-radius:50%;background:var(--purple);color:white;cursor:pointer;
+  transition:transform .18s,opacity .18s}
+.dli-telegram-action:active{transform:scale(.92)}
+.dli-telegram-action:disabled{opacity:.5;cursor:wait}
+.dli-telegram-composer-hint{margin:0 0 0 10px;font-size:10px;color:var(--muted)}
+.dli-telegram-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.dli-telegram-reply-strip,.dli-telegram-attachment-preview{display:flex;align-items:center;gap:10px;
+  min-width:0;border-left:3px solid var(--purple);padding:7px 9px;
+  background:var(--surface-soft);border-radius:7px}
+.dli-telegram-reply-strip>div{flex:1;min-width:0;display:grid;gap:3px}
+.dli-telegram-reply-strip strong{font-size:12px;color:var(--purple)}
+.dli-telegram-reply-strip small{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dli-telegram-reply-strip button,.dli-telegram-attachment-preview button{border:0;background:transparent;
+  color:var(--muted);display:grid;place-items:center;min-width:35px;min-height:35px;cursor:pointer}
+.dli-telegram-attachment-preview span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.dli-telegram-expression-panel,.dli-telegram-attachment-sheet{border:1px solid var(--border);
+  background:var(--surface);border-radius:14px;padding:10px;box-shadow:0 8px 25px rgba(0,0,0,.12);
+  max-height:285px;overflow:auto}
+.dli-telegram-picker-tabs{display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.dli-telegram-picker-tabs button{min-height:40px;padding:7px 12px;border:0;border-radius:9px;
+  background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+.dli-telegram-picker-tabs button[aria-selected='true']{background:var(--purple-soft);color:var(--purple)}
+.dli-telegram-picker-tabs .dli-telegram-picker-close{margin-left:auto}
+.dli-telegram-emoji-grid,.dli-telegram-sticker-grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.dli-telegram-emoji-grid button,.dli-telegram-sticker-grid button{min-width:0;min-height:39px;
+  display:grid;place-items:center;border:0;border-radius:8px;background:transparent;
+  font-size:23px;cursor:pointer}
+.dli-telegram-sticker-grid button{font-size:29px;min-height:50px}
+.dli-telegram-emoji-grid button:hover,.dli-telegram-sticker-grid button:hover{background:var(--surface-soft)}
+.dli-telegram-gif-notice{display:grid;gap:5px;justify-items:center;text-align:center;color:var(--muted);
+  padding:8px 20px;font-size:12px;line-height:1.5}
+.dli-telegram-gif-notice p{margin:0}
+.dli-telegram-attachment-sheet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.dli-telegram-attachment-sheet>strong,.dli-telegram-attachment-sheet>small{grid-column:1/-1}
+.dli-telegram-attachment-sheet button{display:flex;gap:7px;align-items:center;min-height:48px;
+  padding:10px;border:1px solid var(--border);border-radius:10px;color:var(--text);
+  background:var(--surface-soft);font-size:12px;cursor:pointer}
+.dli-telegram-attachment-sheet button svg{color:var(--purple)}
+.dli-telegram-attachment-sheet small{font-size:10px;color:var(--muted)}
+.dli-chat-media-recorder.compact:not(:has(.dli-chat-recording-live)):not(:has(.dli-chat-media-preview)):not(:has(.dli-direct-inline-feedback)){display:none}
+.dli-chat-media-recorder.compact{display:grid;gap:8px;padding:8px 11px;border-radius:10px;
+  border:1px solid var(--border);background:var(--surface-soft)}
+.dli-chat-media-recorder.compact .dli-chat-recorder-actions button{min-height:40px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:8px 12px;cursor:pointer}
+.dli-direct-message-list article{position:relative;cursor:default;touch-action:pan-y;overflow:visible}
+.dli-direct-message-list article:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.dli-telegram-message-actions{position:relative;display:grid;gap:4px;
+  min-width:220px;max-width:100%;z-index:2;padding:6px 0}
+.dli-telegram-quick-reactions{display:flex;align-items:center;flex-wrap:wrap;gap:3px;
+  padding:5px;background:var(--surface);border:1px solid var(--border);border-radius:23px;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);width:max-content;max-width:100%}
+.dli-direct-message-list article .dli-telegram-quick-reactions button{display:grid;place-items:center;
+  min-width:33px;height:35px;padding:2px;background:transparent;border:0;
+  border-radius:50%;font-size:19px;cursor:pointer}
+.dli-direct-message-list article .dli-telegram-quick-reactions button:hover{background:var(--surface-soft)}
+.dli-telegram-message-menu{display:flex;flex-wrap:wrap;gap:4px;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;padding:5px;
+  box-shadow:0 5px 16px rgba(0,0,0,.13)}
+.dli-direct-message-list article .dli-telegram-message-menu button{display:inline-flex;align-items:center;
+  gap:5px;border:0;background:transparent;color:var(--text);border-radius:8px;
+  font-size:11px;font-weight:700;min-height:35px;padding:6px 8px;cursor:pointer}
+.dli-telegram-message-menu button:hover{background:var(--surface-soft)}
+.dli-telegram-menu-note,.dli-telegram-edited{font-size:10px;color:var(--muted)}
+.dli-telegram-quoted-message{display:flex;gap:5px;border-left:3px solid var(--purple);
+  border-radius:4px;padding:6px;background:var(--surface-soft);font-size:11px;
+  color:var(--muted);margin:6px 0}
+.dli-telegram-forwarded{display:flex;align-items:center;gap:4px;color:var(--purple)}
+.dli-telegram-deleted-message{font-style:italic;color:var(--muted);opacity:.8}
+.dli-telegram-reaction-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.dli-direct-message-list article .dli-telegram-reaction-chips button{display:inline-flex;
+  align-items:center;gap:3px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);border-radius:13px;padding:4px 8px;font-size:12px;cursor:pointer}
+.dli-direct-message-list article .dli-telegram-reaction-chips button.mine{border-color:var(--purple);background:var(--purple-soft)}
+.dli-direct-message-list article .dli-telegram-report{font-size:11px}
+.dli-telegram-forward-backdrop{position:fixed;inset:0;background:rgba(9,22,44,.7);
+  z-index:1000;display:grid;place-items:center;padding:12px}
+.dli-telegram-forward-dialog{width:min(430px,100%);max-height:85dvh;overflow:auto;
+  padding:16px;border-radius:17px;background:var(--surface);color:var(--text)}
+.dli-telegram-forward-dialog header{display:flex;align-items:center;justify-content:space-between}
+.dli-telegram-forward-dialog h2{font-size:1.1rem;margin:0}
+.dli-telegram-forward-dialog header button{min-width:44px;min-height:44px;border:0;
+  color:var(--text);background:transparent;cursor:pointer}
+.dli-telegram-forward-dialog blockquote{border-left:3px solid var(--purple);margin:15px 0;
+  padding:10px;background:var(--surface-soft);word-break:break-word;font-size:13px}
+.dli-telegram-forward-dialog p{font-size:12px;line-height:1.5;color:var(--muted)}
+.dli-telegram-forward-choice{display:flex;align-items:center;gap:10px;width:100%;
+  border:1px solid var(--border);border-radius:10px;background:var(--surface);
+  padding:8px;text-align:left;min-height:54px;color:var(--text);cursor:pointer;margin:4px 0}
+.dli-telegram-forward-choice>span:nth-child(2){flex:1;font-size:13px}
+.dli-telegram-forward-choice .dli-chat-person-avatar{width:37px;height:37px;flex:0 0 37px}
+@media(max-width:750px){
+ .dli-telegram-sidebar-header{margin-bottom:8px}
+ .dli-telegram-new-message{display:none}
+ .dli-telegram-mobile-compose{position:sticky;display:grid;place-items:center;margin:15px 10px 5px auto;
+  right:15px;bottom:calc(75px + env(safe-area-inset-bottom));z-index:6;
+  width:56px;height:56px;border:0;border-radius:50%;background:var(--purple);color:white;
+  box-shadow:0 8px 25px rgba(0,0,0,.23);cursor:pointer}
+ .dli-direct-sidebar{display:flex;flex-direction:column;min-height:56vh}
+ .dli-direct-sidebar>.dli-direct-chat-filters{order:0}
+ .dli-direct-sidebar>.dli-direct-conversations{order:1}
+ .dli-direct-sidebar>.dli-telegram-contacts-panel{order:2}
+ .dli-direct-sidebar>.dli-telegram-mobile-compose{order:3}
+ .dli-telegram-input-pill{gap:0}
+ .dli-telegram-composer{padding:9px 7px}
+ .dli-telegram-compose-row{gap:6px}
+ .dli-telegram-expression-panel{max-height:220px}
+ .dli-telegram-emoji-grid,.dli-telegram-sticker-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+ .dli-telegram-inside-button{width:37px;flex-basis:37px}
+ .dli-telegram-action{flex-basis:46px;width:46px;height:46px}
+ .dli-telegram-message-actions{max-width:100%;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .dli-telegram-action,.dli-direct-chat-list-row{transition:none!important}
+}

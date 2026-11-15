@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
-  Plus, RefreshCw, Users, Video, Wallet, MessageCircle, Trash2,
+  Plus, RefreshCw, Users, Video, Wallet, MessageCircle,
 } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
 import SubjectArtwork from '../components/SubjectArtwork';
+import {makeTopicPacingPreview} from '../lib/topicPacing';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
 
@@ -26,8 +27,14 @@ type ClassRow = {
 };
 type Member = { id:string;class_id:string;student_id:string;student_name:string;is_active:boolean };
 type CoTutor = {class_id:string;tutor_id:string;tutor_name:string;is_active:boolean};
+type Cohort = {id:string;name:string;programme_id:string;academic_level_id:string;is_active:boolean};
+type Offering = {id:string;cohort_id:string;course_id:string;is_active:boolean};
+type Topic = {id:string;course_id:string;title:string;is_active:boolean};
+type CohortPlan = {cohort_id:string;course_id:string;topic_id:string;position:number};
+type Pacing = {class_id:string;topics_per_meeting:number};
+type TopicDelivery = {class_id:string;course_id:string;topic_id:string;topic_order:number;meeting_number:number;meeting_date:string};
 type ClassCurriculum = {class_group_id:string;cohort_id:string};
-type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;weekday:number;starts_at:string;ends_at:string };
+type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;topics_per_meeting:number;weekday:number;starts_at:string;ends_at:string };
 type GroupDetails = {
   class_type:ClassType;class_start_date:string;class_group_name:string;
   class_group_id:string;academic_level_id:string;meeting_url:string;
@@ -42,7 +49,7 @@ const CLASS_TYPES: {id:ClassType;label:string;hint:string;capacity:number|null}[
 ];
 const STAFF=new Set(['admin','assistant_admin']);
 const EMPTY:GroupDetails={class_type:'group_5_science',class_start_date:'',class_group_name:'',class_group_id:'',academic_level_id:'',meeting_url:''};
-const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
+const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',topics_per_meeting:1,weekday:1,starts_at:'16:00',ends_at:'17:00'});
 const meetValid=(url:string)=>/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(url);
 const tier=(type:ClassType)=>CLASS_TYPES.find(t=>t.id===type)??CLASS_TYPES[0];
 const dayTime=(c:ClassRow)=>WEEKDAYS[c.weekday]+' · '+c.starts_at.slice(0,5)+'–'+c.ends_at.slice(0,5)+' WAT';
@@ -66,7 +73,7 @@ export default function ClassesWorkspacePage(){
   const {account}=useAuth();
   const [params,setParams]=useSearchParams();
   const staff=Boolean(account&&STAFF.has(account.role));
-  const paying=account?.role==='owner'||account?.role==='admin'||(account?.role==='student'&&account.studentTier==='paid');
+  const paying=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'||(account?.role==='student'&&account.studentTier==='paid');
   const communicating=account?.role==='owner'||account?.role==='admin'||
     (account?.role==='student'&&account.studentTier==='paid')||account?.role==='tutor';
   const tab=params.get('tab')==='payments'&&paying?'payments':
@@ -82,6 +89,13 @@ export default function ClassesWorkspacePage(){
   const [members,setMembers]=useState<Member[]>([]);
   const [coTutors,setCoTutors]=useState<CoTutor[]>([]);
   const [classCurricula,setClassCurricula]=useState<ClassCurriculum[]>([]);
+  const [cohorts,setCohorts]=useState<Cohort[]>([]);
+  const [offerings,setOfferings]=useState<Offering[]>([]);
+  const [topics,setTopics]=useState<Topic[]>([]);
+  const [cohortPlans,setCohortPlans]=useState<CohortPlan[]>([]);
+  const [pacingRows,setPacingRows]=useState<Pacing[]>([]);
+  const [deliveryRows,setDeliveryRows]=useState<TopicDelivery[]>([]);
+  const [selectedCohortId,setSelectedCohortId]=useState(params.get('cohort')??'');
   const [chosen,setChosen]=useState<string[]>([]);
   const [form,setForm]=useState<GroupDetails>(EMPTY);
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
@@ -98,7 +112,7 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows]=await Promise.all([
+      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,t,sequence,pacing,delivery]=await Promise.all([
         supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name,offering_id').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
@@ -109,14 +123,26 @@ export default function ClassesWorkspacePage(){
         staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
         supabase.from('dli_class_co_tutors').select('class_id,tutor_id,tutor_name,is_active').limit(1000),
         staff?supabase.from('dli_class_curricula').select('class_group_id,cohort_id').limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('cohorts').select('id,name,programme_id,academic_level_id,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('course_offerings').select('id,cohort_id,course_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('topics').select('id,course_id,title,is_active').eq('is_active',true).limit(1000):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('dli_cohort_topic_plan').select('cohort_id,course_id,topic_id,position').order('position').limit(2000):Promise.resolve({data:[],error:null}),
+        supabase.from('dli_class_topic_pacing').select('class_id,topics_per_meeting').limit(1000),
+        supabase.from('dli_class_topic_delivery').select('class_id,course_id,topic_id,topic_order,meeting_number,meeting_date').order('meeting_date').limit(3000),
       ]);
-      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows].some(x=>x.error)){
+      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,t,sequence,pacing,delivery].some(x=>x.error)){
         setError('Could not load the class register or approved academic subjects. Check permissions and refresh.');
       }else{
         setClasses((c.data??[]) as ClassRow[]);
         setMembers((m.data??[]) as Member[]);
         setCoTutors((coRows.data??[]) as CoTutor[]);
         setClassCurricula((curriculumRows.data??[]) as ClassCurriculum[]);
+        setCohorts((h.data??[]) as Cohort[]);
+        setOfferings((o.data??[]) as Offering[]);
+        setTopics((t.data??[]) as Topic[]);
+        setCohortPlans((sequence.data??[]) as CohortPlan[]);
+        setPacingRows((pacing.data??[]) as Pacing[]);
+        setDeliveryRows((delivery.data??[]) as TopicDelivery[]);
         setPeople((p.data??[]) as Person[]);
         setSubjects((s.data??[]) as Subject[]);
         setLevels((l.data??[]) as AcademicLevel[]);
@@ -133,13 +159,17 @@ export default function ClassesWorkspacePage(){
   const students=people.filter(p=>p.role==='student');
   const tutors=people.filter(p=>p.role==='tutor');
   const capacity=tier(form.class_type).capacity;
-  const programmeId=programmes.find(p=>p.code===(form.class_type==='free_demo'?'dli-scholars-club':'dli-online'))?.id??'';
-  const offeredLevels=levels.filter(level=>courses.some(course=>course.programme_id===programmeId&&
-    course.academic_level_id===level.id&&course.is_active));
-  const levelId=offeredLevels.find(level=>level.id===form.academic_level_id)?.id??offeredLevels[0]?.id??'';
+  const selectedCohort=cohorts.find(h=>h.id===selectedCohortId&&h.is_active)??null;
+  const programmeId=selectedCohort?.programme_id??'';
+  const levelId=selectedCohort?.academic_level_id??'';
+  const cohortProgramme=programmes.find(p=>p.id===programmeId);
+  const paidCohort=cohortProgramme?.code==='dli-online';
+  const cohortOfferings=offerings.filter(o=>o.cohort_id===selectedCohortId&&o.is_active&&
+    courses.some(c=>c.id===o.course_id&&c.is_active));
   const availableSubjects=subjects.filter(s=>s.academic_level_id===levelId&&s.is_active&&
-    courses.some(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&
-      c.subject_id===s.id&&c.is_active));
+    cohortOfferings.some(o=>courses.some(c=>c.id===o.course_id&&c.subject_id===s.id)));
+  const cohortReady=cohortOfferings.length>0&&cohortOfferings.every(o=>cohortPlans.some(p=>
+    p.cohort_id===selectedCohortId&&p.course_id===o.course_id));
   const eligibleStudents=students.filter(p=>form.class_type==='free_demo'||paidStudents.includes(p.auth_user_id));
   const studentOptions=eligibleStudents.filter(p=>p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
   const chosenSet=useMemo(()=>new Set(chosen),[chosen]);
@@ -184,6 +214,8 @@ export default function ClassesWorkspacePage(){
     const group=draftGroups.find(g=>g.id===groupId);
     if(!group){setError('Only unlinked draft groups can be edited here.');return;}
     const first=group.first;
+    const matchingCurriculum=classCurricula.find(c=>c.class_group_id===groupId);
+    if(matchingCurriculum)setSelectedCohortId(matchingCurriculum.cohort_id);
     setEditing(groupId);
     setForm({
       class_type:first.class_type,
@@ -196,6 +228,7 @@ export default function ClassesWorkspacePage(){
     setLessons(group.rows.map(c=>({
       key:c.id,subject_id:c.subject_id,tutor_id:c.tutor_id,
       second_tutor_id:coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_id??'',
+      topics_per_meeting:pacingRows.find(p=>p.class_id===c.id)?.topics_per_meeting??1,
       weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),
     })));
     setChosen(members.filter(m=>m.class_id===first.id&&m.is_active).map(m=>m.student_id));
@@ -203,17 +236,39 @@ export default function ClassesWorkspacePage(){
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function cancelEdit(){
-    setEditing(null);setForm(EMPTY);setLessons([newLesson()]);
-    setChosen([]);setError(null);
+    setEditing(null);
+    if(selectedCohortId)chooseCohort(selectedCohortId);
+    else {setForm(EMPTY);setLessons([newLesson()]);setChosen([]);setError(null);}
   }
+  function chooseCohort(id:string){
+    const cohort=cohorts.find(h=>h.id===id);
+    setSelectedCohortId(id);
+    setEditing(null);setChosen([]);
+    if(!cohort){setLessons([newLesson()]);setForm(EMPTY);return;}
+    const isFree=programmes.find(p=>p.id===cohort.programme_id)?.code==='dli-scholars-club';
+    const sessions=offerings.filter(o=>o.cohort_id===id&&o.is_active)
+      .map(o=>courses.find(c=>c.id===o.course_id))
+      .filter((c):c is Course=>Boolean(c&&c.is_active))
+      .map((c,i)=>({...newLesson(),subject_id:c.subject_id,
+        weekday:(i+1)%7,topics_per_meeting:1}));
+    setForm(v=>({...v,class_type:isFree?'free_demo':'group_5_science',
+      class_group_name:cohort.name,academic_level_id:cohort.academic_level_id,
+      class_start_date:'',class_group_id:''}));
+    setLessons(sessions.length?sessions:[newLesson()]);
+    setError(null);setNotice(null);
+  }
+  useEffect(()=>{
+    const wanted=params.get('cohort');
+    if(wanted&&selectedCohortId===wanted&&!editing&&!form.class_group_name&&
+      cohorts.some(h=>h.id===wanted))chooseCohort(wanted);
+  },[cohorts,selectedCohortId,form.class_group_name,editing,params]);
+
   function chooseType(type:ClassType){
+    if(!selectedCohort||Boolean(editing))return;
+    if((!paidCohort&&type!=='free_demo')||(paidCohort&&type==='free_demo'))return;
     setChosen([]);
-    setForm(v=>({...v,class_type:type,academic_level_id:'',class_group_id:''}));
-    setLessons([newLesson()]);setEditing(null);setError(null);
-  }
-  function chooseLevel(id:string){
-    setForm(v=>({...v,academic_level_id:id}));
-    setLessons([newLesson()]);
+    setForm(v=>({...v,class_type:type}));
+    setError(null);
   }
   function setLesson(key:string,changes:Partial<LessonRow>){
     setLessons(old=>old.map(row=>row.key===key?{...row,...changes}:row));
@@ -238,13 +293,15 @@ export default function ClassesWorkspacePage(){
     const unique=new Set(lessons.map(l=>l.subject_id));
     const validRows=lessons.length>0&&lessons.length<=15&&unique.size===lessons.length&&
       lessons.every(l=>l.subject_id&&l.tutor_id&&l.second_tutor_id&&l.tutor_id!==l.second_tutor_id&&
+        Number.isInteger(l.topics_per_meeting)&&l.topics_per_meeting>=1&&l.topics_per_meeting<=10&&
         availableSubjects.some(s=>s.id===l.subject_id)&&
         tutors.some(t=>t.auth_user_id===l.tutor_id)&&
         tutors.some(t=>t.auth_user_id===l.second_tutor_id)&&
         l.weekday>=0&&l.weekday<=6&&l.starts_at<l.ends_at);
     const overlaps=lessons.some((a,i)=>lessons.some((b,j)=>i<j&&a.weekday===b.weekday&&
       a.starts_at<b.ends_at&&a.ends_at>b.starts_at));
-    if(!programmeId||!levelId||!form.class_start_date||
+    if(!selectedCohort||!cohortReady||lessons.length!==cohortOfferings.length||
+      !programmeId||!levelId||!form.class_start_date||
       form.class_group_name.trim().length<2||form.class_group_name.trim().length>120||
       !meetValid(url)||!validRows||overlaps||
       (capacity!==null&&chosen.length>capacity)||
@@ -256,7 +313,8 @@ export default function ClassesWorkspacePage(){
     try{
       // A single SQL transaction saves both tutors, the academic cohort,
       // weekly course timetable and the shared student roster.
-      const result=await supabase.rpc('dli_save_unified_class',{ 
+      const result=await supabase.rpc('dli_save_cohort_class',{
+        p_source_cohort:selectedCohort.id,
         p_group_id:editing,
         p_programme_id:programmeId,
         p_level_id:levelId,
@@ -265,14 +323,14 @@ export default function ClassesWorkspacePage(){
         p_group_name:form.class_group_name.trim(),
         p_meeting_url:url,
         p_students:chosen,
-        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})=>
-          ({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})), 
+        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,topics_per_meeting,weekday,starts_at,ends_at})=>
+          ({subject_id,tutor_id,second_tutor_id,topics_per_meeting,weekday,starts_at,ends_at})), 
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
-        'Class draft created with '+lessons.length+' approved course'+(lessons.length===1?'':'s')+
-        '. Publishing synchronises its academic tutor assignments and enrolled students.');
       cancelEdit();
+      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
+        'Cohort class draft created with '+lessons.length+' course'+(lessons.length===1?'':'s')+
+        '. Publishing assigns teaching dates for each ordered topic.');
       await refresh();
     }catch{setError('The class could not be saved. Refresh the register before trying again.');}
     finally{setBusy(false);}
@@ -286,7 +344,9 @@ export default function ClassesWorkspacePage(){
     setBusy(true);setError(null);setNotice(null);
     try{
       const integrated=classCurricula.some(row=>row.class_group_id===group.id);
-      const result=await supabase.rpc(integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{ 
+      const cohortDriven=group.rows.some(r=>pacingRows.some(p=>p.class_id===r.id));
+      const result=await supabase.rpc(cohortDriven?'dli_set_cohort_class_state':
+        integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{
         p_group_id:group.id,p_state:state,
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
@@ -306,13 +366,13 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Build one class from approved courses with two tutors per subject, shared student enrolment and one Google Meet link.':
+        <p>{staff?'Select a completed cohort: its courses and ordered topics populate the weekly timetable automatically.':
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
     <div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
       <div><strong>One class · approved courses · two tutors per subject</strong>
-        <p>Each class combines approved courses, a shared roster, two tutors per subject and a weekly timetable.
+        <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
           Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
       </div>
     </div>
@@ -338,7 +398,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
-          <p className="user-caption">Select courses from Academic Setup, assign two different tutors per course, enrol students and schedule sessions. Publishing creates the linked academic assignments automatically.</p>
+          <p className="user-caption">Choose a completed cohort, configure tutors and a delivery pace for every course, then publish the dated schedule.</p>
         </div></div>
         {draftGroups.length>0&&<div className="classes-draft-picker">
           <label htmlFor="classes-draft">Continue an existing draft</label>
@@ -351,24 +411,38 @@ export default function ClassesWorkspacePage(){
           </select>
         </div>}
         <form className="academic-form classes-form" onSubmit={e=>void save(e)}>
-          <div className="classes-section-heading"><span>1</span><div><h3>Class type</h3><p>Choose the class capacity, independently of its subjects or academic level.</p></div></div>
+          <div className="classes-section-heading"><span>1</span><div><h3>Select cohort</h3>
+            <p>Only courses and ordered topics saved in Advanced Curriculum are available here.</p>
+          </div></div>
+          <label htmlFor="classes-cohort">Academic cohort
+            <select id="classes-cohort" required value={selectedCohort?.id??''}
+              disabled={busy||Boolean(editing)} onChange={e=>chooseCohort(e.target.value)}>
+              <option value="">Choose a cohort</option>
+              {cohorts.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </label>
+          {!selectedCohort&&<p className="academic-code-hint">
+            Create a cohort, assign its courses and save the topic order in <Link to="/cohorts">Advanced Curriculum</Link>.
+          </p>}
+          {selectedCohort&&!cohortReady&&<p className="auth-feedback error" role="status">
+            This cohort is not ready. Every assigned course must have an ordered topic plan.
+            <Link to="/cohorts"> Complete the curriculum</Link> before scheduling.
+          </p>}
+          <div className="classes-section-heading"><span>2</span><div><h3>Billing mode &amp; class capacity</h3><p>{paidCohort?'Select the paid class capacity. Payment assignments are available below.':'Scholars Club cohorts are free and need no payment assignment.'}</p></div></div>
           <div className="classes-tier-grid" role="group" aria-label="Class type">
-            {CLASS_TYPES.map(type=><button key={type.id} type="button" disabled={busy||Boolean(editing)}
+            {CLASS_TYPES.filter(type=>selectedCohort&&(paidCohort?type.id!=='free_demo':type.id==='free_demo')).map(type=><button key={type.id} type="button" disabled={busy||Boolean(editing)}
               aria-pressed={form.class_type===type.id}
               className={'classes-tier'+(form.class_type===type.id?' selected':'')}
               onClick={()=>chooseType(type.id)}>
               <strong>{type.label}</strong><small>{type.hint}</small>
             </button>)}
           </div>
-          <p className="academic-code-hint">Programme: <strong>{programmes.find(p=>p.id===programmeId)?.name??'Unavailable'}</strong>. Paid classes require approved Paid Students before publication.</p>
+          <p className="academic-code-hint">Programme: <strong>{cohortProgramme?.name??'Choose a cohort first'}</strong>. Paid students must have verified access before publication.</p>
 
-          <div className="classes-section-heading"><span>2</span><div><h3>Academic level and group identity</h3><p>Choose JSS, SS or another approved level; subjects will be filtered accordingly.</p></div></div>
-          <label htmlFor="classes-level">Academic level</label>
-          <select id="classes-level" value={levelId} required disabled={busy||Boolean(editing)}
-            onChange={e=>chooseLevel(e.target.value)}>
-            {offeredLevels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-          {!offeredLevels.length&&<p className="academic-code-hint">No approved active courses exist for this programme. Configure them in <Link to="/academics">Academic Structure</Link>.</p>}
+          <div className="classes-section-heading"><span>3</span><div><h3>Class start date and identity</h3>
+            <p>The programme and academic level are inherited from the selected cohort.</p></div></div>
+          <p className="academic-code-hint">Academic level:
+            <strong> {levels.find(l=>l.id===levelId)?.name??'Choose a cohort first'}</strong></p>
           <div className="classes-field-pair">
             <label htmlFor="classes-start-date">Class start date (WAT)
               <input id="classes-start-date" type="date" required value={form.class_start_date}
@@ -382,7 +456,7 @@ export default function ClassesWorkspacePage(){
             </label>
           </div>
 
-          <div className="classes-section-heading"><span>3</span><div><h3>Choose students</h3><p>Each selected student will belong to all subjects in this class. You may save a draft before students are available.</p></div></div>
+          <div className="classes-section-heading"><span>4</span><div><h3>Choose students</h3><p>Each selected student will belong to all subjects in this class. You may save a draft before students are available.</p></div></div>
           <fieldset className="classes-student-picker">
             <legend>{capacity===null?'Free class · no fixed student limit':'Students · '+chosen.length+' of '+capacity+' seats'}</legend>
             <input type="search" placeholder="Search eligible students by name…" value={search}
@@ -411,16 +485,16 @@ export default function ClassesWorkspacePage(){
             </div>
           </fieldset>
 
-          <div className="classes-section-heading"><span>4</span><div><h3>Approved courses, tutors and timetable</h3>
-            <p>Assign two different tutors for each course and one weekly time. The same tutor may help teach more than one course.</p>
+          <div className="classes-section-heading"><span>5</span><div><h3>Cohort courses, tutors &amp; topic pacing</h3>
+            <p>Courses and topics come from the cohort. Set two tutors, a weekly day/time, and how many ordered topics are taught per meeting.</p>
           </div></div>
           <div className="classes-lesson-list">
             {lessons.map((lesson,index)=><fieldset className="classes-lesson-card" key={lesson.key}>
               <legend>Subject {index+1}</legend>
               <div className="classes-field-pair">
                 <label htmlFor={'classes-subject-'+lesson.key}>Course / subject
-                  <select id={'classes-subject-'+lesson.key} required value={lesson.subject_id}
-                    onChange={e=>setLesson(lesson.key,{subject_id:e.target.value})}>
+                  <select id={'classes-subject-'+lesson.key} required disabled value={lesson.subject_id}
+                    aria-label={'Course imported from cohort '+(index+1)}>
                     <option value="">Choose subject</option>
                     {availableSubjects.map(s=><option key={s.id} value={s.id}
                       disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{courses.find(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&c.subject_id===s.id)?.title??s.name}</option>)}
@@ -443,6 +517,15 @@ export default function ClassesWorkspacePage(){
                   </select>
                 </label>
               </div>
+              <label className="classes-pacing-control" htmlFor={'classes-pacing-'+lesson.key}>
+                Topic pacing · delivery rate
+                <select id={'classes-pacing-'+lesson.key} value={lesson.topics_per_meeting} required
+                  onChange={e=>setLesson(lesson.key,{topics_per_meeting:Number(e.target.value)})}>
+                  {[1,2,3,4,5,6,7,8,9,10].map(rate=><option key={rate} value={rate}>
+                    {rate} topic{rate===1?'':'s'} per meeting
+                  </option>)}
+                </select>
+              </label>
               <div className="classes-schedule-grid">
                 <label htmlFor={'classes-weekday-'+lesson.key}>Weekly day
                   <select id={'classes-weekday-'+lesson.key} value={lesson.weekday}
@@ -459,20 +542,25 @@ export default function ClassesWorkspacePage(){
                     onChange={e=>setLesson(lesson.key,{ends_at:e.target.value})}/>
                 </label>
               </div>
-              {lessons.length>1&&<button className="classes-remove-lesson" type="button" disabled={busy}
-                onClick={()=>setLessons(old=>old.filter(l=>l.key!==lesson.key))}>
-                <Trash2 size={15}/> Remove subject
-              </button>}
+              <div className="classes-pacing-preview" aria-label="Planned topic teaching dates">
+                <strong>Scheduled topic sequence</strong>
+                {makeTopicPacingPreview(form.class_start_date,lesson.weekday,
+                  cohortPlans.filter(p=>p.cohort_id===selectedCohortId&&
+                    cohortOfferings.some(o=>courses.some(c=>c.id===o.course_id&&c.subject_id===lesson.subject_id&&c.id===p.course_id)))
+                    .sort((a,b)=>a.position-b.position)
+                    .map(p=>({id:p.topic_id,title:topics.find(t=>t.id===p.topic_id)?.title??'Topic'})),
+                  lesson.topics_per_meeting).map(week=><div key={week.meeting}>
+                    <time dateTime={week.date}>{week.date}</time>
+                    <span>Meeting {week.meeting}: {week.topics.map(t=>t.title).join(' · ')}</span>
+                  </div>)}
+              </div>
             </fieldset>)}
           </div>
-          <button className="user-outline-button classes-add-subject" type="button"
-            disabled={busy||lessons.length>=15||lessons.length>=availableSubjects.length}
-            onClick={()=>setLessons(old=>[...old,newLesson()])}>
-            <Plus size={16}/> Add another subject
-          </button>
+          <p className="academic-code-hint">Courses and their order are controlled in
+            <Link to="/cohorts"> Advanced Curriculum</Link>. Changes there are read here automatically on refresh.</p>
           {tutors.length<2&&<p className="academic-code-hint">At least two active tutors are required. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
 
-          <div className="classes-section-heading"><span>5</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
+          <div className="classes-section-heading"><span>6</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
           <label htmlFor="classes-meet">Google Meet link for the entire group</label>
           <input id="classes-meet" type="url" required maxLength={2048}
             placeholder="https://meet.google.com/abc-defg-hij" value={form.meeting_url}
@@ -481,7 +569,7 @@ export default function ClassesWorkspacePage(){
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
-                !availableSubjects.length||tutors.length<2}>
+                !selectedCohort||!cohortReady||!availableSubjects.length||tutors.length<2}>
               {editing?<Pencil size={16}/>:<Plus size={16}/>}
               {busy?'Saving entire class…':editing?'Save all class changes':'Create class draft'}
             </button>
@@ -489,6 +577,18 @@ export default function ClassesWorkspacePage(){
           </div>
         </form>
       </section>}
+      {staff&&selectedCohort&&paidCohort&&<details className="panel classes-cohort-billing" id="cohort-billing">
+        <summary><Wallet size={19}/> Payment assignment &amp; billing configuration — {selectedCohort.name}</summary>
+        <p>This is a paid DLI cohort. Assign each approved student's monthly fee using the existing audited
+          manual-transfer workflow. DLI account details are set by authorised administrators.
+          Submitting a receipt never confirms a bank credit or grants access automatically.</p>
+        <p><strong>Selected class structure:</strong> {tier(form.class_type).label} · {chosen.length} student{chosen.length===1?'':'s'} selected.
+          Fee amounts and rates are managed in the existing finance editor, not inferred from topic counts.</p>
+        <PrivateClassesPage billingOnly embedded/>
+      </details>}
+      {staff&&selectedCohort&&!paidCohort&&<p className="classes-free-billing-note">
+        <CheckCircle2 size={17}/> Free Scholars Club cohort · No payment assignment or bank details required.
+      </p>}
 
       <section className="panel classes-directory">
         <div className="panel-heading"><div>
@@ -547,6 +647,17 @@ export default function ClassesWorkspacePage(){
                   <small>Primary tutor: {c.tutor_name}</small>
                   {coTutors.find(co=>co.class_id===c.id&&co.is_active)&&<small>Second tutor: {coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_name}</small>}
                   {staff&&c.offering_id&&<small>Linked academic offering · tutor assignments verified</small>}
+                  {pacingRows.some(p=>p.class_id===c.id)&&<small>
+                    Delivery rate: {pacingRows.find(p=>p.class_id===c.id)?.topics_per_meeting} topic(s) per weekly meeting
+                  </small>}
+                  {deliveryRows.some(p=>p.class_id===c.id)&&<div className="classes-delivery-list">
+                    <strong>Topic teaching dates</strong>
+                    {deliveryRows.filter(p=>p.class_id===c.id).map(p=>
+                      <span key={p.topic_id}>
+                        <time dateTime={p.meeting_date}>{p.meeting_date}</time>
+                        <span>Meeting {p.meeting_number} · {topics.find(t=>t.id===p.topic_id)?.title??c.subject_name+' topic '+p.topic_order}</span>
+                      </span>)}
+                  </div>}
                 </div>
                 {c.state==='archived'&&<span className="classes-state archived">Archived</span>}
                 {communicating&&c.state==='published'&&

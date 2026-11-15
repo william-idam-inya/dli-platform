@@ -137,6 +137,9 @@ jobs:
       - name: Verify Q33 unified Classes timetable and two-tutor academic assignments
         run: npm run check:q33-unified-classes
 
+      - name: Verify Q34 cohort-pacing and Telegram message controls
+        run: npm run check:q34-curriculum-telegram
+
       - name: Verify TypeScript
         run: npm run typecheck
 

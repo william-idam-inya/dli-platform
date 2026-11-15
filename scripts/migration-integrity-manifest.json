@@ -391,6 +391,22 @@
     {
       "file": "20261115183000_stage_q33a_class_audit_trigger_fix.sql",
       "gitBlobSha1": "8cb75308ed90c3bf55c9bfa21d9d1f58dc7f0023"
+    },
+    {
+      "file": "20261115193000_stage_q34_cohort_topic_schedule.sql",
+      "gitBlobSha1": "ee4af132427233bf50572d3cfb5736eeda71470b"
+    },
+    {
+      "file": "20261115200000_stage_q34_direct_replies_reactions_and_actions.sql",
+      "gitBlobSha1": "752b3f9a4565bda7a4236e10e0e98a171ee2ed93"
+    },
+    {
+      "file": "20261115201500_stage_q34b_free_cohort_topic_delivery_fix.sql",
+      "gitBlobSha1": "5c09e3b9239d3a1d2b54cff20308e7da4c63fd2e"
+    },
+    {
+      "file": "20261115203000_stage_q34c_assistant_cohort_read.sql",
+      "gitBlobSha1": "bba767e5697f0e4bb34c3ac5a37bbe10a04d1b92"
     }
   ]
 }

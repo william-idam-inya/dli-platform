@@ -1,0 +1,49 @@
+.dli-cohort-flow .panel{margin:0 0 1rem}
+.dli-cohort-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin:1rem 0 1.35rem}
+.dli-cohort-steps span{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem;display:flex;align-items:center;gap:.55rem;font-size:.83rem;color:var(--text);font-weight:700}
+.dli-cohort-steps strong,.dli-cohort-step-number{display:grid;place-items:center;flex-shrink:0;border-radius:50%;width:30px;height:30px;background:var(--purple-soft);color:var(--purple);font-weight:850}
+.dli-cohort-step{padding:1.25rem}
+.dli-cohort-step>header{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:1rem}
+.dli-cohort-step>header h2,.dli-cohort-ready h2{margin:0 0 .25rem;font-size:1.17rem}
+.dli-cohort-step>header p,.dli-cohort-ready p{margin:.15rem 0;color:var(--muted);font-size:.88rem;line-height:1.55}
+.dli-cohort-step>header>svg:last-child{color:#059669;margin-left:auto}
+.dli-cohort-step-number{border-radius:10px;width:43px;height:43px;font-size:.9rem}
+.dli-cohort-create{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;align-items:end;max-width:none}
+.dli-cohort-create button{grid-column:1/-1;width:max-content}
+.dli-cohort-create label,.dli-cohort-switch,.dli-cohort-step>label,.dli-cohort-add-existing label{display:grid;gap:.4rem;font-size:.84rem;font-weight:750;color:var(--text);min-width:0}
+.dli-cohort-step input,.dli-cohort-step select{display:block;width:100%;min-height:44px;padding:.65rem .7rem;border:1px solid var(--border);background:var(--surface-soft);color:var(--text);border-radius:9px;font:inherit}
+.dli-cohort-switch{margin-top:1.25rem;padding-top:1.2rem;border-top:1px solid var(--border)}
+.dli-cohort-context{display:block;margin-bottom:.75rem;color:var(--text)}
+.dli-cohort-choice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:.75rem}
+.dli-cohort-choice{display:flex;align-items:center;gap:.65rem;min-width:0;border:1px solid var(--border);border-radius:11px;padding:.8rem;background:var(--surface-soft)}
+.dli-cohort-choice.assigned{border-color:#10b98180}
+.dli-cohort-choice>svg{flex-shrink:0;color:var(--purple)}
+.dli-cohort-choice>span{display:grid;gap:.3rem;flex:1;min-width:0}
+.dli-cohort-choice strong{font-size:.83rem;overflow-wrap:anywhere}
+.dli-cohort-choice small{color:var(--muted);font-size:.73rem}
+.dli-cohort-choice button{display:inline-flex;align-items:center;gap:.25rem;font-size:.75rem;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:.5rem;border-radius:8px;cursor:pointer}
+.dli-cohort-choice button:disabled{opacity:.65;cursor:default}
+.dli-cohort-ordered{margin:1rem 0;display:grid;gap:.55rem}
+.dli-cohort-topic-row{display:flex;align-items:center;gap:.65rem;padding:.65rem .8rem;background:var(--surface-soft);border:1px solid var(--border);border-radius:10px}
+.dli-cohort-topic-row>strong{flex:1;font-size:.86rem}
+.dli-cohort-topic-index{background:var(--purple-soft);color:var(--purple);padding:.4rem .6rem;border-radius:8px;font-weight:850;font-size:.8rem}
+.dli-cohort-topic-buttons{display:flex;gap:.25rem}
+.dli-cohort-topic-buttons button{display:grid;place-items:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.dli-cohort-topic-buttons button:disabled{opacity:.35}
+.dli-cohort-topic-create{display:flex;gap:.8rem;align-items:end;max-width:none;flex-wrap:wrap}
+.dli-cohort-topic-create label{min-width:min(100%,290px);flex:1}
+.dli-cohort-add-existing{display:flex;align-items:end;flex-wrap:wrap;gap:.7rem;margin-top:.85rem}
+.dli-cohort-add-existing label{flex:1;min-width:min(100%,270px)}
+.dli-cohort-ready{display:flex;gap:.8rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.dli-cohort-ready>div{display:flex;align-items:flex-start;gap:.75rem}
+.dli-cohort-ready svg{color:var(--purple)}
+.dli-cohort-ready a.academic-submit{text-decoration:none;display:flex;align-items:center;gap:.5rem;min-height:44px}
+@media(max-width:760px){
+ .dli-cohort-create{grid-template-columns:1fr}
+ .dli-cohort-steps{grid-template-columns:1fr}
+ .dli-cohort-step{padding:1rem}
+ .dli-cohort-steps span{min-height:44px}
+ .dli-cohort-topic-row{flex-wrap:wrap}
+ .dli-cohort-topic-row>strong{min-width:50%}
+ .dli-cohort-topic-buttons{margin-left:auto}
+}
