@@ -7,6 +7,7 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
+import SubjectArtwork from '../components/SubjectArtwork';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
 
@@ -501,7 +502,7 @@ export default function ClassesWorkspacePage(){
             {(staff||account?.role==='tutor')&&<p><GraduationCap size={15}/>Students: {roster.map(m=>m.student_name).join(', ')||'Not assigned yet'}</p>}
             <div className="classes-group-sessions">
               {group.rows.map(c=><div className="classes-group-session" key={c.id}>
-                <div><strong><BookOpen size={16}/>{c.subject_name}</strong>
+                <div><strong><SubjectArtwork subject={c.subject_name}/>{c.subject_name}</strong>
                   <small>{dayTime(c)}</small>
                   <small>Tutor: {c.tutor_name}</small>
                 </div>
