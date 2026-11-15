@@ -1,7 +1,9 @@
-import {useEffect,useRef,useState} from 'react';
+import {forwardRef,useEffect,useImperativeHandle,useRef,useState} from 'react';
 import {Mic,Video,Square,Trash2,ShieldCheck} from 'lucide-react';
 
-type Kind='voice'|'video';
+export type RecorderKind='voice'|'video';
+type Kind=RecorderKind;
+export type ChatMediaRecorderHandle={start:(mode:Kind)=>void;stop:()=>void;discard:()=>void};
 type Preview={kind:Kind;url:string;file:File};
 const choices:Record<Kind,readonly string[]>={
   voice:['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'],
@@ -12,9 +14,9 @@ const extensions:Record<string,string>={
   'video/webm':'webm','video/mp4':'mp4',
 };
 const maxBytes=10*1024*1024;
-export default function ChatMediaRecorder({
-  disabled,onReady,
-}:{disabled:boolean;onReady:(file:File|null)=>void}){
+const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
+  disabled:boolean;onReady:(file:File|null)=>void;compact?:boolean
+}>(function ChatMediaRecorder({disabled,onReady,compact=false},ref){
   const [kind,setKind]=useState<Kind|null>(null);
   const [requesting,setRequesting]=useState<Kind|null>(null);
   const [seconds,setSeconds]=useState(0);
@@ -27,6 +29,7 @@ export default function ChatMediaRecorder({
   const cancelled=useRef(false);
   const mounted=useRef(true);
   const starting=useRef(false);
+  const stopAfterPermission=useRef(false);
   const elapsed=useRef(0);
 
   const stopTracks=()=>{
@@ -63,7 +66,7 @@ export default function ChatMediaRecorder({
     if(!mime){setError('This browser has no supported voice/video recording format. Try the attachment option.');
       setRequesting(null);starting.current=false;return;}
     releasePreview();onReady(null);
-    cancelled.current=false;
+    cancelled.current=false;stopAfterPermission.current=false;
     elapsed.current=0;setSeconds(0);
     try{
       const stream=await navigator.mediaDevices.getUserMedia(next==='voice'
@@ -96,6 +99,7 @@ export default function ChatMediaRecorder({
         setPreview({kind:next,url,file});onReady(file);
       };
       recorder.start(1000);
+      if(stopAfterPermission.current&&recorder.state==='recording')recorder.stop();
       starting.current=false;
       setRequesting(null);
       setKind(next);
@@ -121,6 +125,7 @@ export default function ChatMediaRecorder({
     }
   };
   const stop=()=>{
+    stopAfterPermission.current=true;
     const recorder=recorderRef.current;
     if(recorder&&recorder.state==='recording')recorder.stop();
   };
@@ -128,12 +133,13 @@ export default function ChatMediaRecorder({
     cancelled.current=true;stop();stopTracks();
     releasePreview();onReady(null);setKind(null);setRequesting(null);setSeconds(0);setError(null);
   };
-  return <div className="dli-chat-media-recorder" aria-label="Voice and video messages">
+  useImperativeHandle(ref,()=>({start:next=>{void start(next);},stop,discard}));
+  return <div className={'dli-chat-media-recorder'+(compact?' compact':'')} aria-label="Voice and video messages">
     <div className="dli-chat-recorder-actions">
-      {!kind&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('voice')}>
+      {!kind&&!compact&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('voice')}>
         <Mic size={18}/> Record voice
       </button>}
-      {!kind&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('video')}>
+      {!kind&&!compact&&<button type="button" disabled={disabled||requesting!==null} onClick={()=>void start('video')}>
         <Video size={18}/> Record video
       </button>}
       {kind&&<>
@@ -157,4 +163,5 @@ export default function ChatMediaRecorder({
     </div>}
     {error&&<p className="dli-direct-inline-feedback error" role="alert">{error}</p>}
   </div>;
-}
+});
+export default ChatMediaRecorder;
