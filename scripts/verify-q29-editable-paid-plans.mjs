@@ -51,6 +51,9 @@ for(const token of [
   'subjects_per_tutor',
   'Group of 5 Students',
   'does not modify active student invoices',
+  'normalisePlan(input:PlanRow)',
+  'rows=(result.data as PlanRow[]).map(normalisePlan)',
+  'updated=normalisePlan(result.data as PlanRow)',
 ]) assert.ok(settings.includes(token),'Plan edit/validation guard missing: '+token);
 assert.ok(docs.includes('No automatic activation'));
 console.log('Q29 paid plan catalogue: corrected label, secure role-write guard, audited revisions, fail-closed display and editable UI verified.');
