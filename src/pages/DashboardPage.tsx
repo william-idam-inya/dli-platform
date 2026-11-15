@@ -117,6 +117,9 @@ export default function DashboardPage(){
             <Link to={heroPath} className="dli-hero-action">
               {heroAction} <ArrowRight size={16} aria-hidden="true"/>
             </Link>}
+          <Link to="/profile" className="dli-hero-action dli-hero-action-secondary">
+            Personalise appearance
+          </Link>
           <span className="dli-hero-note">Learn • Improve • Excel</span>
         </div>
       </div>
