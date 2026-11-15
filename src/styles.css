@@ -558,3 +558,14 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(117, 91, 215, .3
  border-radius:8px!important;z-index:2!important;cursor:pointer!important}
 .auth-password-toggle:hover{background:var(--purple-soft)!important;color:var(--purple)!important}
 .auth-password-toggle:focus-visible{outline:2px solid var(--purple)!important;outline-offset:-2px!important}
+
+
+/* Q35 — compact, role-segmented administrator account register */
+.user-registry .user-list{display:grid;gap:13px}
+.dli-registry-role-group{display:grid;gap:8px;border:1px solid var(--border);border-radius:13px;padding:10px;
+ background:var(--surface-soft);min-width:0}
+.dli-registry-role-group>h3{display:flex;align-items:center;justify-content:space-between;
+ gap:10px;font-size:.9rem;margin:0;padding:7px 9px 10px;border-bottom:1px solid var(--border)}
+.dli-registry-role-group>h3 span{font-size:.72rem;color:var(--muted);font-weight:600}
+.dli-registry-role-group>.user-item{background:var(--surface);border:1px solid var(--border);
+ border-radius:11px;padding:12px;min-width:0}
