@@ -23,7 +23,7 @@ type Submission = {
 type Grade = {
   id: string; submission_id: string; points: number; feedback: string; graded_at: string;
 };
-const EDIT_ROLES = new Set(['owner', 'admin', 'academic_coordinator', 'tutor']);
+const EDIT_ROLES = new Set(['owner', 'admin', 'assistant_admin', 'tutor']);
 function readableDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleString();
