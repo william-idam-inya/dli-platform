@@ -239,17 +239,20 @@ export default function UserManagementPage() {
           <h1>User management</h1>
           <p>Review authorised accounts, manage permitted roles and access, and track changes.</p>
         </div>
-        <span className="module-status"><span/> Stage C</span>
+
       </div>
-      <div className="module-notice">
-        <div className="notice-icon"><ShieldCheck size={20}/></div>
-        <div>
-          <strong>Role-based permissions are enforced on the server</strong>
-          <p>You can see and manage only roles permitted by DLI's current assignment matrix.
-            Changes are audited in Supabase. Suspension and revocation block DLI data access immediately;
-            existing Auth tokens may remain valid until expiry.</p>
-        </div>
+      <div className="dli-user-quick-actions" aria-label="User management shortcuts">
+        <a href="#account-registry"><Users size={17} aria-hidden="true"/> Account registry</a>
+        <a href="#invite-member"><CheckCircle2 size={17} aria-hidden="true"/> Invite a member</a>
       </div>
+      <details className="dli-user-safety">
+        <summary><ShieldCheck size={18} aria-hidden="true"/>
+          Role-based permissions are enforced on the server
+        </summary>
+        <p>You can manage only permitted roles. Changes are audited in Supabase.
+          Suspension and revocation block DLI data access immediately; existing
+          authentication tokens may remain valid until expiry.</p>
+      </details>
 
       {error && <p className="auth-feedback error" role="alert">{error}</p>}
       {notice && <div className="user-action-toast" role="status" aria-live="polite">
@@ -258,7 +261,7 @@ export default function UserManagementPage() {
         <button type="button" onClick={()=>setNotice(null)} aria-label="Dismiss confirmation">Dismiss</button>
       </div>}
 
-      <section className="panel user-registry">
+      <section className="panel user-registry" id="account-registry">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">AUTHORISED DIRECTORY</p>
@@ -416,7 +419,9 @@ export default function UserManagementPage() {
         </button>}
       </section>
 
-      <InviteUserPage embedded allowedRoles={roles} onCreated={() => { void loadUsers(true); void loadAudit(); }}/>
+      <div id="invite-member">
+        <InviteUserPage embedded allowedRoles={roles} onCreated={() => { void loadUsers(true); void loadAudit(); }}/>
+      </div>
 
       <section className="panel user-audit">
         <div className="panel-heading">
