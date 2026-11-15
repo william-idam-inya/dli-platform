@@ -4,10 +4,13 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import ChatMediaRecorder from '../components/ChatMediaRecorder';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
+import ChatMemberAvatar from '../components/ChatMemberAvatar';
+import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
 import { Link } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
+type ClassProfile=Contact&{subjects:string[]};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
 type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
@@ -36,6 +39,9 @@ export default function DirectMessagesPage(){
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
+  const [classProfiles,setClassProfiles]=useState<ClassProfile[]>([]);
+  const [classProfilesError,setClassProfilesError]=useState(false);
+  const [profileTarget,setProfileTarget]=useState<{id:string;name:string}|null>(null);
   const [threads,setThreads]=useState<Thread[]>([]);
   const [reports,setReports]=useState<Report[]>([]);
   const [activeId,setActiveId]=useState('');
@@ -84,11 +90,13 @@ export default function DirectMessagesPage(){
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
+  const openMemberProfile=(id:string,name:string)=>setProfileTarget({id,name});
+  const closeMemberProfile=useCallback(()=>setProfileTarget(null),[]);
 
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [auth,directory,inbox,flags,readRows,headMessages]=await Promise.all([
+      const [auth,directory,inbox,flags,readRows,headMessages,classDirectory]=await Promise.all([
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
@@ -98,12 +106,17 @@ export default function DirectMessagesPage(){
         supabase.from('dli_direct_messages')
           .select('id,thread_id,sender_id,body,created_at,file_id')
           .order('created_at',{ascending:false}).limit(700),
+        account.role==='tutor'||account.role==='student'
+          ?supabase.rpc('dli_chat_class_profiles')
+          :Promise.resolve({data:[],error:null}),
       ]);
       if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
         setError('The messaging directory could not be verified. Retry while signed in.');return;
       }
       setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
+      setClassProfiles((classDirectory.data??[]) as ClassProfile[]);
+      setClassProfilesError(Boolean(classDirectory.error));
       setThreads((inbox.data??[]) as Thread[]);
       setReports((flags.data??[]) as Report[]);
       setReads((readRows.data??[]) as DirectRead[]);
@@ -411,29 +424,62 @@ export default function DirectMessagesPage(){
           <h2>Start a chat · {permittedContacts.length} available</h2>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
           {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
-            <button type="button" disabled={busy||loading||!uid} key={c.user_id}
-              onClick={()=>void openContact(c)}
-              aria-label={'Start a private chat with '+c.full_name}
-              aria-busy={openingContactId===c.user_id}
-              className={current&&(current.participant_a===c.user_id||current.participant_b===c.user_id)?'selected':''}>
-              <span className="dli-direct-avatar">{c.full_name.charAt(0).toUpperCase()}</span>
-              <span><strong>{c.full_name}</strong>
-                <small>{openingContactId===c.user_id?'Opening conversation…':c.member_role.replaceAll('_',' ')}</small>
-              </span>
-            </button>)}
+            <div className={'dli-direct-contact-row'+(
+              current&&(current.participant_a===c.user_id||current.participant_b===c.user_id)?' selected':''
+            )} key={c.user_id}>
+              <button type="button" className="dli-chat-avatar-trigger"
+                aria-label={'View '+c.full_name+' profile'} title="View member profile"
+                onClick={()=>openMemberProfile(c.user_id,c.full_name)}>
+                <ChatMemberAvatar userId={c.user_id} name={c.full_name}/>
+              </button>
+              <button type="button" className="dli-direct-contact-open"
+                disabled={busy||loading||!uid}
+                onClick={()=>void openContact(c)}
+                aria-label={'Start a private chat with '+c.full_name}
+                aria-busy={openingContactId===c.user_id}>
+                <span><strong>{c.full_name}</strong>
+                  <small>{openingContactId===c.user_id?'Opening conversation…':c.member_role.replaceAll('_',' ')}</small>
+                </span>
+              </button>
+            </div>)}
           {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
           {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.</p>}
         </section>}
+        {mode==='inbox'&&(account?.role==='tutor'||account?.role==='student')&&
+          <section className="dli-direct-class-profiles" aria-label="My class profiles">
+            <h2>{account.role==='tutor'?'My students’ profiles':'My tutors’ profiles'}</h2>
+            <p className="dli-direct-empty">These profiles are available only through active, published class assignments.
+              Viewing a profile does not enable direct student–tutor messaging.</p>
+            {classProfiles.map(person=>
+              <button key={person.user_id} type="button" className="dli-direct-class-profile-button"
+                onClick={()=>openMemberProfile(person.user_id,person.full_name)}
+                aria-label={'View '+person.full_name+' class profile'}>
+                <ChatMemberAvatar userId={person.user_id} name={person.full_name}/>
+                <span><strong>{person.full_name}</strong>
+                  <small>{person.subjects?.join(', ')||person.member_role.replaceAll('_',' ')}</small>
+                </span>
+              </button>)}
+            {!classProfiles.length&&!classProfilesError&&
+              <p className="dli-direct-empty">No active published class profiles are available yet.</p>}
+            {classProfilesError&&<p className="dli-direct-empty" role="status">
+              Class profiles could not be verified. Refresh after checking your class assignments.</p>}
+          </section>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
           {visible.map(t=>{
             const other=participant(t);
             const latest=lastMessage.get(t.id);
             const unread=mode==='inbox'?unreadInThread(t.id):0;
             return <div className={'dli-direct-chat-list-row'+(activeId===t.id?' selected':'')} key={t.id}>
+              <button type="button" className="dli-chat-avatar-trigger"
+                aria-label={'View '+memberName(mode==='oversight'?t.participant_a:other)+' profile'}
+                onClick={()=>openMemberProfile(mode==='oversight'?t.participant_a:other,
+                  memberName(mode==='oversight'?t.participant_a:other))}>
+                <ChatMemberAvatar userId={mode==='oversight'?t.participant_a:other}
+                  name={memberName(mode==='oversight'?t.participant_a:other)}/>
+              </button>
               <button type="button" className="dli-direct-chat-list-open"
                 aria-label={'Open conversation with '+memberName(other)+(unread?' ('+unread+' unread)':'')}
                 onClick={()=>setActiveId(t.id)}>
-                <span className="dli-direct-avatar">{memberName(other).charAt(0).toUpperCase()}</span>
                 <span className="dli-direct-chat-list-main">
                   <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
                   <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
@@ -476,10 +522,19 @@ export default function DirectMessagesPage(){
           <header className="dli-direct-thread-head">
             <button type="button" className="dli-direct-back" aria-label="Back to chats"
               onClick={()=>{setActiveId('');setError(null);}}><ChevronLeft size={20}/> Chats</button>
-            <span className="dli-direct-avatar">{memberName(participant(current)).charAt(0).toUpperCase()}</span>
+            <button type="button" className="dli-chat-avatar-trigger dli-chat-header-avatar"
+              onClick={()=>openMemberProfile(mode==='oversight'?current.participant_a:participant(current),
+                memberName(mode==='oversight'?current.participant_a:participant(current)))}
+              aria-label={'View '+memberName(mode==='oversight'?current.participant_a:participant(current))+' profile'}>
+              <ChatMemberAvatar userId={mode==='oversight'?current.participant_a:participant(current)}
+                name={memberName(mode==='oversight'?current.participant_a:participant(current))}/>
+            </button>
             <div><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
               <small>{mode==='oversight'?'Read-only institutional review':'Private institutional conversation'}</small></div>
-            {mode==='oversight'&&<LockKeyhole size={18}/>}
+            {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
+              onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
+              <LockKeyhole size={16}/> Second member profile
+            </button>}
           </header>
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
             {messages.map(m=><article key={m.id} className={m.sender_id===uid&&mode!=='oversight'?'mine':''}>
@@ -538,5 +593,8 @@ export default function DirectMessagesPage(){
       </section>
     </div>
     <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
+    {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
+      userId={profileTarget.id} fallbackName={profileTarget.name}
+      onClose={closeMemberProfile}/>}
   </div>;
 }
