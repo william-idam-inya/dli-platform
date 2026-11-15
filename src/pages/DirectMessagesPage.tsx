@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, Heart, LockKeyhole, MessageCircle, MoreHorizontal, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
