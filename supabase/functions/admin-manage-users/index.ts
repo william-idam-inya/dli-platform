@@ -12,8 +12,7 @@ const origins = new Set([
 ]);
 // Reconciled Q15 lifecycle operations; production origin allowlist remains authoritative.
 const roles = new Set([
-  'owner', 'admin', 'assistant_admin', 'academic_coordinator',
-  'tutor', 'student',
+  'owner', 'admin', 'assistant_admin', 'tutor', 'student',
 ]);
 const actions = new Set([
   'list','audit','change_role','suspend','reactivate','revoke',
@@ -122,7 +121,7 @@ Deno.serve(async (req: Request) => {
       total: count ?? 0,
       has_more: (users ?? []).length > size,
       page, view,
-      allowed_roles: (allowed ?? []).map(item => item.granted_role),
+      allowed_roles: (allowed ?? []).map(item => item.granted_role).filter(role=>roles.has(role)),
     }, origin);
   }
 
