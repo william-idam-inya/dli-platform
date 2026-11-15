@@ -7,7 +7,6 @@ const ROLE_PRIORITY: Record<DliRole, readonly string[]> = {
   owner: ['/', '/users', '/finance', '/reports'],
   admin: ['/', '/users', '/finance', '/classes'],
   assistant_admin: ['/', '/classes', '/finance', '/payroll'],
-  academic_coordinator: ['/', '/academics', '/study', '/profile'],
   tutor: ['/', '/classes', '/communications', '/profile'],
   student: ['/', '/classes', '/communications', '/profile'],
 };
