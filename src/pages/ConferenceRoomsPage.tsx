@@ -76,9 +76,10 @@ export default function ConferenceRoomsPage(){
   }
   setMembers((a.data??[]) as Participant[]);
   setMessages((b.data??[]) as RoomMessage[]);
-  setRooms(prev=>prev.some(x=>x.id===room.data.id)
-   ?prev.map(x=>x.id===room.data.id?room.data as Room:x)
-   :[room.data as Room,...prev]);
+  const verifiedRoom=room.data as Room;
+  setRooms(prev=>prev.some(x=>x.id===verifiedRoom.id)
+   ?prev.map(x=>x.id===verifiedRoom.id?verifiedRoom:x)
+   :[verifiedRoom,...prev]);
  },[]);
  useEffect(()=>{
   if(!active||!joined)return;
