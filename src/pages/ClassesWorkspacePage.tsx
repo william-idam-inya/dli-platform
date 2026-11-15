@@ -15,7 +15,7 @@ type Person = { id:string; auth_user_id:string; full_name:string; role:'student'
 type Subject = { id:string; name:string; academic_level_id:string; is_active:boolean };
 type AcademicLevel = { id:string; code:string; name:string; sort_order:number; is_active:boolean };
 type Programme = { id:string; name:string; code:string };
-type Course = { id:string; programme_id:string; academic_level_id:string; subject_id:string; is_active:boolean };
+type Course = { id:string; title:string; programme_id:string; academic_level_id:string; subject_id:string; is_active:boolean };
 type ClassType = 'free_demo'|'group_5_science'|'group_10'|'private_1_to_1';
 type ClassRow = {
   id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;
@@ -25,7 +25,9 @@ type ClassRow = {
   class_group_id:string;class_group_name:string;offering_id:string|null;
 };
 type Member = { id:string;class_id:string;student_id:string;student_name:string;is_active:boolean };
-type LessonRow = { key:string;subject_id:string;tutor_id:string;weekday:number;starts_at:string;ends_at:string };
+type CoTutor = {class_id:string;tutor_id:string;tutor_name:string;is_active:boolean};
+type ClassCurriculum = {class_group_id:string;cohort_id:string};
+type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;weekday:number;starts_at:string;ends_at:string };
 type GroupDetails = {
   class_type:ClassType;class_start_date:string;class_group_name:string;
   class_group_id:string;academic_level_id:string;meeting_url:string;
@@ -40,7 +42,7 @@ const CLASS_TYPES: {id:ClassType;label:string;hint:string;capacity:number|null}[
 ];
 const STAFF=new Set(['admin','assistant_admin']);
 const EMPTY:GroupDetails={class_type:'group_5_science',class_start_date:'',class_group_name:'',class_group_id:'',academic_level_id:'',meeting_url:''};
-const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
+const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
 const meetValid=(url:string)=>/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(url);
 const tier=(type:ClassType)=>CLASS_TYPES.find(t=>t.id===type)??CLASS_TYPES[0];
 const dayTime=(c:ClassRow)=>WEEKDAYS[c.weekday]+' · '+c.starts_at.slice(0,5)+'–'+c.ends_at.slice(0,5)+' WAT';
@@ -78,6 +80,8 @@ export default function ClassesWorkspacePage(){
   const [paidStudents,setPaidStudents]=useState<string[]>([]);
   const [classes,setClasses]=useState<ClassRow[]>([]);
   const [members,setMembers]=useState<Member[]>([]);
+  const [coTutors,setCoTutors]=useState<CoTutor[]>([]);
+  const [classCurricula,setClassCurricula]=useState<ClassCurriculum[]>([]);
   const [chosen,setChosen]=useState<string[]>([]);
   const [form,setForm]=useState<GroupDetails>(EMPTY);
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
@@ -94,21 +98,25 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,s,l,co,pr,paid]=await Promise.all([
+      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows]=await Promise.all([
         supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name,offering_id').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('subjects').select('id,name,academic_level_id,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('academic_levels').select('id,code,name,sort_order,is_active').eq('is_active',true).order('sort_order'):Promise.resolve({data:[],error:null}),
-        staff?supabase.from('courses').select('id,programme_id,academic_level_id,subject_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('courses').select('id,title,programme_id,academic_level_id,subject_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
         staff?supabase.from('programmes').select('id,name,code').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
+        supabase.from('dli_class_co_tutors').select('class_id,tutor_id,tutor_name,is_active').limit(1000),
+        staff?supabase.from('dli_class_curricula').select('class_group_id,cohort_id').limit(500):Promise.resolve({data:[],error:null}),
       ]);
-      if([c,m,p,s,l,co,pr,paid].some(x=>x.error)){
+      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows].some(x=>x.error)){
         setError('Could not load the class register or approved academic subjects. Check permissions and refresh.');
       }else{
         setClasses((c.data??[]) as ClassRow[]);
         setMembers((m.data??[]) as Member[]);
+        setCoTutors((coRows.data??[]) as CoTutor[]);
+        setClassCurricula((curriculumRows.data??[]) as ClassCurriculum[]);
         setPeople((p.data??[]) as Person[]);
         setSubjects((s.data??[]) as Subject[]);
         setLevels((l.data??[]) as AcademicLevel[]);
@@ -186,6 +194,7 @@ export default function ClassesWorkspacePage(){
     });
     setLessons(group.rows.map(c=>({
       key:c.id,subject_id:c.subject_id,tutor_id:c.tutor_id,
+      second_tutor_id:coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_id??'',
       weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),
     })));
     setChosen(members.filter(m=>m.class_id===first.id&&m.is_active).map(m=>m.student_id));
@@ -227,9 +236,10 @@ export default function ClassesWorkspacePage(){
     const url=form.meeting_url.trim();
     const unique=new Set(lessons.map(l=>l.subject_id));
     const validRows=lessons.length>0&&lessons.length<=15&&unique.size===lessons.length&&
-      lessons.every(l=>l.subject_id&&l.tutor_id&&
+      lessons.every(l=>l.subject_id&&l.tutor_id&&l.second_tutor_id&&l.tutor_id!==l.second_tutor_id&&
         availableSubjects.some(s=>s.id===l.subject_id)&&
         tutors.some(t=>t.auth_user_id===l.tutor_id)&&
+        tutors.some(t=>t.auth_user_id===l.second_tutor_id)&&
         l.weekday>=0&&l.weekday<=6&&l.starts_at<l.ends_at);
     const overlaps=lessons.some((a,i)=>lessons.some((b,j)=>i<j&&a.weekday===b.weekday&&
       a.starts_at<b.ends_at&&a.ends_at>b.starts_at));
@@ -238,14 +248,14 @@ export default function ClassesWorkspacePage(){
       !meetValid(url)||!validRows||overlaps||
       (capacity!==null&&chosen.length>capacity)||
       chosen.some(id=>!eligibleStudents.some(s=>s.auth_user_id===id))){
-      setError('Choose an academic level, non-overlapping subjects and times, a tutor per subject, a group name, eligible students and one Google Meet link.');
+      setError('Choose approved courses, non-overlapping times, TWO different tutors per subject, eligible students, a class name and one Google Meet link.');
       return;
     }
     setBusy(true);setError(null);setNotice(null);
     try{
       // One SQL transaction creates/updates every subject and synchronises
       // the group's shared roster, identity, class date and Meet link.
-      const result=await supabase.rpc('dli_save_teaching_group',{
+      const result=await supabase.rpc('dli_save_unified_class',{ 
         p_group_id:editing,
         p_programme_id:programmeId,
         p_level_id:levelId,
@@ -254,13 +264,13 @@ export default function ClassesWorkspacePage(){
         p_group_name:form.class_group_name.trim(),
         p_meeting_url:url,
         p_students:chosen,
-        p_lessons:lessons.map(({subject_id,tutor_id,weekday,starts_at,ends_at})=>
-          ({subject_id,tutor_id,weekday,starts_at,ends_at})),
+        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})=>
+          ({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})), 
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(editing?'Class group, subjects, tutors, times and student roster updated together.':
-        'Class group created with '+lessons.length+' subject'+(lessons.length===1?'':'s')+
-        '. It is a draft until you publish it.');
+      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
+        'Class draft created with '+lessons.length+' approved course'+(lessons.length===1?'':'s')+
+        '. Publishing synchronises its academic tutor assignments and enrolled students.');
       cancelEdit();
       await refresh();
     }catch{setError('The class could not be saved. Refresh the register before trying again.');}
@@ -274,11 +284,12 @@ export default function ClassesWorkspacePage(){
       :'Archive the entire group and revoke its joining links?'))return;
     setBusy(true);setError(null);setNotice(null);
     try{
-      const result=await supabase.rpc('dli_set_teaching_group_state',{
+      const integrated=classCurricula.some(row=>row.class_group_id===group.id);
+      const result=await supabase.rpc(integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{ 
         p_group_id:group.id,p_state:state,
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(state==='published'?'All subjects published together.':'Group archived, including all its subject sessions.');
+      setNotice(state==='published'?'All courses published: two tutors, academic assignments, student enrolments and weekly schedules synchronised.':'Group archived, including its managed academic offerings and teaching links.');
       await refresh();
     }catch{setError('Group status could not be confirmed. Please refresh.');}
     finally{setBusy(false);}
