@@ -11,6 +11,8 @@ const profile=read('src/pages/MemberProfilePage.tsx');
 const dashboard=read('src/pages/DashboardPage.tsx');
 const users=read('src/pages/UserManagementPage.tsx');
 const shell=read('src/components/AppShell.tsx');
+const artwork=read('src/components/SubjectArtwork.tsx');
+const classPage=read('src/pages/ClassesWorkspacePage.tsx');
 const main=read('src/main.tsx');
 const existingRoles=read('src/auth/permissions.ts');
 for(const token of [
@@ -49,6 +51,9 @@ assert.ok(users.includes('id="invite-member"')&&users.includes('id="account-regi
 assert.ok(users.includes('<InviteUserPage embedded'),'Keep actual invitation workflow');
 assert.ok(users.includes('Role-based permissions are enforced on the server'),
  'Keep security disclosure');
+assert.ok(artwork.includes('mathematics')&&artwork.includes('biology')&&artwork.includes('chemistry'),'Subject graphics must support core science subjects');
+assert.ok(classPage.includes('<SubjectArtwork subject={c.subject_name}/>'),'Decorate only real authorised class subjects');
+assert.ok(dashboard.includes('Personalise appearance'),'Appearance controls must be discoverable from dashboard');
 assert.ok(shell.includes('OfficialDliLogo'),'Retain original institution logo');
 assert.ok(shell.includes('mobile-bottom-nav'),'Retain existing accessible mobile navigation');
 assert.ok(existingRoles.includes("['owner', 'admin', 'assistant_admin']"),
