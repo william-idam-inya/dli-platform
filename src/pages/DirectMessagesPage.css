@@ -459,3 +459,12 @@
  width:30px;height:30px;cursor:pointer;font-size:18px}
 @media(max-width:700px){.dli-live-call-actions button{width:38px;height:38px}
  .dli-live-chat-header>strong{font-size:.83rem}}
+
+/* Q36: new-chat empty state always provides an actionable return to inbox. */
+.dli-telegram-no-new-contacts{display:grid;gap:8px;padding:9px;}
+.dli-telegram-no-new-contacts button{
+ justify-self:start;min-height:44px;border:1px solid var(--border);border-radius:11px;
+ padding:8px 12px;background:var(--purple-soft);color:var(--purple-dark);
+ font:inherit;font-size:12px;font-weight:750;cursor:pointer;
+}
+.dli-telegram-no-new-contacts button:focus-visible{outline:3px solid var(--dli-focus);outline-offset:2px;}

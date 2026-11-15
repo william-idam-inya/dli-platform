@@ -1,25 +1,38 @@
-import {useCallback,useEffect,useRef,useState,type ReactNode,type MouseEvent,type KeyboardEvent as ReactKeyboardEvent} from 'react';
-import {ChevronDown,ChevronsDownUp,ChevronsUpDown,X} from 'lucide-react';
+import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
+import {Bell,BookOpen,CalendarDays,ChevronDown,ChevronsDownUp,ChevronsUpDown,ClipboardList,LayoutPanelTop,MessageCircle,Settings2,UserRound,Users,Wallet,X} from 'lucide-react';
 import {useLocation} from 'react-router-dom';
 import './WorkspaceFocus.css';
 
+type FocusSection={key:string;title:string;rows:number};
+function sectionIcon(title:string){
+ const value=title.toLowerCase();
+ if(/profile|personal|identity|appearance|accessib|assigned/.test(value))return <UserRound size={16}/>;
+ if(/notification|alert|reminder/.test(value))return <Bell size={16}/>;
+ if(/student|tutor|member|people|user|staff/.test(value))return <Users size={16}/>;
+ if(/finance|payment|fee|payroll|billing|bank|receipt/.test(value))return <Wallet size={16}/>;
+ if(/lesson|course|subject|topic|academic|learning|quiz/.test(value))return <BookOpen size={16}/>;
+ if(/schedule|session|attendance|calendar|timetable/.test(value))return <CalendarDays size={16}/>;
+ if(/message|chat|conversation|communication/.test(value))return <MessageCircle size={16}/>;
+ if(/report|audit|assignment|result/.test(value))return <ClipboardList size={16}/>;
+ if(/preference|setting/.test(value))return <Settings2 size={16}/>;
+ return <LayoutPanelTop size={16}/>;
+}
+
 /**
- * Compact all conventional module panels without cloning, remounting or
- * moving React-managed DOM nodes. Active content stays mounted in place:
- * a fixed-position focus style overlays the exact original panel.
- *
- * No timers poll server state; this manager observes only child additions.
+ * All focus panels retain their original React-managed DOM and internal state.
+ * A shared, one-row, horizontally scrollable trigger bar opens the real panel.
+ * The server/data flow is unaffected by compact view toggles.
  */
 export default function WorkspaceFocus({children}:{children:ReactNode}){
  const location=useLocation();
  const root=useRef<HTMLDivElement>(null);
- const [count,setCount]=useState(0);
+ const [sections,setSections]=useState<FocusSection[]>([]);
  const [compressed,setCompressed]=useState(true);
  const [active,setActive]=useState<string|null>(null);
  const activePanel=useRef<HTMLElement|null>(null);
  const previousFocused=useRef<HTMLElement|null>(null);
  const sectionMap=useRef(new Map<string,HTMLElement>());
-
+ const count=sections.length;
  const decorate=useCallback(()=>{
   const host=root.current;
   if(!host)return;
@@ -27,9 +40,10 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    '.module-page .panel, .learning-hub .panel, .module-page > section, .module-page > .academic-columns > section, .dashboard-page .panel, .dashboard-page > .section-block, .ref-dashboard-layout .ref-surface'
   )];
   const unique=[...new Set(panelNodes)].filter(p=>
-   !p.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
+   !p.parentElement?.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
    &&!p.parentElement?.closest('.panel'));
   sectionMap.current.clear();
+  const next:FocusSection[]=[];
   unique.forEach((panel,index)=>{
    const title=panel.querySelector('h2,h3,legend')?.textContent?.trim()
      ||panel.getAttribute('aria-label')||'Workspace section '+(index+1);
@@ -37,20 +51,17 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    const rows=panel.querySelectorAll(
     '.academic-record,.classes-card,.user-card,tbody tr,.private-fee-item,.dli-cohort-topic-row'
    ).length;
-   const status=panel.querySelector('.module-status,.classes-state,[role="status"]')?.textContent?.trim();
-   const summary=[rows?rows+' item'+(rows===1?'':'s'):null,status&&status.length<55?status:null]
-      .filter(Boolean).join(' · ')||'Open focused workspace';
    panel.setAttribute('data-dli-focus-panel',key);
    panel.setAttribute('data-dli-focus-title',title.slice(0,110));
-   panel.setAttribute('data-dli-focus-summary',summary);
    sectionMap.current.set(key,panel);
+   next.push({key,title:title.slice(0,110),rows});
   });
-  setCount(unique.length);
+  setSections(previous=>previous.length===next.length&&previous.every((item,index)=>
+   item.key===next[index].key&&item.title===next[index].title&&item.rows===next[index].rows)
+   ?previous:next);
  },[]);
  useEffect(()=>{
   setActive(null);setCompressed(true);
-  // A route change is a genuine page transition; focus/visibility changes
-  // are not, and therefore never reset the active workspace.
   decorate();
   const observer=new MutationObserver(records=>{
    if(records.some(r=>r.addedNodes.length||r.removedNodes.length))decorate();
@@ -68,33 +79,28 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
      panel.setAttribute('data-dli-focus-active','true');
      panel.setAttribute('role','dialog');
      panel.setAttribute('aria-modal','true');
-     panel.removeAttribute('tabindex');
+     panel.setAttribute('tabindex','-1');
      panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
-     panel.removeAttribute('aria-expanded');
     }else{
      panel.removeAttribute('data-dli-focus-active');
-     panel.removeAttribute('aria-modal');
-     panel.setAttribute('role','button');
-     panel.setAttribute('tabindex','0');
-     panel.setAttribute('aria-label','Open '+(panel.getAttribute('data-dli-focus-title')||'workspace section'));
-     panel.setAttribute('aria-expanded','false');
+     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
+     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
     }
    }else{
     panel.removeAttribute('data-dli-focus-active');
     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
-    panel.removeAttribute('aria-expanded');
    }
   }
- },[active,compressed,count,location.pathname]);
+ },[active,compressed,count,location.pathname,sections]);
  const close=useCallback(()=>{
-  if(activePanel.current)activePanel.current.removeAttribute('data-dli-focus-active');
+  activePanel.current?.removeAttribute('data-dli-focus-active');
   activePanel.current=null;setActive(null);
   requestAnimationFrame(()=>previousFocused.current?.focus({preventScroll:true}));
  },[]);
- const open=useCallback((key:string,panel:HTMLElement)=>{
+ const open=useCallback((key:string,panel:HTMLElement,trigger:HTMLElement)=>{
   if(!compressed)return;
-  previousFocused.current=panel;
+  previousFocused.current=trigger;
   activePanel.current=panel;
   setActive(key);
   requestAnimationFrame(()=>{
@@ -112,7 +118,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    const nodes=[...activePanel.current.querySelectorAll<HTMLElement>(
     'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]'
    )].filter(el=>el.getClientRects().length>0);
-   if(!nodes.length)return;
+   if(!nodes.length){event.preventDefault();activePanel.current.focus();return;}
    const first=nodes[0],last=nodes[nodes.length-1];
    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
@@ -120,34 +126,28 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   document.addEventListener('keydown',onKey,true);
   return()=>document.removeEventListener('keydown',onKey,true);
  },[active,close]);
- function onClick(event:MouseEvent<HTMLDivElement>){
-  if(!compressed||active!==null)return;
-  const panel=(event.target as HTMLElement).closest<HTMLElement>('[data-dli-focus-panel]');
-  if(!panel||!root.current?.contains(panel))return;
-  const key=panel.getAttribute('data-dli-focus-panel');
-  if(key){event.preventDefault();open(key,panel);}
- }
- function onKeyDown(event:ReactKeyboardEvent<HTMLDivElement>){
-  if(!compressed||active!==null||!['Enter',' '].includes(event.key))return;
-  const el=event.target as HTMLElement;
-  if(!el.matches('[data-dli-focus-panel]'))return;
-  const key=el.getAttribute('data-dli-focus-panel');
-  if(key){event.preventDefault();open(key,el);}
- }
- return <div ref={root} className="dli-workspace-focus-root" onClick={onClick} onKeyDown={onKeyDown}>
+ return <div ref={root} className="dli-workspace-focus-root">
   {count>0&&<div className="dli-workspace-toolbar" role="toolbar" aria-label="Workspace view controls">
    <span>{count} work area{count===1?'':'s'} · {compressed?'Compact overview':'Expanded workspace'}</span>
    <button type="button" disabled={active!==null}
-    onClick={()=>{setCompressed(v=>!v);setActive(null);}}
+    onClick={()=>{setCompressed(value=>!value);setActive(null);}}
     aria-pressed={compressed} aria-label={compressed?'Expand all work areas':'Compress all work areas'}>
     {compressed?<ChevronsUpDown size={16}/>:<ChevronsDownUp size={16}/>}
     {compressed?'Expand all':'Compress all'}
    </button>
   </div>}
+  {compressed&&count>0&&<nav className="dli-workspace-trigger-row" aria-label="Open workspace sections">
+   {sections.map(section=><button key={section.key} type="button"
+    className="dli-workspace-trigger" aria-haspopup="dialog"
+    aria-label={'Open '+section.title}
+    onClick={event=>{const panel=sectionMap.current.get(section.key);if(panel)open(section.key,panel,event.currentTarget);}}>
+    {sectionIcon(section.title)}<span>{section.title}</span>
+    {section.rows>0&&<small aria-label={section.rows+' entries'}>{section.rows}</small>}
+   </button>)}
+  </nav>}
   {children}
-  {active!==null&&<div className="dli-workspace-backdrop" role="presentation" onMouseDown={e=>{
-   if(e.currentTarget===e.target)close();
-  }}>
+  {active!==null&&<div className="dli-workspace-backdrop" role="presentation"
+    onMouseDown={event=>{if(event.currentTarget===event.target)close();}}>
    <button type="button" className="dli-workspace-focus-close" onClick={close}
     aria-label="Close focused workspace and return to compact overview" title="Close focused workspace">
     <X size={20}/> Close

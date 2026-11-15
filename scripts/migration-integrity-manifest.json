@@ -423,6 +423,10 @@
     {
       "file": "20261115223000_stage_q35d_retire_role_grants.sql",
       "gitBlobSha1": "f44aee7acdcc505c851549330285483218ce4cef"
+    },
+    {
+      "file": "20261115230000_stage_q36_new_direct_contact_directory.sql",
+      "gitBlobSha1": "a37b01063d1f1c38db0c493ad0a41c343226582d"
     }
   ]
 }
