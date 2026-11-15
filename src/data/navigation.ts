@@ -44,10 +44,10 @@ export const navigationSections: NavigationSection[] = [
         group: 'Workspace',
       },
       {
-        label: 'Free Demo & enrolment',
+        label: 'Free Students & enrolment',
         path: '/enrolment',
         icon: BookOpen,
-        description: 'Join Free Demo lessons, apply for Paid Student access or review incoming upgrade requests.',
+        description: 'Join Free Student lessons, apply for Paid Student access or review incoming upgrade requests.',
         group: 'Workspace',
       },
       {
