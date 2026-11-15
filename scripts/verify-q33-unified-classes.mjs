@@ -18,7 +18,7 @@ for(const token of [
  'disabled={t.auth_user_id===lesson.tutor_id}',
  'disabled={t.auth_user_id===lesson.second_tutor_id}',
  "p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id",
- 'Academic offering · tutor assignments',
+ 'Linked academic offering · tutor assignments',
 ]) assert.ok(cls.includes(token),'Missing unified class contract: '+token);
 assert.ok(!nav.includes("path: '/assignments'"),
  'No duplicate Academic Assignments menu should remain');
