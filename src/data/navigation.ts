@@ -77,17 +77,10 @@ export const navigationSections: NavigationSection[] = [
         group: 'Academic',
       },
       {
-        label: 'Academic assignments',
-        path: '/assignments',
-        icon: BookOpen,
-        description: 'Manage assigned tutors and student membership for approved course offerings.',
-        group: 'Academic',
-      },
-      {
         label: 'Classes & timetable',
         path: '/classes',
         icon: CalendarClock,
-        description: 'Individual or group classes, tutors, students, meeting links and payment review.',
+        description: 'Unified course setup: two tutors per subject, student enrolments, timetables, Meet links and academic offerings.',
         group: 'Academic',
       },
       {
