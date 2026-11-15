@@ -566,7 +566,7 @@ export default function DirectMessagesPage(){
                 onClick={()=>setActiveId(t.id)}>
                 <span className="dli-direct-chat-list-main">
                   <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                  <small>{latest?latest.body.slice(0,65):mode==='oversight'?'Moderation view':memberRole(other)}</small>
+                  <small>{latest?(latest.deleted_at?'Message deleted':latest.body.slice(0,65)):mode==='oversight'?'Moderation view':memberRole(other)}</small>
                 </span>
                 <span className="dli-direct-chat-list-meta">
                   <small>{latest?stamp(latest.created_at):''}</small>
@@ -677,8 +677,46 @@ export default function DirectMessagesPage(){
             </button>}
           </header>
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
-            {messages.map(m=><article key={m.id} className={m.sender_id===uid&&mode!=='oversight'?'mine':''}>
+            {messages.map(m=><article key={m.id}
+              className={m.sender_id===uid&&mode!=='oversight'?'mine':''}
+              onClick={()=>{if(mode==='inbox'&&!m.deleted_at){setMenuTarget(m.id);setExpandedReactions(false);}}}
+              onDoubleClick={()=>{if(mode==='inbox'&&!m.deleted_at)void reactToMessage(m,'👍');}}
+              onContextMenu={e=>{if(mode==='inbox'&&!m.deleted_at){
+                e.preventDefault();setMenuTarget(m.id);setExpandedReactions(false);}}}
+              onPointerDown={e=>handleMessagePointerDown(m,e.pointerType)}
+              onPointerUp={e=>handleMessagePointerUp(m,e.pointerType)}
+              onPointerCancel={()=>{if(longPressTimer.current!==null)window.clearTimeout(longPressTimer.current);}}
+              role="group" tabIndex={mode==='inbox'&&!m.deleted_at?0:undefined}
+              onKeyDown={e=>{if(e.key==='Enter'&&mode==='inbox'&&!m.deleted_at){
+                setMenuTarget(m.id);setExpandedReactions(false);}}}
+              aria-label={'Message from '+memberName(m.sender_id)}>
+              {menuTarget===m.id&&mode==='inbox'&&!m.deleted_at&&
+                <div className="dli-telegram-message-actions" onClick={e=>e.stopPropagation()}>
+                  <div className="dli-telegram-quick-reactions" aria-label="Quick message reactions">
+                    {[...quickReactions,...(expandedReactions?extendedReactions:[])].map(emoji=>
+                      <button type="button" key={emoji} disabled={busy} aria-label={'React '+emoji}
+                        onClick={()=>void reactToMessage(m,emoji)}>{emoji}</button>)}
+                    <button type="button" aria-label={expandedReactions?'Fewer reactions':'More reactions'}
+                      onClick={()=>setExpandedReactions(v=>!v)}><Plus size={16}/></button>
+                  </div>
+                  <div className="dli-telegram-message-menu" role="menu" aria-label="Message actions">
+                    <button type="button" role="menuitem" onClick={()=>beginReply(m)}><Reply size={16}/> Reply</button>
+                    <button type="button" role="menuitem" onClick={()=>void copyMessage(m)}><Copy size={16}/> Copy</button>
+                    <button type="button" role="menuitem" disabled={Boolean(m.file_id)}
+                      onClick={()=>{setForwardTarget(m);setMenuTarget(null);}}>
+                      <Forward size={16}/> Forward
+                    </button>
+                    {m.sender_id===uid&&<>
+                      <button type="button" role="menuitem" onClick={()=>beginEdit(m)}><Pencil size={16}/> Edit</button>
+                      <button type="button" role="menuitem" disabled={busy}
+                        onClick={()=>void deleteMessage(m)}><Trash2 size={16}/> Delete</button>
+                    </>}
+                    <button type="button" aria-label="Close message actions" onClick={()=>setMenuTarget(null)}><X size={16}/></button>
+                  </div>
+                  {m.file_id&&<small className="dli-telegram-menu-note">To forward media, download and attach it to a permitted chat.</small>}
+                </div>}
               <small>{memberName(m.sender_id)} · {stamp(m.created_at)}
+                {m.edited_at&&!m.deleted_at&&<span className="dli-telegram-edited"> · edited</span>}
                 {mode==='inbox'&&m.sender_id===uid&&
                   <span className={'dli-direct-read-status'+(
                     readIndex.get(m.thread_id+'|'+participant(current))&&
@@ -691,15 +729,31 @@ export default function DirectMessagesPage(){
                     ?<CheckCheck size={15}/>:<Check size={15}/>}
                   </span>}
               </small>
-              {!(m.file_id&&(m.body==='🎙️ Voice note'||m.body==='🎥 Video note'))&&<p>{m.body}</p>}
-              {m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
-                <div key={f.id} className="dli-direct-media-item">
+              {m.forwarded_from_id&&<small className="dli-telegram-forwarded"><Forward size={12}/> Forwarded message</small>}
+              {m.reply_to_id&&<div className="dli-telegram-quoted-message">
+                <Reply size={13}/><span>{messages.find(x=>x.id===m.reply_to_id)?.body.slice(0,100)??'Original message unavailable'}</span>
+              </div>}
+              {m.deleted_at?<p className="dli-telegram-deleted-message">Message deleted</p>:
+                !(m.file_id&&(m.body==='🎙️ Voice note'||m.body==='🎥 Video note'))&&<p>{m.body}</p>}
+              {!m.deleted_at&&m.file_id&&files.filter(f=>f.id===m.file_id).map(f=>
+                <div key={f.id} className="dli-direct-media-item" onClick={e=>e.stopPropagation()}>
                   {mediaKind(f.mime_type)?<ChatPrivateMedia file={f} oversight={mode==='oversight'}/>:
                   <button type="button" className="dli-direct-file-link" disabled={busy}
                     onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>}
                 </div>)}
-              {mode!=='oversight'&&m.sender_id!==uid&&<button type="button" disabled={busy}
-                onClick={()=>void reportMessage(m)}><Flag size={13}/> Report</button>}
+              {reactionCounts(m.id).length>0&&<div className="dli-telegram-reaction-chips">
+                {reactionCounts(m.id).map(r=><button type="button" key={r.emoji}
+                  className={r.mine?'mine':''} disabled={busy||mode==='oversight'||Boolean(m.deleted_at)}
+                  aria-label={r.emoji+' '+r.count+' reactions'+(r.mine?' including yours':'')}
+                  onClick={e=>{e.stopPropagation();void reactToMessage(m,r.emoji);}}>
+                  {r.emoji} <span>{r.count}</span>
+                </button>)}
+              </div>}
+              {mode!=='oversight'&&m.sender_id!==uid&&!m.deleted_at&&
+                <button type="button" disabled={busy} className="dli-telegram-report"
+                  onClick={e=>{e.stopPropagation();void reportMessage(m);}}>
+                  <Flag size={13}/> Report
+                </button>}
             </article>)}
             {!messages.length&&<p className="dli-direct-empty">No messages in this conversation.</p>}
             {mode==='oversight'&&files.length>0&&<aside className="dli-direct-file-review">
@@ -721,6 +775,26 @@ export default function DirectMessagesPage(){
       </section>
     </div>
     <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
+    {forwardTarget&&<div className="dli-telegram-forward-backdrop" role="presentation"
+      onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
+      <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
+        aria-label="Forward text message to a permitted conversation">
+        <header><h2>Forward message</h2>
+          <button type="button" aria-label="Close forwarding" onClick={()=>setForwardTarget(null)}><X size={19}/></button>
+        </header>
+        <blockquote>{forwardTarget.body.slice(0,160)}</blockquote>
+        <p>Select a permitted conversation. Media files are not copied when forwarding.</p>
+        {threads.filter(t=>(t.participant_a===uid||t.participant_b===uid)&&
+            t.id!==forwardTarget.thread_id).map(t=>
+          <button type="button" className="dli-telegram-forward-choice" key={t.id} disabled={busy}
+            onClick={()=>void forwardMessage(forwardTarget,t)}>
+            <ChatMemberAvatar userId={participant(t)} name={memberName(participant(t))}/>
+            <span>{memberName(participant(t))}</span><Forward size={15}/>
+          </button>)}
+        {!threads.some(t=>(t.participant_a===uid||t.participant_b===uid)&&
+          t.id!==forwardTarget.thread_id)&&<p>No other conversation is available. Start a permitted chat with the pencil icon first.</p>}
+      </div>
+    </div>}
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
       onClose={closeMemberProfile}/>}
