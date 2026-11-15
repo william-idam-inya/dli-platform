@@ -3,6 +3,7 @@ import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw, ShieldCheck } from '
 import { Link } from 'react-router-dom';
 import ReferenceHeroArtwork from '../components/ReferenceHeroArtwork';
 import ReferenceDashboard from '../components/ReferenceDashboard';
+import OfficialDliLogo from '../components/OfficialDliLogo';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
@@ -125,6 +126,7 @@ export default function DashboardPage(){
         </div>
       </div>
       <ReferenceHeroArtwork role={account?.role ?? 'student'}/>
+      <span className="ref-hero-emblem"><OfficialDliLogo decorative /></span>
     </section>
     {account&&<ReferenceDashboard account={account}
       academicCounts={academicCounts} academicLoading={academicLoading}/>}
