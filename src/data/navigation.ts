@@ -96,6 +96,13 @@ export const navigationSections: NavigationSection[] = [
     label: 'People',
     items: [
       {
+        label: 'People directory',
+        path: '/people',
+        icon: Users,
+        description: 'Role-grouped authorised members with private direct chat initiation.',
+        group: 'People',
+      },
+      {
         label: 'Users & access',
         path: '/users',
         icon: Users,
