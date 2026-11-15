@@ -15,7 +15,7 @@ type Person = { id:string; auth_user_id:string; full_name:string; role:'student'
 type Subject = { id:string; name:string; academic_level_id:string; is_active:boolean };
 type AcademicLevel = { id:string; code:string; name:string; sort_order:number; is_active:boolean };
 type Programme = { id:string; name:string; code:string };
-type Course = { id:string; programme_id:string; academic_level_id:string; subject_id:string; is_active:boolean };
+type Course = { id:string; title:string; programme_id:string; academic_level_id:string; subject_id:string; is_active:boolean };
 type ClassType = 'free_demo'|'group_5_science'|'group_10'|'private_1_to_1';
 type ClassRow = {
   id:string;subject_id:string;subject_name:string;tutor_id:string;tutor_name:string;
@@ -25,7 +25,9 @@ type ClassRow = {
   class_group_id:string;class_group_name:string;offering_id:string|null;
 };
 type Member = { id:string;class_id:string;student_id:string;student_name:string;is_active:boolean };
-type LessonRow = { key:string;subject_id:string;tutor_id:string;weekday:number;starts_at:string;ends_at:string };
+type CoTutor = {class_id:string;tutor_id:string;tutor_name:string;is_active:boolean};
+type ClassCurriculum = {class_group_id:string;cohort_id:string};
+type LessonRow = { key:string;subject_id:string;tutor_id:string;second_tutor_id:string;weekday:number;starts_at:string;ends_at:string };
 type GroupDetails = {
   class_type:ClassType;class_start_date:string;class_group_name:string;
   class_group_id:string;academic_level_id:string;meeting_url:string;
@@ -40,7 +42,7 @@ const CLASS_TYPES: {id:ClassType;label:string;hint:string;capacity:number|null}[
 ];
 const STAFF=new Set(['admin','assistant_admin']);
 const EMPTY:GroupDetails={class_type:'group_5_science',class_start_date:'',class_group_name:'',class_group_id:'',academic_level_id:'',meeting_url:''};
-const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
+const newLesson=():LessonRow=>({key:crypto.randomUUID(),subject_id:'',tutor_id:'',second_tutor_id:'',weekday:1,starts_at:'16:00',ends_at:'17:00'});
 const meetValid=(url:string)=>/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(?:[/?#][A-Za-z0-9_=&%-]*)?$/.test(url);
 const tier=(type:ClassType)=>CLASS_TYPES.find(t=>t.id===type)??CLASS_TYPES[0];
 const dayTime=(c:ClassRow)=>WEEKDAYS[c.weekday]+' · '+c.starts_at.slice(0,5)+'–'+c.ends_at.slice(0,5)+' WAT';
@@ -56,7 +58,7 @@ function errorMessage(e:unknown){
     return 'Check programme, academic level, subjects, tutors, class times and student eligibility.';
   }
   if(code==='42501')return 'You do not have permission to change this class, or the group is no longer editable.';
-  if(code==='PGRST202')return 'The multi-subject class service has not been deployed to this environment.';
+  if(code==='PGRST202')return 'The unified two-tutor class service has not been deployed to this environment.';
   return 'The class operation could not be completed. Refresh and review your selections.';
 }
 
@@ -78,6 +80,8 @@ export default function ClassesWorkspacePage(){
   const [paidStudents,setPaidStudents]=useState<string[]>([]);
   const [classes,setClasses]=useState<ClassRow[]>([]);
   const [members,setMembers]=useState<Member[]>([]);
+  const [coTutors,setCoTutors]=useState<CoTutor[]>([]);
+  const [classCurricula,setClassCurricula]=useState<ClassCurriculum[]>([]);
   const [chosen,setChosen]=useState<string[]>([]);
   const [form,setForm]=useState<GroupDetails>(EMPTY);
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
@@ -94,21 +98,25 @@ export default function ClassesWorkspacePage(){
     if(!supabase||!account){setLoading(false);setError('A verified DLI account is required.');return;}
     setLoading(true);
     try{
-      const [c,m,p,s,l,co,pr,paid]=await Promise.all([
+      const [c,m,p,s,l,co,pr,paid,coRows,curriculumRows]=await Promise.all([
         supabase.from('teaching_classes').select('id,subject_id,subject_name,tutor_id,tutor_name,weekday,starts_at,ends_at,meeting_url,state,billing_mode,class_type,class_start_date,programme_id,class_group_id,class_group_name,offering_id').limit(500),
         supabase.from('teaching_class_members').select('id,class_id,student_id,student_name,is_active').limit(3000),
         staff?supabase.from('authorised_users').select('id,auth_user_id,full_name,role').eq('status','active').in('role',['student','tutor']).order('full_name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('subjects').select('id,name,academic_level_id,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('academic_levels').select('id,code,name,sort_order,is_active').eq('is_active',true).order('sort_order'):Promise.resolve({data:[],error:null}),
-        staff?supabase.from('courses').select('id,programme_id,academic_level_id,subject_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
+        staff?supabase.from('courses').select('id,title,programme_id,academic_level_id,subject_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
         staff?supabase.from('programmes').select('id,name,code').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('dli_student_entitlements').select('student_id').eq('tier','paid'):Promise.resolve({data:[],error:null}),
+        supabase.from('dli_class_co_tutors').select('class_id,tutor_id,tutor_name,is_active').limit(1000),
+        staff?supabase.from('dli_class_curricula').select('class_group_id,cohort_id').limit(500):Promise.resolve({data:[],error:null}),
       ]);
-      if([c,m,p,s,l,co,pr,paid].some(x=>x.error)){
+      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows].some(x=>x.error)){
         setError('Could not load the class register or approved academic subjects. Check permissions and refresh.');
       }else{
         setClasses((c.data??[]) as ClassRow[]);
         setMembers((m.data??[]) as Member[]);
+        setCoTutors((coRows.data??[]) as CoTutor[]);
+        setClassCurricula((curriculumRows.data??[]) as ClassCurriculum[]);
         setPeople((p.data??[]) as Person[]);
         setSubjects((s.data??[]) as Subject[]);
         setLevels((l.data??[]) as AcademicLevel[]);
@@ -140,7 +148,8 @@ export default function ClassesWorkspacePage(){
     const result=new Map<string,ClassGroup>();
     for(const row of classes){
       if(row.state==='archived'&&!showArchived)continue;
-      if(tutorFilter&&row.tutor_id!==tutorFilter)continue;
+      if(tutorFilter&&row.tutor_id!==tutorFilter&&
+        !coTutors.some(c=>c.class_id===row.id&&c.is_active&&c.tutor_id===tutorFilter))continue;
       const group=result.get(row.class_group_id);
       if(group){group.rows.push(row);continue;}
       result.set(row.class_group_id,{id:row.class_group_id,first:row,rows:[row],state:row.state});
@@ -150,7 +159,7 @@ export default function ClassesWorkspacePage(){
       state:group.rows.every(r=>r.state==='archived')?'archived':
         group.rows.every(r=>r.state==='published')?'published':'draft',
     } as ClassGroup));
-  },[classes,showArchived,tutorFilter]);
+  },[classes,coTutors,showArchived,tutorFilter]);
 
   const draftGroups=useMemo(()=>{
     const map=new Map<string,ClassRow[]>();
@@ -186,6 +195,7 @@ export default function ClassesWorkspacePage(){
     });
     setLessons(group.rows.map(c=>({
       key:c.id,subject_id:c.subject_id,tutor_id:c.tutor_id,
+      second_tutor_id:coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_id??'',
       weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),
     })));
     setChosen(members.filter(m=>m.class_id===first.id&&m.is_active).map(m=>m.student_id));
@@ -227,9 +237,10 @@ export default function ClassesWorkspacePage(){
     const url=form.meeting_url.trim();
     const unique=new Set(lessons.map(l=>l.subject_id));
     const validRows=lessons.length>0&&lessons.length<=15&&unique.size===lessons.length&&
-      lessons.every(l=>l.subject_id&&l.tutor_id&&
+      lessons.every(l=>l.subject_id&&l.tutor_id&&l.second_tutor_id&&l.tutor_id!==l.second_tutor_id&&
         availableSubjects.some(s=>s.id===l.subject_id)&&
         tutors.some(t=>t.auth_user_id===l.tutor_id)&&
+        tutors.some(t=>t.auth_user_id===l.second_tutor_id)&&
         l.weekday>=0&&l.weekday<=6&&l.starts_at<l.ends_at);
     const overlaps=lessons.some((a,i)=>lessons.some((b,j)=>i<j&&a.weekday===b.weekday&&
       a.starts_at<b.ends_at&&a.ends_at>b.starts_at));
@@ -238,14 +249,14 @@ export default function ClassesWorkspacePage(){
       !meetValid(url)||!validRows||overlaps||
       (capacity!==null&&chosen.length>capacity)||
       chosen.some(id=>!eligibleStudents.some(s=>s.auth_user_id===id))){
-      setError('Choose an academic level, non-overlapping subjects and times, a tutor per subject, a group name, eligible students and one Google Meet link.');
+      setError('Choose approved courses, non-overlapping times, TWO different tutors per subject, eligible students, a class name and one Google Meet link.');
       return;
     }
     setBusy(true);setError(null);setNotice(null);
     try{
-      // One SQL transaction creates/updates every subject and synchronises
-      // the group's shared roster, identity, class date and Meet link.
-      const result=await supabase.rpc('dli_save_teaching_group',{
+      // A single SQL transaction saves both tutors, the academic cohort,
+      // weekly course timetable and the shared student roster.
+      const result=await supabase.rpc('dli_save_unified_class',{ 
         p_group_id:editing,
         p_programme_id:programmeId,
         p_level_id:levelId,
@@ -254,13 +265,13 @@ export default function ClassesWorkspacePage(){
         p_group_name:form.class_group_name.trim(),
         p_meeting_url:url,
         p_students:chosen,
-        p_lessons:lessons.map(({subject_id,tutor_id,weekday,starts_at,ends_at})=>
-          ({subject_id,tutor_id,weekday,starts_at,ends_at})),
+        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})=>
+          ({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})), 
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(editing?'Class group, subjects, tutors, times and student roster updated together.':
-        'Class group created with '+lessons.length+' subject'+(lessons.length===1?'':'s')+
-        '. It is a draft until you publish it.');
+      setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
+        'Class draft created with '+lessons.length+' approved course'+(lessons.length===1?'':'s')+
+        '. Publishing synchronises its academic tutor assignments and enrolled students.');
       cancelEdit();
       await refresh();
     }catch{setError('The class could not be saved. Refresh the register before trying again.');}
@@ -274,11 +285,12 @@ export default function ClassesWorkspacePage(){
       :'Archive the entire group and revoke its joining links?'))return;
     setBusy(true);setError(null);setNotice(null);
     try{
-      const result=await supabase.rpc('dli_set_teaching_group_state',{
+      const integrated=classCurricula.some(row=>row.class_group_id===group.id);
+      const result=await supabase.rpc(integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{ 
         p_group_id:group.id,p_state:state,
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
-      setNotice(state==='published'?'All subjects published together.':'Group archived, including all its subject sessions.');
+      setNotice(state==='published'?'All courses published: two tutors, academic assignments, student enrolments and weekly schedules synchronised.':'Group archived, including its managed academic offerings and teaching links.');
       await refresh();
     }catch{setError('Group status could not be confirmed. Please refresh.');}
     finally{setBusy(false);}
@@ -294,13 +306,13 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Build one class with several subjects, a timetable and tutor for each, and a single Google Meet link.':
+        <p>{staff?'Build one class from approved courses with two tutors per subject, shared student enrolment and one Google Meet link.':
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
     <div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
-      <div><strong>One class · multiple subjects · one meeting link</strong>
-        <p>A class is a group of students studying selected subjects. Each subject has its own weekly time and assigned tutor.
+      <div><strong>One class · approved courses · two tutors per subject</strong>
+        <p>Each class combines approved courses, a shared roster, two tutors per subject and a weekly timetable.
           Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
       </div>
     </div>
@@ -326,7 +338,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
-          <p className="user-caption">Students, one meeting link and a start date belong to the whole class. Tutors and weekly times belong to each subject.</p>
+          <p className="user-caption">Select courses from Academic Setup, assign two different tutors per course, enrol students and schedule sessions. Publishing creates the linked academic assignments automatically.</p>
         </div></div>
         {draftGroups.length>0&&<div className="classes-draft-picker">
           <label htmlFor="classes-draft">Continue an existing draft</label>
@@ -356,7 +368,7 @@ export default function ClassesWorkspacePage(){
             onChange={e=>chooseLevel(e.target.value)}>
             {offeredLevels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
-          {!offeredLevels.length&&<p className="academic-code-hint">No course offerings exist for this programme. Configure approved subjects in <Link to="/academics">Academic Structure</Link>.</p>}
+          {!offeredLevels.length&&<p className="academic-code-hint">No approved active courses exist for this programme. Configure them in <Link to="/academics">Academic Structure</Link>.</p>}
           <div className="classes-field-pair">
             <label htmlFor="classes-start-date">Class start date (WAT)
               <input id="classes-start-date" type="date" required value={form.class_start_date}
@@ -399,26 +411,35 @@ export default function ClassesWorkspacePage(){
             </div>
           </fieldset>
 
-          <div className="classes-section-heading"><span>4</span><div><h3>Subjects, tutors and timetable</h3>
-            <p>Add as many approved subjects as you need. Assign a tutor and weekly time to each subject; the same tutor may teach several subjects.</p>
+          <div className="classes-section-heading"><span>4</span><div><h3>Approved courses, tutors and timetable</h3>
+            <p>Assign two different tutors for each course and one weekly time. The same tutor may help teach more than one course.</p>
           </div></div>
           <div className="classes-lesson-list">
             {lessons.map((lesson,index)=><fieldset className="classes-lesson-card" key={lesson.key}>
               <legend>Subject {index+1}</legend>
               <div className="classes-field-pair">
-                <label htmlFor={'classes-subject-'+lesson.key}>Subject
+                <label htmlFor={'classes-subject-'+lesson.key}>Course / subject
                   <select id={'classes-subject-'+lesson.key} required value={lesson.subject_id}
                     onChange={e=>setLesson(lesson.key,{subject_id:e.target.value})}>
                     <option value="">Choose subject</option>
                     {availableSubjects.map(s=><option key={s.id} value={s.id}
-                      disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{s.name}</option>)}
+                      disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{courses.find(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&c.subject_id===s.id)?.title??s.name}</option>)}
                   </select>
                 </label>
-                <label htmlFor={'classes-tutor-'+lesson.key}>Assigned tutor
+                <label htmlFor={'classes-tutor-'+lesson.key}>Primary tutor
                   <select id={'classes-tutor-'+lesson.key} required value={lesson.tutor_id}
                     onChange={e=>setLesson(lesson.key,{tutor_id:e.target.value})}>
                     <option value="">Choose tutor</option>
-                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}>{t.full_name}</option>)}
+                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}
+                      disabled={t.auth_user_id===lesson.second_tutor_id}>{t.full_name}</option>)}
+                  </select>
+                </label>
+                <label htmlFor={'classes-second-tutor-'+lesson.key}>Second tutor
+                  <select id={'classes-second-tutor-'+lesson.key} required value={lesson.second_tutor_id}
+                    onChange={e=>setLesson(lesson.key,{second_tutor_id:e.target.value})}>
+                    <option value="">Choose second tutor</option>
+                    {tutors.map(t=><option key={t.id} value={t.auth_user_id}
+                      disabled={t.auth_user_id===lesson.tutor_id}>{t.full_name}</option>)}
                   </select>
                 </label>
               </div>
@@ -449,18 +470,18 @@ export default function ClassesWorkspacePage(){
             onClick={()=>setLessons(old=>[...old,newLesson()])}>
             <Plus size={16}/> Add another subject
           </button>
-          {!tutors.length&&<p className="academic-code-hint">No active tutors. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
+          {tutors.length<2&&<p className="academic-code-hint">At least two active tutors are required. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
 
           <div className="classes-section-heading"><span>5</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>
           <label htmlFor="classes-meet">Google Meet link for the entire group</label>
           <input id="classes-meet" type="url" required maxLength={2048}
             placeholder="https://meet.google.com/abc-defg-hij" value={form.meeting_url}
             onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
-          <p className="academic-code-hint">Paid classes are saved as drafts until student approvals are verified. No receipt automatically marks payment as received.</p>
+          <p className="academic-code-hint">Academic course offerings, both tutor assignments and student enrolments are activated together when the group is published. Paid student eligibility is still verified; this action never collects payment or creates a receipt.</p>
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
-                !availableSubjects.length||!tutors.length}>
+                !availableSubjects.length||tutors.length<2}>
               {editing?<Pencil size={16}/>:<Plus size={16}/>}
               {busy?'Saving entire class…':editing?'Save all class changes':'Create class draft'}
             </button>
@@ -473,7 +494,7 @@ export default function ClassesWorkspacePage(){
         <div className="panel-heading"><div>
           <p className="section-kicker">CLASS REGISTER</p>
           <h2>{staff?'All individual and group classes':account?.role==='tutor'?'My assigned subject sessions':'My subject timetable'}</h2>
-          <p className="user-caption">Each group has one student list and one Meet link. Its subjects may have different tutors and times.</p>
+          <p className="user-caption">Each group has one student list and one Meet link. Every course has two tutors and its own timetable.</p>
         </div></div>
         {staff&&<div className="classes-filters">
           <label>Tutor<select value={tutorFilter} onChange={e=>setTutorFilter(e.target.value)}>
@@ -523,7 +544,9 @@ export default function ClassesWorkspacePage(){
               {group.rows.map(c=><div className="classes-group-session" key={c.id}>
                 <div><strong><SubjectArtwork subject={c.subject_name}/>{c.subject_name}</strong>
                   <small>{dayTime(c)}</small>
-                  <small>Tutor: {c.tutor_name}</small>
+                  <small>Primary tutor: {c.tutor_name}</small>
+                  {coTutors.find(co=>co.class_id===c.id&&co.is_active)&&<small>Second tutor: {coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_name}</small>}
+                  {staff&&c.offering_id&&<small>Linked academic offering · tutor assignments verified</small>}
                 </div>
                 {c.state==='archived'&&<span className="classes-state archived">Archived</span>}
                 {communicating&&c.state==='published'&&
@@ -548,7 +571,7 @@ export default function ClassesWorkspacePage(){
           </article>;
         })}</div>
       </section>
-      <p className="module-footnote"><Link to="/academics">Academic Structure</Link> defines which subjects can be offered.
+      <p className="module-footnote"><Link to="/academics">Academic Setup</Link> defines the course catalogue. Classes &amp; Timetable handles teaching assignments and student enrolments.
         Lessons, quizzes and attendance are organised under <Link to="/study">Learning &amp; results</Link>.</p>
     </>}
   </div>;

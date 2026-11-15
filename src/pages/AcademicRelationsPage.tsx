@@ -186,7 +186,7 @@ export default function AcademicRelationsPage() {
       course_id: currentOfferingCourse,
       programme_id: selectedCohort.programme_id,
       academic_level_id: selectedCohort.academic_level_id,
-    }, 'Course offering saved. Open Academic assignments to connect authorised tutors and students.',
+    }, 'Course offering saved in the advanced catalogue. New class tutor and student assignments are managed together in Classes & timetable.',
     () => setOfferingCourse(''));
   }
 
@@ -230,8 +230,8 @@ export default function AcademicRelationsPage() {
       <p role="status">{loading ? 'Loading live academic relationships…' : 'Live DLI development catalogue'}</p>
       <button className="user-outline-button" type="button" disabled={loading || Boolean(busy)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
-      <Link className="user-outline-button" to="/assignments">
-        <GraduationCap size={16}/> Assign tutors &amp; enrol students
+      <Link className="user-outline-button" to="/classes">
+        <GraduationCap size={16}/> Set up a class and assign tutors
       </Link>
     </div>
     <div className="academic-columns">
