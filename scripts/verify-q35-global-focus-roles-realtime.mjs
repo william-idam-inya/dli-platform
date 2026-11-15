@@ -112,4 +112,13 @@ assert.ok(manifest.entries.some(x=>x.file==='20261115220000_stage_q35c_conferenc
  &&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)),'Conference migration hash pin missing');
 assert.ok(nav.includes("path: '/conferences'")&&app.includes('<ConferenceRoomsPage />'),
  'Conferencing governance route must be accessible by every active role');
+const roleGrantFix=read('supabase/migrations/20261115223000_stage_q35d_retire_role_grants.sql');
+assert.ok(roleGrantFix.includes('DELETE FROM public.role_assignment_policies')
+ &&roleGrantFix.includes('finance_officer')&&roleGrantFix.includes('academic_coordinator'),
+ 'Retired roles must not appear in role assignment matrix');
+assert.ok(manifest.entries.some(x=>x.file==='20261115223000_stage_q35d_retire_role_grants.sql'),
+ 'Retired-role migration missing integrity ledger');
+const userEdge=read('supabase/functions/admin-manage-users/index.ts');
+assert.ok(!userEdge.includes("  'owner', 'admin', 'assistant_admin', 'academic_coordinator'"),
+ 'Edge Function must not accept retired role assignments');
 console.log('Q35 source checks passed: 5 roles, scoped Free Student learning, finance policies, compact UI, secure People, Presence, Broadcast, WebRTC and inline password eye.');
