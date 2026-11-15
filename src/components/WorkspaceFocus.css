@@ -1,5 +1,5 @@
 /* Q35 — universal compressed workspaces with real, still-mounted focus panels. */
-.dli-workspace-focus-root{min-width:0;isolation:isolate}
+.dli-workspace-focus-root{min-width:0}
 .dli-workspace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
  min-height:48px;padding:7px 12px;margin:7px 0 14px;border:1px solid var(--border);
  border-radius:12px;background:var(--surface);color:var(--muted);font-size:12px}
@@ -57,3 +57,5 @@
 @media(prefers-reduced-motion:reduce){
  .dli-workspace-compressed [data-dli-focus-panel]{transition:none!important}
 }
+
+body:has(.dli-workspace-backdrop){overflow:hidden}
