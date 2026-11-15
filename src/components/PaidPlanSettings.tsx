@@ -74,6 +74,34 @@ const LABELS:Record<Field,string>={
   ambiguity:'Clarification / unresolved policy note',
 };
 
+// PostgreSQL numeric/decimal columns are returned as strings by PostgREST
+// in some configurations. Normalise them before currency formatting and
+// before comparing an edited draft with its last saved revision.
+function normalisePlan(input:PlanRow):PlanRow {
+  const row:PlanRow={
+    ...input,
+    student_count:Number(input.student_count),
+    tutors:Number(input.tutors),
+    subjects_in_teaching_mode:Number(input.subjects_in_teaching_mode),
+    subjects_per_tutor:Number(input.subjects_per_tutor),
+    learning_hours_per_week:Number(input.learning_hours_per_week),
+    teaching_hours_per_tutor_per_week:Number(input.teaching_hours_per_tutor_per_week),
+    student_fee_monthly_ngn:Number(input.student_fee_monthly_ngn),
+    tutor_payment_monthly_ngn:Number(input.tutor_payment_monthly_ngn),
+    tutor_data_allowance_monthly_ngn:input.tutor_data_allowance_monthly_ngn===null
+      ?null:Number(input.tutor_data_allowance_monthly_ngn),
+    revision:Number(input.revision),
+  };
+  const values=[row.student_count,row.tutors,row.subjects_in_teaching_mode,
+    row.subjects_per_tutor,row.learning_hours_per_week,row.teaching_hours_per_tutor_per_week,
+    row.student_fee_monthly_ngn,row.tutor_payment_monthly_ngn,row.revision];
+  if(row.tutor_data_allowance_monthly_ngn!==null)values.push(row.tutor_data_allowance_monthly_ngn);
+  if(!values.every(Number.isFinite)||row.revision<1){
+    throw Error('Saved DLI plan has invalid numerical values');
+  }
+  return row;
+}
+
 function draftFrom(row:PlanRow):Draft {
   const fields=[...TEXT_FIELDS,...WHOLE_FIELDS,...DECIMAL_FIELDS,...MONEY_FIELDS] as Field[];
   return Object.fromEntries(fields.map(key=>[
@@ -181,7 +209,8 @@ export default function PaidPlanSettings(){
         setPlans([]);
       }else {
         setReadError(null);
-        setPlans(ORDER.map(id=>(result.data as PlanRow[]).find(p=>p.id===id)).filter(
+        const rows=(result.data as PlanRow[]).map(normalisePlan);
+        setPlans(ORDER.map(id=>rows.find(p=>p.id===id)).filter(
           (p):p is PlanRow=>Boolean(p)));
       }
     }catch{
@@ -233,7 +262,7 @@ export default function PaidPlanSettings(){
       }else if(!result.data){
         setSaveError('No update was applied. Another administrator may have edited this plan. Cancel, refresh, and review the newest values.');
       }else {
-        const updated=result.data as PlanRow;
+        const updated=normalisePlan(result.data as PlanRow);
         setPlans(old=>old.map(row=>row.id===updated.id?updated:row));
         setNotice(updated.name+' saved as revision '+updated.revision+'. The reference change does not modify active student invoices or tutor payroll.');
         setEditing(null);setDraft(null);
