@@ -6,9 +6,8 @@ import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
-import paidLearningReference from '../data/paidLearningPlans.json';
+import PaidPlanSettings from '../components/PaidPlanSettings';
 import TutorPayrollPage from './TutorPayrollPage';
-import './PaidLearningPlans.css';
 import './FinancePage.css';
 
 type ProposalType =
@@ -143,10 +142,10 @@ export default function FinancePage() {
       <span className="module-page-icon"><Wallet size={25}/></span>
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
-        <h1>Finance foundation</h1>
-        <p>Prepare finance-policy proposals for institutional review without activating charges or payments.</p>
+        <h1>Finance management</h1>
+        <p>Manage the internal learning-plan reference and prepare finance-policy proposals without activating charges.</p>
       </div>
-      <span className="module-status"><span/> Stage G1</span>
+      <span className="module-status"><span/> Finance controls</span>
     </div>
 
     <div className="module-notice">
@@ -186,52 +185,7 @@ export default function FinancePage() {
         onClick={() => { void refresh(); }}><RefreshCw size={15}/> Refresh</button>
     </div>
 
-    <section className="panel finance-source-plans" aria-labelledby="source-plan-title">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">REFERENCE · DOCUMENT-SOURCED</p>
-        <h2 id="source-plan-title">DLI Paid Learning Plans</h2>
-        <p className="user-caption">The three arrangements below are transcribed from
-          the two-page DLI Paid Learning Plans document. This is an internal
-          finance reference, not an approved billing schedule or a request for payment.</p>
-      </div></div>
-      <div className="source-plan-locked" role="status">
-        <LockKeyhole size={17}/>
-        <span>Pending institutional release approval — invoices, collections and payouts remain disabled.</span>
-      </div>
-      <div className="source-plan-grid">
-        {paidLearningReference.plans.map(plan => <article className="source-plan-card" key={plan.id}>
-          <div className="source-plan-head">
-            <h3>{plan.name}</h3>
-            <span>{plan.rateLabel}</span>
-          </div>
-          <p className="source-plan-description">{plan.teachingModel}</p>
-          <div className="source-plan-fee">
-            <span>Student's monthly fee (document reference)</span>
-            <strong>{new Intl.NumberFormat('en-NG', {style:'currency',currency:'NGN',maximumFractionDigits:0})
-              .format(plan.studentFeeMonthlyNgn)}</strong>
-          </div>
-          <dl className="source-plan-details">
-            <div><dt>Students / tutors</dt><dd>{plan.studentCount} / {plan.tutors}</dd></div>
-            <div><dt>Subjects in teaching mode</dt><dd>{plan.subjectsInTeachingMode}</dd></div>
-            <div><dt>Hours per week</dt><dd>{plan.learningHoursPerWeek}</dd></div>
-            <div><dt>Tutor monthly payment</dt><dd>{new Intl.NumberFormat('en-NG', {style:'currency',currency:'NGN',maximumFractionDigits:0})
-              .format(plan.tutorPaymentMonthlyNgn)} per tutor</dd></div>
-            <div><dt>Tutor data allowance</dt><dd>{plan.tutorDataAllowanceMonthlyNgn === null
-              ? 'Not specified in source'
-              : new Intl.NumberFormat('en-NG', {style:'currency',currency:'NGN',maximumFractionDigits:0})
-                .format(plan.tutorDataAllowanceMonthlyNgn) + ' per tutor/month'}</dd></div>
-          </dl>
-          {plan.ambiguity && <p className="source-plan-ambiguity">
-            <strong>Clarification required:</strong> {plan.ambiguity}
-          </p>}
-        </article>)}
-      </div>
-      <p className="source-plan-footer">Source: {paidLearningReference.sourceTitle},
-        pages 1–2. These plans do not replace separate programme-specific
-        arrangements, including the JAMB tutorial bootcamp. Payment due dates,
-        refund terms, payment channels and collection procedures are not
-        specified in this document.</p>
-    </section>
+    <PaidPlanSettings/>
 
     {canPropose && <section className="panel finance-proposal-editor">
       <div className="panel-heading"><div>
@@ -308,7 +262,7 @@ export default function FinancePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      DLI’s finance workspace includes document rate references, planned tutor compensation
+      DLI’s finance workspace includes editable, audited internal rate references, planned tutor compensation
       and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
       and credit-date verification are handled in {canOpenClassPayments
         ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
