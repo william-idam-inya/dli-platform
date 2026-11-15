@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
+import DirectCallOverlay from '../components/DirectCallOverlay';
+import {useDirectRealtime,type DliCallSignal} from '../lib/useDirectRealtime';
+import {useDirectPeerCall} from '../lib/useDirectPeerCall';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -46,6 +49,7 @@ export default function DirectMessagesPage(){
   const {account}=useAuth();
   const [query,setQuery]=useSearchParams();
   const directTargetHandled=useRef('');
+  const callHandler=useRef<(signal:DliCallSignal)=>void>(()=>{});
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
@@ -108,6 +112,10 @@ export default function DirectMessagesPage(){
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
   const permittedContacts=useMemo(()=>contacts.filter(c=>canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
   const current=threads.find(t=>t.id===activeId)??null;
+  const callPeer=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
+  const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',signal=>callHandler.current(signal));
+  const calling=useDirectPeerCall(realtime.sendCallSignal,activeId,realtime.status==='ready');
+  callHandler.current=calling.signal;
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
@@ -344,7 +352,7 @@ export default function DirectMessagesPage(){
       try{
         const r=await supabase.rpc('dli_edit_direct_message',{p_message:editTarget.id,p_body:body});
         if(r.error||r.data!==true){setError('The server did not authorise the message edit.');return;}
-        setEditTarget(null);setDraft('');
+        setEditTarget(null);setDraft('');realtime.sendActivity(null);
         await loadThread(current.id);await load();
         setNotice('Your message was edited; the previous version is kept in restricted audit history.');
       }catch{setError('The edit could not be confirmed.');}
@@ -393,7 +401,8 @@ export default function DirectMessagesPage(){
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
-      setDraft('');setAttachment(null);setReplyTarget(null);setMediaReset(value=>value+1);
+      setDraft('');setAttachment(null);setReplyTarget(null);realtime.sendActivity(null);
+      setMediaReset(value=>value+1);
       await loadThread(current.id);
       window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
@@ -599,7 +608,11 @@ export default function DirectMessagesPage(){
                 onClick={()=>setActiveId(t.id)}>
                 <span className="dli-direct-chat-list-main">
                   <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                  <small>{latest?(latest.deleted_at?'Message deleted':latest.body.slice(0,65)):mode==='oversight'?'Moderation view':roleName(other)}</small>
+                  <small>{mode==='inbox'&&t.id===activeId&&realtime.activity?
+                    (realtime.activity==='typing'?'Typing...':realtime.activity==='recording_audio'?
+                      'Recording audio...':'Recording video...'):
+                    latest?(latest.deleted_at?'Message deleted':latest.body.slice(0,65)):
+                    mode==='oversight'?'Moderation view':roleName(other)}</small>
                 </span>
                 <span className="dli-direct-chat-list-meta">
                   <small>{latest?stamp(latest.created_at):''}</small>
@@ -711,9 +724,24 @@ export default function DirectMessagesPage(){
               aria-label={'View '+memberName(mode==='oversight'?current.participant_a:participant(current))+' profile'}>
               <ChatMemberAvatar userId={mode==='oversight'?current.participant_a:participant(current)}
                 name={memberName(mode==='oversight'?current.participant_a:participant(current))}/>
+              {mode==='inbox'&&realtime.peerOnline&&<span className="dli-live-online-dot" aria-label="Online"/>}
             </button>
-            <div><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
-              <small>{mode==='oversight'?'Read-only institutional review':'Private institutional conversation'}</small></div>
+            <div className="dli-live-chat-header"><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
+              <small>{mode==='oversight'?'Read-only institutional review':
+                realtime.activity==='typing'?'Typing...':
+                realtime.activity==='recording_audio'?'Recording audio...':
+                realtime.activity==='recording_video'?'Recording video...':
+                realtime.peerOnline?'Online':'Offline · private chat'}</small></div>
+            {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
+              <button type="button" aria-label={'Audio call '+memberName(participant(current))}
+                title={realtime.peerOnline?'Start audio call':'Contact must be online in this chat'}
+                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
+                onClick={()=>void calling.start('audio')}><Phone size={19}/></button>
+              <button type="button" aria-label={'Video call '+memberName(participant(current))}
+                title={realtime.peerOnline?'Start video call':'Contact must be online in this chat'}
+                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
+                onClick={()=>void calling.start('video')}><Video size={19}/></button>
+            </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
               <LockKeyhole size={16}/> Second member profile
@@ -812,12 +840,13 @@ export default function DirectMessagesPage(){
                ?{id:editTarget.id,name:'your message (editing)',body:editTarget.body}
                :replyTarget?{id:replyTarget.id,name:memberName(replyTarget.sender_id),body:replyTarget.body}:null}
              onCancelReply={()=>{setReplyTarget(null);setEditTarget(null);setDraft('');}}
-             busy={busy} mediaReset={mediaReset} onSubmit={e=>void send(e)}
+             busy={busy} mediaReset={mediaReset} onActivity={realtime.sendActivity}
+             onSubmit={e=>void send(e)}
              composeRef={composeRef}/>:<p className="dli-direct-oversight-note"><CheckCheck size={16}/> Read-only oversight. You cannot send on someone else's behalf.</p>}
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
+    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls require both users online, camera/microphone consent, and compatible networks. Cloudflare TURN/SFU conferences are not yet activated.</p>
     {forwardTarget&&<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
@@ -838,6 +867,17 @@ export default function DirectMessagesPage(){
           t.id!==forwardTarget.thread_id)&&<p>No other conversation is available. Start a permitted chat with the pencil icon first.</p>}
       </div>
     </div>}
+    {realtime.onlineToast&&current&&<div className="dli-live-online-toast" role="status">
+      <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
+      <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
+    </div>}
+    {calling.session&&current&&mode==='inbox'&&<DirectCallOverlay
+      session={calling.session} name={memberName(callPeer)}
+      localStream={calling.localStream} remoteStream={calling.remoteStream}
+      muted={calling.muted} cameraOff={calling.cameraOff} sharing={calling.sharing}
+      onAnswer={()=>void calling.answer()} onReject={calling.reject} onEnd={calling.end}
+      onMute={calling.toggleMute} onCamera={calling.toggleCamera}
+      onScreen={()=>void calling.toggleScreen()}/>}
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
       onClose={closeMemberProfile}/>}
