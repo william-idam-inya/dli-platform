@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
-  Plus, RefreshCw, Users, Video, Wallet, MessageCircle, Trash2,
+  Plus, RefreshCw, Users, Video, Wallet, MessageCircle,
 } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
