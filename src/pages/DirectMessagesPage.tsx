@@ -310,6 +310,19 @@ export default function DirectMessagesPage(){
     if(!supabase||!current||busy||mode==='oversight'||!uid)return;
     const body=draft.trim();
     if((!body&&!attachment)||body.length>2000){setError('Enter a message or attach a permitted file.');return;}
+    if(editTarget){
+      if(attachment){setError('Remove the attachment before editing an existing message.');return;}
+      setBusy(true);setError(null);setNotice(null);
+      try{
+        const r=await supabase.rpc('dli_edit_direct_message',{p_message:editTarget.id,p_body:body});
+        if(r.error||r.data!==true){setError('The server did not authorise the message edit.');return;}
+        setEditTarget(null);setDraft('');
+        await loadThread(current.id);await load();
+        setNotice('Your message was edited; the previous version is kept in restricted audit history.');
+      }catch{setError('The edit could not be confirmed.');}
+      finally{setBusy(false);}
+      return;
+    }
     setBusy(true);setError(null);setNotice(null);
     let fileId:string|undefined;
     let path:string|undefined;
@@ -361,6 +374,91 @@ export default function DirectMessagesPage(){
         'The request was interrupted, and its attachment could not be cleaned up. Refresh the thread and contact DLI administration before retrying.');
     }finally{setBusy(false);}
   }
+  const reactionCounts=(id:string)=>{
+    const result=new Map<string,{count:number;mine:boolean}>();
+    for(const row of reactions.filter(r=>r.message_id===id)){
+      const existing=result.get(row.emoji)??{count:0,mine:false};
+      result.set(row.emoji,{count:existing.count+1,mine:existing.mine||row.reactor_id===uid});
+    }
+    return [...result.entries()].map(([emoji,value])=>({emoji,...value}));
+  };
+  async function reactToMessage(m:DirectMessage,emoji:string){
+    if(!supabase||busy||mode!=='inbox'||m.deleted_at)return;
+    setBusy(true);setError(null);
+    try{
+      const r=await supabase.rpc('dli_set_message_reaction',{p_message:m.id,p_emoji:emoji});
+      if(r.error){setError('Reaction was not accepted for this conversation.');return;}
+      setMenuTarget(null);
+      await loadThread(m.thread_id);
+    }catch{setError('The reaction was not confirmed.');}
+    finally{setBusy(false);}
+  }
+  function handleMessagePointerDown(m:DirectMessage,pointerType:string){
+    if(mode!=='inbox'||m.deleted_at||pointerType==='mouse')return;
+    if(longPressTimer.current!==null)window.clearTimeout(longPressTimer.current);
+    longPressTimer.current=window.setTimeout(()=>{
+      setMenuTarget(m.id);setExpandedReactions(false);longPressTimer.current=null;
+    },450);
+  }
+  function handleMessagePointerUp(m:DirectMessage,pointerType:string){
+    if(longPressTimer.current!==null){window.clearTimeout(longPressTimer.current);longPressTimer.current=null;}
+    if(pointerType!=='touch'||m.deleted_at||mode!=='inbox')return;
+    const now=Date.now();
+    if(lastTap.current?.id===m.id&&now-lastTap.current.at<320){
+      lastTap.current=null;void reactToMessage(m,'👍');
+    }else lastTap.current={id:m.id,at:now};
+  }
+  useEffect(()=>{
+    if(!menuTarget&&!forwardTarget)return;
+    const close=(event:KeyboardEvent)=>{
+      if(event.key==='Escape'){setMenuTarget(null);setForwardTarget(null);}
+    };
+    window.addEventListener('keydown',close);
+    return()=>window.removeEventListener('keydown',close);
+  },[menuTarget,forwardTarget]);
+  function beginReply(m:DirectMessage){
+    if(m.deleted_at)return;
+    setEditTarget(null);setReplyTarget(m);setMenuTarget(null);
+    composeRef.current?.focus({preventScroll:true});
+  }
+  function beginEdit(m:DirectMessage){
+    if(m.sender_id!==uid||m.deleted_at)return;
+    setReplyTarget(null);setEditTarget(m);setAttachment(null);
+    setDraft(m.body);setMenuTarget(null);
+    composeRef.current?.focus({preventScroll:true});
+  }
+  async function deleteMessage(m:DirectMessage){
+    if(!supabase||busy||m.sender_id!==uid||m.deleted_at)return;
+    if(!window.confirm('Remove your message from this conversation? DLI retains a restricted audit record.'))return;
+    setBusy(true);setError(null);
+    try{
+      const r=await supabase.rpc('dli_delete_direct_message',{p_message:m.id});
+      if(r.error){setError('The server did not authorise removal of that message.');return;}
+      setNotice('Message removed from the conversation; the institutional audit record remains.');
+      setMenuTarget(null);await loadThread(m.thread_id);await load();
+    }catch{setError('Could not confirm message removal.');}
+    finally{setBusy(false);}
+  }
+  async function forwardMessage(message:DirectMessage,destination:Thread){
+    if(!supabase||busy||mode!=='inbox')return;
+    setBusy(true);setError(null);setNotice(null);
+    try{
+      const r=await supabase.rpc('dli_forward_direct_message',{
+        p_source:message.id,p_thread:destination.id,
+      });
+      if(r.error||!r.data){setError('Forwarding was denied. Only accessible text messages can be forwarded.');return;}
+      setForwardTarget(null);setMenuTarget(null);setActiveId(destination.id);
+      setNotice('Text message forwarded to the permitted conversation.');
+      await load();
+    }catch{setError('Forwarding could not be confirmed.');}
+    finally{setBusy(false);}
+  }
+  async function copyMessage(m:DirectMessage){
+    if(!navigator.clipboard){setError('Copying is unavailable in this browser.');return;}
+    try{await navigator.clipboard.writeText(m.body);setMenuTarget(null);setNotice('Message copied.');}
+    catch{setError('The browser blocked clipboard access.');}
+  }
+
   async function downloadFile(file:DirectFile){
     if(!supabase||busy)return;
     setBusy(true);setError(null);
