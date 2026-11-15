@@ -577,6 +577,18 @@ export default function ClassesWorkspacePage(){
           </div>
         </form>
       </section>}
+      {staff&&selectedCohort&&paidCohort&&<details className="panel classes-cohort-billing" id="cohort-billing">
+        <summary><Wallet size={19}/> Payment assignment &amp; billing configuration — {selectedCohort.name}</summary>
+        <p>This is a paid DLI cohort. Assign each approved student's monthly fee using the existing audited
+          manual-transfer workflow. DLI account details are set by authorised administrators.
+          Submitting a receipt never confirms a bank credit or grants access automatically.</p>
+        <p><strong>Selected class structure:</strong> {tier(form.class_type).label} · {chosen.length} student{chosen.length===1?'':'s'} selected.
+          Fee amounts and rates are managed in the existing finance editor, not inferred from topic counts.</p>
+        <PrivateClassesPage billingOnly embedded/>
+      </details>}
+      {staff&&selectedCohort&&!paidCohort&&<p className="classes-free-billing-note">
+        <CheckCircle2 size={17}/> Free Scholars Club cohort · No payment assignment or bank details required.
+      </p>}
 
       <section className="panel classes-directory">
         <div className="panel-heading"><div>
@@ -635,6 +647,17 @@ export default function ClassesWorkspacePage(){
                   <small>Primary tutor: {c.tutor_name}</small>
                   {coTutors.find(co=>co.class_id===c.id&&co.is_active)&&<small>Second tutor: {coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_name}</small>}
                   {staff&&c.offering_id&&<small>Linked academic offering · tutor assignments verified</small>}
+                  {pacingRows.some(p=>p.class_id===c.id)&&<small>
+                    Delivery rate: {pacingRows.find(p=>p.class_id===c.id)?.topics_per_meeting} topic(s) per weekly meeting
+                  </small>}
+                  {deliveryRows.some(p=>p.class_id===c.id)&&<div className="classes-delivery-list">
+                    <strong>Topic teaching dates</strong>
+                    {deliveryRows.filter(p=>p.class_id===c.id).map(p=>
+                      <span key={p.topic_id}>
+                        <time dateTime={p.meeting_date}>{p.meeting_date}</time>
+                        <span>Meeting {p.meeting_number} · {topics.find(t=>t.id===p.topic_id)?.title??c.subject_name+' topic '+p.topic_order}</span>
+                      </span>)}
+                  </div>}
                 </div>
                 {c.state==='archived'&&<span className="classes-state archived">Archived</span>}
                 {communicating&&c.state==='published'&&
