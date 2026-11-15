@@ -75,7 +75,7 @@ for(const t of ["chatRoles.map(group=>", "query.get('compose')",
   'dli-live-chat-header','dli-live-call-actions','useDirectRealtime',
   'useDirectPeerCall','<DirectCallOverlay','onActivity={realtime.sendActivity}'])
  assert.ok(dm.includes(t),'Missing role-grouped live chat feature '+t);
-assert.ok(composer.includes("onRecordingChange=")&&composer.includes("onActivity('typing')"),
+assert.ok(composer.includes("onRecordingChange=")&&composer.includes("onActivity(e.target.value.trim()?'typing':null)"),
  'Composer must dispatch actual activity');
 assert.ok(rec.includes('onRecordingChange?.(next)')&&rec.includes('onRecordingChange?.(null)'),
  'Recorder must signal start/stop, not fake recording status');
