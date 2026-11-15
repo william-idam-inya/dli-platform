@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
+import {useCallback,useEffect,useRef,useState,type ReactNode,type MouseEvent,type KeyboardEvent as ReactKeyboardEvent} from 'react';
 import {ChevronDown,ChevronsDownUp,ChevronsUpDown,X} from 'lucide-react';
 import {useLocation} from 'react-router-dom';
 import './WorkspaceFocus.css';
@@ -117,14 +117,14 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   document.addEventListener('keydown',onKey,true);
   return()=>document.removeEventListener('keydown',onKey,true);
  },[active,close]);
- function onClick(event:React.MouseEvent<HTMLDivElement>){
+ function onClick(event:MouseEvent<HTMLDivElement>){
   if(!compressed||active!==null)return;
   const panel=(event.target as HTMLElement).closest<HTMLElement>('[data-dli-focus-panel]');
   if(!panel||!root.current?.contains(panel))return;
   const key=panel.getAttribute('data-dli-focus-panel');
   if(key){event.preventDefault();open(key,panel);}
  }
- function onKeyDown(event:React.KeyboardEvent<HTMLDivElement>){
+ function onKeyDown(event:ReactKeyboardEvent<HTMLDivElement>){
   if(!compressed||active!==null||!['Enter',' '].includes(event.key))return;
   const el=event.target as HTMLElement;
   if(!el.matches('[data-dli-focus-panel]'))return;
