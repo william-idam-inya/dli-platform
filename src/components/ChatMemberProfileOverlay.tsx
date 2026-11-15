@@ -128,7 +128,7 @@ export default function ChatMemberProfileOverlay({
             aria-label="Close member profile"><X size={20} aria-hidden="true"/></button>
         </header>
         {loading?<div className="dli-chat-profile-state" role="status">
-          <UserRound size={24}/><p>Checking your profile-view permission…</p>
+          <UserRound size={24}/><p>Checking your permission to view {fallbackName}…</p>
         </div>:error?<div className="dli-chat-profile-state" role="alert">
           <LockKeyhole size={28}/>
           <h2 id="dli-chat-profile-title">Profile restricted</h2>
