@@ -32,7 +32,7 @@ type LearningResource = {
 };
 type ResourceType = LearningResource['resource_type'];
 
-const EDIT_ROLES = new Set(['owner', 'admin', 'academic_coordinator', 'tutor']);
+const EDIT_ROLES = new Set(['owner', 'admin', 'assistant_admin', 'tutor']);
 function validHttpsUrl(value: string): boolean {
   try {
     const u = new URL(value);
