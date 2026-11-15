@@ -140,6 +140,9 @@ jobs:
       - name: Verify Q34 cohort-pacing and Telegram message controls
         run: npm run check:q34-curriculum-telegram
 
+      - name: Verify Q35 global compact workspaces, five roles, Free Student learning and protected Realtime
+        run: npm run check:q35-global-focus-realtime
+
       - name: Verify TypeScript
         run: npm run typecheck
 

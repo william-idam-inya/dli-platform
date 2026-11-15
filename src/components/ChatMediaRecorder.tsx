@@ -15,8 +15,9 @@ const extensions:Record<string,string>={
 };
 const maxBytes=10*1024*1024;
 const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
-  disabled:boolean;onReady:(file:File|null)=>void;compact?:boolean
-}>(function ChatMediaRecorder({disabled,onReady,compact=false},ref){
+  disabled:boolean;onReady:(file:File|null)=>void;compact?:boolean;
+  onRecordingChange?:(kind:Kind|null)=>void
+}>(function ChatMediaRecorder({disabled,onReady,compact=false,onRecordingChange},ref){
   const [kind,setKind]=useState<Kind|null>(null);
   const [requesting,setRequesting]=useState<Kind|null>(null);
   const [seconds,setSeconds]=useState(0);
@@ -83,11 +84,11 @@ const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
       const chunks:BlobPart[]=[];
       recorder.ondataavailable=event=>{if(event.data.size>0)chunks.push(event.data);};
       recorder.onerror=()=>{
-        cancelled.current=true;stopTracks();setKind(null);
+        onRecordingChange?.(null);cancelled.current=true;stopTracks();setKind(null);
         setError('Recording stopped unexpectedly. No media was sent. Please try again.');
       };
       recorder.onstop=()=>{
-        stopTracks();recorderRef.current=null;setKind(null);
+        onRecordingChange?.(null);stopTracks();recorderRef.current=null;setKind(null);
         if(cancelled.current)return;
         const type=recorder.mimeType.split(';')[0].toLowerCase();
         const blob=new Blob(chunks,{type});
@@ -99,6 +100,7 @@ const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
         setPreview({kind:next,url,file});onReady(file);
       };
       recorder.start(1000);
+      onRecordingChange?.(next);
       if(stopAfterPermission.current&&recorder.state==='recording')recorder.stop();
       starting.current=false;
       setRequesting(null);
@@ -112,7 +114,7 @@ const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
     }catch(cause){
       starting.current=false;
       setRequesting(null);
-      stopTracks();
+      onRecordingChange?.(null);stopTracks();
       setKind(null);
       const reason=(cause as {name?:string}|null)?.name;
       setError(reason==='NotAllowedError'||reason==='PermissionDeniedError'
@@ -130,7 +132,7 @@ const ChatMediaRecorder=forwardRef<ChatMediaRecorderHandle,{
     if(recorder&&recorder.state==='recording')recorder.stop();
   };
   const discard=()=>{
-    cancelled.current=true;stop();stopTracks();
+    cancelled.current=true;onRecordingChange?.(null);stop();stopTracks();
     releasePreview();onReady(null);setKind(null);setRequesting(null);setSeconds(0);setError(null);
   };
   useImperativeHandle(ref,()=>({start:next=>{void start(next);},stop,discard}));

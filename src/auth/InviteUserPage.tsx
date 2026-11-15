@@ -5,8 +5,8 @@ import { roleLabels, type DliRole } from './permissions';
 import { supabase } from '../lib/supabase';
 
 const permittedRoles: Partial<Record<DliRole, DliRole[]>> = {
-  owner: ['owner', 'admin', 'assistant_admin', 'academic_coordinator', 'tutor', 'student'],
-  admin: ['assistant_admin', 'academic_coordinator', 'tutor', 'student'],
+  owner: ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
+  admin: ['assistant_admin', 'tutor', 'student'],
 };
 
 type InvitationResult = {

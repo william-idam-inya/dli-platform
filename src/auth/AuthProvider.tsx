@@ -3,7 +3,6 @@ import {
   type ReactNode,
 } from 'react';
 import { supabase } from '../lib/supabase';
-import { isFilePickerFocused } from './filePickerFocus';
 import { sessionPresence } from './sessionPresence';
 import { isDliRole, type Account } from './permissions';
 
@@ -31,7 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccount(null);
       return;
     }
-    setState('checking');
+    // A verification triggered by token refresh must never unmount the active
+    // workspace, close a focus overlay or discard a draft.
+    setState(current=>current==='active'?'active':'checking');
 
     // No stored session is the normal, anonymous state, not an outage.
     // Only check presence here; this local data is NEVER used to grant access.
@@ -146,23 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const recheck = () => {
-      // The OS file-selection dialog returns focus before React processes
-      // the selected File. Do not unmount the editor at that instant.
-      // All other focus checks, Auth events, and server RLS remain active.
-      if (isFilePickerFocused(document.activeElement)) return;
-      void refresh();
-    };
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') recheck();
-    };
-    window.addEventListener('focus', recheck);
-    document.addEventListener('visibilitychange', onVisibility);
+    // No focus or visibilitychange listener: browser tab switching, OS file
+    // pickers and screenshots are NOT authentication events. Supabase silently
+    // handles token refresh and the subscriptions below still verify changes.
     return () => {
       ++verification.current;
       subscription.unsubscribe();
-      window.removeEventListener('focus', recheck);
-      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [refresh]);
 

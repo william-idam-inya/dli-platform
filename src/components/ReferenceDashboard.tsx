@@ -64,16 +64,8 @@ const ASSISTANT_LINKS: QuickAction[] = [
   {name:'Tutor Payouts',href:'/payroll',permission:'/payroll',icon:Coins,tone:'teal'},
   {name:'Reports',href:'/reports',permission:'/reports',icon:BarChart3,tone:'violet'},
 ];
-const ACADEMIC_LINKS: QuickAction[] = [
-  {name:'Curriculum',href:'/academics',permission:'/academics',icon:BookOpen,tone:'blue'},
-  {name:'Lessons',href:'/study?tab=lessons',permission:'/study',icon:GraduationCap,tone:'teal'},
-  {name:'Assessments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'gold'},
-  {name:'Reports',href:'/reports',permission:'/reports',icon:BarChart3,tone:'violet'},
-];
-
 function linksFor(role:DliRole):QuickAction[] {
   return role==='student'?STUDENT_LINKS:role==='tutor'?TUTOR_LINKS:
-    role==='academic_coordinator'?ACADEMIC_LINKS:
     role==='assistant_admin'?ASSISTANT_LINKS:ADMIN_LINKS;
 }
 function shown(count:Metric):string {
@@ -417,27 +409,11 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
       ?<AdminInsights account={account} metrics={metrics}
           audit={audit} auditError={auditError} loading={statsLoading}/>
       :<div className="ref-learning-grid">
-        {account.role==='academic_coordinator'
-          ?<section className="ref-surface ref-classes-panel">
-            <SectionHead title="Academic programmes" action={{to:'/academics',label:'Open curriculum'}}/>
-            <div className="ref-empty-state"><GraduationCap size={28}/>
-              <strong>Academic coordination workspace</strong>
-              <span>Manage real courses, approved curricula and assigned learning resources.</span>
-            </div>
-          </section>
-          :<ClassPreview rows={upcoming} error={classError} loading={classLoading}
-            tutor={isTutor}/>}
+        <ClassPreview rows={upcoming} error={classError} loading={classLoading}
+            tutor={isTutor}/>
         {isTutor?<TutorChecklist metrics={metrics} learning={academicCounts}/>:
-          account.role==='academic_coordinator'
-          ?<section className="ref-surface ref-checklist-panel">
-            <SectionHead title="Academic priorities" action={{to:'/reports',label:'View reports'}}/>
-            <div className="ref-checklist">
-              <Link to="/academics"><BookOpen size={18}/> Review curriculum <ArrowRight size={16}/></Link>
-              <Link to="/study"><ClipboardCheck size={18}/> Learning resources <ArrowRight size={16}/></Link>
-            </div>
-          </section>
-          :<LearningProgress account={account} academicCounts={academicCounts}
-              academicLoading={academicLoading} metrics={metrics}/>}
+          <LearningProgress account={account} academicCounts={academicCounts}
+            academicLoading={academicLoading} metrics={metrics}/>}
       </div>}
     <div className="ref-dashboard-tail">
       <p><ShieldCheck size={15} aria-hidden="true"/> Numbers reflect accessible DLI records;

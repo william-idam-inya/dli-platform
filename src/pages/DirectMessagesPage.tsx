@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
+import DirectCallOverlay from '../components/DirectCallOverlay';
+import {useDirectRealtime,type DliCallSignal} from '../lib/useDirectRealtime';
+import {useDirectPeerCall} from '../lib/useDirectPeerCall';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
 type Contact={user_id:string;full_name:string;member_role:string};
+type RolePerson=Contact&{student_tier:string|null};
+const chatRoles=[
+ {id:'owner',label:'Owner'}, {id:'admin',label:'Admin'},
+ {id:'assistant_admin',label:'Assistant Admin'}, {id:'tutor',label:'Tutors'},
+ {id:'free',label:'Free Students'}, {id:'paid',label:'Paid Students'},
+] as const;
 type ClassProfile=Contact&{subjects:string[]};
 type Thread={id:string;participant_a:string;participant_b:string;created_at:string};
 type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;created_at:string;file_id?:string|null;reply_to_id?:string|null;forwarded_from_id?:string|null;edited_at?:string|null;deleted_at?:string|null};
@@ -38,10 +47,14 @@ const STAFF_CONTACT_ROLES=new Set(['owner','admin','assistant_admin']);
 
 export default function DirectMessagesPage(){
   const {account}=useAuth();
+  const [query,setQuery]=useSearchParams();
+  const directTargetHandled=useRef('');
+  const callHandler=useRef<(signal:DliCallSignal)=>void>(()=>{});
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
+  const [rolePeople,setRolePeople]=useState<RolePerson[]>([]);
   const [classProfiles,setClassProfiles]=useState<ClassProfile[]>([]);
   const [classProfilesError,setClassProfilesError]=useState(false);
   const [profileTarget,setProfileTarget]=useState<{id:string;name:string}|null>(null);
@@ -99,16 +112,26 @@ export default function DirectMessagesPage(){
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
   const permittedContacts=useMemo(()=>contacts.filter(c=>canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
   const current=threads.find(t=>t.id===activeId)??null;
+  const callPeer=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
+  const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',signal=>callHandler.current(signal));
+  const calling=useDirectPeerCall(realtime.sendCallSignal,activeId,realtime.status==='ready');
+  callHandler.current=calling.signal;
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
+  const memberGroup=(id:string)=>{
+    const person=rolePeople.find(x=>x.user_id===id);
+    const role=person?.member_role??memberRole(id);
+    return role==='student'?(person?.student_tier==='paid'?'paid':'free'):role;
+  };
+  const roleName=(id:string)=>chatRoles.find(g=>g.id===memberGroup(id))?.label??'Members';
   const openMemberProfile=(id:string,name:string)=>setProfileTarget({id,name});
   const closeMemberProfile=useCallback(()=>setProfileTarget(null),[]);
 
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [auth,directory,inbox,flags,readRows,headMessages,classDirectory]=await Promise.all([
+      const [auth,directory,inbox,flags,readRows,headMessages,classDirectory,peopleRows]=await Promise.all([
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
@@ -121,12 +144,14 @@ export default function DirectMessagesPage(){
         account.role==='tutor'||account.role==='student'
           ?supabase.rpc('dli_chat_class_profiles')
           :Promise.resolve({data:[],error:null}),
+        supabase.rpc('dli_people_directory'),
       ]);
       if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
         setError('The messaging directory could not be verified. Retry while signed in.');return;
       }
       setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
+      if(!peopleRows.error)setRolePeople((peopleRows.data??[]) as RolePerson[]);
       setClassProfiles((classDirectory.data??[]) as ClassProfile[]);
       setClassProfilesError(Boolean(classDirectory.error));
       setThreads((inbox.data??[]) as Thread[]);
@@ -293,6 +318,17 @@ export default function DirectMessagesPage(){
       setBusy(false);setOpeningContactId(null);
     }
   }
+  useEffect(()=>{
+    const recipient=query.get('compose');
+    if(!recipient||!uid||loading||directTargetHandled.current===recipient)return;
+    const person=permittedContacts.find(c=>c.user_id===recipient);
+    if(!person){setError('This contact is unavailable or restricted for your account.');directTargetHandled.current=recipient;return;}
+    directTargetHandled.current=recipient;
+    setComposeOpen(true);
+    void openContact(person);
+    setQuery(previous=>{const next=new URLSearchParams(previous);next.delete('compose');return next;},{replace:true});
+  // The deep link is consumed once after the verified contact directory loads.
+  },[uid,loading,contacts,query,permittedContacts,setQuery]);
   async function cleanupFile(path:string,id:string):Promise<boolean>{
     if(!supabase)return false;
     // Keep the metadata if Storage deletion fails, so a later recovery
@@ -316,7 +352,7 @@ export default function DirectMessagesPage(){
       try{
         const r=await supabase.rpc('dli_edit_direct_message',{p_message:editTarget.id,p_body:body});
         if(r.error||r.data!==true){setError('The server did not authorise the message edit.');return;}
-        setEditTarget(null);setDraft('');
+        setEditTarget(null);setDraft('');realtime.sendActivity(null);
         await loadThread(current.id);await load();
         setNotice('Your message was edited; the previous version is kept in restricted audit history.');
       }catch{setError('The edit could not be confirmed.');}
@@ -365,7 +401,8 @@ export default function DirectMessagesPage(){
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
-      setDraft('');setAttachment(null);setReplyTarget(null);setMediaReset(value=>value+1);
+      setDraft('');setAttachment(null);setReplyTarget(null);realtime.sendActivity(null);
+      setMediaReset(value=>value+1);
       await loadThread(current.id);
       window.dispatchEvent(new Event('dli-direct-messages-changed'));
     }catch{
@@ -549,7 +586,12 @@ export default function DirectMessagesPage(){
           <span>{threads.length} chats</span>
         </nav>}
         <section className="dli-direct-conversations"><h2>{mode==='oversight'?'All institutional conversations':'My conversations'}</h2>
-          {visible.map(t=>{
+          {chatRoles.map(group=>{
+            const entries=visible.filter(t=>memberGroup(mode==='oversight'?t.participant_b:participant(t))===group.id);
+            if(!entries.length)return null;
+            return <section className="dli-telegram-role-threads" key={group.id}>
+              <h3>{group.label} <small>{entries.length} conversation{entries.length===1?'':'s'}</small></h3>
+              {entries.map(t=>{
             const other=participant(t);
             const latest=lastMessage.get(t.id);
             const unread=mode==='inbox'?unreadInThread(t.id):0;
@@ -566,7 +608,11 @@ export default function DirectMessagesPage(){
                 onClick={()=>setActiveId(t.id)}>
                 <span className="dli-direct-chat-list-main">
                   <strong>{mode==='oversight'?memberName(t.participant_a)+' / '+memberName(t.participant_b):memberName(other)}</strong>
-                  <small>{latest?(latest.deleted_at?'Message deleted':latest.body.slice(0,65)):mode==='oversight'?'Moderation view':memberRole(other)}</small>
+                  <small>{mode==='inbox'&&t.id===activeId&&realtime.activity?
+                    (realtime.activity==='typing'?'Typing...':realtime.activity==='recording_audio'?
+                      'Recording audio...':'Recording video...'):
+                    latest?(latest.deleted_at?'Message deleted':latest.body.slice(0,65)):
+                    mode==='oversight'?'Moderation view':roleName(other)}</small>
                 </span>
                 <span className="dli-direct-chat-list-meta">
                   <small>{latest?stamp(latest.created_at):''}</small>
@@ -581,6 +627,8 @@ export default function DirectMessagesPage(){
                 <Pin size={16} fill={pins.includes(t.id)?'currentColor':'none'}/>
               </button>}
             </div>;
+              })}
+            </section>;
           })}
           {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations yet. Tap the pencil icon to start a private message with an authorised contact.</p>}
         </section>
@@ -592,7 +640,13 @@ export default function DirectMessagesPage(){
           {mode==='inbox'&&<section className="dli-direct-contacts">
           <h2>New message · {permittedContacts.length} permitted contacts</h2>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
-          {permittedContacts.filter(c=>c.full_name.toLowerCase().includes(search.trim().toLowerCase())).map(c=>
+          {chatRoles.map(group=>{
+            const people=permittedContacts.filter(c=>memberGroup(c.user_id)===group.id&&
+              c.full_name.toLowerCase().includes(search.trim().toLowerCase()));
+            if(!people.length)return null;
+            return <section className="dli-telegram-role-contacts" key={group.id}>
+              <h3>{group.label} <small>{people.length}</small></h3>
+              {people.map(c=>
             <div className={'dli-direct-contact-row'+(
               current&&(current.participant_a===c.user_id||current.participant_b===c.user_id)?' selected':''
             )} key={c.user_id}>
@@ -611,6 +665,8 @@ export default function DirectMessagesPage(){
                 </span>
               </button>
             </div>)}
+            </section>;
+          })}
           {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
           {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.</p>}
         </section>}
@@ -668,9 +724,24 @@ export default function DirectMessagesPage(){
               aria-label={'View '+memberName(mode==='oversight'?current.participant_a:participant(current))+' profile'}>
               <ChatMemberAvatar userId={mode==='oversight'?current.participant_a:participant(current)}
                 name={memberName(mode==='oversight'?current.participant_a:participant(current))}/>
+              {mode==='inbox'&&realtime.peerOnline&&<span className="dli-live-online-dot" aria-label="Online"/>}
             </button>
-            <div><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
-              <small>{mode==='oversight'?'Read-only institutional review':'Private institutional conversation'}</small></div>
+            <div className="dli-live-chat-header"><strong>{mode==='oversight'?memberName(current.participant_a)+' / '+memberName(current.participant_b):memberName(participant(current))}</strong>
+              <small>{mode==='oversight'?'Read-only institutional review':
+                realtime.activity==='typing'?'Typing...':
+                realtime.activity==='recording_audio'?'Recording audio...':
+                realtime.activity==='recording_video'?'Recording video...':
+                realtime.peerOnline?'Online':'Offline · private chat'}</small></div>
+            {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
+              <button type="button" aria-label={'Audio call '+memberName(participant(current))}
+                title={realtime.peerOnline?'Start audio call':'Contact must be online in this chat'}
+                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
+                onClick={()=>void calling.start('audio')}><Phone size={19}/></button>
+              <button type="button" aria-label={'Video call '+memberName(participant(current))}
+                title={realtime.peerOnline?'Start video call':'Contact must be online in this chat'}
+                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
+                onClick={()=>void calling.start('video')}><Video size={19}/></button>
+            </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
               <LockKeyhole size={16}/> Second member profile
@@ -769,12 +840,13 @@ export default function DirectMessagesPage(){
                ?{id:editTarget.id,name:'your message (editing)',body:editTarget.body}
                :replyTarget?{id:replyTarget.id,name:memberName(replyTarget.sender_id),body:replyTarget.body}:null}
              onCancelReply={()=>{setReplyTarget(null);setEditTarget(null);setDraft('');}}
-             busy={busy} mediaReset={mediaReset} onSubmit={e=>void send(e)}
+             busy={busy} mediaReset={mediaReset} onActivity={realtime.sendActivity}
+             onSubmit={e=>void send(e)}
              composeRef={composeRef}/>:<p className="dli-direct-oversight-note"><CheckCheck size={16}/> Read-only oversight. You cannot send on someone else's behalf.</p>}
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
+    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls require both users online, camera/microphone consent, and compatible networks. Cloudflare TURN/SFU conferences are not yet activated.</p>
     {forwardTarget&&<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
@@ -795,6 +867,17 @@ export default function DirectMessagesPage(){
           t.id!==forwardTarget.thread_id)&&<p>No other conversation is available. Start a permitted chat with the pencil icon first.</p>}
       </div>
     </div>}
+    {realtime.onlineToast&&current&&<div className="dli-live-online-toast" role="status">
+      <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
+      <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
+    </div>}
+    {calling.session&&current&&mode==='inbox'&&<DirectCallOverlay
+      session={calling.session} name={memberName(callPeer)}
+      localStream={calling.localStream} remoteStream={calling.remoteStream}
+      muted={calling.muted} cameraOff={calling.cameraOff} sharing={calling.sharing}
+      onAnswer={()=>void calling.answer()} onReject={calling.reject} onEnd={calling.end}
+      onMute={calling.toggleMute} onCamera={calling.toggleCamera}
+      onScreen={()=>void calling.toggleScreen()}/>}
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
       onClose={closeMemberProfile}/>}

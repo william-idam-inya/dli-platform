@@ -1,0 +1,74 @@
+.dli-conference-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:13px}
+.dli-conference-form label{display:grid;gap:6px;font-weight:750;font-size:.82rem}
+.dli-conference-form input,.dli-conference-form select{border:1px solid var(--border);border-radius:9px;padding:11px;
+ background:var(--surface-soft);color:var(--text);min-height:44px;width:100%;font:inherit}
+.dli-conference-form button{grid-column:1/-1;width:max-content}
+.dli-conference-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));
+ gap:14px;align-items:start}
+.dli-conference-type{padding:15px}
+.dli-conference-type>header{display:flex;align-items:center;gap:8px;padding-bottom:13px}
+.dli-conference-type h2{flex:1;font-size:1rem;margin:0}
+.dli-conference-type>header>span{font-size:11px;color:var(--muted)}
+.dli-conference-room{display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);
+ padding:12px 0}
+.dli-conference-room>div{display:grid;gap:5px;min-width:0;flex:1}
+.dli-conference-room strong{font-size:.85rem;overflow-wrap:anywhere}
+.dli-conference-room small{font-size:.73rem;color:var(--muted)}
+.dli-conference-room button{flex-shrink:0}
+.dli-conference-backdrop{position:fixed;inset:0;z-index:1320;background:rgba(10,16,33,.81);
+ backdrop-filter:blur(5px);display:grid;place-items:center;padding:12px}
+.dli-conference-overlay{background:var(--surface);color:var(--text);border-radius:16px;
+ width:min(1300px,100%);max-height:97dvh;overflow:auto;padding:17px;
+ box-shadow:0 26px 85px rgba(0,0,0,.32);display:grid;gap:14px}
+.dli-conference-overlay>header{display:flex;align-items:flex-start;gap:10px;justify-content:space-between}
+.dli-conference-overlay>header small{font-size:10px;font-weight:850;color:var(--purple);letter-spacing:.07em}
+.dli-conference-overlay>header h2{margin:3px 0;font-size:1.2rem}
+.dli-conference-overlay>header p{margin:0;color:var(--muted);font-size:12px}
+.dli-conference-overlay>header button{display:grid;place-items:center;border:1px solid var(--border);
+ border-radius:10px;color:var(--text);background:var(--surface-soft);width:44px;height:44px;cursor:pointer}
+.dli-conference-panel-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,310px);gap:15px}
+.dli-conference-main{display:grid;gap:13px;align-content:start}
+.dli-conference-layout-picker{padding:9px 11px;border:1px solid var(--border);
+ border-radius:10px;background:var(--surface-soft);font-size:11px;color:var(--muted)}
+.dli-conference-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:9px;
+ min-height:190px;max-height:50dvh;overflow:auto}
+.dli-conference-gallery article{display:grid;justify-items:center;align-content:center;gap:7px;
+ padding:12px;border:1px solid var(--border);background:var(--surface-soft);border-radius:11px;
+ min-height:135px;text-align:center}
+.dli-conference-avatar{display:grid;place-items:center;width:48px;height:48px;
+ border-radius:50%;background:var(--purple);color:white;font-size:20px;font-weight:800}
+.dli-conference-gallery strong{font-size:.82rem;overflow-wrap:anywhere}
+.dli-conference-gallery small{font-size:11px;color:var(--muted)}
+.dli-conference-participant-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
+.dli-conference-participant-badges span{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--muted)}
+.dli-conference-mod-controls{display:flex;justify-content:center;flex-wrap:wrap;gap:5px}
+.dli-conference-mod-controls button{display:flex;align-items:center;gap:3px;
+ min-height:32px;border:1px solid var(--border);background:var(--surface);border-radius:8px;
+ font-size:10px;color:var(--text);padding:5px;cursor:pointer}
+.dli-conference-toolbar{display:flex;flex-wrap:wrap;gap:7px}
+.dli-conference-toolbar button{display:flex;align-items:center;gap:5px;min-height:43px;
+ border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);
+ padding:8px 11px;font-weight:700;font-size:11px;color:var(--text);cursor:pointer}
+.dli-conference-toolbar button.dli-conference-end{background:#af2540;color:white;border-color:#af2540}
+.dli-conference-toolbar button:disabled{opacity:.45}
+.dli-conference-sfu-note{color:var(--muted);font-size:11px;line-height:1.5;margin:0}
+.dli-conference-chat{display:flex;flex-direction:column;gap:9px;min-height:350px;border:1px solid var(--border);
+ border-radius:12px;padding:11px}
+.dli-conference-chat h3{font-size:14px;display:flex;gap:7px;align-items:center;margin:0}
+.dli-conference-chat-history{display:grid;align-content:start;gap:9px;flex:1;overflow:auto;max-height:55dvh}
+.dli-conference-chat-history>div{padding:9px;border-radius:9px;background:var(--surface-soft)}
+.dli-conference-chat-history strong{font-size:11px;color:var(--purple)}
+.dli-conference-chat-history p{margin:5px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+.dli-conference-chat form{display:grid;gap:8px}
+.dli-conference-chat textarea{width:100%;resize:vertical;border:1px solid var(--border);border-radius:9px;
+ font:inherit;color:var(--text);background:var(--surface-soft);padding:10px;font-size:13px}
+.dli-conference-chat form button{min-height:42px;border:0;background:var(--purple);color:white;border-radius:9px;
+ font-weight:800;cursor:pointer}
+@media(max-width:760px){
+ .dli-conference-backdrop{padding:0}
+ .dli-conference-overlay{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:12px}
+ .dli-conference-panel-grid{grid-template-columns:1fr}
+ .dli-conference-gallery{min-height:180px;max-height:40dvh}
+ .dli-conference-chat{min-height:260px}
+ .dli-conference-chat-history{max-height:30dvh}
+}

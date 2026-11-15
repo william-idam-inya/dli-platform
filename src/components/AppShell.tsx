@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
+import WorkspaceFocus from './WorkspaceFocus';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut?: () => void }) {
@@ -349,7 +350,7 @@ export default function AppShell({ children }: AppShellProps) {
         <div className="page-content">
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
           {themeSyncWarning && <p role="alert" className="auth-feedback error">{themeSyncWarning}</p>}
-          {children}
+          <WorkspaceFocus>{children}</WorkspaceFocus>
           <footer className="page-footer">
             <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
             <span>Built with security and learner privacy as priorities.</span>
@@ -361,7 +362,7 @@ export default function AppShell({ children }: AppShellProps) {
           end={item.path==='/'}
           className={({isActive}) => 'mobile-bottom-link'+(isActive?' active':'')}>
           <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>{item.label === 'Free Demo & enrolment' ? 'Enrolment' :
+          <span>{item.label === 'Free Students & enrolment' ? 'Enrolment' :
             item.label === 'Classes & timetable' ? 'Classes' :
             item.label === 'Learning & results' ? 'Learning' :
             item.label === 'Academic setup' ? 'Academics' :

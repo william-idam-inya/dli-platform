@@ -32,7 +32,8 @@ assert.ok(classSource.includes("label:'Group of 5 Students'"),
   'Q15 class tier must display the approved Group of 5 Students label');
 assert.ok(!read('src/pages/ClassesWorkspacePage.tsx').includes('Group of 5 · Science'));
 assert.ok(read('src/pages/AcademicSetupPage.tsx').includes('Choose an academic level'));
-assert.ok(read('src/auth/permissions.ts').includes("FREE_STUDENT_ROUTES"));
+assert.ok(read('src/auth/permissions.ts').includes("Free and Paid Students use the same academic routes"),
+  'Q35 opens assigned coursework to both Free and Paid Students');
 assert.doesNotMatch(shell,/https?:\/\/localhost/);
 assert.doesNotMatch(dash,/SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY/);
 console.log('Q15 safe UI parity verified: mobile navigation, role scoping, learning, profile, login, enrolment and neutral class label.');

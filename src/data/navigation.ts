@@ -44,10 +44,10 @@ export const navigationSections: NavigationSection[] = [
         group: 'Workspace',
       },
       {
-        label: 'Free Demo & enrolment',
+        label: 'Free Students & enrolment',
         path: '/enrolment',
         icon: BookOpen,
-        description: 'Join Free Demo lessons, apply for Paid Student access or review incoming upgrade requests.',
+        description: 'Join Free Student lessons, apply for Paid Student access or review incoming upgrade requests.',
         group: 'Workspace',
       },
       {
@@ -96,6 +96,13 @@ export const navigationSections: NavigationSection[] = [
     label: 'People',
     items: [
       {
+        label: 'People directory',
+        path: '/people',
+        icon: Users,
+        description: 'Role-grouped authorised members with private direct chat initiation.',
+        group: 'People',
+      },
+      {
         label: 'Users & access',
         path: '/users',
         icon: Users,
@@ -119,6 +126,13 @@ export const navigationSections: NavigationSection[] = [
         path: '/finance',
         icon: Wallet,
         description: 'Internal finance-policy proposals and document rates; private manual fee verification has its own section. Automated billing and payouts remain disabled.',
+        group: 'Operations',
+      },
+      {
+        label: 'Conference rooms',
+        path: '/conferences',
+        icon: Users,
+        description: 'Role-restricted rooms, chat and host moderation; SFU media pending Cloudflare provisioning.',
         group: 'Operations',
       },
       {

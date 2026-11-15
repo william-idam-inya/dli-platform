@@ -33,13 +33,13 @@ const matrix = [
   ['tutor','/users',false], ['tutor','/settings',false], ['tutor','/finance',false],
   ['finance_officer','/finance',false], ['finance_officer','/finance/reviews',false],
   ['finance_officer','/users',false],
-  ['academic_coordinator','/academics',true], ['academic_coordinator','/users',false],
+  ['academic_coordinator','/academics',false], ['academic_coordinator','/users',false],
 ];
 for (const [role,path,expected] of matrix) {
   assert.equal(canAccessPath(role,path),expected,role + ' ' + path);
 }
 
-const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/study','/communications','/announcements']);
+const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/my-classes','/study','/learning','/assessments','/quizzes','/schedule','/attendance','/communications','/announcements','/people','/conferences']);
 const appSource = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const guardedRoutes = [...appSource.matchAll(/<AllowedArea path="([^"]+)"/g)].map(m=>m[1]);
 assert.ok(guardedRoutes.length > 20, 'the app must still guard its business routes');
@@ -53,15 +53,15 @@ for (const path of freeAllow) {
 for (const path of ['/my-classes','/learning','/assessments','/quizzes','/schedule',
   '/attendance']) {
   assert.equal(canAccessPath('student',path,'paid'),true,'Paid Student: '+path);
-  assert.equal(canAccessPath('student',path,'free'),false,'Free Student denied: '+path);
+  assert.equal(canAccessPath('student',path,'free'),true,'Free Student enrolled learning route: '+path);
 }
 for (const path of ['/users','/finance','/payroll','/settings','/reports/audit']) {
   assert.equal(canAccessPath('student',path,'paid'),false,'Paid Student privileged route denied: '+path);
 }
-assert.equal(canAccessPath('student','/study','free'),true,'Free learner can see safe learning overview');
+assert.equal(canAccessPath('student','/study','free'),true,'Free learner can see authorised class content');
 assert.equal(canAccessPath('student','/communications','free'),true,'Free learner can reach Admin-only direct messages');
 for (const role of DLI_ROLES) assert.equal(canAccessPath(role,'/communications'),true,role+' can reach restricted direct-chat screen');
-assert.equal(canAccessPath('student','/quizzes','free'),false,'Free learner cannot call paid quiz page');
+assert.equal(canAccessPath('student','/quizzes','free'),true,'Free learners can open quizzes assigned to their class');
 assert.equal(accountRoleLabel({role:'student',studentTier:'free'}),'Free Student');
 assert.equal(accountRoleLabel({role:'student',studentTier:'paid'}),'Paid Student');
 console.log('Q3 role-matrix regressions passed: '+matrix.length+' cases and '+guardedRoutes.length+' app-guarded routes.');

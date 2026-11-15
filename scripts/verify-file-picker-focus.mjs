@@ -17,11 +17,12 @@ for (const [element,expected] of [
   assert.equal(isFilePickerFocused(element),expected,
     'Revalidation selection must distinguish file picker from regular controls');
 }
-// Ensure the actual provider handles both focus and visibility events through
-// the same guarded callback; this test is not a substitute for browser E2E.
+// The Q35 solution removes focus and visibility session rechecks entirely.
 const provider=readFileSync(new URL('../src/auth/AuthProvider.tsx',import.meta.url),'utf8');
-assert.match(provider,/import \{ isFilePickerFocused \} from '\.\/filePickerFocus'/);
-assert.match(provider,/const recheck = \(\) => \{[\s\S]*?if \(isFilePickerFocused\(document\.activeElement\)\) return;/);
-assert.match(provider,/window\.addEventListener\('focus', recheck\)/);
-assert.match(provider,/document\.visibilityState === 'visible'\) recheck\(\)/);
-console.log('Q4 file-picker focus regressions passed (7 cases, shared focus/visibility gate).');
+assert.doesNotMatch(provider,/window\.addEventListener\('focus'/,
+  'Switching browser windows must not revalidate and unmount a draft');
+assert.doesNotMatch(provider,/document\.addEventListener\('visibilitychange'/,
+  'File picker return must not revalidate and unmount the editor');
+assert.match(provider,/current==='active'\?'active':'checking'/,
+  'Background auth token validation must not reset an active workspace');
+console.log('Q35 file-picker and tab-focus state preservation checks passed.');

@@ -18,6 +18,8 @@ const TutorPayrollPage = lazy(() => import('./pages/TutorPayrollPage'));
 const MemberProfilePage = lazy(() => import('./pages/MemberProfilePage'));
 const MemberDetailPage = lazy(() => import('./pages/MemberDetailPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
+const PeopleDirectoryPage = lazy(() => import('./pages/PeopleDirectoryPage'));
+const ConferenceRoomsPage = lazy(() => import('./pages/ConferenceRoomsPage'));
 const AcademicSetupPage = lazy(() => import('./pages/AcademicSetupPage'));
 const CohortCurriculumPage = lazy(() => import('./pages/CohortCurriculumPage'));
 const ClassesWorkspacePage = lazy(() => import('./pages/ClassesWorkspacePage'));
@@ -112,6 +114,8 @@ function Workspace() {
         <Route path="/payroll" element={<AllowedArea path="/payroll"><TutorPayrollPage /></AllowedArea>} />
         <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
+        <Route path="/people" element={<AllowedArea path="/people"><PeopleDirectoryPage /></AllowedArea>} />
+        <Route path="/conferences" element={<AllowedArea path="/conferences"><ConferenceRoomsPage /></AllowedArea>} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
         <Route path="/cohorts" element={<AllowedArea path="/cohorts"><CohortCurriculumPage /></AllowedArea>} />
         <Route path="/assignments" element={<Navigate to="/classes" replace />} />
@@ -136,7 +140,7 @@ function Workspace() {
         <Route path="/reports" element={<AllowedArea path="/reports"><OperationalReportsPage /></AllowedArea>} />
         <Route path="/settings" element={<AllowedArea path="/settings"><InstitutionalSettingsPage /></AllowedArea>} />
         {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/enrolment' && item.path !== '/payroll' && item.path !== '/profile' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/classes' && item.path !== '/my-classes' && item.path !== '/private-classes' && item.path !== '/study' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/drafts' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
+          item.path !== '/' && item.path !== '/enrolment' && item.path !== '/payroll' && item.path !== '/profile' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/people' && item.path !== '/conferences' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/classes' && item.path !== '/my-classes' && item.path !== '/private-classes' && item.path !== '/study' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/drafts' && item.path !== '/communications/reviews' && item.path !== '/communications/templates' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
         ).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
