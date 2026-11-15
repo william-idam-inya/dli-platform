@@ -106,4 +106,9 @@ const freeFix=read('supabase/migrations/20261115201500_stage_q34b_free_cohort_to
 assert.ok(freeFix.includes("v_class.class_type='free_demo'"),'Free courses must schedule via approved cohort offerings');
 assert.ok(freeFix.includes("o.cohort_id=v_cohort"),'Do not invent a paid link to schedule free topics');
 assert.ok(manifest.entries.some(e=>e.file==='20261115201500_stage_q34b_free_cohort_topic_delivery_fix.sql'),'Q34b migration integrity hash missing');
+const assistantGuard=read('supabase/migrations/20261115203000_stage_q34c_assistant_cohort_read.sql');
+for(const guard of ['q34_assistant_active_cohorts_read','q34_assistant_active_offerings_read','q34_assistant_active_topics_read',"private.current_role()='assistant_admin'::public.dli_role"])
+ assert.ok(assistantGuard.includes(guard),'Assistant class catalogue permission missing '+guard);
+assert.ok(manifest.entries.some(e=>e.file==='20261115203000_stage_q34c_assistant_cohort_read.sql'),
+ 'Q34c Assistant Admin migration missing reviewed integrity blob');
 console.log('Q34 verified: cohort-first curriculum, topic pacing, Telegram composer, interactions, server role guards, RLS and migration integrity.');
