@@ -29,7 +29,10 @@ complete. It does not turn on paid enrolment or create demo users.
   disclosure, provides registry and invitation jump links, removes the internal
   Stage C tag and does **not** suppress underlying errors.
 - Learning tab graphics are distinguished through consistent semantic icons
-  and purposeful accent shades. Existing learning entitlements remain unchanged.
+  and purposeful accent shades. Real class sessions display original vector
+  subject pictograms selected from their actual subject names (Mathematics,
+  Biology, Physics, Chemistry, English and Digital Technology, with fallback).
+- The dashboard links to Appearance for all six authorised roles. Existing learning entitlements remain unchanged.
 
 ## Functional personalisation
 
