@@ -159,13 +159,17 @@ export default function ClassesWorkspacePage(){
   const students=people.filter(p=>p.role==='student');
   const tutors=people.filter(p=>p.role==='tutor');
   const capacity=tier(form.class_type).capacity;
-  const programmeId=programmes.find(p=>p.code===(form.class_type==='free_demo'?'dli-scholars-club':'dli-online'))?.id??'';
-  const offeredLevels=levels.filter(level=>courses.some(course=>course.programme_id===programmeId&&
-    course.academic_level_id===level.id&&course.is_active));
-  const levelId=offeredLevels.find(level=>level.id===form.academic_level_id)?.id??offeredLevels[0]?.id??'';
+  const selectedCohort=cohorts.find(h=>h.id===selectedCohortId&&h.is_active)??null;
+  const programmeId=selectedCohort?.programme_id??'';
+  const levelId=selectedCohort?.academic_level_id??'';
+  const cohortProgramme=programmes.find(p=>p.id===programmeId);
+  const paidCohort=cohortProgramme?.code==='dli-online';
+  const cohortOfferings=offerings.filter(o=>o.cohort_id===selectedCohortId&&o.is_active&&
+    courses.some(c=>c.id===o.course_id&&c.is_active));
   const availableSubjects=subjects.filter(s=>s.academic_level_id===levelId&&s.is_active&&
-    courses.some(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&
-      c.subject_id===s.id&&c.is_active));
+    cohortOfferings.some(o=>courses.some(c=>c.id===o.course_id&&c.subject_id===s.id)));
+  const cohortReady=cohortOfferings.length>0&&cohortOfferings.every(o=>cohortPlans.some(p=>
+    p.cohort_id===selectedCohortId&&p.course_id===o.course_id));
   const eligibleStudents=students.filter(p=>form.class_type==='free_demo'||paidStudents.includes(p.auth_user_id));
   const studentOptions=eligibleStudents.filter(p=>p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
   const chosenSet=useMemo(()=>new Set(chosen),[chosen]);
@@ -210,6 +214,8 @@ export default function ClassesWorkspacePage(){
     const group=draftGroups.find(g=>g.id===groupId);
     if(!group){setError('Only unlinked draft groups can be edited here.');return;}
     const first=group.first;
+    const matchingCurriculum=classCurricula.find(c=>c.class_group_id===groupId);
+    if(matchingCurriculum)setSelectedCohortId(matchingCurriculum.cohort_id);
     setEditing(groupId);
     setForm({
       class_type:first.class_type,
@@ -222,6 +228,7 @@ export default function ClassesWorkspacePage(){
     setLessons(group.rows.map(c=>({
       key:c.id,subject_id:c.subject_id,tutor_id:c.tutor_id,
       second_tutor_id:coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_id??'',
+      topics_per_meeting:pacingRows.find(p=>p.class_id===c.id)?.topics_per_meeting??1,
       weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),
     })));
     setChosen(members.filter(m=>m.class_id===first.id&&m.is_active).map(m=>m.student_id));
@@ -232,14 +239,29 @@ export default function ClassesWorkspacePage(){
     setEditing(null);setForm(EMPTY);setLessons([newLesson()]);
     setChosen([]);setError(null);
   }
-  function chooseType(type:ClassType){
-    setChosen([]);
-    setForm(v=>({...v,class_type:type,academic_level_id:'',class_group_id:''}));
-    setLessons([newLesson()]);setEditing(null);setError(null);
+  function chooseCohort(id:string){
+    const cohort=cohorts.find(h=>h.id===id);
+    setSelectedCohortId(id);
+    setEditing(null);setChosen([]);
+    if(!cohort){setLessons([newLesson()]);setForm(EMPTY);return;}
+    const isFree=programmes.find(p=>p.id===cohort.programme_id)?.code==='dli-scholars-club';
+    const sessions=offerings.filter(o=>o.cohort_id===id&&o.is_active)
+      .map(o=>courses.find(c=>c.id===o.course_id))
+      .filter((c):c is Course=>Boolean(c&&c.is_active))
+      .map((c,i)=>({...newLesson(),subject_id:c.subject_id,
+        weekday:(i+1)%7,topics_per_meeting:1}));
+    setForm(v=>({...v,class_type:isFree?'free_demo':'group_5_science',
+      class_group_name:cohort.name,academic_level_id:cohort.academic_level_id,
+      class_start_date:'',class_group_id:''}));
+    setLessons(sessions.length?sessions:[newLesson()]);
+    setError(null);setNotice(null);
   }
-  function chooseLevel(id:string){
-    setForm(v=>({...v,academic_level_id:id}));
-    setLessons([newLesson()]);
+  function chooseType(type:ClassType){
+    if(!selectedCohort||Boolean(editing))return;
+    if((!paidCohort&&type!=='free_demo')||(paidCohort&&type==='free_demo'))return;
+    setChosen([]);
+    setForm(v=>({...v,class_type:type}));
+    setError(null);
   }
   function setLesson(key:string,changes:Partial<LessonRow>){
     setLessons(old=>old.map(row=>row.key===key?{...row,...changes}:row));
@@ -264,13 +286,15 @@ export default function ClassesWorkspacePage(){
     const unique=new Set(lessons.map(l=>l.subject_id));
     const validRows=lessons.length>0&&lessons.length<=15&&unique.size===lessons.length&&
       lessons.every(l=>l.subject_id&&l.tutor_id&&l.second_tutor_id&&l.tutor_id!==l.second_tutor_id&&
+        Number.isInteger(l.topics_per_meeting)&&l.topics_per_meeting>=1&&l.topics_per_meeting<=10&&
         availableSubjects.some(s=>s.id===l.subject_id)&&
         tutors.some(t=>t.auth_user_id===l.tutor_id)&&
         tutors.some(t=>t.auth_user_id===l.second_tutor_id)&&
         l.weekday>=0&&l.weekday<=6&&l.starts_at<l.ends_at);
     const overlaps=lessons.some((a,i)=>lessons.some((b,j)=>i<j&&a.weekday===b.weekday&&
       a.starts_at<b.ends_at&&a.ends_at>b.starts_at));
-    if(!programmeId||!levelId||!form.class_start_date||
+    if(!selectedCohort||!cohortReady||lessons.length!==cohortOfferings.length||
+      !programmeId||!levelId||!form.class_start_date||
       form.class_group_name.trim().length<2||form.class_group_name.trim().length>120||
       !meetValid(url)||!validRows||overlaps||
       (capacity!==null&&chosen.length>capacity)||
@@ -282,7 +306,8 @@ export default function ClassesWorkspacePage(){
     try{
       // A single SQL transaction saves both tutors, the academic cohort,
       // weekly course timetable and the shared student roster.
-      const result=await supabase.rpc('dli_save_unified_class',{ 
+      const result=await supabase.rpc('dli_save_cohort_class',{
+        p_source_cohort:selectedCohort.id,
         p_group_id:editing,
         p_programme_id:programmeId,
         p_level_id:levelId,
@@ -291,8 +316,8 @@ export default function ClassesWorkspacePage(){
         p_group_name:form.class_group_name.trim(),
         p_meeting_url:url,
         p_students:chosen,
-        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})=>
-          ({subject_id,tutor_id,second_tutor_id,weekday,starts_at,ends_at})), 
+        p_lessons:lessons.map(({subject_id,tutor_id,second_tutor_id,topics_per_meeting,weekday,starts_at,ends_at})=>
+          ({subject_id,tutor_id,second_tutor_id,topics_per_meeting,weekday,starts_at,ends_at})), 
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
       setNotice(editing?'Draft updated: courses, two tutors, timetable and students saved together.':
@@ -312,7 +337,9 @@ export default function ClassesWorkspacePage(){
     setBusy(true);setError(null);setNotice(null);
     try{
       const integrated=classCurricula.some(row=>row.class_group_id===group.id);
-      const result=await supabase.rpc(integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{ 
+      const cohortDriven=group.rows.some(r=>pacingRows.some(p=>p.class_id===r.id));
+      const result=await supabase.rpc(cohortDriven?'dli_set_cohort_class_state':
+        integrated?'dli_set_unified_class_state':'dli_set_teaching_group_state',{
         p_group_id:group.id,p_state:state,
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
