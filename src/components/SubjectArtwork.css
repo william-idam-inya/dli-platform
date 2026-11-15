@@ -1,0 +1,19 @@
+/* Semantic subject pictograms; actual names and privileges are unchanged. */
+.dli-subject-art {
+ --dli-subject-ink: #215596;
+ --dli-subject-fill: #e8f0fc;
+ display:inline-grid;place-items:center;flex:0 0 35px;
+ width:35px;height:35px;border-radius:11px;
+ background:var(--dli-subject-fill);color:var(--dli-subject-ink);
+ border:1px solid color-mix(in srgb,var(--dli-subject-ink) 14%,transparent);
+}
+.dli-subject-art-mathematics {--dli-subject-ink:#215596;--dli-subject-fill:#e7f0fd;}
+.dli-subject-art-biology {--dli-subject-ink:#157d5b;--dli-subject-fill:#dcf5ea;}
+.dli-subject-art-physics {--dli-subject-ink:#6254b0;--dli-subject-fill:#eeeafe;}
+.dli-subject-art-chemistry {--dli-subject-ink:#a25f13;--dli-subject-fill:#fff0d9;}
+.dli-subject-art-english {--dli-subject-ink:#b04566;--dli-subject-fill:#fde8ef;}
+.dli-subject-art-computing {--dli-subject-ink:#087b83;--dli-subject-fill:#d9f3f7;}
+.classes-group-session strong:has(.dli-subject-art) {
+ display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.classes-group-session .dli-subject-art svg {flex-shrink:0;}

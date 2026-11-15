@@ -116,6 +116,9 @@ jobs:
       - name: Verify Q25 privileged API hardening and operational transparency
         run: npm run check:q25-operational-hardening
 
+      - name: Verify Q27 Academic Pro visual and accessibility contracts
+        run: npm run check:q27-academic-pro
+
       - name: Verify TypeScript
         run: npm run typecheck
 

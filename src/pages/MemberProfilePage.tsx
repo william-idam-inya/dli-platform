@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
 import RoleProfileFields from '../components/RoleProfileFields';
 import BrowserAlertPermission from '../components/BrowserAlertPermission';
+import AppearancePreferences from '../components/AppearancePreferences';
 import './MemberProfilePage.css';
 
 function nigeriaToday():string{
@@ -239,6 +240,7 @@ export default function MemberProfilePage(){
    </form>
   </section>
   <RoleProfileFields/>
+  <AppearancePreferences/>
   <BrowserAlertPermission/>
   <section className="panel member-profile-identity">
     <div className="panel-heading"><div><p className="section-kicker">VERIFIED INSTITUTIONAL ACCESS</p>

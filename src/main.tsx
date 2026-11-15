@@ -6,6 +6,11 @@ import RuntimeErrorBoundary from './components/RuntimeErrorBoundary';
 import { AuthProvider } from './auth/AuthProvider';
 import './styles.css';
 import './design-system.css';
+import './academic-pro.css';
+import { initializeAppearance } from './lib/appearancePreferences';
+
+// Apply saved visual preferences before React paints the authorised workspace.
+initializeAppearance();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

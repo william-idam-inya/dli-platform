@@ -100,7 +100,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <p>One student or a group, with subject, tutor, timetable and secure payment review.</p>
         </div>
       </div>
-      <div className="sidebar-version">DLI Platform · Development</div>
+      <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
     </div>
   );
 }
