@@ -227,6 +227,8 @@ body .unified-overview[data-dli-role='student'] .welcome-row{
 }
 body .unified-overview .welcome-row::after{display:none;}
 /* Desktop sidebar fidelity: dark navy navigation, clear active royal blue. */
+.unified-overview .ref-hero-emblem{position:absolute;top:11px;right:13px;z-index:2;width:30px;height:30px;border-radius:10px;padding:2px;background:rgba(255,255,255,.92);border:1px solid rgba(255,226,133,.55);}
+.unified-overview .ref-hero-emblem .official-dli-logo{display:block;width:100%;height:100%;object-fit:contain;}
 @media(min-width:681px){
  .desktop-sidebar{background:#092953;border-right-color:#184172;color:#f8fbff;}
  .desktop-sidebar .brand-copy strong{color:#fff;}
