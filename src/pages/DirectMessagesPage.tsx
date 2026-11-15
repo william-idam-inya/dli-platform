@@ -91,6 +91,7 @@ export default function DirectMessagesPage(){
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
   const openMemberProfile=(id:string,name:string)=>setProfileTarget({id,name});
+  const closeMemberProfile=useCallback(()=>setProfileTarget(null),[]);
 
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
@@ -594,6 +595,6 @@ export default function DirectMessagesPage(){
     <p className="module-footnote"><Users size={14}/> Messages and media are restricted to authorised participants and safeguarding moderators. In-app notifications update while DLI is open. Optional browser alerts require permission and an open DLI session; offline push, voice/video calls and unrestricted group chats are not enabled.</p>
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
-      onClose={()=>setProfileTarget(null)}/>}
+      onClose={closeMemberProfile}/>}
   </div>;
 }
