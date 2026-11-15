@@ -58,7 +58,7 @@ function errorMessage(e:unknown){
     return 'Check programme, academic level, subjects, tutors, class times and student eligibility.';
   }
   if(code==='42501')return 'You do not have permission to change this class, or the group is no longer editable.';
-  if(code==='PGRST202')return 'The multi-subject class service has not been deployed to this environment.';
+  if(code==='PGRST202')return 'The unified two-tutor class service has not been deployed to this environment.';
   return 'The class operation could not be completed. Refresh and review your selections.';
 }
 
@@ -148,7 +148,8 @@ export default function ClassesWorkspacePage(){
     const result=new Map<string,ClassGroup>();
     for(const row of classes){
       if(row.state==='archived'&&!showArchived)continue;
-      if(tutorFilter&&row.tutor_id!==tutorFilter)continue;
+      if(tutorFilter&&row.tutor_id!==tutorFilter&&
+        !coTutors.some(c=>c.class_id===row.id&&c.is_active&&c.tutor_id===tutorFilter))continue;
       const group=result.get(row.class_group_id);
       if(group){group.rows.push(row);continue;}
       result.set(row.class_group_id,{id:row.class_group_id,first:row,rows:[row],state:row.state});
@@ -158,7 +159,7 @@ export default function ClassesWorkspacePage(){
       state:group.rows.every(r=>r.state==='archived')?'archived':
         group.rows.every(r=>r.state==='published')?'published':'draft',
     } as ClassGroup));
-  },[classes,showArchived,tutorFilter]);
+  },[classes,coTutors,showArchived,tutorFilter]);
 
   const draftGroups=useMemo(()=>{
     const map=new Map<string,ClassRow[]>();
@@ -253,8 +254,8 @@ export default function ClassesWorkspacePage(){
     }
     setBusy(true);setError(null);setNotice(null);
     try{
-      // One SQL transaction creates/updates every subject and synchronises
-      // the group's shared roster, identity, class date and Meet link.
+      // A single SQL transaction saves both tutors, the academic cohort,
+      // weekly course timetable and the shared student roster.
       const result=await supabase.rpc('dli_save_unified_class',{ 
         p_group_id:editing,
         p_programme_id:programmeId,
@@ -476,7 +477,7 @@ export default function ClassesWorkspacePage(){
           <input id="classes-meet" type="url" required maxLength={2048}
             placeholder="https://meet.google.com/abc-defg-hij" value={form.meeting_url}
             onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
-          <p className="academic-code-hint">Paid classes are saved as drafts until student approvals are verified. No receipt automatically marks payment as received.</p>
+          <p className="academic-code-hint">Academic course offerings, both tutor assignments and student enrolments are activated together when the group is published. Paid student eligibility is still verified; this action never collects payment or creates a receipt.</p>
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
