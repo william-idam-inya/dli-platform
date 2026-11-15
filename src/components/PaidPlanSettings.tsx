@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { CheckCircle2, Clock3, LockKeyhole, Pencil, RefreshCw, Save, X } from 'lucide-react';
+import { Clock3, LockKeyhole, Pencil, RefreshCw, Save, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import source from '../data/paidLearningPlans.json';
