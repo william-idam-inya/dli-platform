@@ -54,6 +54,8 @@ export default function DirectMessagesPage(){
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
+ const [newContacts,setNewContacts]=useState<Contact[]>([]);
+ const [newDirectoryVerified,setNewDirectoryVerified]=useState(false);
   const [rolePeople,setRolePeople]=useState<RolePerson[]>([]);
   const [classProfiles,setClassProfiles]=useState<ClassProfile[]>([]);
   const [classProfilesError,setClassProfilesError]=useState(false);
@@ -111,7 +113,15 @@ export default function DirectMessagesPage(){
   const moderator=isOversight(account?.role);
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
   const permittedContacts=useMemo(()=>contacts.filter(c=>canStartWithAnyone||STAFF_CONTACT_ROLES.has(c.member_role)),[contacts,canStartWithAnyone]);
-  const current=threads.find(t=>t.id===activeId)??null;
+  // The server excludes every historical 1:1 thread, not only visible inbox rows.
+ const existingPeerIds=useMemo(()=>new Set(threads.filter(t=>
+  t.participant_a===uid||t.participant_b===uid
+ ).map(t=>t.participant_a===uid?t.participant_b:t.participant_a)),[threads,uid]);
+ const newConversationContacts=useMemo(()=>{
+  const allowed=new Set(permittedContacts.map(contact=>contact.user_id));
+  return newContacts.filter(contact=>contact.user_id!==uid&&allowed.has(contact.user_id)&&!existingPeerIds.has(contact.user_id));
+ },[newContacts,permittedContacts,existingPeerIds,uid]);
+ const current=threads.find(t=>t.id===activeId)??null;
   const callPeer=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
   const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',signal=>callHandler.current(signal));
   const calling=useDirectPeerCall(realtime.sendCallSignal,activeId,realtime.status==='ready');
@@ -131,9 +141,10 @@ export default function DirectMessagesPage(){
   const load=useCallback(async()=>{
     if(!supabase||!account){setLoading(false);return;}
     try{
-      const [auth,directory,inbox,flags,readRows,headMessages,classDirectory,peopleRows]=await Promise.all([
+      const [auth,directory,newDirectory,inbox,flags,readRows,headMessages,classDirectory,peopleRows]=await Promise.all([
         supabase.auth.getUser(),
         supabase.rpc('dli_direct_directory'),
+       supabase.rpc('dli_new_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
         moderator?supabase.from('dli_direct_reports').select('id,message_id,thread_id,reason,status,created_at').order('created_at',{ascending:false}).limit(100):
           Promise.resolve({data:[],error:null}),
@@ -151,6 +162,8 @@ export default function DirectMessagesPage(){
       }
       setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
+      setNewContacts(newDirectory.error?[]:(newDirectory.data??[]) as Contact[]);
+      setNewDirectoryVerified(!newDirectory.error);
       if(!peopleRows.error)setRolePeople((peopleRows.data??[]) as RolePerson[]);
       setClassProfiles((classDirectory.data??[]) as ClassProfile[]);
       setClassProfilesError(Boolean(classDirectory.error));
@@ -158,7 +171,7 @@ export default function DirectMessagesPage(){
       setReports((flags.data??[]) as Report[]);
       setReads((readRows.data??[]) as DirectRead[]);
       setRecentMessages((headMessages.data??[]) as DirectMessage[]);
-      setError(null);
+      setError(newDirectory.error?'Could not verify the new contact directory. Refresh to retry.':null);
     }catch{setError('Messaging is temporarily unreachable.');}
     finally{setLoading(false);}
   },[account?.id,moderator]);
@@ -283,6 +296,7 @@ export default function DirectMessagesPage(){
         setThreads(previous=>previous.some(item=>item.id===thread.id)
           ? previous : [thread,...previous]);
         setMode('inbox');setComposeOpen(false);setActiveId(thread.id);
+        setNewContacts(previous=>previous.filter(person=>person.user_id!==c.user_id));
         setNotice('Conversation opened. You can type a message below; nothing has been sent yet.');
       };
       const existing=threads.find(t=>t.participant_a===a&&t.participant_b===b);
@@ -638,10 +652,10 @@ export default function DirectMessagesPage(){
             <button type="button" aria-label="Close new message contacts" onClick={()=>setComposeOpen(false)}><X size={17}/></button>
           </div>
           {mode==='inbox'&&<section className="dli-direct-contacts">
-          <h2>New message · {permittedContacts.length} permitted contacts</h2>
+          <h2>New message · {newConversationContacts.length} new contacts</h2>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
           {chatRoles.map(group=>{
-            const people=permittedContacts.filter(c=>memberGroup(c.user_id)===group.id&&
+            const people=newConversationContacts.filter(c=>memberGroup(c.user_id)===group.id&&
               c.full_name.toLowerCase().includes(search.trim().toLowerCase()));
             if(!people.length)return null;
             return <section className="dli-telegram-role-contacts" key={group.id}>
@@ -668,7 +682,15 @@ export default function DirectMessagesPage(){
             </section>;
           })}
           {openingContactId&&<p className="dli-direct-working" role="status">Verifying the conversation and opening the message composer…</p>}
-          {!permittedContacts.length&&!loading&&<p className="dli-direct-empty">No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.</p>}
+          {!loading&&!newDirectoryVerified&&<p className="dli-direct-empty" role="status">New contact availability could not be verified. Select Refresh to retry; your existing chats remain accessible.</p>}
+           {!loading&&newDirectoryVerified&&!newConversationContacts.length&&<div className="dli-telegram-no-new-contacts">
+             <p className="dli-direct-empty">{search.trim()?'No new contacts match your search.':
+               permittedContacts.length?'You already have active conversations with all available contacts.':
+               'No permitted contacts are currently available. Students and tutors can message only Owner, Admin or Assistant Admin.'}</p>
+             <button type="button" onClick={()=>{setComposeOpen(false);setSearch('');setChatFilter('all');}}>
+               View existing conversations
+             </button>
+           </div>}
         </section>}
         {mode==='inbox'&&(account?.role==='tutor'||account?.role==='student')&&
           <section className="dli-direct-class-profiles" aria-label="My class profiles">
