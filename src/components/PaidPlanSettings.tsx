@@ -154,13 +154,21 @@ function PlanCard({row,editor,loading}:{
 }){
   return <article className="source-plan-card">
     <div className="source-plan-head">
-      <h3>{row.name}</h3><span>{row.rate_label}</span>
+      <h3>{row.name}</h3>
+      <span>{row.rate_label}</span>
     </div>
+    {editor&&<button type="button" className="paid-plan-top-edit"
+      disabled={loading} onClick={editor}
+      aria-label={'Edit '+row.name+' plan details and rates'}>
+      <Pencil size={16} aria-hidden="true"/> Edit plan &amp; rates
+    </button>}
     <p className="source-plan-description">{row.teaching_model}</p>
     <div className="source-plan-fee">
       <span>Student monthly fee (editable internal plan)</span>
       <strong>{ngn(row.student_fee_monthly_ngn)}</strong>
     </div>
+    <details className="paid-plan-more">
+      <summary>View all staffing, subjects and hours</summary>
     <dl className="source-plan-details">
       <div><dt>Students / tutors</dt><dd>{row.student_count} / {row.tutors}</dd></div>
       <div><dt>Subjects in teaching mode</dt><dd>{row.subjects_in_teaching_mode}</dd></div>
@@ -172,13 +180,10 @@ function PlanCard({row,editor,loading}:{
         ?'Not specified':ngn(row.tutor_data_allowance_monthly_ngn)+' per tutor/month'}</dd></div>
     </dl>
     {row.ambiguity&&<p className="source-plan-ambiguity"><strong>Clarification:</strong> {row.ambiguity}</p>}
+    </details>
     {row.updated_at&&<small className="paid-plan-meta">
       Revision {row.revision} · Last edited {new Date(row.updated_at).toLocaleDateString('en-NG')}
     </small>}
-    {editor&&<button type="button" className="user-outline-button paid-plan-edit-button"
-      disabled={loading} onClick={editor}>
-      <Pencil size={16}/> Edit this plan
-    </button>}
   </article>;
 }
 
@@ -232,6 +237,11 @@ export default function PaidPlanSettings(){
       else setHistory((result.data??[]) as AuditItem[]);
     }
   }
+  useEffect(()=>{
+    if(!editing)return;
+    document.getElementById('dli-plan-editor')?.scrollIntoView({block:'start'});
+  },[editing?.id]);
+
   function cancel(){if(saving)return;setEditing(null);setDraft(null);setSaveError(null);}
   function editField(key:Field,value:string){
     setDraft(old=>old?{...old,[key]:value}:old);
@@ -295,13 +305,15 @@ export default function PaidPlanSettings(){
       {readError} Editing is disabled until the database can be verified.
     </p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
-    <div className="source-plan-grid">
-      {(readError?FALLBACK:plans).map(row=>
-        <PlanCard key={row.id} row={row}
-          editor={canEdit&&!readError&&!loading&&!editing?()=>{void openEditor(row);}:undefined}
-          loading={saving}/>)}
-    </div>
-    {editing&&draft&&<form className="paid-plan-editor" onSubmit={event=>{void save(event);}}>
+    {canEdit&&!readError&&!loading&&<p className="paid-plan-edit-guidance" role="note">
+      <Pencil size={16} aria-hidden="true"/>
+      Founder and Admin: select <strong>Edit plan &amp; rates</strong> on a card to update
+      the plan name, student fees, tutor payments, class size, subjects and teaching hours.
+      Changes save to Supabase and are recorded in revision history.
+    </p>}
+    {editing&&draft&&<form id="dli-plan-editor" className="paid-plan-editor"
+      aria-label={'Editing '+editing.name}
+      onSubmit={event=>{void save(event);}}>
       <header>
         <div>
           <p className="section-kicker">EDIT REFERENCE PLAN · REVISION {editing.revision}</p>
@@ -349,6 +361,12 @@ export default function PaidPlanSettings(){
             </li>)}</ol>}
       </section>
     </form>}
+    <div className="source-plan-grid">
+      {(readError?FALLBACK:plans).map(row=>
+        <PlanCard key={row.id} row={row}
+          editor={canEdit&&!readError&&!loading&&!editing?()=>{void openEditor(row);}:undefined}
+          loading={saving}/>)}
+    </div>
     <p className="source-plan-footer">
       Initial figures originated from <strong>{source.sourceTitle}</strong> (pages 1–2).
       The user-approved first group name is “Group of 5 Students”. These are editable
