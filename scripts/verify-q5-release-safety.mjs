@@ -21,7 +21,8 @@ assert.match(q6,/revoke all on function public\.dli_apply_paid\(text,uuid\[\]\)/
 assert.match(q6,/and p\.code='dli-online'/);
 const enrollment=read('src/pages/PaidEnrollmentPage.tsx');
 assert.match(enrollment,/dli_enrolment_catalogue/);
-assert.match(enrollment,/functions.invoke\('paystack-checkout'/);\nassert.doesNotMatch(enrollment,/dli_apply_paid_v2/);
+assert.match(enrollment,/functions.invoke\('paystack-checkout'/);
+assert.doesNotMatch(enrollment,/dli_apply_paid_v2/);
 assert.doesNotMatch(enrollment,/supabase\.rpc\('dli_apply_paid',/);
 assert.ok(manifest.entries.some(item=>item.file==='20261112121339_stage_q5_production_admission_closed.sql'));
 assert.ok(manifest.entries.some(item=>item.file==='20261112160000_stage_q6_scoped_paid_enrolment.sql'));
