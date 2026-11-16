@@ -451,6 +451,10 @@
     {
       "file": "20261116124000_stage_q46_dev_turn_credential_gate.sql",
       "gitBlobSha1": "288058b8e9383bfa30f568dc506c866ed2c27673"
+    },
+    {
+      "file": "20261116124800_stage_q48_dev_realtimekit_mapping.sql",
+      "gitBlobSha1": "1d83a2b3c7d5c706783c8ea23c402c70193a9129"
     }
   ]
 }
