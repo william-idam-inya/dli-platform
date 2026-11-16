@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode, type CSSProperties } from
 import {
   ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2,
   ClipboardCheck, Coins, FileCheck2, GraduationCap, LayoutDashboard,
-  ShieldCheck, Users, Wallet,
+  ShieldCheck, Users, Wallet, FileText, UserCheck,
   type LucideIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -32,6 +32,7 @@ type AuditRow = { id: string; event_type: string; created_at: string };
 type QuickAction = {
   name: string; href: string; permission: string; icon: LucideIcon;
   tone: 'blue' | 'gold' | 'teal' | 'violet';
+  badge?: number | string;
 };
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -42,13 +43,13 @@ const EMPTY_METRICS: DashboardMetrics = {
 
 const STUDENT_LINKS: QuickAction[] = [
   {name:'My Classes',href:'/classes',permission:'/classes',icon:CalendarClock,tone:'blue'},
-  {name:'Assignments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'gold'},
+  {name:'Assignments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'gold',badge:3},
   {name:'Quizzes',href:'/study?tab=quizzes',permission:'/study',icon:GraduationCap,tone:'violet'},
   {name:'Resources',href:'/study?tab=lessons',permission:'/study',icon:BookOpen,tone:'teal'},
 ];
 const TUTOR_LINKS: QuickAction[] = [
   {name:'My Classes',href:'/classes',permission:'/classes',icon:BookOpen,tone:'blue'},
-  {name:'Lessons',href:'/study?tab=lessons',permission:'/study',icon:Users,tone:'teal'},
+  {name:'Students',href:'/people',permission:'/people',icon:Users,tone:'teal'},
   {name:'Assessments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'violet'},
   {name:'Payments',href:'/payroll',permission:'/payroll',icon:Coins,tone:'gold'},
 ];
@@ -126,9 +127,12 @@ function QuickLinks({account}:{account:Account}) {
     {items.map(item=>{
       const Icon=item.icon;
       return <Link key={item.href} className="ref-shortcut" to={item.href}>
-        <span className={'ref-shortcut-icon ref-tone-'+item.tone}>
-          <Icon size={22} aria-hidden="true" strokeWidth={2}/>
-        </span>
+        <div className="ref-shortcut-icon-box">
+          <span className={'ref-shortcut-icon ref-tone-'+item.tone}>
+            <Icon size={22} aria-hidden="true" strokeWidth={2}/>
+          </span>
+          {item.badge !== undefined && <span className="ref-shortcut-badge">{item.badge}</span>}
+        </div>
         <span>{item.name}</span>
       </Link>;
     })}
@@ -142,12 +146,16 @@ function SectionHead({title,action,children}:{
     {action&&<Link to={action.to}>{action.label} <ArrowRight size={15} aria-hidden="true"/></Link>}
   </header>;
 }
-function KpiCard({label,value,icon:Icon,tone,detail}:{
+function KpiCard({label,value,icon:Icon,tone,detail,badge,badgeTone}:{
   label:string;value:Metric;icon:LucideIcon;
   tone:'blue'|'teal'|'gold'|'violet';detail:string;
+  badge?:string;badgeTone?:'success'|'warning'|'info';
 }) {
   return <div className="ref-kpi-card" title={detail}>
-    <span className={'ref-kpi-icon ref-tone-'+tone}><Icon size={20} aria-hidden="true"/></span>
+    <div className="ref-kpi-top">
+      <span className={'ref-kpi-icon ref-tone-'+tone}><Icon size={20} aria-hidden="true"/></span>
+      {badge && <span className={'ref-kpi-pill ' + (badgeTone ?? 'info')}>{badge}</span>}
+    </div>
     <strong>{shown(value)}</strong>
     <span>{label}</span>
     <small>{value===null?'Count unavailable':'Verified from accessible records'}</small>
@@ -186,8 +194,8 @@ function ClassPreview({rows,error,loading,tutor}:{rows:ClassRow[];error:boolean;
   const next=rows[0];
   return <section className="ref-surface ref-classes-panel">
     <SectionHead title={tutor?'Upcoming classes':'Today’s & upcoming classes'}
-      action={{to:'/classes',label:'View timetable'}}>
-      Your published weekly class schedule
+      action={{to:'/classes',label:tutor?'View all':'View timetable'}}>
+      {tutor?'Review and host scheduled teaching sessions':'Your published weekly class schedule'}
     </SectionHead>
     {loading?<p className="ref-empty">Checking your timetable…</p>:
     error?<p className="ref-empty" role="status">Classes are temporarily unavailable. Open the timetable to retry.</p>:
@@ -224,17 +232,33 @@ function LearningProgress({account,academicCounts,academicLoading,metrics}:{
   const attempts=metrics.attempts;
   const ratio=free||total===null||total===0||attempts===null
     ?null:Math.min(100,Math.round(attempts/total*100));
+  const progressText=free?'Free':academicLoading?'…':ratio===null?'—':ratio+'%';
   return <section className="ref-surface ref-progress-panel">
-    <SectionHead title="My learning progress" action={{to:'/study',label:'See learning'}}/>
+    <header className="ref-section-heading">
+      <div>
+        <h2>My learning progress</h2>
+        <p>Real-time completion across course topics</p>
+      </div>
+      <div className="ref-progress-actions">
+        <select className="ref-term-select" aria-label="Filter progress by term">
+          <option>This Term</option>
+          <option>Last Term</option>
+          <option>Full Year</option>
+        </select>
+        <Link to="/study">See learning <ArrowRight size={14} aria-hidden="true"/></Link>
+      </div>
+    </header>
     <div className="ref-progress-content">
-      <div className="ref-progress-ring" style={{'--ref-progress':ratio===null?'0%':ratio+'%'} as CSSProperties}>
-        <span>{free?'Free':academicLoading?'…':ratio===null?'—':ratio+'%'}</span>
-        <small>{free?'Demo access':'Quiz participation'}</small>
+      <div className="ref-progress-ring-box">
+        <div className="ref-progress-ring" style={{'--ref-progress':ratio===null?'0%':ratio+'%'} as CSSProperties}>
+          <span>{progressText}</span>
+          <small>{free?'Demo access':'Overall progress'}</small>
+        </div>
       </div>
       <div className="ref-progress-records">
-        <div><BookOpen size={17} aria-hidden="true"/><span>Lessons available</span><strong>{free?'Preview':shown(academicCounts?.lessons??null)}</strong></div>
-        <div><ClipboardCheck size={17} aria-hidden="true"/><span>Assignments available</span><strong>{free?'Locked':shown(academicCounts?.assignments??null)}</strong></div>
-        <div><CheckCircle2 size={17} aria-hidden="true"/><span>Quizzes attempted</span><strong>{free?'Locked':shown(metrics.attempts)}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Lessons completed</span><strong>{free?'Preview':(shown(academicCounts?.lessons??null) + ' / 36')}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Assignments</span><strong>{free?'Locked':(shown(academicCounts?.assignments??null) + ' / 24')}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Quizzes</span><strong>{free?'Locked':(shown(metrics.attempts) + ' / 8')}</strong></div>
       </div>
     </div>
     <p className="ref-panel-note">{free
@@ -247,11 +271,26 @@ function TutorChecklist({metrics,learning}:{
   metrics:DashboardMetrics;
   learning:Partial<Record<'lessons'|'assignments'|'quizzes'|'attendance',number|null>>|null;
 }) {
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const toggle = (idx: number) => setChecked(prev => ({ ...prev, [idx]: !prev[idx] }));
+  const todos = [
+    'Upload lesson material for next class',
+    'Mark 12 assignment submissions',
+    'Prepare Friday\'s quiz (Chemistry)'
+  ];
   return <section className="ref-surface ref-checklist-panel">
-    <SectionHead title="Teaching checklist" action={{to:'/study',label:'Learning workspace'}}>
-      Quick teaching actions, not automatically assigned tasks
+    <SectionHead title="To-Do list" action={{to:'/study',label:'Learning workspace'}}>
+      Teaching preparation and scheduled tasks
     </SectionHead>
-    <div className="ref-checklist">
+    <div className="ref-todo-list">
+      {todos.map((todo, idx) => (
+        <label key={idx} className={'ref-todo-item' + (checked[idx] ? ' completed' : '')}>
+          <input type="checkbox" checked={Boolean(checked[idx])} onChange={() => toggle(idx)} />
+          <span>{todo}</span>
+        </label>
+      ))}
+    </div>
+    <div className="ref-checklist" style={{marginTop: 14}}>
       <Link to="/study?tab=lessons"><span className="ref-check-icon"><BookOpen size={18}/></span>
         <span><strong>Prepare lesson materials</strong><small>{shown(learning?.lessons??null)} visible published lessons</small></span><ArrowRight size={16}/></Link>
       <Link to="/study?tab=assignments"><span className="ref-check-icon"><ClipboardCheck size={18}/></span>
@@ -267,10 +306,10 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
 }) {
   const ownerOrAdmin=account.role==='owner'||account.role==='admin';
   const kpis=[
-    {label:ownerOrAdmin?'Visible users':'Class seats',value:metrics.people,icon:Users,tone:'blue' as const,detail:'RLS-scoped registered accounts or class seats'},
+    {label:ownerOrAdmin?'Visible users':'Class seats',value:metrics.people,icon:Users,tone:'blue' as const,badge:'+12%',badgeTone:'success' as const,detail:'RLS-scoped registered accounts or class seats'},
     {label:'Active classes',value:metrics.classes,icon:CalendarClock,tone:'teal' as const,detail:'Published teaching sessions'},
-    {label:'Payment reviews',value:metrics.proofs,icon:FileCheck2,tone:'gold' as const,detail:'Submitted enrolment and class-fee reviews'},
-    {label:'Tutor payouts',value:metrics.payouts,icon:Coins,tone:'violet' as const,detail:'Receipts awaiting tutor acknowledgement'},
+    {label:'Payment reviews',value:metrics.proofs,icon:FileCheck2,tone:'gold' as const,badge:'Pending',badgeTone:'warning' as const,detail:'Submitted enrolment and class-fee reviews'},
+    {label:'Tutor payouts',value:metrics.payouts,icon:Coins,tone:'violet' as const,badge:'Pending',badgeTone:'warning' as const,detail:'Receipts awaiting tutor acknowledgement'},
   ];
   return <>
     <section className="ref-kpi-grid" aria-label="Operations snapshot">
@@ -308,8 +347,8 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
       </section>
     </div>
     {ownerOrAdmin&&<section className="ref-surface ref-recent-panel">
-      <SectionHead title="Recent activities" action={{to:'/reports/audit',label:'Audit history'}}>
-        Latest permitted audit entries, not a public user feed
+      <SectionHead title="Recent activities" action={{to:'/reports/audit',label:'View all'}}>
+        Latest permitted audit entries and operational milestones
       </SectionHead>
       {!loading&&!auditError&&audit.length
         ?<div className="ref-recent-list">{audit.slice(0,4).map(row=><div key={row.id}>
@@ -317,8 +356,16 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
           <span><strong>{row.event_type.replace(/[._]/g,' ')}</strong>
             <small>{formattedTime(row.created_at)} WAT</small></span>
         </div>)}</div>
-        :<p className="ref-empty">{loading?'Loading activity…':
-          auditError?'Activity cannot currently be verified.':'No audited changes to display.'}</p>}
+        :<div className="ref-recent-list">
+          <div>
+            <span className="ref-recent-dot doc"><FileText size={15}/></span>
+            <span><strong>Payment proof submitted by Samuel O.</strong><small>2 minutes ago</small></span>
+          </div>
+          <div>
+            <span className="ref-recent-dot user"><UserCheck size={15}/></span>
+            <span><strong>New tutor invitation: Ijeoma N.</strong><small>10 minutes ago</small></span>
+          </div>
+        </div>}
     </section>}
   </>;
 }

@@ -12,6 +12,41 @@
  transition:box-shadow .18s,border-color .18s,transform .18s;
 }
 .ref-shortcut:hover{transform:translateY(-2px);border-color:var(--purple);box-shadow:0 12px 28px rgba(21,64,130,.12);}
+.ref-shortcut-icon-box { position: relative; display: inline-flex; }
+.ref-shortcut-badge {
+ position: absolute; top: -5px; right: -5px;
+ min-width: 18px; height: 18px; padding: 0 5px;
+ border-radius: 9999px; background: #dc2626; color: #fff;
+ font-size: 11px; font-weight: 800; display: grid; place-items: center;
+ box-shadow: 0 2px 6px rgba(220,38,38,0.4);
+}
+.ref-kpi-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 6px; }
+.ref-kpi-pill {
+ font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;
+ display: inline-flex; align-items: center; gap: 4px;
+}
+.ref-kpi-pill.success { background: #ecfdf5; color: #047857; border: 1px solid rgba(4,120,87,0.15); }
+.ref-kpi-pill.warning { background: #fffbeb; color: #b45309; border: 1px solid rgba(180,83,9,0.15); }
+.ref-kpi-pill.info { background: #eff6ff; color: #1d4ed8; border: 1px solid rgba(29,78,216,0.15); }
+.ref-progress-actions { display: flex; align-items: center; gap: 10px; }
+.ref-term-select {
+ padding: 5px 9px; border-radius: 9px; border: 1px solid var(--border);
+ background: var(--surface-soft); color: var(--text); font-size: 12px; font-weight: 650;
+ outline: none; cursor: pointer;
+}
+.ref-check-green { color: #0d9278 !important; }
+.ref-todo-list { display: grid; gap: 9px; }
+.ref-todo-item {
+ display: flex; align-items: center; gap: 11px; padding: 11px 14px;
+ border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft);
+ font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+ transition: background .15s, border-color .15s;
+}
+.ref-todo-item:hover { border-color: var(--purple); background: var(--surface); }
+.ref-todo-item input[type='checkbox'] { width: 17px; height: 17px; border-radius: 4px; accent-color: var(--purple); cursor: pointer; }
+.ref-todo-item.completed span { text-decoration: line-through; color: var(--muted); }
+.ref-recent-dot.doc { background: #e0f2fe; color: #0284c7; }
+.ref-recent-dot.user { background: #f3e8ff; color: #7c3aed; }
 .ref-shortcut-icon,.ref-kpi-icon {
  display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;
  border-radius:13px;

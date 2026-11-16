@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8').replace(/\r\n/g, '\n');
 const shell=read('src/components/AppShell.tsx');
 const fix=read('src/sidebar-navigation-fix.css');
 const main=read('src/main.tsx');

@@ -65,6 +65,31 @@
   --purple-soft: #164943;
   --dli-focus: #62d5c7;
 }
+:root[data-dli-accent='purple'] {
+  --purple: #7c3aed;
+  --purple-dark: #6d28d9;
+  --purple-soft: #f5f3ff;
+  --dli-focus: #7c3aed;
+}
+:root[data-theme='dark'][data-dli-accent='purple'] {
+  --purple: #a78bfa;
+  --purple-dark: #c4b5fd;
+  --purple-soft: #3b2d6a;
+  --dli-focus: #a78bfa;
+}
+:root[data-dli-accent='emerald'] {
+  --purple: #0d9278;
+  --purple-dark: #0f766e;
+  --purple-soft: #ecfdf5;
+  --dli-focus: #0d9278;
+}
+:root[data-theme='dark'][data-dli-accent='emerald'] {
+  --purple: #34d399;
+  --purple-dark: #6ee7b7;
+  --purple-soft: #064e3b;
+  --dli-focus: #34d399;
+}
+:root[data-dli-text='smaller'] { --dli-text-scale: 0.9; }
 :root[data-dli-text='large'] { --dli-text-scale: 1.15; }
 :root[data-dli-density='compact'] { --dli-card-pad: 15px;--dli-card-gap: 11px; }
 html { scroll-behavior: smooth; }
