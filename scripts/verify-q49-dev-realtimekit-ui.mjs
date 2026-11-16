@@ -28,6 +28,8 @@ for(const s of [
 ])if(s!=='ConferenceRoomsPage.css')req(room,s);
 for(const s of [
  'developmentConferenceEnabled',
+ 'qaPreviewHost',
+ 'safeDevelopmentOrigin',
  "import.meta.env.VITE_DLI_DEV_REALTIMEKIT_ENABLED==='true'",
  'supabase.functions.invoke(',
  "'dli-dev-realtimekit-session'",
@@ -52,6 +54,7 @@ for(const s of [
  'SUPABASE_SERVICE_ROLE_KEY',
  "http://localhost:5173",
  'DEV_ORIGINS.has(origin)',
+ 'https://feature-stage-q49-realtimeki.dli-platform-qa.pages.dev',
  'auth.getUser(token)',
  'dli_conference_join',
  'dli_dev_realtimekit_access',
