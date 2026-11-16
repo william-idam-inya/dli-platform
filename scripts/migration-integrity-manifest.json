@@ -455,6 +455,14 @@
     {
       "file": "20261116124800_stage_q48_dev_realtimekit_mapping.sql",
       "gitBlobSha1": "1d83a2b3c7d5c706783c8ea23c402c70193a9129"
+    },
+    {
+      "file": "20261116153000_stage_q49_dev_realtimekit_participant_map.sql",
+      "gitBlobSha1": "a52b5eee5bfaae39d63cdb047513444b051f5480"
+    },
+    {
+      "file": "20261116160000_stage_q49_dev_participant_revocation_acl.sql",
+      "gitBlobSha1": "659e97061ccb1ca52b327f9ffe30549ceca89b90"
     }
   ]
 }

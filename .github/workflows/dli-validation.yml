@@ -182,6 +182,9 @@ jobs:
       - name: Verify Q48 development RealtimeKit and TURN safeguards
         run: npm run check:q48-dev-media-provisioning
 
+      - name: Verify Q49 private development RealtimeKit sessions and UI
+        run: npm run check:q49-dev-realtimekit-ui
+
       - name: Verify TypeScript
         run: npm run typecheck
 
