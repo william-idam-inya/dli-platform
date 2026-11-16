@@ -5,11 +5,11 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 
-type Target={threadId:string;peerId:string;name:string};
+type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
  ready:boolean;
  session:CallSession|null;
- start:(mode:CallMode,threadId:string,peerId:string,name:string)=>void;
+ start:(mode:CallMode,threadId:string,peerId:string,name:string,role?:string)=>void;
 };
 const Context=createContext<CallContext|null>(null);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -82,6 +82,7 @@ export function CallProvider({children}:{children:ReactNode}){
      const incomingTarget:Target={
       threadId:signal.threadId!,peerId:signal.from!,
       name:typeof signal.senderName==='string'?signal.senderName.slice(0,160):'DLI member',
+      role:typeof signal.senderRoleLabel==='string'?signal.senderRoleLabel.slice(0,45):undefined,
      };
      const busy=sessionRef.current;
      if(busy&&(busy.id!==signal.callId||targetRef.current?.peerId!==signal.from)){
@@ -100,7 +101,7 @@ export function CallProvider({children}:{children:ReactNode}){
        catch{/* In-app call overlay remains the source of truth. */}
       }
      }
-     window.dispatchEvent(new Event('dli-notification-chime'));
+     if(!busy&&signal.kind==='offer')window.dispatchEvent(new Event('dli-notification-chime'));
      void handlerRef.current(signal as DliCallSignal);
     }).subscribe((status)=>{
      if(cancelled)return;
@@ -115,10 +116,10 @@ export function CallProvider({children}:{children:ReactNode}){
   };
  },[account?.id,emit]);
 
- const start=useCallback((mode:CallMode,threadId:string,peerId:string,name:string)=>{
+ const start=useCallback((mode:CallMode,threadId:string,peerId:string,name:string,role?:string)=>{
   if(!readyRef.current||!UUID.test(threadId)||!UUID.test(peerId)||
     !uid||peerId===uid||sessionRef.current)return;
-  const target={threadId,peerId,name};
+  const target={threadId,peerId,name,role};
   targetRef.current=target;setPeer(target);setTransportError(null);
   void calling.start(mode);
  },[uid,calling.start]);
@@ -128,7 +129,7 @@ export function CallProvider({children}:{children:ReactNode}){
   {calling.session&&peer&&<div className="dli-global-call-layer">
    {transportError&&<div className="dli-global-call-error" role="alert">{transportError}</div>}
    <DirectCallOverlay
-    session={calling.session} name={peer.name}
+    session={calling.session} name={peer.name} roleLabel={peer.role}
     localStream={calling.localStream} remoteStream={calling.remoteStream}
     muted={calling.muted} cameraOff={calling.cameraOff} sharing={calling.sharing}
     onAnswer={()=>void calling.answer()} onReject={calling.reject} onEnd={calling.end}
