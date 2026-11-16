@@ -1,4 +1,5 @@
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
+import {createPortal} from 'react-dom';
 import {Banknote,CheckCircle2,Download,Eye,ShieldCheck,Upload,Wallet} from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
@@ -264,7 +265,7 @@ export default function TutorPayoutWorkflow({
         </div>}
       </article>)}
     </div>
-    {preview&&<div className="dli-payout-preview-overlay" role="presentation"
+    {preview&&createPortal(<div className="dli-payout-preview-overlay" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
       <div role="dialog" aria-modal="true" aria-label="Private tutor transfer receipt" className="dli-payout-preview">
         <div className="dli-payout-preview-head"><strong>{preview.name}</strong>
@@ -274,6 +275,6 @@ export default function TutorPayoutWorkflow({
         <a className="user-outline-button" href={preview.url} download={preview.isPdf?'dli-tutor-receipt.pdf':'dli-tutor-receipt.jpg'}>
           <Download size={15}/> Save receipt</a>
       </div>
-    </div>}
+    </div>,document.body)}
   </section>;
 }
