@@ -348,12 +348,14 @@ export function DliMessageBadge(){
   },[account?.id,refresh]);
   if(!account)return null;
   return <div className="dli-message-indicator">
-    <Link to="/communications" className="icon-button dli-message-link"
-      aria-label={'Messages'+(unread?' — '+unread+' unread':'')}
-      title="Messages" onClick={()=>setFlash(false)}>
+    <button type="button" className="icon-button dli-message-link"
+      aria-label={'Open Messenger'+(unread?' — '+unread+' unread':'')}
+      title="Open DLI Messenger" onClick={()=>{
+        setFlash(false);window.dispatchEvent(new Event('dli-chat-launch'));
+      }}>
       <MessageCircle size={19}/>
       {unread>0&&<span className="dli-notification-count">{unread>99?'99+':unread}</span>}
-    </Link>
+    </button>
     {flash&&<div className="dli-incoming-message-notice" role="status" aria-live="polite">
       <span><strong>New DLI message</strong><small>{unread?unread+' unread messages':'Check your messages'}</small></span>
       <Link to="/communications" onClick={()=>setFlash(false)}>Open chat</Link>
