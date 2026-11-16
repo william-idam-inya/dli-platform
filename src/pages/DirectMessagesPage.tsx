@@ -44,7 +44,7 @@ const stamp=(value:string)=>new Intl.DateTimeFormat('en-NG',{
 const isOversight=(role?:string)=>role==='owner'||role==='admin';
 const STAFF_CONTACT_ROLES=new Set(['owner','admin','assistant_admin']);
 
-export default function DirectMessagesPage(){
+export default function DirectMessagesPage({initialCompose=false}:{initialCompose?:boolean}={}){
   const {account}=useAuth();
   const [query,setQuery]=useSearchParams();
   const directTargetHandled=useRef('');
@@ -66,7 +66,7 @@ export default function DirectMessagesPage(){
   const [reads,setReads]=useState<DirectRead[]>([]);
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
   const [reactions,setReactions]=useState<DirectReaction[]>([]);
-  const [composeOpen,setComposeOpen]=useState(false);
+  const [composeOpen,setComposeOpen]=useState(initialCompose);
   const [menuTarget,setMenuTarget]=useState<string|null>(null);
   const [expandedReactions,setExpandedReactions]=useState(false);
   const [replyTarget,setReplyTarget]=useState<DirectMessage|null>(null);
@@ -126,6 +126,20 @@ export default function DirectMessagesPage(){
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
+  const callerLabel=(id:string)=>{
+    const role=memberRole(id);
+    const hide=(account?.role==='student'||account?.role==='tutor')&&
+      ['owner','admin','assistant_admin'].includes(role);
+    return hide?(role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':'DLI Assistant Admin')
+      :memberName(id);
+  };
+  const callerRoleLabel=(id:string)=>{
+    const role=memberRole(id);
+    return role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':
+      role==='assistant_admin'?'DLI Assistant Admin':
+      role==='student'?(memberGroup(id)==='paid'?'Paid Student':'Free Student'):
+      role==='tutor'?'Tutor':'DLI member';
+  };
   const memberGroup=(id:string)=>{
     const person=rolePeople.find(x=>x.user_id===id);
     const role=person?.member_role??memberRole(id);
@@ -575,9 +589,11 @@ export default function DirectMessagesPage(){
         <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is separately audited for safeguarding and abuse prevention. Subject-group chats are paused. Always report unsafe messages.</p>
       </div>
     </details>
-    {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
-      Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
-    </p>}
+    {['owner','admin','assistant_admin','tutor'].includes(account?.role??'')&&
+      <p className="dli-direct-drafts-link">
+        Announcements and permitted member communication are available in
+        <Link to="/announcements"> Announcements</Link>.
+      </p>}
     <div className="dli-direct-controls">
       <div className="dli-direct-modes">
         <button type="button" className={mode==='inbox'?'selected':''} onClick={()=>{setMode('inbox');setActiveId('');setComposeOpen(false);}}>My chats</button>
@@ -760,16 +776,16 @@ export default function DirectMessagesPage(){
                 realtime.activity==='typing'?'Typing...':
                 realtime.activity==='recording_audio'?'Recording audio...':
                 realtime.activity==='recording_video'?'Recording video...':
-                realtime.peerOnline?'Online':'Offline · private chat'}</small></div>
+                realtime.peerOnline?'Online in this chat':'Not active in this chat'}</small></div>
             {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
               <button type="button" aria-label={'Audio call '+memberName(participant(current))}
                 title="Ring this DLI member on any open DLI workspace"
                 disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('audio',current.id,callPeer,memberName(callPeer))}><Phone size={19}/></button>
+                onClick={()=>calling.start('audio',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Phone size={19}/></button>
               <button type="button" aria-label={'Video call '+memberName(participant(current))}
                 title="Ring this DLI member on any open DLI workspace"
                 disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('video',current.id,callPeer,memberName(callPeer))}><Video size={19}/></button>
+                onClick={()=>calling.start('video',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Video size={19}/></button>
             </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>

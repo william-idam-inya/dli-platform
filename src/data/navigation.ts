@@ -143,27 +143,6 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
-        label: 'Communication drafts',
-        path: '/communications/drafts',
-        icon: MessageSquareText,
-        description: 'Prepare internal communications for approved review and manual delivery.',
-        group: 'Operations',
-      },
-      {
-        label: 'Communication reviews',
-        path: '/communications/reviews',
-        icon: MessageSquareText,
-        description: 'Review and record decisions on internal communication drafts.',
-        group: 'Operations',
-      },
-      {
-        label: 'Message templates',
-        path: '/communications/templates',
-        icon: MessageSquareText,
-        description: 'Manage reusable private DLI communication templates.',
-        group: 'Operations',
-      },
-      {
         label: 'Internal reminders',
         path: '/communications/reminders',
         icon: Bell,

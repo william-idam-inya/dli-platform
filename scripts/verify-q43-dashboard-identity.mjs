@@ -10,18 +10,17 @@ const roles=read('src/auth/permissions.ts');
 const guide=read('src/components/GuidedTour.tsx');
 const nav=read('src/data/navigation.ts');
 const style=read('src/sidebar-navigation-fix.css');
-assert.ok(shell.includes('<strong>DLI Platform</strong>')
- &&shell.includes('<small>Detailed Learning Institute</small>')
- &&shell.includes('<OfficialDliLogo decorative />'),
- 'Keep the green-marked DLI logo and institute name');
+assert.ok(shell.includes('className="dli-topbar-brand"')
+ &&shell.includes('<OfficialDliLogo decorative/>')
+ &&shell.includes('DLI Platform'),
+ 'Latest spec keeps DLI logo in global top navigation');
 assert.ok(shell.includes('className="account-mini"')
  &&shell.includes('<strong>{account?.full_name}</strong>')
  &&shell.includes("accountRoleLabel(account)"),
  'Keep the green-marked actual logged-in member and role');
 assert.ok(!shell.includes('className="workspace-switcher"')
- &&!shell.includes('className="workspace-copy"')
- &&!shell.includes('className="workspace-chevron"'),
- 'Remove the duplicated non-functional DLI Workspace/role box');
+ &&shell.includes('dli-flat-sidebar-identity'),
+ 'Sidebar must have one authorised user identity and no redundant workspace selector');
 assert.ok(shell.includes('<small>Your personalised workspace</small>')
  &&!shell.includes('DLI Platform · {accountRoleLabel(account)} workspace'),
  'Welcome header must not repeat the role beside the account identity');

@@ -377,3 +377,11 @@ body .unified-overview .welcome-row::after{display:none;}
  .ref-session-join{font-size:10px;padding:7px 8px;}
 }
 @media(hover:none){.ref-shortcut:hover{transform:none;}}
+
+/* Q45: one clickable action+metric per admin KPI, instead of two stacked grids. */
+.ref-kpi-grid .ref-kpi-card{position:relative;text-decoration:none;cursor:pointer;
+ transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.ref-kpi-grid .ref-kpi-card:hover{transform:translateY(-2px);
+ border-color:var(--purple);box-shadow:0 13px 28px rgba(13,51,110,.15)}
+.ref-kpi-grid .ref-kpi-card:focus-visible{outline:3px solid var(--dli-focus,var(--purple));outline-offset:3px}
+.ref-kpi-open{position:absolute;right:17px;bottom:15px;color:var(--purple);opacity:.9}

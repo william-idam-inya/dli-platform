@@ -58,12 +58,10 @@ export default function DashboardPage(){
   },[account?.id,account?.role,account?.studentTier]);
   useEffect(()=>{void refresh();},[refresh]);
 
-  // Counts come from the signed-in person's RLS-protected catalogue, not from
-  // administrator-wide totals or hardcoded sample content. The Free tier never
-  // queries protected lesson, quiz, assignment or attendance resources.
+  // Query only RLS-permitted coursework: both Free and Paid Students
+  // can access published lessons, assignments and quizzes assigned to them.
   const refreshAcademic=useCallback(async()=>{
-    if(!supabase||!account||!canAccessPath(account.role,'/study',account.studentTier)
-      ||(account.role==='student'&&account.studentTier!=='paid')){
+    if(!supabase||!account||!canAccessPath(account.role,'/study',account.studentTier)){
       setAcademicCounts(null);setAcademicLoading(false);return;
     }
     setAcademicLoading(true);

@@ -439,6 +439,10 @@
     {
       "file": "20261116072005_stage_q40_guided_tour_progress.sql",
       "gitBlobSha1": "d4b837e5aca0e9cfd4ff612df5c75aa249c7d204"
+    },
+    {
+      "file": "20261116101500_stage_q45_call_role_masking.sql",
+      "gitBlobSha1": "10175d8ad76e44762629c6731d3914bee3727930"
     }
   ]
 }

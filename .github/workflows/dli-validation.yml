@@ -170,6 +170,9 @@ jobs:
       - name: Verify Q44 complete focus scrolling and verified student photo selection
         run: npm run check:q44-focus-student-profile
 
+      - name: Verify Q45 global shell, secure calls, floating inbox and role themes
+        run: npm run check:q45-overhaul
+
       - name: Verify TypeScript
         run: npm run typecheck
 
