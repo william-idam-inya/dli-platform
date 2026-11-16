@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
 import {useDirectRealtime} from '../lib/useDirectRealtime';
 import {useDliCalls} from '../components/CallProvider';
+import {enableDliDevicePush,pushConfigured} from '../lib/pushNotifications';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -107,14 +108,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
     try{localStorage.setItem('dli-chat-pins:'+uid,JSON.stringify(next));}catch{/* Optional local pins. */}
   };
   async function enableAlerts(){
-    if(typeof Notification==='undefined'){
-      setNotice('Browser notifications are unavailable on this device. In-app message alerts still work.');return;
+    if(!pushConfigured){
+      setNotice('Background Web Push is not configured for this device. In-app alerts remain available.');return;
     }
     try{
-      const result=await Notification.requestPermission();
-      setNotice(result==='granted'?'Browser alerts enabled while DLI is open.':
-        'Browser alerts were not enabled. In-app notifications remain available.');
-    }catch{setNotice('Browser permission could not be enabled. In-app alerts remain available.');}
+      await enableDliDevicePush();
+      setNotice('Device notifications registered for calls and messages.');
+    }catch(e){setNotice(e instanceof Error?e.message:'Could not enable device notifications.');}
   }
   const moderator=isOversight(account?.role);
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
