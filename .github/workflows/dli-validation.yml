@@ -158,6 +158,9 @@ jobs:
       - name: Verify Q40 first-login tour, mobile footnotes and secure Learning RLS
         run: npm run check:q40-tour-learning
 
+      - name: Verify Q41 contextual guided feature spotlights and red-rim coverage
+        run: npm run check:q41-feature-spotlights
+
       - name: Verify TypeScript
         run: npm run typecheck
 

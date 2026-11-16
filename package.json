@@ -57,7 +57,8 @@
     "check:q37-global-calling": "node scripts/verify-q37-global-calling.mjs",
     "check:q38-classes-mobile": "node scripts/verify-q38-classes-mobile.mjs",
     "check:q39-messages-mobile": "node scripts/verify-q39-messages-mobile.mjs",
-    "check:q40-tour-learning": "node scripts/verify-q40-tour-learning.mjs"
+    "check:q40-tour-learning": "node scripts/verify-q40-tour-learning.mjs",
+    "check:q41-feature-spotlights": "node scripts/verify-q41-feature-spotlights.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

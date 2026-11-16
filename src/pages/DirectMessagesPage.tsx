@@ -591,7 +591,7 @@ export default function DirectMessagesPage(){
       <aside className="dli-direct-sidebar" aria-label="Conversation directory">
          {mode==='inbox'&&<div className="dli-telegram-sidebar-header">
            <h2>Chats</h2>
-           <button className="dli-telegram-new-message" type="button"
+           <button className="dli-telegram-new-message" data-dli-tour="new-message" type="button"
              aria-label="New message" aria-expanded={composeOpen}
              onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
              {composeOpen?<X size={20}/>:<Pencil size={20}/>}
@@ -732,7 +732,7 @@ export default function DirectMessagesPage(){
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
-        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" type="button"
+        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" data-dli-tour="new-message" type="button"
           aria-label={composeOpen?'Close contacts':'Compose new message'}
           onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
           {composeOpen?<X size={22}/>:<Pencil size={22}/>}

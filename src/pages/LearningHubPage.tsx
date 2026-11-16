@@ -27,7 +27,7 @@ export default function LearningHubPage(){
     </div>
   </div>
   <nav className="learning-hub-tabs" aria-label="Learning and progress sections">
-    {learningAreas.map(t=><button type="button" key={t.id} className={t.id===selected?'active':''}
+    {learningAreas.map(t=><button type="button" key={t.id} data-dli-tour={'learning-'+t.id} className={t.id===selected?'active':''}
       aria-current={t.id===selected?'page':undefined} onClick={()=>choose(t.id)}>
       <t.icon size={18}/><span><strong>{t.label}</strong><small>{t.description}</small></span>
     </button>)}

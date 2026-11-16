@@ -278,7 +278,7 @@ export default function UserManagementPage() {
       </div>}
 
       <section className="panel user-registry" id="account-registry">
-        <div className="panel-heading">
+        <div data-dli-tour="users" className="panel-heading">
           <div>
             <p className="section-kicker">AUTHORISED DIRECTORY</p>
             <h2>Account registry</h2>

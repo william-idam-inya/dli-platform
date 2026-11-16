@@ -331,7 +331,7 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
           <div className="topbar-actions">
             <DliMessageBadge/>
-            <DliNotificationBell/>
+            <span data-dli-tour="notifications" className="dli-tour-notification-anchor"><DliNotificationBell/></span>
             <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
             <button
               className="icon-button theme-toggle"
@@ -376,7 +376,7 @@ export default function AppShell({ children }: AppShellProps) {
             item.label === 'Reports & audit' ? 'Reports' :
             item.label === 'My profile' ? 'Profile' : item.label}</span>
         </NavLink>)}
-        <button type="button" className={'mobile-bottom-link mobile-bottom-more'+(mobileOpen?' active':'')}
+        <button type="button" data-dli-tour="more-navigation" className={'mobile-bottom-link mobile-bottom-more'+(mobileOpen?' active':'')}
           onClick={event=>openNavigation(event.currentTarget)}
           aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation">
           <Grid2X2 size={21} strokeWidth={1.9} aria-hidden="true" />

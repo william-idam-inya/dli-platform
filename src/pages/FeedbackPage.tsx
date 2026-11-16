@@ -172,7 +172,7 @@ export default function FeedbackPage() {
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
     {!staff&&<section className="panel member-feedback-form">
-      <div className="panel-heading"><div>
+      <div data-dli-tour="feedback" className="panel-heading"><div>
         <p className="section-kicker">01 · SEND FEEDBACK</p>
         <h2>Tell us what needs attention</h2>
         <p className="user-caption">A maximum of five submissions per hour helps prevent spam.

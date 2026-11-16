@@ -28,6 +28,10 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
  const root=useRef<HTMLDivElement>(null);
  const [sections,setSections]=useState<FocusSection[]>([]);
  const [compressed,setCompressed]=useState(true);
+ const compressedRef=useRef(true);
+ compressedRef.current=compressed;
+ const tourActiveRef=useRef(false);
+ const tourPriorCompressedRef=useRef(true);
  const [active,setActive]=useState<string|null>(null);
  const activePanel=useRef<HTMLElement|null>(null);
  const previousFocused=useRef<HTMLElement|null>(null);
@@ -61,7 +65,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    ?previous:next);
  },[]);
  useEffect(()=>{
-  setActive(null);setCompressed(true);
+  setActive(null);setCompressed(tourActiveRef.current?false:true);
   decorate();
   const observer=new MutationObserver(records=>{
    if(records.some(r=>r.addedNodes.length||r.removedNodes.length))decorate();
@@ -93,6 +97,28 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    }
   }
  },[active,compressed,count,location.pathname,sections]);
+ // A contextual guided tour reveals the real feature panels temporarily.
+ // Restore the user's previous compact/expanded choice once the tour ends.
+ useEffect(()=>{
+  function begin(){
+   if(!tourActiveRef.current){
+    tourPriorCompressedRef.current=compressedRef.current;
+    tourActiveRef.current=true;
+   }
+   setActive(null);setCompressed(false);
+  }
+  function end(){
+   if(!tourActiveRef.current)return;
+   tourActiveRef.current=false;
+   setCompressed(tourPriorCompressedRef.current);
+  }
+  window.addEventListener('dli-tour-begin',begin);
+  window.addEventListener('dli-tour-end',end);
+  return()=>{
+   window.removeEventListener('dli-tour-begin',begin);
+   window.removeEventListener('dli-tour-end',end);
+  };
+ },[]);
  const close=useCallback(()=>{
   activePanel.current?.removeAttribute('data-dli-focus-active');
   activePanel.current=null;setActive(null);

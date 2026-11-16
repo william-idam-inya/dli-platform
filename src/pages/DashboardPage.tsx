@@ -110,7 +110,7 @@ export default function DashboardPage(){
         <p className="welcome-copy">
           {account ? accountRoleLabel(account) + ' · ' : ''}{welcomeSummary}
         </p>
-        <div className="dli-role-actions">
+        <div data-dli-tour="dashboard" className="dli-role-actions">
           {account && canAccessPath(account.role,heroPath,account.studentTier) &&
             <Link to={heroPath} className="dli-hero-action">
               {heroAction} <ArrowRight size={16} aria-hidden="true"/>

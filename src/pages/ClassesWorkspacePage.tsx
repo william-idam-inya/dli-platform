@@ -594,7 +594,7 @@ export default function ClassesWorkspacePage(){
       </p>}
 
       <section className="panel classes-directory">
-        <div className="panel-heading"><div>
+        <div data-dli-tour="classes" className="panel-heading"><div>
           <p className="section-kicker">CLASS REGISTER</p>
           <h2>{staff?'All individual and group classes':account?.role==='tutor'?'My assigned subject sessions':'My subject timetable'}</h2>
           <p className="user-caption">Each group has one student list and one Meet link. Every course has two tutors and its own timetable.</p>
