@@ -8,10 +8,17 @@
 - Frontend packages `@cloudflare/realtimekit`, `@cloudflare/realtimekit-react`, and `@cloudflare/realtimekit-react-ui` pinned to `2.0.2`, full `package-lock.json` resolved and validated by GitHub Actions.
 
 ## Activation
-The preview only appears when running Vite's dev server AND all three are true:
-1. `import.meta.env.DEV`;
-2. `VITE_SUPABASE_URL=https://pbepbcdkrdqnepvcwtyw.supabase.co`;
-3. `VITE_DLI_DEV_REALTIMEKIT_ENABLED=true`.
+The preview only appears under the **development** Supabase project with the
+explicit public feature flag. Its origins are restricted to either local Vite
+development or the exact named DLI QA preview:
+- `http://localhost:5173` for Vite development, or
+- `https://feature-stage-q49-realtimeki.dli-platform-qa.pages.dev` on HTTPS.
+In both cases the build must have
+`VITE_SUPABASE_URL=https://pbepbcdkrdqnepvcwtyw.supabase.co` and
+`VITE_DLI_DEV_REALTIMEKIT_ENABLED=true`.
+The existing `dli-platform-qa` Cloudflare Pages preview environment has this
+public flag set and its original development Supabase credentials preserved.
+The root production domain `dli-platform-prod.pages.dev` is not allowed.
 
 The third variable is a **public boolean only**, not an API key. Set it in local `.env.local` for test sessions, along with the matching development Supabase URL/publishable key. Do not use any production Supabase identity in this preview.
 
@@ -38,3 +45,17 @@ The third variable is a **public boolean only**, not an API key. Set it in local
 - Real device acceptance on two authorized accounts and separate networks: voice, camera, media controls, screen sharing (desktop browser support varies), role-appropriate host actions, end/leave cleanup, unauthorized accounts.
 - During development testing check RealtimeKit usage to avoid unexpected billable minutes.
 - **Do not claim production conferencing is active.** No production database migration, RealtimeKit token, or Cloudflare production Pages deployment is authorized by this work.
+
+## QA acceptance link
+
+Open **https://feature-stage-q49-realtimeki.dli-platform-qa.pages.dev/conferences**
+using a DLI *development* user account. Once you create and join a DLI room,
+press **Open development video meeting**, then **Connect camera & microphone**.
+The browser should display native Cloudflare prejoin controls. Use another
+authorized development user on a second device to verify real microphone and
+camera streams. The authorizer is CORS-scoped to this exact QA alias or localhost.
+The URL is NOT a production deployment and may require approved authentication
+redirect settings in Supabase for QA.
+
+The live DLI platform remains at https://dli-platform-prod.pages.dev and its
+Cloudflare RealtimeKit media stays disabled.
