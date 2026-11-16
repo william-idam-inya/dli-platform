@@ -371,3 +371,40 @@ body:has(.dli-announcement-shade){overflow:hidden;}
   max-height:calc(100dvh - 164px);
  }
 }
+
+/* Private bank receipts are also document previews. Portal them to body and
+   keep Close/Save plus the file viewer independently reachable on a phone. */
+@media(max-width:680px){
+ body .dli-payout-preview-overlay,body .upgrade-receipt-overlay{
+  box-sizing:border-box;padding:8px;overscroll-behavior:contain;
+ }
+ body .dli-payout-preview,body .upgrade-receipt-modal{
+  box-sizing:border-box;width:100%;max-width:100%;
+  max-height:calc(100dvh - 16px);min-width:0;
+  overflow-x:hidden;overflow-y:auto;
+  border-radius:14px;
+ }
+ body .dli-payout-preview-head,body .upgrade-receipt-heading{
+  position:sticky;top:0;z-index:3;
+  background:var(--surface);padding:5px 0 10px;
+  min-width:0;
+ }
+ body .dli-payout-preview-head>strong,body .upgrade-receipt-heading>strong{
+  min-width:0;overflow-wrap:anywhere;
+ }
+ body .dli-payout-preview :is(img,iframe),
+ body .upgrade-receipt-modal :is(img,iframe){
+  box-sizing:border-box;display:block;width:100%;max-width:100%;
+  height:min(54dvh,500px);max-height:54dvh;
+  object-fit:contain;
+ }
+ body .dli-payout-preview>a,body .upgrade-receipt-modal>a{
+  min-width:0;max-width:100%;min-height:44px;overflow-wrap:anywhere;
+ }
+}
+body:has(.dli-payout-preview-overlay) .dli-floating-chat-root,
+body:has(.upgrade-receipt-overlay) .dli-floating-chat-root{
+ visibility:hidden;pointer-events:none;
+}
+body:has(.dli-payout-preview-overlay),
+body:has(.upgrade-receipt-overlay){overflow:hidden;}
