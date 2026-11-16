@@ -244,7 +244,7 @@ BEGIN
  );
  RETURN true;
 END;
-$function$
+$function$;
 
 
 -- Capture only confirmed, authorised direct-message INSERTs. No client-created
