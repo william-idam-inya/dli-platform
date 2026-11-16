@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banknote, Clock3, FileText, LockKeyhole,
+import { CreditCard, Clock3, FileText, LockKeyhole,
   Plus, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import PaidPlanSettings from '../components/PaidPlanSettings';
 import TutorPayrollPage from './TutorPayrollPage';
+import PaystackFinanceLedger from '../components/PaystackFinanceLedger';
 import './FinancePage.css';
 
 type ProposalType =
@@ -33,7 +33,6 @@ type Proposal = {
 
 const PROPOSAL_TYPES: {value: ProposalType; label: string}[] = [
   { value: 'fee_structure', label: 'Fee structure (proposal only)' },
-  { value: 'manual_transfer_process', label: 'Manual bank-transfer process' },
   { value: 'reconciliation_process', label: 'Reconciliation procedure' },
   { value: 'receipt_design', label: 'Receipt design and requirements' },
   { value: 'compensation_rule', label: 'Tutor compensation concept' },
@@ -56,7 +55,6 @@ function proposalName(type: ProposalType): string {
 export default function FinancePage() {
   const { account } = useAuth();
   const canPropose = Boolean(account && FINANCE_ROLES.has(account.role));
-  const canOpenClassPayments = Boolean(account && canAccessPath(account.role,'/classes',account.studentTier));
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [category, setCategory] = useState<ProposalType>('fee_structure');
   const [title, setTitle] = useState('');
@@ -143,17 +141,15 @@ export default function FinancePage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance management</h1>
-        <p>Manage the internal learning-plan reference and prepare finance-policy proposals without activating charges.</p>
+        <p>Monitor Paystack-verified student payments and tutor disbursements, maintain approved plan rates, and review finance policies.</p>
       </div>
       <span className="module-status"><span/> Finance controls</span>
     </div>
 
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Owner, Admin and Assistant Admin may equally view and submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
-          ?<Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link>
-          :<strong>Classes &amp; timetable · Payments (authorised administrators)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
+      <div><strong>Verified Paystack financial operations</strong>
+        <p>Owner, Admin and Assistant Admin share equal access to automated revenue records, payment statuses and tutor payroll. A nonbinding policy proposal is separate from an actual verified Paystack payment.</p>
       </div>
     </div>
 
@@ -168,13 +164,13 @@ export default function FinancePage() {
       </div>
       <div className="finance-summary-card">
         <FileText size={20}/>
-        <strong>Manual workflow</strong>
-        <span>Fee assignments and evidence review</span>
+        <strong>Automated checkout</strong>
+        <span>Verified student payments in Paystack</span>
       </div>
       <div className="finance-summary-card">
-        <Banknote size={20}/>
-        <strong>Verification required</strong>
-        <span>Transfers and tutor payment records</span>
+        <CreditCard size={20}/>
+        <strong>Transfer webhooks</strong>
+        <span>Tutor payouts confirmed by Paystack</span>
       </div>
     </div>
 
@@ -233,7 +229,10 @@ export default function FinancePage() {
       </form>
     </section>}
 
-    {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<TutorPayrollPage/>}
+    {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<>
+      <PaystackFinanceLedger/>
+      <TutorPayrollPage/>
+    </>}
 
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
@@ -242,7 +241,7 @@ export default function FinancePage() {
         <p className="user-caption">These proposals do not authorise a charge or bank transfer. Review notes are recorded separately in <Link to="/finance/reviews">Finance review</Link>.</p>
       </div></div>
       {!loading && proposals.length === 0 && <p className="academic-empty">
-        No general finance-policy proposals have been submitted yet. Individual private-class fee assignments and manual transfer verification are managed separately.
+        No finance-policy proposals have been submitted yet. Payment records are maintained in the verified Paystack ledgers above.
       </p>}
       <div className="finance-proposals">
         {proposals.map(proposal => <article className="finance-proposal" key={proposal.id}>
@@ -262,11 +261,8 @@ export default function FinancePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      DLI’s finance workspace includes editable, audited internal rate references, planned tutor compensation
-      and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
-      and credit-date verification are handled in {canOpenClassPayments
-        ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
-        :<strong>the authorised class finance workspace</strong>}.
-      No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
+      DLI’s finance workspace includes audited plan rates, Paystack student payments,
+      Paystack tutor transfers and nonbinding institutional proposals. Live transfers require explicit executive approval,
+      and successful payment statuses are recorded only after server-verified gateway events.</p>
   </div>;
 }
