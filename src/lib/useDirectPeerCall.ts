@@ -92,7 +92,8 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    const pc=await prepare(mode,id);
    const offer=await pc.createOffer();
    await pc.setLocalDescription(offer);
-   if(!callRef.current||callRef.current.id!==id)return;
+   const active=callRef.current as CallSession|null;
+   if(!active||active.id!==id)return;
    if(!sendRef.current({callId:id,mode,kind:'offer',sdp:offer.sdp})){
     stop();update({id,mode,direction:'outgoing',state:'failed',
      error:'The private calling channel is not connected.'});return;
@@ -100,7 +101,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    sdpQueued.current=true;
    for(const ice of earlyLocalIce.current)sendRef.current({callId:id,mode,kind:'candidate',candidate:ice});
    earlyLocalIce.current=[];
-   update({...callRef.current,state:'ringing'});
+   update({...active,state:'ringing'});
    clearRingTimer();
    ringTimer.current=window.setTimeout(()=>{
     const pending=callRef.current;
