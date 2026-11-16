@@ -98,7 +98,17 @@ function shown(el:HTMLElement){
 function findVisibleTarget(step:GuideStep){
  for(const selector of step.targets){
   const elements=document.querySelectorAll<HTMLElement>(selector);
-  for(const element of elements)if(shown(element))return element;
+  for(const element of elements){
+   if(shown(element))return element;
+   // Overlay-only tours spotlight the launch pill, never inline-expand panels.
+   const section=element.closest<HTMLElement>('[data-dli-focus-panel]');
+   const key=section?.getAttribute('data-dli-focus-panel');
+   if(key!==null&&key!==undefined){
+    const owner=section?.closest('.dli-workspace-focus-root');
+    const pill=owner?.querySelectorAll<HTMLElement>('.dli-workspace-trigger-row button')[Number(key)];
+    if(pill&&shown(pill))return pill;
+   }
+  }
  }
  return null;
 }
@@ -153,7 +163,7 @@ export default function GuidedTour(){
   return()=>window.removeEventListener('dli-tour-replay',replay);
  },[replay]);
 
- // Keep workspace panels expanded for the entire tour, not just each step.
+ // Keep launch pills visible during guided tours; no inline expansion.
  useEffect(()=>{
   if(!visible)return;
   window.dispatchEvent(new Event('dli-tour-begin'));

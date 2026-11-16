@@ -102,9 +102,9 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   }
  },[active,location.pathname,sections]);
  useEffect(()=>{
-  function tourBegin(){setActive(null);}
-  window.addEventListener('dli-tour-begin',tourBegin);
-  return()=>window.removeEventListener('dli-tour-begin',tourBegin);
+  function closeTour(){setActive(null);}
+  window.addEventListener('dli-tour-begin',closeTour);
+  return()=>window.removeEventListener('dli-tour-begin',closeTour);
  },[]);
  useEffect(()=>{
   if(active===null)return;
