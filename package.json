@@ -68,6 +68,9 @@
     "check:q48-dev-media-provisioning": "node scripts/verify-q48-dev-media-provisioning.mjs"
   },
   "dependencies": {
+    "@cloudflare/realtimekit": "2.0.2",
+    "@cloudflare/realtimekit-react": "2.0.2",
+    "@cloudflare/realtimekit-react-ui": "2.0.2",
     "@supabase/supabase-js": "2.118.0",
     "lucide-react": "^1.68.0",
     "react": "^19.3.1",
