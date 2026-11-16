@@ -53,81 +53,31 @@ function useVisibleNotices(withReceipts:boolean) {
 export function DliNotificationBell(){
   const {account}=useAuth();
   const {visible,seen,error,refresh}=useVisibleNotices(true);
-  const [pendingPayments,setPendingPayments]=useState(0);
-  const [newPayment,setNewPayment]=useState(false);
-  const previousPending=useRef<number|null>(null);
-  const canReviewPayments=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin';
-
-  const [pendingTutorPayouts,setPendingTutorPayouts]=useState(0);
-  const [newTutorPayout,setNewTutorPayout]=useState(false);
-  const previousTutorPayout=useRef<number|null>(null);
-  const tutorHasPending=account?.role==='tutor';
+  type GatewayAlert={id:string;kind:string;reference:string;title:string;body:string;created_at:string;read_at:string|null};
+  const [paymentAlerts,setPaymentAlerts]=useState<GatewayAlert[]>([]);
+  const refreshPayments=useCallback(async()=>{
+   if(!supabase||!account){setPaymentAlerts([]);return;}
+   try{
+    const result=await supabase.from('dli_paystack_alerts')
+     .select('id,kind,reference,title,body,created_at,read_at')
+     .order('created_at',{ascending:false}).limit(30);
+    if(!result.error)setPaymentAlerts((result.data??[]) as GatewayAlert[]);
+   }catch{/* Existing information remains available during connection loss. */}
+  },[account?.id]);
   useEffect(()=>{
-    if(!supabase||!(tutorHasPending||canReviewPayments)){
-      setPendingTutorPayouts(0);previousTutorPayout.current=null;return;
-    }
-    const client=supabase;let active=true;
-    const status=tutorHasPending?'awaiting_tutor':'disputed';
-    const check=async()=>{
-      try{
-        // Row-level security selects only this tutor's payouts or the three
-        // authorised administrative roles. No bank account fields are loaded.
-        const result=await client.from('dli_tutor_payout_proofs')
-          .select('id',{count:'exact',head:true}).eq('status',status);
-        if(!active||result.error||typeof result.count!=='number')return;
-        if(previousTutorPayout.current!==null&&result.count>previousTutorPayout.current){
-          setNewTutorPayout(true);
-          window.dispatchEvent(new Event('dli-notification-chime'));
-          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
-            try{new Notification(tutorHasPending?'DLI tutor transfer proof':'DLI disputed tutor payout',{
-              body:tutorHasPending?'Review and acknowledge your transfer.':'A Tutor disputed receiving a payment.',
-              tag:'dli-tutor-payout'
-            });}catch{/* Notification permission is optional. */}
-          }
-        }
-        previousTutorPayout.current=result.count;
-        setPendingTutorPayouts(result.count);
-      }catch{/* Preserve previous count on transient outage. */}
-    };
-    void check();
-    const timer=window.setInterval(()=>{void check();},20000);
-    const focus=()=>{void check();};
-    window.addEventListener('focus',focus);
-    return()=>{active=false;window.clearInterval(timer);window.removeEventListener('focus',focus);};
-  },[account?.id,account?.role,tutorHasPending,canReviewPayments]);
+   void refreshPayments();
+   const id=window.setInterval(()=>{void refreshPayments();},20000);
+   const focus=()=>{void refreshPayments();};
+   window.addEventListener('focus',focus);
+   return()=>{window.clearInterval(id);window.removeEventListener('focus',focus);};
+  },[refreshPayments]);
+  async function acknowledgePayment(id:string){
+   if(!supabase)return;
+   const saved=await supabase.from('dli_paystack_alerts')
+    .update({read_at:new Date().toISOString()}).eq('id',id);
+   if(!saved.error)void refreshPayments();
+  }
 
-  useEffect(()=>{
-    if(!supabase||!canReviewPayments){setPendingPayments(0);previousPending.current=null;return;}
-    const client=supabase;
-    let active=true;
-    const refreshPayments=async()=>{
-      try{
-        // The request table's RLS restricts count access to authorised staff.
-        // Only status/count are read: no bank details, receipts, or names.
-        const result=await client.from('dli_enrollment_requests')
-          .select('id',{count:'exact',head:true}).eq('status','submitted');
-        if(!active||result.error||typeof result.count!=='number')return;
-        const count=result.count;
-        if(previousPending.current!==null&&count>previousPending.current){
-          setNewPayment(true);
-          window.dispatchEvent(new Event('dli-notification-chime'));
-          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
-            try{new Notification('DLI receipt awaiting review',{body:'Open Paid enrolment to verify a bank transfer.',tag:'dli-payment-review'});}
-            catch{/* User/system browser notifications are optional. */}
-          }
-        }
-        previousPending.current=count;
-        setPendingPayments(count);
-      }catch{/* Keep last known count until the connection recovers. */}
-    };
-    void refreshPayments();
-    const interval=window.setInterval(()=>{void refreshPayments();},20000);
-    const focus=()=>{void refreshPayments();};
-    window.addEventListener('focus',focus);
-    const channel=client.channel('dli-payment-reviews-'+account?.id)
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'dli_enrollment_requests'},()=>{void refreshPayments();}).subscribe();
-    return()=>{active=false;window.clearInterval(interval);window.removeEventListener('focus',focus);void client.removeChannel(channel);};
-  },[account?.id,account?.role,canReviewPayments]);
   const [open,setOpen]=useState(false);
   const [noticeFilter,setNoticeFilter]=useState<'all'|'unread'>('all');
   const [soundOn,setSoundOn]=useState(()=>{
@@ -139,8 +89,10 @@ export function DliNotificationBell(){
   const [busy,setBusy]=useState<string|null>(null);
   const seenMap=new Map(seen.map(s=>[s.notice_id,s]));
   const unread=visible.filter(n=>!seenMap.get(n.id)?.read_at);
-  const totalAlerts=unread.length+pendingPayments+pendingTutorPayouts;
+  const unreadPaymentAlerts=paymentAlerts.filter(x=>!x.read_at);
+   const totalAlerts=unread.length+unreadPaymentAlerts.length;
   const filteredNotices=noticeFilter==='unread'?unread:visible;
+   const filteredPaymentAlerts=noticeFilter==='unread'?unreadPaymentAlerts:paymentAlerts;
   useEffect(()=>{
     function chime(){
       if(!soundOn)return;
@@ -206,7 +158,7 @@ export function DliNotificationBell(){
           aria-pressed={noticeFilter==='all'} onClick={()=>setNoticeFilter('all')}>All</button>
         <button type="button" className={noticeFilter==='unread'?'selected':''}
           aria-pressed={noticeFilter==='unread'} onClick={()=>setNoticeFilter('unread')}>
-          Unread ({unread.length})</button>
+          Unread ({unread.length+unreadPaymentAlerts.length})</button>
         <button type="button" className={'dli-sound-toggle'+(soundOn?' selected':'')}
           aria-pressed={soundOn} onClick={()=>{
             const next=!soundOn;setSoundOn(next);
@@ -215,16 +167,16 @@ export function DliNotificationBell(){
           {soundOn?'Sound on':'Sound off'}
         </button>
       </div>
-      {canReviewPayments&&pendingPayments>0&&<Link className="dli-payment-review-alert" to="/enrolment" onClick={()=>{setOpen(false);setNewPayment(false);}}>
-        <strong>{pendingPayments} payment receipt{pendingPayments===1?'':'s'} awaiting verification</strong>
-        <span>View private evidence and confirm actual bank credit before approving Paid Student access.</span>
-      </Link>}
-      {pendingTutorPayouts>0&&(tutorHasPending||canReviewPayments)&&<Link className="dli-payment-review-alert" to="/payroll" onClick={()=>{setOpen(false);setNewTutorPayout(false);}}>
-        <strong>{pendingTutorPayouts} {tutorHasPending?'transfer proof':'disputed payout'}{pendingTutorPayouts===1?'':'s'} {tutorHasPending?'awaiting your confirmation':'requiring investigation'}</strong>
-        <span>{tutorHasPending?'Check your bank account and confirm receipt or dispute the transfer.':'Review the tutor response and bank transfer record.'}</span>
-      </Link>}
+      {filteredPaymentAlerts.slice(0,12).map(alert=><Link key={alert.id}
+        className="dli-payment-review-alert" to={alert.kind==='student_paid'?'/enrolment':
+          alert.kind.startsWith('payroll')||alert.kind==='tutor_paid'?'/payroll':'/finance'}
+        onClick={()=>{void acknowledgePayment(alert.id);setOpen(false);}}>
+        <strong>{alert.title}{!alert.read_at?' · New':''}</strong>
+        <span>{alert.body}</span>
+        <small>{stamp(alert.created_at)}</small>
+      </Link>)}
       {error&&<p role="alert">Could not refresh notices. Try again later.</p>}
-      {!filteredNotices.length&&!pendingPayments&&!pendingTutorPayouts&&<p>
+      {!filteredNotices.length&&!filteredPaymentAlerts.length&&<p>
         {noticeFilter==='unread'?'No unread announcements.':'No current notifications.'}
       </p>}
       {filteredNotices.slice(0,12).map(n=><button type="button" key={n.id}
@@ -235,18 +187,6 @@ export function DliNotificationBell(){
         <small>{stamp(n.publish_at)}</small>
       </button>)}
       <Link to="/announcements" onClick={()=>setOpen(false)}>View all announcements</Link>
-    </div>}
-    {canReviewPayments&&newPayment&&pendingPayments>0&&<div className="dli-payment-review-toast" role="status" aria-live="polite">
-      <strong>New payment evidence</strong>
-      <span>{pendingPayments} receipt{pendingPayments===1?'':'s'} waiting for bank-credit review.</span>
-      <Link to="/enrolment" onClick={()=>setNewPayment(false)}>Review</Link>
-      <button type="button" onClick={()=>setNewPayment(false)} aria-label="Dismiss payment notification"><X size={16}/></button>
-    </div>}
-    {newTutorPayout&&pendingTutorPayouts>0&&<div className="dli-payment-review-toast" role="status" aria-live="polite">
-      <strong>{tutorHasPending?'New Tutor payout receipt':'Tutor payment dispute'}</strong>
-      <span>{pendingTutorPayouts} item{pendingTutorPayouts===1?'':'s'} requiring your attention</span>
-      <Link to="/payroll" onClick={()=>setNewTutorPayout(false)}>Review payout</Link>
-      <button type="button" onClick={()=>setNewTutorPayout(false)} aria-label="Dismiss tutor payout notification"><X size={16}/></button>
     </div>}
     {item&&<div className="dli-announcement-shade" role="presentation">
       <div role="dialog" aria-modal="true" aria-labelledby="dli-announcement-popup-title"
