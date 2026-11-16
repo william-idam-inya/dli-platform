@@ -17,11 +17,13 @@ function decodeBase64Url(value:string):Uint8Array<ArrayBuffer>{
 }
 export function registerDliServiceWorker():void{
  if(!navigatorAvailable||!window.isSecureContext||!('serviceWorker' in navigator))return;
- window.addEventListener('load',()=>{
+ const start=()=>{
   void navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{
    // Ordinary logged-in workspace still works when workers are disallowed.
   });
- },{once:true});
+ };
+ if(document.readyState==='complete')start();
+ else window.addEventListener('load',start,{once:true});
 }
 async function currentPushSubscription(){
  if(!pushConfigured)throw Error('Device push is not configured yet.');
