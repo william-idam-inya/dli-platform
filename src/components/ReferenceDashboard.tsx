@@ -223,7 +223,7 @@ function ClassPreview({rows,error,loading,tutor}:{rows:ClassRow[];error:boolean;
     </div>}
   </section>;
 }
-function LearningProgress({account,academicCounts,academicLoading,metrics}:{
+function LearningProgress({academicCounts,academicLoading,metrics}:{
   account:Account;
   academicCounts:Partial<Record<'lessons'|'assignments'|'quizzes'|'attendance',number|null>>|null;
   academicLoading:boolean;
