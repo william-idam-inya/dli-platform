@@ -147,3 +147,26 @@
 @media(prefers-reduced-data:reduce){
  .app-layout[data-dli-role]{background-image:linear-gradient(145deg,#082b58,#0c4678)}
 }
+
+/* Q45: preserve a usable top bar at narrow laptop widths without horizontal
+   scrolling. Primary navigation remains in the flat sidebar at those widths. */
+@media(min-width:681px) and (max-width:1180px){
+ .app-layout .topbar{padding-inline:13px;gap:7px}
+ .app-layout .dli-primary-tabs{display:none}
+ .app-layout .topbar-left{flex:1}
+ .app-layout .dli-global-search{width:min(270px,42vw)}
+ .app-layout .preview-label{display:none}
+}
+@media(min-width:681px) and (max-width:950px){
+ .app-layout .dli-topbar-brand span{display:none}
+ .app-layout .account-mini-copy{display:none}
+ .app-layout .topbar-actions{gap:5px}
+ .app-layout .dli-global-search{width:min(235px,39vw)}
+}
+@media(max-width:680px){
+ .app-layout .preview-label{display:none}
+ .app-layout .account-mini{display:none}
+ .app-layout .dli-global-search{flex:1;max-width:none}
+ .app-layout .topbar{padding-inline:9px}
+ .app-layout .topbar-actions{gap:4px}
+}
