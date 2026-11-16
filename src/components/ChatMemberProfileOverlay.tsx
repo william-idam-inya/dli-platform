@@ -42,8 +42,10 @@ const fieldNames:[keyof MemberPreview,string][]=[
 ];
 
 export default function ChatMemberProfileOverlay({
-  userId, fallbackName, onClose,
-}: {userId:string;fallbackName:string;onClose:()=>void}) {
+  userId, fallbackName, onClose, contextItems, onConfirm, confirmLabel,
+}: {userId:string;fallbackName:string;onClose:()=>void;
+   contextItems?:{label:string;value:string}[];
+   onConfirm?:()=>void;confirmLabel?:string}) {
   const [profile,setProfile]=useState<MemberPreview|null>(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
@@ -144,6 +146,11 @@ export default function ChatMemberProfileOverlay({
               </p>
             </div>
           </div>
+          {contextItems&&contextItems.length>0&&<dl className="dli-chat-profile-details dli-class-student-context">
+            {contextItems.map(item=><div key={item.label}>
+              <dt>{item.label}</dt><dd>{item.value}</dd>
+            </div>)}
+          </dl>}
           {subjects.length>0&&<div className="dli-chat-profile-subjects">
             <h3><GraduationCap size={17} aria-hidden="true"/>
               {profile.member_role==='tutor'?'Subjects taught to you':'Shared teaching subjects'}
@@ -166,6 +173,9 @@ export default function ChatMemberProfileOverlay({
         </>}
         <footer className="dli-chat-profile-actions">
           <button type="button" onClick={onClose}>Close profile</button>
+          {profile&&onConfirm&&<button type="button" onClick={onConfirm}>
+            {confirmLabel??'Select student'}
+          </button>}
         </footer>
       </section>
     </div>,
