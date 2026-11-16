@@ -98,8 +98,8 @@ export default function TutorPayrollPage(){
     <p>Live group and private assignments determine monthly rates; due dates stay anchored to class start dates.</p>
    </div></div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Audited manual payout confirmation</strong>
-   <p>The system calculates scheduled compensation and updates Paid/Due Today/Overdue automatically from stored dates. It never initiates a bank payment. Owner, Admin or Assistant Admin uploads proof of an external transfer; the Tutor must confirm receiving it before payroll is marked Paid.</p>
+   <strong>Paystack automated tutor disbursements</strong>
+   <p>The system calculates monthly compensation from verified teaching records. Owner, Admin and Assistant Admin can approve a due payout directly through Paystack. Payouts become Paid only after Paystack confirms the transfer, and tutors see the automated reference in their ledger.</p>
   </div></div>
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
@@ -114,7 +114,7 @@ export default function TutorPayrollPage(){
   <div className="payroll-summary">
     <div><Wallet size={20}/><strong>{money(total)}</strong><small>Calculated monthly total</small></div>
     <div><Clock3 size={20}/><strong>{money(outstanding)}</strong><small>Not marked paid</small></div>
-    <div><CheckCircle2 size={20}/><strong>{filtered.filter(x=>x.payout_status==='paid').length}</strong><small>Confirmed payouts</small></div>
+    <div><CheckCircle2 size={20}/><strong>{filtered.filter(x=>x.payout_status==='paid').length}</strong><small>Verified disbursements</small></div>
   </div>
   {report&&<p className="auth-feedback error">One or more engagements need compensation review by an authorised administrator before a payout can be submitted.</p>}
   {!loading&&!filtered.length&&<p className="academic-empty">No live paid teaching engagements have a payout due in this month. A class must be published with enrolled Paid Students and a recorded start date.</p>}
@@ -150,7 +150,7 @@ export default function TutorPayrollPage(){
   <section className="panel">
     <div className="panel-heading"><div>
       <p className="section-kicker">CONFIRMED PAYMENT HISTORY</p>
-      <h2>Recorded payouts for {month}</h2>
+      <h2>Payroll history for {month}</h2>
       <p className="user-caption">Confirmed transfers remain visible even if their original teaching class has ended or been archived.
         Payment references and unrelated tutors' information are not shown to Tutors.</p>
     </div></div>
