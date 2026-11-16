@@ -170,3 +170,8 @@
  .app-layout .topbar{padding-inline:9px}
  .app-layout .topbar-actions{gap:4px}
 }
+
+@media(prefers-reduced-motion:reduce){
+ .dli-primary-tabs>a,.dli-flat-nav .nav-link,
+ .dli-global-hit,.dli-floating-chat-bubble{transition:none!important}
+}
