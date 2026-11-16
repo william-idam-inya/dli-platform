@@ -176,6 +176,9 @@ jobs:
       - name: Verify Q46 route deduplication, role matrix and narrow header structure
         run: npm run check:q46-release-structure
 
+      - name: Verify Q47 protected executive names in chat directory and profile RPC migration
+        run: npm run check:q47-executive-name-privacy
+
       - name: Verify TypeScript
         run: npm run typecheck
 
