@@ -24,4 +24,14 @@ assert.match(provider,/!!user\.email_confirmed_at/);
 const authPages = readFileSync(new URL('../src/auth/AuthPages.tsx',import.meta.url),'utf8');
 assert.match(authPages,/state === 'unavailable'\) return <AuthTemporarilyUnavailable/);
 assert.match(authPages,/return <AuthLayout title="Sign in to DLI"/);
+
+// A failed saved-session check must offer an explicit way back to sign-in.
+// The action is opt-in and MUST NOT invalidate sessions on other devices.
+const outagePage=authPages.split('export function AuthTemporarilyUnavailable() {')[1]
+  ?.split('export function MissingConfiguration()')[0] ?? '';
+assert.match(outagePage,/Retry secure access check/);
+assert.match(outagePage,/Sign in again on this device/);
+assert.match(outagePage,/\.auth\.signOut\(\{ scope: 'local' \}\)/);
+assert.match(outagePage,/window\.location\.assign\('\/login'\)/);
+assert.doesNotMatch(outagePage,/\.auth\.signOut\(\)/);
 console.log('Q7 unauthenticated landing regression passed (5 session cases + server verification).');
