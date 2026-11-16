@@ -6,7 +6,7 @@ import {
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import PrivateClassesPage from './PrivateClassesPage';
+
 import SubjectArtwork from '../components/SubjectArtwork';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -403,10 +403,10 @@ export default function ClassesWorkspacePage(){
       </button>
       {paying&&<button className={tab==='payments'?'selected':''} type="button"
         onClick={()=>setParams(requested?{tab:'payments',registry:requested}:{tab:'payments'})}>
-        <Wallet size={15}/> Fees &amp; payment evidence
+        <Wallet size={15}/> Paystack payments
       </button>}
     </nav>}
-    {tab==='payments'&&paying?<PrivateClassesPage billingOnly embedded/>:<>
+    {tab==='payments'&&paying?<section className="panel"><h2>Automated course payments</h2><p>New payments are processed only through the verified Paystack checkout and automated Financials ledger. Historical private-class payment evidence remains archived and cannot be used for new payments.</p><Link className="user-outline-button" to="/enrolment">Open secure Paystack enrolment</Link></section>:<>
       {error&&<p className="auth-feedback error" role="alert">{error}</p>}
       {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
       <div className="academic-top-actions">
