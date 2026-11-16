@@ -283,3 +283,91 @@ body:has(.dli-announcement-shade){overflow:hidden;}
  .mobile-sidebar,.dli-quick-menu-portal,
  .dli-call-panel,.dli-workspace-backdrop{transition:none!important;}
 }
+
+/* Q49 audit correction: some component-level CSS bundles can load after the
+   global stylesheet. These more specific rules win independently of import
+   order, preventing the full-width Q44 focus sheet from returning on phones. */
+@media(max-width:680px){
+ .app-layout .dli-workspace-backdrop{
+  background:rgba(4,15,34,.69);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+ }
+ .app-layout .dli-workspace-focus-caption{
+  top:13px;left:12px;right:112px;
+  min-height:44px;max-width:calc(100vw - 128px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11px;color:#f5f8ff;
+ }
+ .app-layout .dli-workspace-focus-close{
+  top:10px;right:10px;min-width:96px;min-height:44px;
+  padding:9px 12px;background:#193c67;color:#fff;
+  border:1px solid #55759a;border-radius:12px;
+  font-size:12px;
+ }
+ .app-layout .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]{
+  top:74px!important;left:8px!important;right:8px!important;
+  bottom:auto!important;transform:none!important;
+  width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+  min-width:0!important;min-height:0!important;height:auto!important;
+  max-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  border-radius:16px!important;padding:16px!important;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+ }
+ body .dli-chat-profile-backdrop{
+  padding:8px;align-items:center;
+ }
+ body .dli-chat-profile-dialog{
+  width:100%;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .dli-chat-profile-titlebar{
+  position:sticky;top:0;z-index:2;background:var(--surface);
+  padding:10px 12px;
+ }
+ body .dli-chat-profile-actions{
+  position:sticky;bottom:0;z-index:2;
+  padding:9px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--surface);
+ }
+ body .dli-telegram-forward-backdrop{padding:8px;z-index:1430;}
+ body .dli-telegram-forward-dialog{
+  width:100%;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .dli-announcement-shade{z-index:1390;padding:8px;}
+ body .dli-announcement-popup{
+  max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;overflow-y:auto;
+ }
+ body .user-modal-backdrop{padding:8px;}
+ body .user-modal-panel{
+  max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .user-modal-actions{
+  position:sticky;bottom:0;z-index:2;
+  background:var(--surface);
+  padding:10px 0 calc(7px + env(safe-area-inset-bottom));
+ }
+ body .dli-conference-backdrop{z-index:1390;}
+ body .dli-conference-overlay{
+  max-width:100%;max-height:100dvh;overflow-x:hidden;
+ }
+ body .dli-notification-panel{
+  left:8px;right:8px;width:auto;
+  max-width:calc(100vw - 16px);
+  max-height:calc(100dvh - 94px);overflow-x:hidden;
+ }
+ body .dli-profile-dropdown{
+  max-width:calc(100vw - 16px);overflow-x:hidden;
+ }
+ body .dli-floating-chat-root{
+  right:8px;bottom:calc(91px + env(safe-area-inset-bottom));
+ }
+ body .dli-floating-chat{
+  width:calc(100vw - 16px);max-width:calc(100vw - 16px);
+  height:min(70dvh,calc(100dvh - 164px));
+  max-height:calc(100dvh - 164px);
+ }
+}
