@@ -9,11 +9,14 @@ type MediaSession={authToken:string;meetingId:string;roomId:string;preset:string
 type Props={roomId:string;onStop:()=>void};
 
 const devProject='https://pbepbcdkrdqnepvcwtyw.supabase.co';
+const qaPreviewHost='feature-stage-q49-realtimeki.dli-platform-qa.pages.dev';
+const safeDevelopmentOrigin=import.meta.env.DEV ||
+ (typeof window!=='undefined'&&window.location.hostname===qaPreviewHost);
 
 /** This preview intentionally cannot be activated by a production build,
  * even if a public Vite flag is mistakenly set in Cloudflare Pages. */
 export const developmentConferenceEnabled=
-  import.meta.env.DEV &&
+  safeDevelopmentOrigin &&
   import.meta.env.VITE_DLI_DEV_REALTIMEKIT_ENABLED==='true' &&
   import.meta.env.VITE_SUPABASE_URL===devProject;
 
