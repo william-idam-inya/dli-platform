@@ -140,7 +140,7 @@ export default function PaidEnrollmentPage(){
  }
  const choose=(id:string)=>setSelected(items=>items.includes(id)?items.filter(x=>x!==id):[...items,id]);
  return <div className="module-page paid-upgrade">
-  <div className="module-page-hero">
+  <div data-dli-tour="enrolment" className="module-page-hero">
    <span className="module-page-icon"><CreditCard size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI PAYSTACK CHECKOUT</div>
     <h1>{isManager?'Automated student payments':'Free Students & paid enrolment'}</h1>
