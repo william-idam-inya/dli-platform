@@ -455,6 +455,10 @@
     {
       "file": "20261116173000_stage_q50_prod_media_admin_pilot.sql",
       "gitBlobSha1": "577c1e6488cac716d76c7acbc711c788f8ed3e72"
+    },
+    {
+      "file": "20261116234500_stage_q52_secure_pwa_web_push.sql",
+      "gitBlobSha1": "61f5002ee92cb42819704f94a84e24d87f3a7417"
     }
   ]
 }
