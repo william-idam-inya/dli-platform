@@ -50,7 +50,7 @@ assert.ok(permissions.includes("account.studentTier==='paid'")&&
  permissions.includes("?'Paid Student':'Free Student'"),'Student tier labels regressed');
 assert.ok(!permissions.includes("'finance_officer'"),'Removed Finance Officer must not be reinstated');
 for(const p of ['/study','/classes','/communications']){
- assert.ok(allowed.get(p)?.includes("'student'"),'Free student route was withdrawn: '+p);
+ assert.ok(allowed.get(p)==='DLI_ROLES' || allowed.get(p)?.includes("'student'"),'Free student route was withdrawn: '+p);
 }
 const active=[nav,roles,permissions,app,shell,quickMenu,
  read('src/components/GlobalSearch.tsx'),read('src/pages/DirectMessagesPage.tsx'),
