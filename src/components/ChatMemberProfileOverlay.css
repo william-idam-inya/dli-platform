@@ -99,3 +99,11 @@
  .dli-chat-profile-details{grid-template-columns:1fr;}
  .dli-chat-profile-person .dli-chat-person-avatar{width:71px;height:71px;flex-basis:71px;}
 }
+
+/* Q44: private audited student profile is always above an active workspace. */
+.dli-chat-profile-backdrop{z-index:1400;}
+.dli-chat-profile-actions{gap:9px;flex-wrap:wrap;}
+.dli-chat-profile-actions>button:first-child{
+ background:var(--surface-soft);border:1px solid var(--border);color:var(--text);
+}
+.dli-chat-profile-dialog .dli-class-student-context{padding-top:13px;}
