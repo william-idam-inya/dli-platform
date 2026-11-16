@@ -106,6 +106,35 @@ Deno.serve(async(request:Request)=>{
    return respond(502,{error:'DLI room ended but provider media shutdown needs attention'},origin);
   }
  }
+ if(body.action==='leave'){
+  try{
+   const admin=createClient(projectUrl,serviceKey,{
+    auth:{persistSession:false,autoRefreshToken:false}
+   });
+   const [attendee,mapping,meetingMap]=await Promise.all([
+    admin.from('dli_conference_attendees').select('is_active')
+     .eq('room_id',roomId).eq('user_id',auth.user.id).maybeSingle(),
+    admin.from('dli_dev_realtimekit_participants').select('provider_participant_id')
+     .eq('room_id',roomId).eq('user_id',auth.user.id).maybeSingle(),
+    admin.from('dli_dev_realtimekit_room_map').select('provider_meeting_id')
+     .eq('room_id',roomId).maybeSingle()
+   ]);
+   if(attendee.error||mapping.error||meetingMap.error||
+      !attendee.data||attendee.data.is_active!==false)
+    return respond(403,{error:'Leave DLI room before revoking media'},origin);
+   if(mapping.data?.provider_participant_id&&meetingMap.data?.provider_meeting_id){
+    await cloudflareRequest('DELETE',
+     '/meetings/'+meetingMap.data.provider_meeting_id+'/participants/'+
+      mapping.data.provider_participant_id);
+    const deleted=await admin.from('dli_dev_realtimekit_participants').delete()
+     .eq('room_id',roomId).eq('user_id',auth.user.id);
+    if(deleted.error)throw Error('Could not release provider participant mapping');
+   }
+   return respond(200,{providerRevoked:true},origin);
+  }catch{
+   return respond(502,{error:'Media token revocation must be verified'},origin);
+  }
+ }
  if(body.action!==undefined)
   return respond(400,{error:'Unrecognized media action'},origin);
  // Enforce the existing server-side attendance, lock and role rules.
@@ -157,18 +186,21 @@ Deno.serve(async(request:Request)=>{
    .select('provider_participant_id,preset_name')
    .eq('room_id',roomId).eq('user_id',auth.user.id).maybeSingle();
   if(existing.error)throw Error('Participant mapping read failed');
+  let existingRow=existing.data;
+  if(existingRow?.provider_participant_id &&
+    existingRow.preset_name!==context.preset){
+   // Never retain old elevated host tokens after a role change.
+   // Refresh alone does not revoke an earlier bearer token.
+   await cloudflareRequest('DELETE','/meetings/'+meetingId+
+    '/participants/'+existingRow.provider_participant_id);
+   const deleted=await admin.from('dli_dev_realtimekit_participants')
+    .delete().eq('room_id',roomId).eq('user_id',auth.user.id);
+   if(deleted.error)throw Error('Stale participant identity could not be removed');
+   existingRow=null;
+  }
   let authToken:string;
-  if(existing.data?.provider_participant_id){
-   const existingId=existing.data.provider_participant_id as string;
-   if(existing.data.preset_name!==context.preset){
-    // Always apply the currently authorized host/viewer preset.
-    await cloudflareRequest('PATCH','/meetings/'+meetingId+
-      '/participants/'+existingId,{preset_name:context.preset});
-    const updated=await admin.from('dli_dev_realtimekit_participants')
-     .update({preset_name:context.preset})
-     .eq('room_id',roomId).eq('user_id',auth.user.id);
-    if(updated.error)throw Error('Participant preset update failed');
-   }
+  if(existingRow?.provider_participant_id){
+   const existingId=existingRow.provider_participant_id as string;
    const tokenResponse=await cloudflareRequest('POST',
     '/meetings/'+meetingId+'/participants/'+existingId+'/token',validity);
    authToken=tokenResponse?.token;
