@@ -1,11 +1,44 @@
 import {useEffect,useRef,useState} from 'react';
 import type {DliCallSignal} from './useDirectRealtime';
+import {supabase} from './supabase';
 
 export type CallMode='audio'|'video';
 export type CallSession={
  id:string;mode:CallMode;direction:'incoming'|'outgoing';state:'ringing'|'connecting'|'connected'|'failed';
  offer?:string;error?:string;
 };
+
+// Development-only Cloudflare TURN broker. Production keeps its existing STUN
+// behaviour until the separately secured production relay is approved.
+const defaultIce:RTCIceServer[]=[
+ {urls:'stun:stun.cloudflare.com:3478'},
+ {urls:'stun:stun.l.google.com:19302'}
+];
+async function verifiedIceServers(threadId:string):Promise<RTCIceServer[]>{
+ const raw=import.meta.env.DEV
+   ?String(import.meta.env.VITE_DLI_DEV_TURN_BROKER_URL??'').trim()
+   :'';
+ if(!raw)return defaultIce;
+ if(!/^https:\/\/[-a-z0-9.]+\.workers\.dev\/?$/i.test(raw))
+  throw Error('Development TURN broker URL is not trusted');
+ if(!supabase)throw Error('Supabase session is unavailable');
+ const {data,error}=await supabase.auth.getSession();
+ if(error||!data.session?.access_token)throw Error('Sign in before calling');
+ const response=await fetch(raw.replace(/\/$/,'')+'/turn',{
+  method:'POST',headers:{
+   'Content-Type':'application/json',
+   Authorization:'Bearer '+data.session.access_token
+  },body:JSON.stringify({thread_id:threadId}),cache:'no-store'
+ });
+ if(!response.ok)throw Error('Development TURN relay is not yet configured or access was denied');
+ const body=await response.json() as {iceServers?:RTCIceServer[]};
+ if(!Array.isArray(body.iceServers)||!body.iceServers.some(ice=>
+    (typeof ice.urls==='string'?[ice.urls]:ice.urls??[])
+       .some(url=>/^turns?:/.test(url))))
+  throw Error('Development TURN broker returned no relay');
+ return body.iceServers;
+}
+
 type Send=(signal:Omit<DliCallSignal,'from'|'to'>)=>boolean;
 /**
  * Consent-based one-to-one WebRTC. Signalling stays in an RLS-authorised
@@ -56,7 +89,8 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   const capture=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true},video:mode==='video'});
   if(!callRef.current||callRef.current.id!==callId){capture.getTracks().forEach(t=>t.stop());throw Error('Call was cancelled');}
   localRef.current=capture;setLocalStream(capture);
-  const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.cloudflare.com:3478'},{urls:'stun:stun.l.google.com:19302'}]});
+  const iceServers=await verifiedIceServers(threadId);
+  const pc=new RTCPeerConnection({iceServers});
   pcRef.current=pc;
   for(const track of capture.getTracks())pc.addTrack(track,capture);
   pc.ontrack=event=>{
