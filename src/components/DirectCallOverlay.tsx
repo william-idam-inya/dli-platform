@@ -1,5 +1,5 @@
-import {useEffect,useRef} from 'react';
-import {Camera,CameraOff,Mic,MicOff,MonitorUp,PhoneOff,Phone,ShieldCheck,Video,X} from 'lucide-react';
+import {useEffect,useRef,useState,type PointerEvent as ReactPointerEvent} from 'react';
+import {Camera,CameraOff,Mic,MicOff,MonitorUp,PhoneOff,Phone,ShieldCheck,Video,Minimize2,Maximize2,X} from 'lucide-react';
 import type {CallSession} from '../lib/useDirectPeerCall';
 import './DirectCallOverlay.css';
 type Props={
@@ -15,6 +15,24 @@ export default function DirectCallOverlay({
  const local=useRef<HTMLVideoElement>(null);
  const remote=useRef<HTMLVideoElement>(null);
  const audio=useRef<HTMLAudioElement>(null);
+ const [minimized,setMinimized]=useState(false);
+ const [offset,setOffset]=useState({x:0,y:0});
+ const drag=useRef<{startX:number;startY:number;x:number;y:number}|null>(null);
+ useEffect(()=>{setMinimized(false);setOffset({x:0,y:0});},[session.id]);
+ function beginDrag(event:ReactPointerEvent<HTMLElement>){
+  if(!minimized||(event.target as HTMLElement).closest('button'))return;
+  drag.current={startX:event.clientX,startY:event.clientY,x:offset.x,y:offset.y};
+  event.currentTarget.setPointerCapture(event.pointerId);
+ }
+ function moveDrag(event:ReactPointerEvent<HTMLElement>){
+  if(!drag.current)return;
+  const nextX=drag.current.x+event.clientX-drag.current.startX;
+  const nextY=drag.current.y+event.clientY-drag.current.startY;
+  const minX=-Math.max(0,window.innerWidth-235);
+  const minY=-Math.max(0,window.innerHeight-190);
+  setOffset({x:Math.min(0,Math.max(minX,nextX)),y:Math.min(0,Math.max(minY,nextY))});
+ }
+ function endDrag(){drag.current=null;}
  useEffect(()=>{if(local.current)local.current.srcObject=localStream;
   if(remote.current)remote.current.srcObject=remoteStream;
   if(audio.current)audio.current.srcObject=remoteStream;
@@ -28,17 +46,29 @@ export default function DirectCallOverlay({
   return()=>window.removeEventListener('keydown',key,true);
  },[session.direction,session.state,onReject,onEnd]);
  const ringing=session.direction==='incoming'&&session.state==='ringing';
- return <div className="dli-call-backdrop" role="presentation"
-   onMouseDown={e=>{if(e.target===e.currentTarget){
+ return <div className={'dli-call-backdrop'+(minimized?' minimized':'')} role="presentation"
+   onMouseDown={e=>{if(!minimized&&e.target===e.currentTarget){
      if(ringing)onReject();else onEnd();
    }}}>
-  <section role="dialog" aria-modal="true" aria-label={session.mode+' call with '+name}
-   className="dli-call-panel">
-   <header><div><small>PRIVATE DLI WEBRTC CALL</small>
+  <section role="dialog" aria-modal={minimized?undefined:true}
+    aria-label={session.mode+' call with '+name}
+    className="dli-call-panel"
+    style={minimized?{transform:'translate('+offset.x+'px, '+offset.y+'px)'}:undefined}>
+   <header onPointerDown={beginDrag} onPointerMove={moveDrag}
+     onPointerUp={endDrag} onPointerCancel={endDrag}>
+    <div><small>PRIVATE DLI WEBRTC CALL</small>
       <h2>{name}</h2><p>{ringing?'Incoming '+session.mode+' call':session.state==='connecting'?
        'Connecting encrypted media…':session.state==='connected'?'Connected · '+session.mode+' call':
        session.state==='ringing'?'Ringing… waiting for '+name+' to answer':'Connection unavailable'}</p></div>
-    <button type="button" aria-label="End or decline call" onClick={ringing?onReject:onEnd}><X size={21}/></button>
+    <div className="dli-call-header-buttons">
+      {!ringing&&<button type="button"
+        aria-label={minimized?'Expand call':'Minimize call to floating window'}
+        onClick={()=>{setMinimized(v=>!v);setOffset({x:0,y:0});}}>
+        {minimized?<Maximize2 size={20}/>:<Minimize2 size={20}/>}
+      </button>}
+      <button type="button" aria-label="End or decline call"
+        onClick={ringing?onReject:onEnd}><X size={21}/></button>
+    </div>
    </header>
    <div className={'dli-call-media'+(session.mode==='audio'?' audio':'')}>
     {session.mode==='video'?<>
