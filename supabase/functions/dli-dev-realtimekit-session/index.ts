@@ -24,14 +24,20 @@ function respond(status:number,data:Record<string,unknown>,origin:string){
   }:{})
  }});
 }
-async function cloudflareRequest(path:string,body:Record<string,unknown>){
+async function cloudflareRequest(method:'GET'|'POST'|'PATCH'|'DELETE',
+ path:string,body?:Record<string,unknown>){
  const res=await fetch("https://api.cloudflare.com/client/v4/accounts/"+ACCOUNT_ID+
   "/realtime/kit/"+APP_ID+path,{
-  method:"POST",headers:{"Authorization":"Bearer "+cloudflareToken,
-   "Content-Type":"application/json"},body:JSON.stringify(body)
+  method,
+  headers:{"Authorization":"Bearer "+cloudflareToken,
+   "Content-Type":"application/json"},
+  ...(body?{body:JSON.stringify(body)}:{}),
+  cache:"no-store"
  });
+ // Never log raw responses; they can contain a participant bearer JWT.
  const parsed=await res.json().catch(()=>null);
- if(!res.ok||!parsed?.success)throw Error("Cloudflare media issuance unavailable");
+ if(!res.ok||!parsed?.success)
+  throw Error("Cloudflare media provider request failed");
  return parsed.data;
 }
 
@@ -46,7 +52,7 @@ Deno.serve(async(request:Request)=>{
  const authorization=request.headers.get("authorization")??"";
  if(!/^Bearer\s+\S+$/i.test(authorization))
   return respond(401,{error:"Sign in to DLI first"},origin);
- let body:{room_id?:unknown};
+ let body:{room_id?:unknown;action?:unknown};
  try{body=await request.json();}catch{return respond(400,{error:"Invalid request"},origin);}
  const roomId=body?.room_id;
  if(typeof roomId!=="string"||!UUID.test(roomId))
@@ -58,6 +64,50 @@ Deno.serve(async(request:Request)=>{
  const token=authorization.replace(/^Bearer\s+/i,"");
  const {data:auth,error:authError}=await client.auth.getUser(token);
  if(authError||!auth.user)return respond(401,{error:"DLI session expired"},origin);
+ // An explicitly ended DLI room must also revoke provider media participants.
+ // Only an authorized DLI owner, admin, assistant admin or room creator can
+ // perform this endpoint, and only after the DLI room was ended in the DB.
+ if(body.action==='end'){
+  try{
+   const admin=createClient(projectUrl,serviceKey,{
+    auth:{persistSession:false,autoRefreshToken:false}
+   });
+   const [person,room,map]=await Promise.all([
+    admin.from('authorised_users').select('role,status').eq('auth_user_id',auth.user.id).maybeSingle(),
+    admin.from('dli_conference_rooms').select('state,created_by').eq('id',roomId).maybeSingle(),
+    admin.from('dli_dev_realtimekit_room_map').select('provider_meeting_id').eq('room_id',roomId).maybeSingle()
+   ]);
+   if(person.error||room.error||map.error||!person.data||!room.data||
+      person.data.status!=='active'||room.data.state!=='ended'){
+    return respond(403,{error:'Ended conference verification failed'},origin);
+   }
+   const role=person.data.role;
+   const allowed=['owner','admin','assistant_admin'].includes(role)||
+    (role==='tutor'&&room.data.created_by===auth.user.id);
+   if(!allowed)return respond(403,{error:'Only the DLI room host can end media'},origin);
+   const providerId=map.data?.provider_meeting_id;
+   if(!providerId)return respond(200,{providerEnded:true,hadMedia:false},origin);
+   // Deleting provider participants revokes all tokens and ejects active peers.
+   const participants=await cloudflareRequest('GET',
+    '/meetings/'+providerId+'/participants');
+   const items=Array.isArray(participants)?participants:
+    Array.isArray(participants?.participants)?participants.participants:[];
+   if(items.length>95)
+    throw Error('Too many provider participants for safe end');
+   for(const participant of items){
+    if(typeof participant?.id==='string'&&UUID.test(participant.id)){
+     await cloudflareRequest('DELETE',
+      '/meetings/'+providerId+'/participants/'+participant.id);
+    }
+   }
+   await cloudflareRequest('PATCH','/meetings/'+providerId,{status:'INACTIVE'});
+   return respond(200,{providerEnded:true,hadMedia:true},origin);
+  }catch{
+   return respond(502,{error:'DLI room ended but provider media shutdown needs attention'},origin);
+  }
+ }
+ if(body.action!==undefined)
+  return respond(400,{error:'Unrecognized media action'},origin);
  // Enforce the existing server-side attendance, lock and role rules.
  const join=await client.rpc("dli_conference_join",{p_room:roomId});
  if(join.error||join.data!==true)
@@ -79,7 +129,7 @@ Deno.serve(async(request:Request)=>{
   if(stored.error)throw Error("Room map read failed");
   let meetingId=stored.data?.provider_meeting_id as string|undefined;
   if(!meetingId){
-   const meeting=await cloudflareRequest("/meetings",{
+   const meeting=await cloudflareRequest('POST',"/meetings",{
     title:context.room_title,record_on_start:false,
     live_stream_on_start:false,persist_chat:false
    });
@@ -99,18 +149,50 @@ Deno.serve(async(request:Request)=>{
    }else meetingId=createdId;
   }
   const now=Date.now();
-  const result=await cloudflareRequest("/meetings/"+meetingId+"/participants",{
-   name:context.display_name,preset_name:context.preset,
-   custom_participant_id:auth.user.id,
-   token:{
-    not_before:new Date(now-60_000).toISOString(),
-    expires_on:new Date(now+90*60_000).toISOString()
+  const validity={
+   not_before:new Date(now-60_000).toISOString(),
+   expires_on:new Date(now+90*60_000).toISOString()
+  };
+  const existing=await admin.from('dli_dev_realtimekit_participants')
+   .select('provider_participant_id,preset_name')
+   .eq('room_id',roomId).eq('user_id',auth.user.id).maybeSingle();
+  if(existing.error)throw Error('Participant mapping read failed');
+  let authToken:string;
+  if(existing.data?.provider_participant_id){
+   const existingId=existing.data.provider_participant_id as string;
+   if(existing.data.preset_name!==context.preset){
+    // Always apply the currently authorized host/viewer preset.
+    await cloudflareRequest('PATCH','/meetings/'+meetingId+
+      '/participants/'+existingId,{preset_name:context.preset});
+    const updated=await admin.from('dli_dev_realtimekit_participants')
+     .update({preset_name:context.preset})
+     .eq('room_id',roomId).eq('user_id',auth.user.id);
+    if(updated.error)throw Error('Participant preset update failed');
    }
-  });
-  const value=result?.participant??result;
-  const authToken=value?.authToken??value?.auth_token??value?.token;
-  if(typeof authToken!=="string"||!authToken)
-   throw Error("Provider did not issue an authentication token");
+   const tokenResponse=await cloudflareRequest('POST',
+    '/meetings/'+meetingId+'/participants/'+existingId+'/token',validity);
+   authToken=tokenResponse?.token;
+  }else{
+   const participant=await cloudflareRequest('POST',
+    '/meetings/'+meetingId+'/participants',{
+     name:context.display_name,preset_name:context.preset,
+     custom_participant_id:auth.user.id,
+     token:validity
+    });
+   const participantId=participant?.id as string|undefined;
+   // Cloudflare's REST response uses data.token, not authToken.
+   const newToken=participant?.token;
+   if(!participantId||!UUID.test(participantId)||typeof newToken!=='string')
+    throw Error('Provider response did not include participant credentials');
+   const saved=await admin.from('dli_dev_realtimekit_participants').insert({
+    room_id:roomId,user_id:auth.user.id,
+    provider_participant_id:participantId,preset_name:context.preset
+   });
+   if(saved.error)throw Error('Participant record could not be stored');
+   authToken=newToken;
+  }
+  if(typeof authToken!=='string'||!authToken)
+   throw Error('Provider did not issue an authentication token');
   return respond(200,{authToken,meetingId,roomId,preset:context.preset},origin);
  }catch{
   return respond(502,{error:"DLI media provider connection is not yet available"},origin);
