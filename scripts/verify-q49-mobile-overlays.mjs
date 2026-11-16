@@ -46,5 +46,19 @@ finder(call,'<audio ref={audio} autoPlay','Audio media must still play');
 finder(focus,"panel.querySelector('label')?.textContent?.trim()", 'Meaningful fallback focus title');
 finder(forward,'forwardTarget&&createPortal(', 'Forward dialog portalled');
 finder(profile,'createPortal(', 'Private profile dialog portalled');
+for(const token of [
+ 'body .dli-payout-preview-overlay','body .upgrade-receipt-overlay',
+ 'body .dli-payout-preview','body .upgrade-receipt-modal',
+ 'body .dli-payout-preview-head','body .upgrade-receipt-heading',
+ 'body:has(.dli-payout-preview-overlay)',
+ 'body:has(.upgrade-receipt-overlay)'
+])finder(css,token,'Private payment preview safeguard missing');
+for(const p of ['src/pages/PaidEnrollmentPage.tsx','src/components/TutorPayoutWorkflow.tsx']){
+ const source=read(p);
+ finder(source,"import {createPortal} from 'react-dom'", 'Receipt preview portal');
+ finder(source,'{preview&&createPortal(<div', 'Receipt not rendered as portal');
+ finder(source,'</div>,document.body)}','Receipt portal must close in the body layer');
+}
+
 console.log('Q49 static overlay guards passed: audio layout, accessible mobile drawer, Quick Menu portal, focus scrolling, nested dialogs and Messenger occlusion.');
 console.log('Q49 source validation alone does not establish authenticated or keyboard viewport E2E.');
