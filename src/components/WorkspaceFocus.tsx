@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
-import {Bell,BookOpen,CalendarDays,ChevronDown,ChevronsDownUp,ChevronsUpDown,ClipboardList,LayoutPanelTop,MessageCircle,Settings2,UserRound,Users,Wallet,X} from 'lucide-react';
+import {Bell,BookOpen,CalendarDays,ChevronDown,ClipboardList,LayoutPanelTop,MessageCircle,Settings2,UserRound,Users,Wallet,X} from 'lucide-react';
 import {useLocation} from 'react-router-dom';
 import './WorkspaceFocus.css';
 
@@ -17,26 +17,16 @@ function sectionIcon(title:string){
  if(/preference|setting/.test(value))return <Settings2 size={16}/>;
  return <LayoutPanelTop size={16}/>;
 }
-
-/**
- * All focus panels retain their original React-managed DOM and internal state.
- * A shared, one-row, horizontally scrollable trigger bar opens the real panel.
- * The server/data flow is unaffected by compact view toggles.
- */
+/** Permanent overlay-only workspace. Never reveal inline expansion.
+ * Panels keep their React DOM/state and must be accessed by horizontal pills. */
 export default function WorkspaceFocus({children}:{children:ReactNode}){
  const location=useLocation();
  const root=useRef<HTMLDivElement>(null);
  const [sections,setSections]=useState<FocusSection[]>([]);
- const [compressed,setCompressed]=useState(true);
- const compressedRef=useRef(true);
- compressedRef.current=compressed;
- const tourActiveRef=useRef(false);
- const tourPriorCompressedRef=useRef(true);
  const [active,setActive]=useState<string|null>(null);
  const activePanel=useRef<HTMLElement|null>(null);
  const previousFocused=useRef<HTMLElement|null>(null);
  const sectionMap=useRef(new Map<string,HTMLElement>());
- const count=sections.length;
  const decorate=useCallback(()=>{
   const host=root.current;
   if(!host)return;
@@ -66,8 +56,26 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    item.key===next[index].key&&item.title===next[index].title&&item.rows===next[index].rows)
    ?previous:next);
  },[]);
+ const close=useCallback(()=>{
+  activePanel.current?.removeAttribute('data-dli-focus-active');
+  activePanel.current=null;
+  setActive(null);
+  requestAnimationFrame(()=>previousFocused.current?.focus({preventScroll:true}));
+ },[]);
+ const open=useCallback((key:string,panel:HTMLElement,trigger:HTMLElement)=>{
+  previousFocused.current=trigger;
+  activePanel.current=panel;
+  panel.scrollTop=0;
+  panel.scrollLeft=0;
+  panel.setAttribute('tabindex','-1');
+  setActive(key);
+  requestAnimationFrame(()=>{
+   panel.scrollTop=0;
+   panel.focus({preventScroll:true});
+  });
+ },[]);
  useEffect(()=>{
-  setActive(null);setCompressed(tourActiveRef.current?false:true);
+  setActive(null);
   decorate();
   const observer=new MutationObserver(records=>{
    if(records.some(r=>r.addedNodes.length||r.removedNodes.length))decorate();
@@ -78,68 +86,26 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
  useEffect(()=>{
   const host=root.current;
   if(!host)return;
-  host.classList.toggle('dli-workspace-compressed',compressed&&count>0);
+  host.classList.add('dli-workspace-compressed');
   for(const [key,panel] of sectionMap.current){
-   if(compressed&&count>0){
-    if(active===key){
-     panel.setAttribute('data-dli-focus-active','true');
-     panel.setAttribute('role','dialog');
-     panel.setAttribute('aria-modal','true');
-     panel.setAttribute('tabindex','-1');
-     panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
-    }else{
-     panel.removeAttribute('data-dli-focus-active');
-     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
-     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
-    }
+   if(active===key){
+    panel.setAttribute('data-dli-focus-active','true');
+    panel.setAttribute('role','dialog');
+    panel.setAttribute('aria-modal','true');
+    panel.setAttribute('tabindex','-1');
+    panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
    }else{
     panel.removeAttribute('data-dli-focus-active');
     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
    }
   }
- },[active,compressed,count,location.pathname,sections]);
- // A contextual guided tour reveals the real feature panels temporarily.
- // Restore the user's previous compact/expanded choice once the tour ends.
+ },[active,location.pathname,sections]);
  useEffect(()=>{
-  function begin(){
-   if(!tourActiveRef.current){
-    tourPriorCompressedRef.current=compressedRef.current;
-    tourActiveRef.current=true;
-   }
-   setActive(null);setCompressed(false);
-  }
-  function end(){
-   if(!tourActiveRef.current)return;
-   tourActiveRef.current=false;
-   setCompressed(tourPriorCompressedRef.current);
-  }
-  window.addEventListener('dli-tour-begin',begin);
-  window.addEventListener('dli-tour-end',end);
-  return()=>{
-   window.removeEventListener('dli-tour-begin',begin);
-   window.removeEventListener('dli-tour-end',end);
-  };
+  function tourBegin(){setActive(null);}
+  window.addEventListener('dli-tour-begin',tourBegin);
+  return()=>window.removeEventListener('dli-tour-begin',tourBegin);
  },[]);
- const close=useCallback(()=>{
-  activePanel.current?.removeAttribute('data-dli-focus-active');
-  activePanel.current=null;setActive(null);
-  requestAnimationFrame(()=>previousFocused.current?.focus({preventScroll:true}));
- },[]);
- const open=useCallback((key:string,panel:HTMLElement,trigger:HTMLElement)=>{
-  if(!compressed)return;
-  previousFocused.current=trigger;
-  activePanel.current=panel;
-  // Never reopen a long workspace halfway down.
-  panel.scrollTop=0;
-  panel.scrollLeft=0;
-  panel.setAttribute('tabindex','-1');
-  setActive(key);
-  requestAnimationFrame(()=>{
-   panel.scrollTop=0;
-   panel.focus({preventScroll:true});
-  });
- },[compressed]);
  useEffect(()=>{
   if(active===null)return;
   function onKey(event:KeyboardEvent){
@@ -158,16 +124,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   return()=>document.removeEventListener('keydown',onKey,true);
  },[active,close]);
  return <div ref={root} className="dli-workspace-focus-root">
-  {count>0&&<div className="dli-workspace-toolbar" role="toolbar" aria-label="Workspace view controls">
-   <span>{count} work area{count===1?'':'s'} · {compressed?'Compact overview':'Expanded workspace'}</span>
-   <button type="button" disabled={active!==null}
-    onClick={()=>{setCompressed(value=>!value);setActive(null);}}
-    aria-pressed={compressed} aria-label={compressed?'Expand all work areas':'Compress all work areas'}>
-    {compressed?<ChevronsUpDown size={16}/>:<ChevronsDownUp size={16}/>}
-    {compressed?'Expand all':'Compress all'}
-   </button>
-  </div>}
-  {compressed&&count>0&&<nav className="dli-workspace-trigger-row" aria-label="Open workspace sections">
+  {sections.length>0&&<nav className="dli-workspace-trigger-row" aria-label="Open workspace sections">
    {sections.map(section=><button key={section.key} type="button"
     className="dli-workspace-trigger" aria-haspopup="dialog"
     aria-label={'Open '+section.title}

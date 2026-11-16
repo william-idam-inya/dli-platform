@@ -188,6 +188,9 @@ jobs:
       - name: Verify Q50 production media authorizations and secure launch gating
         run: npm run check:q50-prod-realtimekit
 
+      - name: Verify Q51 overlay-only pill navigation
+        run: npm run check:q51-pill-navigation
+
       - name: Verify TypeScript
         run: npm run typecheck
 
