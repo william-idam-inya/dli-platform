@@ -64,3 +64,41 @@ background:var(--surface-soft,#f9f8fc);border-radius:11px}
 .dli-payment-review-toast a{color:var(--purple);font-weight:800}
 .dli-payment-review-toast button{margin-left:auto;background:transparent;color:var(--text);border:0;cursor:pointer}
 @media(max-width:680px){.dli-payment-review-toast{top:calc(70px + env(safe-area-inset-top));left:12px;right:12px;width:auto}}
+
+/* Q45 filtered notification popover and current announcement crawl. */
+.dli-notice-filter-row{display:flex;flex-wrap:wrap;gap:6px;padding:7px 3px 10px}
+.dli-notice-filter-row>button{min-height:36px;border:1px solid var(--border);
+ border-radius:999px;padding:5px 10px;background:var(--surface-soft);color:var(--text);
+ font:inherit;font-size:11px;font-weight:750}
+.dli-notice-filter-row>button.selected{border-color:var(--purple);
+ color:var(--purple);background:var(--purple-soft)}
+.dli-notice-filter-row>.dli-sound-toggle{margin-left:auto}
+.dli-announcement-ticker{display:flex;align-items:center;gap:11px;min-height:39px;
+ width:100%;min-width:0;padding:0 14px;overflow:hidden;
+ background:linear-gradient(90deg,#10366e,#0c274b);color:#fff;
+ border-bottom:1px solid rgba(255,255,255,.13);font-size:12px}
+.dli-ticker-label{flex:0 0 auto;display:inline-grid;place-items:center;
+ border-radius:5px;background:#f1c65c;color:#0a244a;font-weight:900;
+ letter-spacing:.06em;font-size:10px;padding:6px 9px}
+.dli-ticker-mask{overflow:hidden;flex:1;min-width:0}
+.dli-ticker-track{display:flex;align-items:center;gap:52px;
+ width:max-content;white-space:nowrap;animation:dli-ticker-scroll 30s linear infinite}
+.dli-ticker-track:hover,.dli-ticker-track:focus-within{animation-play-state:paused}
+.dli-ticker-item{display:inline-flex;align-items:center;gap:7px;min-height:35px;
+ color:#fff;text-decoration:none;white-space:nowrap}
+.dli-ticker-item>span{font-size:7px;color:#f1c65c}
+.dli-ticker-item strong{color:#f1c65c;font-size:10px}
+.dli-ticker-item:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.dli-ticker-all{white-space:nowrap;font-size:11px;font-weight:800;
+ color:#fff;text-decoration:underline;text-underline-offset:3px}
+@keyframes dli-ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-65%)}}
+@media(max-width:680px){
+ .dli-announcement-ticker{gap:7px;padding:0 7px}
+ .dli-ticker-label{font-size:9px;padding:5px}
+ .dli-ticker-all{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .dli-ticker-track{animation:none;white-space:normal;flex-wrap:wrap;width:auto}
+ .dli-ticker-mask{max-height:84px;overflow-y:auto}
+ .dli-ticker-item{white-space:normal}
+}
