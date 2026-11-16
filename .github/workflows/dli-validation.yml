@@ -61,7 +61,7 @@ jobs:
       - name: Verify Q4 offline recovery-bundle self-tests (synthetic files only)
         run: npm run check:recovery-bundle-tests
 
-      - name: Verify document-backed historic plan rates against saved financial reference
+      - name: Verify document-backed paid learning rates remain finance-inactive
         run: npm run check:paid-learning-plans
 
       - name: Verify frontend role and student-tier matrix (no network)
@@ -107,10 +107,10 @@ jobs:
       - name: Verify Q22 feature-by-feature production reconciliation
         run: npm run check:q22-feature-reconciliation
 
-      - name: Verify Q23 historical receipts remain audited while Q50 Paystack replaces manual payment
+      - name: Verify Q23 historical receipt audit and Paystack replacement
         run: npm run check:q23-manual-payments
 
-      - name: Verify Q24 historical tutor receipts and Q50 role-checked Paystack payouts
+      - name: Verify Q24 historical payouts and Q50 Paystack disbursement
         run: npm run check:q24-tutor-payout
 
       - name: Verify Q25 privileged API hardening and operational transparency
@@ -140,7 +140,7 @@ jobs:
       - name: Verify Q34 cohort-pacing and Telegram message controls
         run: npm run check:q34-curriculum-telegram
 
-      - name: Verify Q50 overlay-only pill workspaces, five roles, Free Student learning and protected Realtime
+      - name: Verify Q35 global compact workspaces, five roles, Free Student learning and protected Realtime
         run: npm run check:q35-global-focus-realtime
 
       - name: Verify Q36 new-chat filtering, single-row workspaces and shared background
@@ -184,6 +184,9 @@ jobs:
 
       - name: Verify Q49 mobile call and overlay containment across viewports
         run: npm run check:q49-mobile-overlays
+
+      - name: Verify Q50 production media authorizations and secure launch gating
+        run: npm run check:q50-prod-realtimekit
 
       - name: Verify Q50 server-priced Paystack checkout and overlay-only navigation
         run: npm run check:q50-paystack-overlays
