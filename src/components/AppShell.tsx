@@ -112,6 +112,19 @@ export default function AppShell({ children }: AppShellProps) {
     };
   },[]);
   const [profileMenuOpen,setProfileMenuOpen] = useState(false);
+  const profileMenuRef=useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    if(!profileMenuOpen)return;
+    const outside=(event:PointerEvent)=>{
+      if(!profileMenuRef.current?.contains(event.target as Node))setProfileMenuOpen(false);
+    };
+    const esc=(event:KeyboardEvent)=>{
+      if(event.key==='Escape')setProfileMenuOpen(false);
+    };
+    document.addEventListener('pointerdown',outside);
+    document.addEventListener('keydown',esc);
+    return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);};
+  },[profileMenuOpen]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -352,7 +365,7 @@ export default function AppShell({ children }: AppShellProps) {
             >
               {darkMode ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <div className="dli-profile-menu">
+            <div className="dli-profile-menu" ref={profileMenuRef}>
             <NavLink to="/profile" className="account-mini" title="My profile and settings">
               {account ? <ProfileAvatar key={account.id} name={account.full_name} /> :
                 <span className="profile-placeholder">D</span>}
