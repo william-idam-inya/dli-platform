@@ -181,8 +181,8 @@ export default function MemberProfilePage(){
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   {notice&&<p><Link className="user-outline-button" to="/">Open my DLI dashboard</Link></p>}
-  <section data-dli-tour="profile" className="panel member-profile-main">
-   <div className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
+  <section className="panel member-profile-main">
+   <div data-dli-tour="profile" className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
     <h2>{profile?'Your saved profile':'Complete your profile'}</h2>
     <p className="user-caption">Choose a picture, adjust the crop, then select Upload photo. The photo is saved to your private DLI cloud storage and remains available across devices. Saving other profile details is a separate action.</p>
    </div><button type="button" className="user-outline-button" onClick={()=>void refresh()} disabled={loading||busy}><RefreshCw size={15}/> Refresh</button></div>

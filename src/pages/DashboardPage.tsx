@@ -103,14 +103,14 @@ export default function DashboardPage(){
     : 'Manage classes';
 
   return <div className="dashboard-page unified-overview" data-dli-role={account?.role ?? 'guest'}>
-    <section data-dli-tour="dashboard" className="welcome-row">
+    <section className="welcome-row">
       <div>
         <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
         <h1>{headline}</h1>
         <p className="welcome-copy">
           {account ? accountRoleLabel(account) + ' · ' : ''}{welcomeSummary}
         </p>
-        <div className="dli-role-actions">
+        <div data-dli-tour="dashboard" className="dli-role-actions">
           {account && canAccessPath(account.role,heroPath,account.studentTier) &&
             <Link to={heroPath} className="dli-hero-action">
               {heroAction} <ArrowRight size={16} aria-hidden="true"/>

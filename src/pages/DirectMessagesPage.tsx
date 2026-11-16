@@ -732,7 +732,7 @@ export default function DirectMessagesPage(){
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
-        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" type="button"
+        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" data-dli-tour="new-message" type="button"
           aria-label={composeOpen?'Close contacts':'Compose new message'}
           onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
           {composeOpen?<X size={22}/>:<Pencil size={22}/>}
