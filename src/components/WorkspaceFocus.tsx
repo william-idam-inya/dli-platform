@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
-import {Bell,BookOpen,CalendarDays,ChevronDown,ChevronsDownUp,ChevronsUpDown,ClipboardList,LayoutPanelTop,MessageCircle,Settings2,UserRound,Users,Wallet,X} from 'lucide-react';
+import {Bell,BookOpen,CalendarDays,ChevronDown,ClipboardList,LayoutPanelTop,MessageCircle,Settings2,UserRound,Users,Wallet,X} from 'lucide-react';
 import {useLocation} from 'react-router-dom';
 import './WorkspaceFocus.css';
 
@@ -27,11 +27,6 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
  const location=useLocation();
  const root=useRef<HTMLDivElement>(null);
  const [sections,setSections]=useState<FocusSection[]>([]);
- const [compressed,setCompressed]=useState(true);
- const compressedRef=useRef(true);
- compressedRef.current=compressed;
- const tourActiveRef=useRef(false);
- const tourPriorCompressedRef=useRef(true);
  const [active,setActive]=useState<string|null>(null);
  const activePanel=useRef<HTMLElement|null>(null);
  const previousFocused=useRef<HTMLElement|null>(null);
@@ -67,7 +62,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    ?previous:next);
  },[]);
  useEffect(()=>{
-  setActive(null);setCompressed(tourActiveRef.current?false:true);
+  setActive(null);
   decorate();
   const observer=new MutationObserver(records=>{
    if(records.some(r=>r.addedNodes.length||r.removedNodes.length))decorate();
@@ -78,48 +73,26 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
  useEffect(()=>{
   const host=root.current;
   if(!host)return;
-  host.classList.toggle('dli-workspace-compressed',compressed&&count>0);
+  host.classList.toggle('dli-workspace-compressed',count>0);
   for(const [key,panel] of sectionMap.current){
-   if(compressed&&count>0){
-    if(active===key){
-     panel.setAttribute('data-dli-focus-active','true');
-     panel.setAttribute('role','dialog');
-     panel.setAttribute('aria-modal','true');
-     panel.setAttribute('tabindex','-1');
-     panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
-    }else{
-     panel.removeAttribute('data-dli-focus-active');
-     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
-     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
-    }
+   if(count>0&&active===key){
+    panel.setAttribute('data-dli-focus-active','true');
+    panel.setAttribute('role','dialog');
+    panel.setAttribute('aria-modal','true');
+    panel.setAttribute('tabindex','-1');
+    panel.setAttribute('aria-label',panel.getAttribute('data-dli-focus-title')||'Focused workspace');
    }else{
     panel.removeAttribute('data-dli-focus-active');
     panel.removeAttribute('role');panel.removeAttribute('aria-modal');
     panel.removeAttribute('tabindex');panel.removeAttribute('aria-label');
    }
   }
- },[active,compressed,count,location.pathname,sections]);
- // A contextual guided tour reveals the real feature panels temporarily.
- // Restore the user's previous compact/expanded choice once the tour ends.
+ },[active,count,location.pathname,sections]);
+ // Tours retain their navigation prompts without expanding workspaces inline.
  useEffect(()=>{
-  function begin(){
-   if(!tourActiveRef.current){
-    tourPriorCompressedRef.current=compressedRef.current;
-    tourActiveRef.current=true;
-   }
-   setActive(null);setCompressed(false);
-  }
-  function end(){
-   if(!tourActiveRef.current)return;
-   tourActiveRef.current=false;
-   setCompressed(tourPriorCompressedRef.current);
-  }
-  window.addEventListener('dli-tour-begin',begin);
-  window.addEventListener('dli-tour-end',end);
-  return()=>{
-   window.removeEventListener('dli-tour-begin',begin);
-   window.removeEventListener('dli-tour-end',end);
-  };
+  const closeTour=()=>setActive(null);
+  window.addEventListener('dli-tour-begin',closeTour);
+  return()=>window.removeEventListener('dli-tour-begin',closeTour);
  },[]);
  const close=useCallback(()=>{
   activePanel.current?.removeAttribute('data-dli-focus-active');
@@ -127,7 +100,6 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   requestAnimationFrame(()=>previousFocused.current?.focus({preventScroll:true}));
  },[]);
  const open=useCallback((key:string,panel:HTMLElement,trigger:HTMLElement)=>{
-  if(!compressed)return;
   previousFocused.current=trigger;
   activePanel.current=panel;
   // Never reopen a long workspace halfway down.
@@ -139,7 +111,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
    panel.scrollTop=0;
    panel.focus({preventScroll:true});
   });
- },[compressed]);
+ },[]);
  useEffect(()=>{
   if(active===null)return;
   function onKey(event:KeyboardEvent){
@@ -158,16 +130,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   return()=>document.removeEventListener('keydown',onKey,true);
  },[active,close]);
  return <div ref={root} className="dli-workspace-focus-root">
-  {count>0&&<div className="dli-workspace-toolbar" role="toolbar" aria-label="Workspace view controls">
-   <span>{count} work area{count===1?'':'s'} · {compressed?'Compact overview':'Expanded workspace'}</span>
-   <button type="button" disabled={active!==null}
-    onClick={()=>{setCompressed(value=>!value);setActive(null);}}
-    aria-pressed={compressed} aria-label={compressed?'Expand all work areas':'Compress all work areas'}>
-    {compressed?<ChevronsUpDown size={16}/>:<ChevronsDownUp size={16}/>}
-    {compressed?'Expand all':'Compress all'}
-   </button>
-  </div>}
-  {compressed&&count>0&&<nav className="dli-workspace-trigger-row" aria-label="Open workspace sections">
+  {count>0&&<nav className="dli-workspace-trigger-row" aria-label="Open workspace sections">
    {sections.map(section=><button key={section.key} type="button"
     className="dli-workspace-trigger" aria-haspopup="dialog"
     aria-label={'Open '+section.title}
@@ -180,7 +143,7 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   {active!==null&&<div className="dli-workspace-backdrop" role="presentation"
     onMouseDown={event=>{if(event.currentTarget===event.target)close();}}>
    <button type="button" className="dli-workspace-focus-close" onClick={close}
-    aria-label="Close focused workspace and return to compact overview" title="Close focused workspace">
+    aria-label="Close focused workspace" title="Close focused workspace">
     <X size={20}/> Close
    </button>
    <div className="dli-workspace-focus-caption" aria-live="polite">
