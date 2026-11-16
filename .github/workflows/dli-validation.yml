@@ -146,6 +146,9 @@ jobs:
       - name: Verify Q36 new-chat filtering, single-row workspaces and shared background
         run: npm run check:q36-chat-focus-theme
 
+      - name: Verify Q37 cross-workspace calling, media lifecycle and role-safe signal routing
+        run: npm run check:q37-global-calling
+
       - name: Verify TypeScript
         run: npm run typecheck
 
