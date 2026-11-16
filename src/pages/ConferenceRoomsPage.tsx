@@ -7,7 +7,9 @@ import './ConferenceRoomsPage.css';
 // RealtimeKit's large SDK is never loaded on production; the existing
 // role-restricted DLI chat/room governance remains functional everywhere.
 const DevRealtimeKitConference=lazy(()=>import('../components/DevRealtimeKitConference'));
-const mediaDevEnabled=import.meta.env.DEV &&
+const mediaDevEnabled=(import.meta.env.DEV||
+ (typeof window!=='undefined'&&
+  window.location.hostname==='feature-stage-q49-realtimeki.dli-platform-qa.pages.dev')) &&
  import.meta.env.VITE_DLI_DEV_REALTIMEKIT_ENABLED==='true' &&
  import.meta.env.VITE_SUPABASE_URL==='https://pbepbcdkrdqnepvcwtyw.supabase.co';
 
