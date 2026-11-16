@@ -7,7 +7,7 @@ import './ConferenceRoomsPage.css';
 // RealtimeKit's large SDK is never loaded on production; the existing
 // role-restricted DLI chat/room governance remains functional everywhere.
 const ProductionRealtimeKitConference=lazy(()=>import('../components/ProductionRealtimeKitConference'));
-const mediaProdEnabled=import.meta.env.PROD &&
+const productionMediaBuildEnabled=import.meta.env.PROD &&
  (typeof window!=='undefined'&&window.location.hostname==='dli-platform-prod.pages.dev') &&
  import.meta.env.VITE_DLI_PROD_REALTIMEKIT_ENABLED==='true' &&
  import.meta.env.VITE_SUPABASE_URL==='https://thoinmwqxmqxrnywjuxq.supabase.co';
@@ -25,6 +25,10 @@ const labels={student_seminar:'Student seminars & town halls',tutors_conference:
 export default function ConferenceRoomsPage(){
  const {account}=useAuth();
  const staff=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'||account?.role==='tutor';
+ // Q50 controlled production pilot. SQL separately enforces the same executive
+ // role gate so a client-side modification never grants student media access.
+ const mediaProdEnabled=productionMediaBuildEnabled&&
+  (account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin');
  const [uid,setUid]=useState('');
  const [people,setPeople]=useState<Person[]>([]);
  const [rooms,setRooms]=useState<Room[]>([]);
@@ -200,7 +204,7 @@ export default function ConferenceRoomsPage(){
    </div>
   </div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
-   <strong>{mediaProdEnabled?'DLI video conferencing enabled':'Media provisioning not yet active'}</strong>
+   <strong>{mediaProdEnabled?'Administrator video-conference pilot available':'Media provisioning not yet active'}</strong>
    {mediaProdEnabled?
     <p>Cloudflare RealtimeKit video conferencing is connected to this protected DLI room.
      Only DLI-authorised members may request media tokens. Live camera, microphone and permitted host controls require device permissions and a working connection.</p>:
@@ -271,7 +275,7 @@ export default function ConferenceRoomsPage(){
         aria-pressed={mediaOpen}>
         <Video size={17}/> {mediaOpen?'Hide conference video':'Open video conference'}
        </button>
-       <small>Secure DLI meeting · Usage charges may apply</small>
+       <small>Executive pilot conference · Usage charges may apply</small>
       </div>}
       {mediaProdEnabled&&mediaOpen&&<Suspense fallback={<p role="status">Loading RealtimeKit video controls…</p>}>
        <ProductionRealtimeKitConference key={active??'room'} roomId={current.id}
