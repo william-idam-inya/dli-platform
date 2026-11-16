@@ -13,9 +13,13 @@ import './q36-workspace-theme.css';
 import './q45-shell.css';
 import './mobile-overlay-resilience.css';
 import { initializeAppearance } from './lib/appearancePreferences';
+import {registerDliServiceWorker} from './lib/pushNotifications';
+import {installDliCallAudioUnlock} from './lib/callTones';
 
 // Apply saved visual preferences before React paints the authorised workspace.
 initializeAppearance();
+registerDliServiceWorker();
+installDliCallAudioUnlock();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

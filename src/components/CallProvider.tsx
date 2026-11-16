@@ -4,6 +4,7 @@ import {supabase} from '../lib/supabase';
 import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirectPeerCall';
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
+import {beginDliCallTone} from '../lib/callTones';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -36,7 +37,15 @@ export function CallProvider({children}:{children:ReactNode}){
     p_kind:signal.kind,p_mode:signal.mode,
     p_sdp:signal.sdp??null,p_candidate:signal.candidate??null,
    });
-   return !result.error&&result.data===true;
+   const ok=!result.error&&result.data===true;
+   if(ok&&signal.kind==='offer'){
+    // Signal is first checked and persisted by the DLI database. The edge
+    // function reads that immutable event; no caller-supplied names or targets.
+    void supabase.functions.invoke('send-call-push',{
+     body:{kind:'call',sourceId:signal.callId}
+    }).catch(()=>{/* Realtime call remains functional if push is unavailable. */});
+   }
+   return ok;
   }catch{return false;}
  },[]);
  const send=useCallback((signal:Omit<DliCallSignal,'from'|'to'>):boolean=>{
@@ -55,6 +64,25 @@ export function CallProvider({children}:{children:ReactNode}){
  sessionRef.current=calling.session;
  const handlerRef=useRef(calling.signal);
  handlerRef.current=calling.signal;
+ const answerRef=useRef(calling.answer);
+ answerRef.current=calling.answer;
+ const rejectRef=useRef(calling.reject);
+ rejectRef.current=calling.reject;
+ // Ringtones play only in a user-activated browser context. A closed tab
+ // relies on system notification sound rather than background Web Audio.
+ useEffect(()=>{
+  const s=calling.session;
+  if(!s||s.state!=='ringing')return;
+  return beginDliCallTone(s.direction==='incoming'?'incoming':'outgoing');
+ },[calling.session?.id,calling.session?.state,calling.session?.direction]);
+ useEffect(()=>{
+  const s=calling.session;
+  if(!s||s.direction!=='incoming'||s.state!=='ringing')return;
+  const timer=window.setTimeout(()=>{
+   if(sessionRef.current?.id===s.id&&sessionRef.current.state==='ringing')rejectRef.current();
+  },45000);
+  return()=>window.clearTimeout(timer);
+ },[calling.session?.id,calling.session?.state,calling.session?.direction]);
 
  useEffect(()=>{
   if(!account||!supabase){readyRef.current=false;setReady(false);setUid('');return;}
@@ -107,6 +135,52 @@ export function CallProvider({children}:{children:ReactNode}){
      if(cancelled)return;
      const isReady=status==='SUBSCRIBED';
      readyRef.current=isReady;setReady(isReady);
+     if(isReady){
+      // A notification opened from a closed tab has no Realtime broadcast
+      // history. Recover only this signed-in member's unexpired offer.
+      void (async()=>{
+       const response=await client.rpc('dli_pending_calls');
+       if(cancelled||response.error||!Array.isArray(response.data))return;
+       const query=new URLSearchParams(window.location.search);
+       for(const raw of response.data){
+        if(cancelled||sessionRef.current)break;
+        const item=raw as Record<string,unknown>;
+        if(!UUID.test(String(item.callId??''))||!UUID.test(String(item.threadId??''))||
+         !UUID.test(String(item.from??''))||item.to!==userId||
+         typeof item.sdp!=='string'||!['audio','video'].includes(String(item.mode))||
+         (typeof item.expiresAt==='string'&&Date.parse(item.expiresAt)<=Date.now()))continue;
+        const target:Target={threadId:String(item.threadId),peerId:String(item.from),
+         name:String(item.senderName??'DLI member').slice(0,160),
+         role:String(item.senderRoleLabel??'DLI member').slice(0,45)};
+        const intended=query.get('dli_call')===item.callId?query.get('dli_action'):null;
+        if(intended==='decline'){
+         void emit(target,{callId:String(item.callId),kind:'decline',mode:item.mode as CallMode});
+        }else{
+         targetRef.current=target;setPeer(target);setTransportError(null);
+         await handlerRef.current({callId:String(item.callId),threadId:target.threadId,
+          from:target.peerId,to:userId,kind:'offer',mode:item.mode as CallMode,sdp:item.sdp});
+         if(Array.isArray(item.candidates)){
+          for(const candidate of item.candidates.slice(0,35)){
+           if(candidate&&typeof candidate==='object'){
+            await handlerRef.current({callId:String(item.callId),threadId:target.threadId,
+             from:target.peerId,to:userId,kind:'candidate',mode:item.mode as CallMode,
+             candidate:candidate as RTCIceCandidateInit});
+           }
+          }
+         }
+         if(intended==='accept'){
+          // Browser media permission may still require an additional tap.
+          await answerRef.current();
+         }
+        }
+        if(intended){
+         query.delete('dli_call');query.delete('dli_action');
+         window.history.replaceState({},'',window.location.pathname+
+          (query.size?'?'+query.toString():'')+window.location.hash);
+        }
+       }
+      })().catch(()=>{/* If offline, the next visit can retry the call. */});
+     }
     });
    }catch{if(!cancelled){readyRef.current=false;setReady(false);}}
   })();

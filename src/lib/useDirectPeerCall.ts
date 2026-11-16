@@ -108,7 +108,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
     if(!pending||pending.id!==id||pending.state==='connected')return;
     sendRef.current({callId:id,mode,kind:'hangup'});
     stop();update({...pending,state:'failed',
-     error:'No answer received. The recipient must have DLI open and connected. Retry later.'});
+     error:'No answer received. The recipient may be offline or device notifications unavailable. Retry later.'});
    },45000);
   }catch(err){
    if((callRef.current as CallSession|null)?.id!==id)return;
