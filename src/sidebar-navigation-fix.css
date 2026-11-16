@@ -127,3 +127,39 @@
   .mobile-sidebar .primary-nav { flex: 0 0 auto; overflow: visible; }
   .mobile-sidebar .sidebar-inner { min-width: 0; width: 100%; }
 }
+
+/* Q42: hideable desktop navigation with actual full-width workspace expansion.
+   The mobile drawer and bottom menu are independent of this preference. */
+.dli-desktop-sidebar-toggle{display:none!important;}
+@media(min-width:681px){
+ .app-layout .desktop-sidebar{transition:transform .25s ease,visibility .25s ease;}
+ .app-layout .main-area{transition:margin-left .25s ease;min-width:0;}
+ .app-layout .dli-desktop-sidebar-toggle{
+  display:inline-grid!important;place-items:center;
+  flex:0 0 40px;width:40px;height:40px;border-radius:12px;
+  color:var(--text);background:var(--surface-soft);border:1px solid var(--border);
+ }
+ .app-layout .dli-desktop-sidebar-toggle:hover{
+  color:var(--purple);border-color:var(--purple);
+ }
+ .app-layout .dli-desktop-sidebar-toggle:focus-visible{
+  outline:3px solid var(--dli-focus,var(--purple));outline-offset:2px;
+ }
+ .app-layout.dli-sidebar-collapsed .desktop-sidebar{
+  transform:translateX(-105%);visibility:hidden;pointer-events:none;
+ }
+ .app-layout.dli-sidebar-collapsed .main-area{margin-left:0;}
+ .app-layout.dli-sidebar-collapsed .page-content{width:100%;max-width:none;}
+ /* Focus views should never be obscured by a permanent desktop sidebar. */
+ .app-layout:has(.dli-workspace-backdrop) .desktop-sidebar{
+  transform:translateX(-105%);visibility:hidden;pointer-events:none;
+ }
+ .app-layout:has(.dli-workspace-backdrop) .main-area{margin-left:0;}
+ .app-layout:has(.dli-workspace-backdrop) .page-content{width:100%;max-width:none;}
+}
+@media(max-width:680px){
+ .app-layout .dli-desktop-sidebar-toggle{display:none!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ .app-layout .desktop-sidebar,.app-layout .main-area{transition:none!important;}
+}
