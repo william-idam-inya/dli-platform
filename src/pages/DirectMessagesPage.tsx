@@ -126,6 +126,20 @@ export default function DirectMessagesPage(){
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
+  const callerLabel=(id:string)=>{
+    const role=memberRole(id);
+    const hide=(account?.role==='student'||account?.role==='tutor')&&
+      ['owner','admin','assistant_admin'].includes(role);
+    return hide?(role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':'DLI Assistant Admin')
+      :memberName(id);
+  };
+  const callerRoleLabel=(id:string)=>{
+    const role=memberRole(id);
+    return role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':
+      role==='assistant_admin'?'DLI Assistant Admin':
+      role==='student'?(memberGroup(id)==='paid'?'Paid Student':'Free Student'):
+      role==='tutor'?'Tutor':'DLI member';
+  };
   const memberGroup=(id:string)=>{
     const person=rolePeople.find(x=>x.user_id===id);
     const role=person?.member_role??memberRole(id);
@@ -765,11 +779,11 @@ export default function DirectMessagesPage(){
               <button type="button" aria-label={'Audio call '+memberName(participant(current))}
                 title="Ring this DLI member on any open DLI workspace"
                 disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('audio',current.id,callPeer,memberName(callPeer))}><Phone size={19}/></button>
+                onClick={()=>calling.start('audio',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Phone size={19}/></button>
               <button type="button" aria-label={'Video call '+memberName(participant(current))}
                 title="Ring this DLI member on any open DLI workspace"
                 disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('video',current.id,callPeer,memberName(callPeer))}><Video size={19}/></button>
+                onClick={()=>calling.start('video',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Video size={19}/></button>
             </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
