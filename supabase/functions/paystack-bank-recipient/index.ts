@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
   if(action!=='save')return reply(400,origin,{error:'Unsupported action'});
   const bankCode=str(input.bank_code),bankName=str(input.bank_name);
   const accountNumber=str(input.account_number);
-  if(!/^[0-9]{10}$/.test(accountNumber)||!/^[0-9]{2,14}$/.test(bankCode))
+  if(!/^[0-9]{10}$/.test(accountNumber)||!/^[A-Za-z0-9_-]{2,14}$/.test(bankCode))
    return reply(400,origin,{error:'Choose a verified Nigerian bank and enter a 10-digit NUBAN'});
   const banks=await paystack('GET','/bank?currency=NGN&country=nigeria&perPage=100');
   const bank=(Array.isArray(banks)?banks:[]).find(x=>String(x.code)===bankCode&&x.active!==false);
