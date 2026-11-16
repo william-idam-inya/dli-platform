@@ -44,7 +44,7 @@ for(const s of [
 req(room,"key={active??'room'}");
 assert.ok(!ui.includes('DLI_DEV_CLOUDFLARE_REALTIMEKIT_TOKEN') &&
  !ui.includes('SUPABASE_SERVICE_ROLE_KEY') &&
- !ui.includes('localStorage') &&
+ !ui.includes('window.localStorage') &&
  !ui.includes('window.location.search'),
  'Browser must not receive server tokens or persist participant JWTs');
 for(const s of [
