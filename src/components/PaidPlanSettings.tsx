@@ -274,7 +274,7 @@ export default function PaidPlanSettings(){
       }else {
         const updated=normalisePlan(result.data as PlanRow);
         setPlans(old=>old.map(row=>row.id===updated.id?updated:row));
-        setNotice(updated.name+' saved as revision '+updated.revision+'. The reference change does not modify active student invoices or tutor payroll.');
+        setNotice(updated.name+' saved as revision '+updated.revision+'. This change does not modify active student invoices or tutor payroll; future Paystack checkouts use the new plan fee.');
         setEditing(null);setDraft(null);
       }
     }catch{
@@ -288,8 +288,8 @@ export default function PaidPlanSettings(){
       <h2 id="source-plan-title">DLI Paid Learning Plans</h2>
       <p className="user-caption">
         Current saved plan terms are maintained in Supabase. Owner and Admin may edit this
-        reference; the Assistant Admin can view it. Changes are audited and do not
-        automatically update existing fees, approved enrolments, or tutor payments.
+        pricing; Assistant Admin can view it. Future Paystack checkouts use the saved student fee.
+        Already settled payments and existing tutor payouts are not retroactively changed.
       </p>
     </div><button type="button" className="user-outline-button"
       disabled={loading||saving||Boolean(editing)} onClick={()=>{void refresh();}}>
@@ -297,8 +297,8 @@ export default function PaidPlanSettings(){
     </button></div>
     <div className="source-plan-locked" role="note">
       <LockKeyhole size={17}/>
-      <span>Reference catalogue only. Actual invoices, student charges and tutor transfers follow
-        their separately authorised workflows.</span>
+      <span>Current plan prices determine server-verified Paystack student checkout amounts.
+        Changing a plan never initiates a payment or tutor transfer.</span>
     </div>
     {loading&&<p role="status" className="paid-plan-status">Loading saved plans…</p>}
     {readError&&<p role="alert" className="auth-feedback error">
@@ -369,9 +369,8 @@ export default function PaidPlanSettings(){
     </div>
     <p className="source-plan-footer">
       Initial figures originated from <strong>{source.sourceTitle}</strong> (pages 1–2).
-      The user-approved first group name is “Group of 5 Students”. These are editable
-      internal references, not an active payment instruction and not a substitute for
-      programme-specific pricing such as the JAMB bootcamp.
+      The user-approved first group name is “Group of 5 Students”. The saved general paid-learning prices apply to future Paystack checkouts.
+      They are not transfer instructions and do not replace programme-specific JAMB bootcamp pricing.
     </p>
   </section>;
 }
