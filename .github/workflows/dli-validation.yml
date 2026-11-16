@@ -152,6 +152,9 @@ jobs:
       - name: Verify Q38 clean mobile classes workspace and learner-only guidance
         run: npm run check:q38-classes-mobile
 
+      - name: Verify Q39 mobile messaging header and compact safeguarding disclosure
+        run: npm run check:q39-messages-mobile
+
       - name: Verify TypeScript
         run: npm run typecheck
 
