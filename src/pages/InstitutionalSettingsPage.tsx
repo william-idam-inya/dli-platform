@@ -139,18 +139,18 @@ export default function InstitutionalSettingsPage(){
     if(!supabase||!canView||enrolmentSaving||enrolmentOpen===null)return;
     const next=!enrolmentOpen;
     if(!window.confirm(next
-      ?'Reopen new Paid Student applications? Existing approved payments remain unchanged.'
-      :'Pause NEW Paid Student applications? Existing applications remain available for review.'))return;
+      ?'Enable NEW Paystack checkouts? Verify the configured Paystack keys and signed webhook first.'
+      :'Pause NEW Paystack checkouts? Already verified Paid Students retain their access.'))return;
     setEnrolmentSaving(true);setError(null);setNotice(null);
     try{
       const result=await supabase.from('dli_operational_controls')
         .update({is_enabled:next}).eq('setting_key','paid_enrolment_open')
         .select('is_enabled').maybeSingle();
       if(result.error||!result.data){
-        setError(next?'Cannot reopen paid applications until authorised administration has saved and activated verified bank details under Paid enrolment.':'Could not confirm this admission setting. Refresh before trying again.');return;
+        setError('Could not confirm the automated admissions setting. Refresh before trying again.');return;
       }
       setEnrolmentOpen(Boolean(result.data.is_enabled));
-      setNotice(next?'New paid enrolment applications are open.':'New applications paused; existing requests can still be reviewed.');
+      setNotice(next?'Paystack student checkout is open.':'New Paystack checkouts are paused; existing verified payments remain recorded.');
     }catch{setError('The admission-setting change could not be verified.');}
     finally{setEnrolmentSaving(false);}
   }
@@ -245,16 +245,15 @@ export default function InstitutionalSettingsPage(){
     <section className="panel institutional-settings-governance">
       <div className="panel-heading"><div>
         <p className="section-kicker">02 · LIVE OPERATIONAL CONTROL</p>
-        <h2>Paid Student application window</h2>
-        <p className="user-caption">Founder, Admin and Assistant Admin may pause or resume NEW paid-enrolment applications.
-          Existing submitted applications and previously approved students are not cancelled.</p>
+        <h2>Automated Paystack admission window</h2>
+        <p className="user-caption">Owner, Admin and Assistant Admin may pause or resume new Paystack checkouts. Existing verified Paid Students are unaffected.</p>
       </div></div>
       <div className="institutional-settings-safeguards">
         <div><strong>New applications</strong>
           <span>{enrolmentOpen===null?'Verification unavailable':enrolmentOpen?'Open':'Paused'}</span>
-          <p>This is enforced when a learner submits an application in the database, not just in the browser.</p>
-          <p>Opening paid applications requires an active verified bank account. Receipt reviews remain accessible when applications are paused.</p>
-          {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p><Link to="/enrolment">Manage bank details and review uploaded receipts</Link></p>}
+          <p>The server checks this flag before reserving a Paystack checkout. The browser cannot activate an entitlement.</p>
+          <p>Enable checkout only after configuring Paystack credentials and registering the signed webhook with Paystack. There is no manual bank transfer or receipt approval flow.</p>
+          {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p><Link to="/enrolment">Open automated checkout controls and payment ledger</Link></p>}
           <button type="button" className="user-outline-button"
             disabled={loading||enrolmentSaving||enrolmentOpen===null}
             onClick={()=>{void changeEnrolmentStatus();}}>
@@ -284,14 +283,14 @@ export default function InstitutionalSettingsPage(){
         </div>
         <div><strong>Finance rates and payments</strong><span>Not configured here</span>
           <p>Financial policies remain subject to separate institutional approval.
-            Manual Student bank-transfer evidence and Tutor payout confirmations are available in <Link to="/enrolment">Paid enrolment</Link> and <Link to="/payroll">Tutor payroll</Link>. Real transfers still require independent verification. Automatic bank collection and payouts are not connected.</p></div>
+            Verified student collections and tutor disbursements run through server-side Paystack functions in <Link to="/enrolment">Paid enrolment</Link> and <Link to="/payroll">Tutor payroll</Link>. Live payments remain disabled until provider keys and webhook verification are configured.</p></div>
         <div><strong>AI authoring integration</strong><span>Not connected here</span>
           <p>Stage I3 does not connect an AI API, submit learner data or
             change the existing Gemini compliance requirement.</p></div>
         <div><strong>Reporting exports</strong><span>Aggregate CSV available</span>
           <p>Authorised staff can export verified non-identifying counts in
             {' '}<Link to="/reports">Operational reports</Link>.
-            User-directory, payment evidence and raw audit exports remain restricted.</p></div>
+            User-directory, historical payment evidence and raw audit exports remain restricted.</p></div>
       </div>
     </section>
     <p className="module-footnote"><ExternalLink size={15}/>
