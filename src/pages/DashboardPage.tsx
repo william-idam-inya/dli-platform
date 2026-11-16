@@ -5,7 +5,7 @@ import ReferenceHeroArtwork from '../components/ReferenceHeroArtwork';
 import ReferenceDashboard from '../components/ReferenceDashboard';
 import OfficialDliLogo from '../components/OfficialDliLogo';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath, accountRoleLabel } from '../auth/permissions';
+import { canAccessPath } from '../auth/permissions';
 import { permittedNavigation } from '../data/navigation';
 import { dashboardPriorityPaths } from '../data/roleNavigation';
 import { learningAreas, learningAreaUrl, type LearningTab } from '../data/learningAreas';
@@ -88,9 +88,9 @@ export default function DashboardPage(){
   useEffect(()=>{void refreshAcademic();},[refreshAcademic]);
   const published=classes.filter(c=>c.state==='published').length;
   const drafts=classes.filter(c=>c.state==='draft').length;
-  const headline=account?.role==='student'?'Welcome to DLI':
-    account?.role==='tutor'?'Tutor Workspace':
-    isManager?'Admin Dashboard':'Your DLI Workspace';
+  // A member's role is already identified once in the top-right account area.
+  // Keep the homepage title free of duplicate Admin/Tutor/Owner role labels.
+  const headline=account?.role==='student'?'Welcome to DLI':'Dashboard';
 
   const welcomeSummary = account?.role === 'student'
     ? 'Your classes, lessons, results and messages in one place. Start with the next learning step.'
@@ -108,7 +108,7 @@ export default function DashboardPage(){
         <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
         <h1>{headline}</h1>
         <p className="welcome-copy">
-          {account ? accountRoleLabel(account) + ' · ' : ''}{welcomeSummary}
+          {welcomeSummary}
         </p>
         <div data-dli-tour="dashboard" className="dli-role-actions">
           {account && canAccessPath(account.role,heroPath,account.studentTier) &&

@@ -44,15 +44,6 @@ function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut
         </span>
       </NavLink>
 
-      <div className="workspace-switcher">
-        <span className="workspace-avatar"><OfficialDliLogo decorative /></span>
-        <span className="workspace-copy">
-          <strong>DLI Workspace</strong>
-          <small>{account ? accountRoleLabel(account) : 'Institutional workspace'}</small>
-        </span>
-        <span className="workspace-chevron">⌄</span>
-      </div>
-
       <nav className="primary-nav" aria-label="Main navigation">
         {permittedSections.map((section) => (
           <details className="nav-section" key={section.label}
@@ -354,7 +345,7 @@ export default function AppShell({ children }: AppShellProps) {
             {location.pathname==='/'&&account
               ?<div className="ref-desktop-greeting">
                 <strong>{shortGreeting}</strong>
-                <small>DLI Platform · {accountRoleLabel(account)} workspace</small>
+                <small>Your personalised workspace</small>
               </div>
               :<div className="breadcrumb">
               <span>DLI Workspace</span>
