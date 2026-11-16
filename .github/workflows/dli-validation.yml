@@ -185,6 +185,9 @@ jobs:
       - name: Verify Q49 mobile call and overlay containment across viewports
         run: npm run check:q49-mobile-overlays
 
+      - name: Verify Q50 production media authorizations and secure launch gating
+        run: npm run check:q50-prod-realtimekit
+
       - name: Verify TypeScript
         run: npm run typecheck
 
