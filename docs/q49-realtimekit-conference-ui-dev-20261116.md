@@ -59,3 +59,18 @@ redirect settings in Supabase for QA.
 
 The live DLI platform remains at https://dli-platform-prod.pages.dev and its
 Cloudflare RealtimeKit media stays disabled.
+
+## Additional safeguarding gate (16 November 2026)
+Cloudflare's four built-in presets used for DLI rooms had default native
+participant-to-participant chat permissions that could bypass DLI's role-based
+messaging restrictions. All four **development** presets
+(`group_call_host`, `group_call_participant`, `webinar_presenter`,
+`webinar_viewer`) were updated via Cloudflare to disable **both** native
+public and private RealtimeKit chat. DLI's original RLS-filtered moderated
+conference chat remains the permitted communication channel.
+
+The development Edge Function independently reads the live provider preset
+before issuing a participant token and returns HTTP 503 if its public send or
+private send/receive capability is not explicitly disabled. Thus a dashboard
+permission regression cannot silently bypass the existing safeguarding policy.
+No other provider media or host permissions were intentionally changed.
