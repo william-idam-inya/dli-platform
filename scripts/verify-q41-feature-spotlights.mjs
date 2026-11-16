@@ -38,7 +38,7 @@ for(const [marker,file] of markers){
 }
 for(const term of [
  'const TOUR_VERSION=2',
- 'findVisibleTarget(step)',
+ 'findVisibleTarget(activeStep)',
  'getBoundingClientRect()',
  "target.scrollIntoView({block:'center'",
  "window.addEventListener('resize',schedule)",
