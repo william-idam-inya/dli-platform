@@ -3,7 +3,8 @@ import {createClient} from "npm:@supabase/supabase-js@2";
 
 const APP_ID="161c52bf-6af5-4a2b-9acd-336fc139e311";
 const ACCOUNT_ID="640c7c5c0ba8ae42c6c24f9bc18c6d27";
-const DEV_ORIGINS=new Set(["http://localhost:5173","http://127.0.0.1:5173"]);
+const DEV_ORIGINS=new Set(["http://localhost:5173","http://127.0.0.1:5173",
+ "https://feature-stage-q49-realtimeki.dli-platform-qa.pages.dev"]);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const projectUrl=Deno.env.get("SUPABASE_URL")??"";
 const publishable=Deno.env.get("SUPABASE_ANON_KEY")??"";
