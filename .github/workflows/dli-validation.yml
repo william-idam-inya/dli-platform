@@ -161,6 +161,9 @@ jobs:
       - name: Verify Q41 contextual guided feature spotlights and red-rim coverage
         run: npm run check:q41-feature-spotlights
 
+      - name: Verify Q42 desktop sidebar collapse and focus overlay
+        run: npm run check:q42-desktop-sidebar
+
       - name: Verify TypeScript
         run: npm run typecheck
 
