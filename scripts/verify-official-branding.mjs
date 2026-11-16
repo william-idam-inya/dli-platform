@@ -26,8 +26,10 @@ const home = read('src/pages/DashboardPage.tsx');
 for (const page of [shell, auth, home]) {
   assert.match(page, /OfficialDliLogo/, 'Brand image missing from a major app surface.');
 }
-assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 3,
-  'Sidebar, workspace and mobile header must share the official emblem.');
+assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 2,
+  'Keep the official logo in the branded sidebar and mobile header without a duplicate workspace tile.');
+assert.doesNotMatch(shell, /className="workspace-switcher"/,
+  'Do not reintroduce a duplicate DLI brand/role selector beneath the official header.');
 assert.match(auth, /<div className="auth-mark"><OfficialDliLogo/);
 assert.match(home, /<span className="ref-hero-emblem"><OfficialDliLogo decorative/);
 assert.match(home, /<ReferenceHeroArtwork role=/);
@@ -50,4 +52,4 @@ assert.equal(manifest.icons[0].src, '/dli-mark.svg?v=20261113');
 assert.equal(manifest.icons[0].type, 'image/svg+xml');
 assert.equal(manifest.scope, '/');
 assert.equal(manifest.start_url, '/');
-console.log('Q14 official DLI-ONLINE branding checks passed: shared emblem in sidebar, login, dashboard, favicon and web app metadata.');
+console.log('Q14 official DLI-ONLINE branding checks passed: original emblem retained in brand, mobile header, login, dashboard, favicon and metadata without duplicate role tile.');
