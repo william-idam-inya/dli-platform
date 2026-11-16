@@ -92,3 +92,15 @@ body:has(.dli-workspace-backdrop){overflow:hidden}
   padding-bottom:calc(28px + env(safe-area-inset-bottom))!important;
  }
 }
+
+/* Q50: compact/expand toolbar and inline expansion have been permanently
+   retired. Only horizontal pill triggers launch real mounted focus dialogs. */
+.dli-workspace-toolbar{display:none!important;}
+.dli-workspace-focus-root.dli-workspace-compressed{min-width:0;}
+.dli-workspace-focus-root.dli-workspace-compressed [data-dli-focus-panel]:not([data-dli-focus-active]){display:none!important;}
+.dli-workspace-trigger-row{scroll-padding-inline:10px;}
+.dli-workspace-focus-caption,.dli-workspace-focus-close{z-index:1200;}
+@media(min-width:681px){
+ .dli-workspace-focus-caption{top:14px;}
+ .dli-workspace-focus-close{top:8px;}
+}
