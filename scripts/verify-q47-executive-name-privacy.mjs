@@ -10,10 +10,10 @@ const profile=read('src/components/ChatMemberProfileOverlay.tsx');
 for(const [token,label] of [
  ['Q47_ROLE_MASK_PEOPLE','people directory'],['Q47_ROLE_MASK_DIRECT','direct directory'],
  ['Q47_ROLE_MASK_PROFILE','profile preview'],['private.current_role()','server role guard'],
- ["'owner'::public.dli_role",'owner'],["'admin'::public.dli_role",'admin'],
- ["'assistant_admin'::public.dli_role",'assistant administrator'],
- ["'tutor'::public.dli_role",'tutor recipient'],
- ["'student'::public.dli_role",'student recipient'],
+ ["''owner''::public.dli_role",'owner'],["''admin''::public.dli_role",'admin'],
+ ["''assistant_admin''::public.dli_role",'assistant administrator'],
+ ["''tutor''::public.dli_role",'tutor recipient'],
+ ["''student''::public.dli_role",'student recipient'],
  ['Q47 baseline mismatch','fail closed on unrecognised database version'],
  ['EXECUTE replace(ddl','safe checked replacement'],
 ])assert.ok(migration.includes(token),'Q47 reviewed privacy patch missing '+label);
