@@ -1,0 +1,38 @@
+name: Q49 development RealtimeKit lockfile
+on:
+  push:
+    branches:
+      - feature/stage-q49-realtimekit-conference-ui-20261116
+    paths:
+      - package.json
+      - .github/workflows/q49-dev-sdk-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  pin-development-sdk:
+    if: github.repository == 'william-idam-inya/dli-platform'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out development media branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/stage-q49-realtimekit-conference-ui-20261116
+          persist-credentials: true
+      - name: Install supported Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve exact Cloudflare RealtimeKit versions into npm lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Validate lockfile is consumable
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Commit development lockfile only
+        run: |
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(q49): lock resolved Cloudflare RealtimeKit SDK dependencies'
+            git push origin HEAD:feature/stage-q49-realtimekit-conference-ui-20261116
+          fi
