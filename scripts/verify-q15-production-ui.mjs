@@ -24,7 +24,7 @@ assert.match(styles,/env\(safe-area-inset-bottom\)/);
 assert.ok(read('src/main.tsx').includes("import './design-system.css'"));
 for(const phrase of ["dli_member_profiles","dli-profile-changed",'preferred_theme'])
   assert.ok(profile.includes(phrase),'Saved profile contract missing: '+phrase);
-for(const phrase of ["programmeChoices(catalogue)","levelChoices(catalogue,programme)","subjectChoices(catalogue,programme,level)","validSubjectSelection(catalogue,programme,level,selected)","dli_enrolment_catalogue","dli_apply_paid_v2"])
+for(const phrase of ["programmeChoices(catalogue)","levelChoices(catalogue,programme)","subjectChoices(catalogue,programme,level)","validSubjectSelection(catalogue,programme,level,selected)","dli_enrolment_catalogue","functions.invoke('paystack-checkout'"])
   assert.ok(enrollment.includes(phrase),'Q15 enrolment hierarchy missing: '+phrase);
 assert.ok(nav.includes('permittedNavigation'));
 const classSource=read('src/pages/ClassesWorkspacePage.tsx');
