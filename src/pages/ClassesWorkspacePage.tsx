@@ -403,7 +403,7 @@ export default function ClassesWorkspacePage(){
       </button>
       {paying&&<button className={tab==='payments'?'selected':''} type="button"
         onClick={()=>setParams(requested?{tab:'payments',registry:requested}:{tab:'payments'})}>
-        <Wallet size={15}/> Fees &amp; payment evidence
+        <Wallet size={15}/> Automated Paystack payments
       </button>}
     </nav>}
     {tab==='payments'&&paying?<PrivateClassesPage billingOnly embedded/>:<>
@@ -611,7 +611,7 @@ export default function ClassesWorkspacePage(){
           <input id="classes-meet" type="url" required maxLength={2048}
             placeholder="https://meet.google.com/abc-defg-hij" value={form.meeting_url}
             onChange={e=>setForm(v=>({...v,meeting_url:e.target.value}))}/>
-          <p className="academic-code-hint">Academic course offerings, both tutor assignments and student enrolments are activated together when the group is published. Paid student eligibility is still verified; this action never collects payment or creates a receipt.</p>
+          <p className="academic-code-hint">Academic offerings and tutor assignments follow verified role access. The class editor does not collect funds; paid cohorts use Paystack checkout and webhook-confirmed enrollment.</p>
           <div className="classes-form-actions">
             <button className="academic-submit" type="submit"
               disabled={busy||loading||!form.class_start_date||!levelId||!programmeId||
@@ -623,15 +623,13 @@ export default function ClassesWorkspacePage(){
           </div>
         </form>
       </section>}
-      {staff&&selectedCohort&&paidCohort&&<details className="panel classes-cohort-billing" id="cohort-billing">
-        <summary><Wallet size={19}/> Payment assignment &amp; billing configuration — {selectedCohort.name}</summary>
-        <p>This is a paid DLI cohort. Assign each approved student's monthly fee using the existing audited
-          manual-transfer workflow. DLI account details are set by authorised administrators.
-          Submitting a receipt never confirms a bank credit or grants access automatically.</p>
+      {staff&&selectedCohort&&paidCohort&&<section className="panel classes-cohort-billing" id="cohort-billing">
+        <h2><Wallet size={19}/> Paid cohort payment access — {selectedCohort.name}</h2>
+        <p>This paid cohort uses Paystack checkout and verified webhook enrollment. No manual bank details, screenshot uploads, or administrator receipt review.</p>
         <p><strong>Selected class structure:</strong> {tier(form.class_type).label} · {chosen.length} student{chosen.length===1?'':'s'} selected.
           Fee amounts and rates are managed in the existing finance editor, not inferred from topic counts.</p>
         <PrivateClassesPage billingOnly embedded/>
-      </details>}
+      </section>}
       {staff&&selectedCohort&&!paidCohort&&<p className="classes-free-billing-note">
         <CheckCircle2 size={17}/> Free Scholars Club cohort · No payment assignment or bank details required.
       </p>}
