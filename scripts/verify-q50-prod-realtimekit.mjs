@@ -9,6 +9,7 @@ const ui=read('src/components/ProductionRealtimeKitConference.tsx');
 const css=read('src/components/ProductionRealtimeKitConference.css');
 const edge=read('supabase/functions/dli-prod-realtimekit-session/index.ts');
 const migration=read('supabase/migrations/20261116170000_stage_q50_prod_realtimekit_membership.sql');
+const pilot=read('supabase/migrations/20261116173000_stage_q50_prod_media_admin_pilot.sql');
 const lock=JSON.parse(read('package-lock.json'));
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 function has(s,v,label){assert.ok(s.includes(v),(label??'Missing')+': '+v);}
@@ -26,6 +27,7 @@ for(const term of [
  "body:{room_id:active,action:name}",
  "Media provisioning not yet active",
 ])has(page,term,'Production conference gate missing');
+has(page,"account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'",'Executive pilot UI restriction');
 assert.ok(!page.includes('dli-dev-realtimekit-session'), 'No development issuer on production page');
 for(const term of [
  "import.meta.env.PROD",
@@ -91,6 +93,11 @@ for(const term of [
 assert.ok(manifest.entries.some(x=>
  x.file==='20261116170000_stage_q50_prod_realtimekit_membership.sql'&&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)),
  'Production media migration not integrity pinned');
+has(pilot,"v_person.role NOT IN ('owner'::public.dli_role",'Pilot SQL must restrict issuance to executive roles');
+has(pilot,"'admin'::public.dli_role,'assistant_admin'::public.dli_role",'Pilot SQL protects admin hierarchy');
+assert.ok(manifest.entries.some(x=>
+ x.file==='20261116173000_stage_q50_prod_media_admin_pilot.sql'&&/^[a-f0-9]{40}$/.test(x.gitBlobSha1)),
+ 'Production pilot migration not integrity pinned');
 for(const name of ['@cloudflare/realtimekit','@cloudflare/realtimekit-react','@cloudflare/realtimekit-react-ui'])
  assert.equal(lock.packages[''].dependencies[name],'2.0.2',
  'RealtimeKit SDK dependencies must match reproducible lockfile');
