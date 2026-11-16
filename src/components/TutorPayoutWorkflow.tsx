@@ -71,16 +71,16 @@ export default function TutorPayoutWorkflow({cycles,staff,month,onChanged}:{
  },[account?.id,isTutor]);
  useEffect(()=>{
   if(!account)return;
-  const own=banks.find(b=>b.tutor_id===account.id);
+  const own=isTutor?banks[0]:undefined;
   if(own&&!accountNumber)setAccountNumber(own.account_number);
   const bank=bankOptions.find(x=>x.name===own?.bank_name);
   if(bank&&!bankCode)setBankCode(bank.code);
- },[banks,bankOptions,account?.id]);
+ },[banks,bankOptions,account?.id,isTutor]);
  useEffect(()=>{
   const interval=window.setInterval(()=>{if(document.visibilityState==='visible')void refresh();},20000);
   return()=>window.clearInterval(interval);
  },[refresh]);
- const ownRecipient=recipients.find(r=>r.tutor_id===account?.id);
+ const ownRecipient=isTutor?recipients[0]:undefined;
  const payoutFor=(c:Cycle)=>payouts.find(p=>p.engagement_key===c.engagement_key&&p.cycle_number===c.cycle_number);
  async function saveBank(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
