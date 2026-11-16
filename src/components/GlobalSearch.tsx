@@ -33,8 +33,8 @@ export default function GlobalSearch(){
    const q=clean(term);
    const like='%'+q+'%';
    const client=supabase!;
-   const role=account.role,tier=account.studentTier;
-   const jobs:Promise<Hit[]>[]=[];
+   const role=account.role,tier=account.studentTier??'free';
+   const jobs:PromiseLike<Hit[]>[]=[];
    if(permissions(role,tier,'/people')){
     jobs.push(client.rpc('dli_people_directory').then(({data,error})=>{
      if(error||!Array.isArray(data))return [];
