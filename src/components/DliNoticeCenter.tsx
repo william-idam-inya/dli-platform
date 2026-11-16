@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, BellRing, Check, MessageCircle, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link,useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './DliNoticeCenter.css';
@@ -286,6 +286,7 @@ export function DliDashboardAnnouncements(){
 
 export function DliMessageBadge(){
   const {account}=useAuth();
+  const location=useLocation();
   const [unread,setUnread]=useState(0);
   const [flash,setFlash]=useState(false);
   const currentUid=useRef<string|null>(null);
@@ -351,7 +352,9 @@ export function DliMessageBadge(){
     <button type="button" className="icon-button dli-message-link"
       aria-label={'Open Messenger'+(unread?' — '+unread+' unread':'')}
       title="Open DLI Messenger" onClick={()=>{
-        setFlash(false);window.dispatchEvent(new Event('dli-chat-launch'));
+        setFlash(false);
+        if(location.pathname==='/communications')window.scrollTo({top:0,behavior:'smooth'});
+        else window.dispatchEvent(new Event('dli-chat-launch'));
       }}>
       <MessageCircle size={19}/>
       {unread>0&&<span className="dli-notification-count">{unread>99?'99+':unread}</span>}
