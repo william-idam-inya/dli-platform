@@ -1,8 +1,15 @@
-import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
+import {lazy,Suspense,useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {CalendarDays,CameraOff,Hand,Lock,LockOpen,MessageSquareText,MicOff,Plus,RefreshCw,ShieldCheck,Users,Video, X} from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
 import './ConferenceRoomsPage.css';
+
+// RealtimeKit's large SDK is never loaded on production; the existing
+// role-restricted DLI chat/room governance remains functional everywhere.
+const DevRealtimeKitConference=lazy(()=>import('../components/DevRealtimeKitConference'));
+const mediaDevEnabled=import.meta.env.DEV &&
+ import.meta.env.VITE_DLI_DEV_REALTIMEKIT_ENABLED==='true' &&
+ import.meta.env.VITE_SUPABASE_URL==='https://pbepbcdkrdqnepvcwtyw.supabase.co';
 
 type Room={id:string;room_type:'student_seminar'|'tutors_conference'|'admin_leadership';title:string;
  audience:'all'|'free'|'paid';cohort_id:string|null;state:'waiting'|'open'|'ended';
@@ -25,6 +32,7 @@ export default function ConferenceRoomsPage(){
  const [messages,setMessages]=useState<RoomMessage[]>([]);
  const [active,setActive]=useState<string|null>(null);
  const [joined,setJoined]=useState(false);
+ const [mediaOpen,setMediaOpen]=useState(false);
  const [title,setTitle]=useState('');
  const [kind,setKind]=useState<Room['room_type']>('student_seminar');
  const [audience,setAudience]=useState<Room['audience']>('all');
@@ -77,6 +85,11 @@ export default function ConferenceRoomsPage(){
   setMembers((a.data??[]) as Participant[]);
   setMessages((b.data??[]) as RoomMessage[]);
   const verifiedRoom=room.data as Room;
+  if(verifiedRoom.state==='ended'){
+   setMediaOpen(false);setJoined(false);setActive(null);
+   setNotice('The conference has ended.');
+   return;
+  }
   setRooms(prev=>prev.some(x=>x.id===verifiedRoom.id)
    ?prev.map(x=>x.id===verifiedRoom.id?verifiedRoom:x)
    :[verifiedRoom,...prev]);
@@ -88,11 +101,14 @@ export default function ConferenceRoomsPage(){
   return()=>window.clearInterval(timer);
  },[active,joined,readRoom]);
  useEffect(()=>{
-  if(!active)return;
-  const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){setActive(null);setJoined(false);}};
+  if(!active||mediaOpen)return;
+  const key=(e:KeyboardEvent)=>{
+   // Child RealtimeKit dialogs own Escape while media is active.
+   if(e.key==='Escape'){void leaveOverview();}
+  };
   window.addEventListener('keydown',key);
   return()=>window.removeEventListener('keydown',key);
- },[active]);
+ },[active,mediaOpen]);
  async function create(event:FormEvent){
   event.preventDefault();if(!supabase||!staff||busy)return;
   setBusy(true);setError(null);
@@ -102,7 +118,9 @@ export default function ConferenceRoomsPage(){
     p_cohort:kind==='student_seminar'&&cohortId?cohortId:null,
    });
    if(res.error||!res.data){setError('Room creation was denied for this role, cohort or audience.');return;}
-   setTitle('');setNotice('Role-restricted room created. Media service is not yet provisioned.');
+   setTitle('');setNotice(mediaDevEnabled?
+    'Restricted conference created. Join it to test the development audio/video connection.':
+    'Role-restricted room created. Media service is not yet provisioned.');
    await read();
   }catch{setError('Could not confirm the conference room was created.');}
   finally{setBusy(false);}
@@ -113,7 +131,7 @@ export default function ConferenceRoomsPage(){
   try{
    const res=await supabase.rpc('dli_conference_join',{p_room:room.id});
    if(res.error||res.data!==true){setError('This conference is locked or your tier/role/cohort is not eligible.');return;}
-   setActive(room.id);setJoined(true);
+   setActive(room.id);setJoined(true);setMediaOpen(false);
    await readRoom(room.id);
   }catch{setError('The room could not be joined.');}
   finally{setBusy(false);}
@@ -127,10 +145,29 @@ export default function ConferenceRoomsPage(){
     p_room:active,p_action:name,p_user:target,
    });
    if(res.error||res.data!==true){setError('Your conference moderation request was rejected.');return;}
-   if(name==='end'||name==='leave'){setActive(null);setJoined(false);await read();}
+   if(name==='end'||name==='leave'){
+    setMediaOpen(false);setActive(null);setJoined(false);
+    // DLI room moderation is verified by the DB. Provider meeting shutdown
+    // is independently attempted by the development Edge Function.
+    if(name==='end'&&mediaDevEnabled){
+     const stopped=await supabase.functions.invoke('dli-dev-realtimekit-session',{
+      body:{room_id:active,action:'end'}
+     });
+     if(stopped.error||stopped.data?.providerEnded!==true)
+      setNotice('DLI room ended. Cloudflare media shutdown requires verification.');
+    }
+    await read();
+   }
    else await readRoom(active);
   }catch{setError('Could not confirm moderation action.');}
   finally{setBusy(false);}
+ }
+ async function leaveOverview(){
+  const id=active;
+  setMediaOpen(false);setActive(null);setJoined(false);
+  if(supabase&&id)await supabase.rpc('dli_conference_action',{
+   p_room:id,p_action:'leave',p_user:null
+  });
  }
  async function send(event:FormEvent){
   event.preventDefault();if(!supabase||!active||busy||!draft.trim())return;
@@ -149,10 +186,14 @@ export default function ConferenceRoomsPage(){
    </div>
   </div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
-   <strong>Media provisioning not yet active</strong>
-   <p>Room permissions, membership, in-room text messages and host moderation are backed by Supabase.
-    Cloudflare Calls SFU media requires a provisioned media application and private participant-token service.
-    Live multi-user camera, microphone and screen-sharing streams are not available in this room view yet.</p>
+   <strong>{mediaDevEnabled?'Development media preview available':'Media provisioning not yet active'}</strong>
+   {mediaDevEnabled?
+    <p>Cloudflare RealtimeKit's actual video interface is connected to this development build.
+     Only DLI-authorised members may request media tokens. Live camera/microphone,
+     role controls and real-network connections still require two-device testing.
+     Production conferencing remains unchanged.</p>:
+    <p>Room permissions, membership, in-room text messages and host moderation are backed by Supabase.
+     Live multi-user camera, microphone and screen-sharing are not enabled in production.</p>}
   </div></div>
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
@@ -203,19 +244,32 @@ export default function ConferenceRoomsPage(){
    })}
   </div>
   {current&&joined&&<div className="dli-conference-backdrop" role="presentation"
-    onMouseDown={e=>{if(e.currentTarget===e.target){setActive(null);setJoined(false);}}}>
+    onMouseDown={e=>{if(e.currentTarget===e.target&&!mediaOpen){void leaveOverview();}}}>
    <section className="dli-conference-overlay" role="dialog" aria-modal="true" aria-label={current.title}>
     <header><div><small>{labels[current.room_type]}</small><h2>{current.title}</h2>
       <p>{current.is_locked?'Locked':'Open for eligible members'} · {participants.length} present</p></div>
-      <button type="button" aria-label="Close conference overview" onClick={()=>{setActive(null);setJoined(false);}}>
+      <button type="button" aria-label="Leave conference overview"
+        onClick={()=>{void leaveOverview();}}>
        <X size={21}/></button>
     </header>
     <div className="dli-conference-panel-grid">
      <div className="dli-conference-main">
-      <div className="dli-conference-layout-picker" aria-label="Participant display">
-       <span>Participant gallery · Media streams not yet provisioned</span>
-      </div>
-      <div className="dli-conference-gallery">
+      {mediaDevEnabled&&<div className="dli-conference-media-actions">
+       <button type="button" onClick={()=>setMediaOpen(v=>!v)}
+        aria-pressed={mediaOpen}>
+        <Video size={17}/> {mediaOpen?'Hide development media':'Open development video meeting'}
+       </button>
+       <small>Private development preview · Not enabled for production students</small>
+      </div>}
+      {mediaDevEnabled&&mediaOpen&&<Suspense fallback={<p role="status">Loading RealtimeKit video controls…</p>}>
+       <DevRealtimeKitConference key={active??'room'} roomId={current.id}
+        onStop={()=>setMediaOpen(false)}/>
+      </Suspense>}
+      {!mediaOpen&&<div className="dli-conference-layout-picker" aria-label="Participant display">
+       <span>{mediaDevEnabled?'DLI attendance records · Start development video to view actual streams':
+        'Participant gallery · Media streams not yet provisioned'}</span>
+      </div>}
+      {!mediaOpen&&<div className="dli-conference-gallery">
        {participants.map(p=><article key={p.user_id}>
         <span className="dli-conference-avatar">{resolve(p.user_id).charAt(0).toUpperCase()}</span>
         <strong>{resolve(p.user_id)}</strong><small>{p.hand_raised?'✋ Hand raised':'Participant'}</small>
@@ -230,7 +284,7 @@ export default function ConferenceRoomsPage(){
            onClick={()=>void action('hand_lower_other',p.user_id)}><Hand size={13}/> Lower hand</button>}
         </div>}
        </article>)}
-      </div>
+      </div>}
       <div className="dli-conference-toolbar">
        <button type="button" disabled={busy} onClick={()=>void action(me?.hand_raised?'hand_lower':'hand_raise')}>
         <Hand size={17}/> {me?.hand_raised?'Lower hand':'Raise hand'}</button>
@@ -238,14 +292,18 @@ export default function ConferenceRoomsPage(){
         <button type="button" disabled={busy} onClick={()=>void action(current.is_locked?'unlock':'lock')}>
          {current.is_locked?<LockOpen size={17}/>:<Lock size={17}/>}
          {current.is_locked?'Unlock':'Lock'}</button>
-        <button type="button" disabled={busy} onClick={()=>void action('mute_all')}><MicOff size={17}/> Mute all</button>
-        <button type="button" disabled={busy} onClick={()=>void action('camera_all_off')}><CameraOff size={17}/> Cameras off</button>
+        {!mediaOpen&&<>
+         <button type="button" disabled={busy} onClick={()=>void action('mute_all')}><MicOff size={17}/> Log mute-all request</button>
+         <button type="button" disabled={busy} onClick={()=>void action('camera_all_off')}><CameraOff size={17}/> Log cameras-off request</button>
+        </>}
         <button type="button" disabled={busy} onClick={()=>void action('open')}><CalendarDays size={17}/> Open room</button>
         <button type="button" className="dli-conference-end" disabled={busy} onClick={()=>void action('end')}>End for all</button>
        </>}
-       <button type="button" disabled={busy} onClick={()=>void action('leave')}>Leave</button>
+       <button type="button" disabled={busy} onClick={()=>void action('leave')}>Leave DLI room</button>
       </div>
-      <p className="dli-conference-sfu-note">Host actions are stored as server-side moderation requests. They will control actual audio and video only when Cloudflare Calls media is integrated; camera/microphone streams are currently disabled.</p>
+      <p className="dli-conference-sfu-note">{mediaOpen?
+       'Live microphone, camera and moderation controls are provided by Cloudflare RealtimeKit. DLI attendance and chat remain separate, permission-checked records.':
+       'DLI moderation actions are stored as audited requests; only the Cloudflare meeting interface can control active camera and microphone streams in this development stage.'}</p>
      </div>
      <aside className="dli-conference-chat">
       <h3><MessageSquareText size={17}/> Conference chat</h3>
