@@ -22,3 +22,6 @@
 .dli-payout-preview iframe,.dli-payout-preview img{display:block;width:100%;height:min(65dvh,700px);border:1px solid var(--border);border-radius:9px;object-fit:contain;background:white}
 .dli-payout-preview>a{justify-self:start}
 @media(max-width:650px){.dli-payout-bank-form,.dli-payout-queue-card{padding:12px}.dli-payout-preview{padding:12px}.dli-payout-preview iframe,.dli-payout-preview img{height:58dvh}.dli-payout-upload-form button,.dli-payout-ack button{width:100%}}
+
+.dli-payout-bank-form select{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:9px;color:var(--text);font:inherit;font-size:16px}
+.dli-payout-queue-card .academic-submit{justify-self:start}

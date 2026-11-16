@@ -98,8 +98,8 @@ export default function TutorPayrollPage(){
     <p>Live group and private assignments determine monthly rates; due dates stay anchored to class start dates.</p>
    </div></div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Audited manual payout confirmation</strong>
-   <p>The system calculates scheduled compensation and updates Paid/Due Today/Overdue automatically from stored dates. It never initiates a bank payment. Owner, Admin or Assistant Admin uploads proof of an external transfer; the Tutor must confirm receiving it before payroll is marked Paid.</p>
+   <strong>Paystack automated tutor transfers</strong>
+   <p>Payroll amounts and due dates come from verified class records. Owner, Admin and Assistant Admin initiate payouts through Paystack; only signed transfer-success settlement marks payroll Paid.</p>
   </div></div>
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
@@ -143,7 +143,7 @@ export default function TutorPayrollPage(){
          value={reason[c.engagement_key]??''} onChange={e=>setReason(v=>({...v,[c.engagement_key]:e.target.value}))}/></label>
        <button type="button" disabled={busy} onClick={()=>void override(c)}>Approve rate</button>
       </details>
-      {c.payout_status!=='paid'&&<p className="academic-code-hint">Use the verified transfer form above. This payout becomes Paid only after the Tutor confirms receiving it.</p>}
+      {c.payout_status!=='paid'&&<p className="academic-code-hint">Use the Paystack transfer panel above. The payout becomes Paid only after verified provider settlement.</p>}
      </div>}
    </article>)}
   </section>

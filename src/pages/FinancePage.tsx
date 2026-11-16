@@ -7,6 +7,7 @@ import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import PaidPlanSettings from '../components/PaidPlanSettings';
+import PaystackPaymentsLedger from '../components/PaystackPaymentsLedger';
 import TutorPayrollPage from './TutorPayrollPage';
 import './FinancePage.css';
 
@@ -33,7 +34,6 @@ type Proposal = {
 
 const PROPOSAL_TYPES: {value: ProposalType; label: string}[] = [
   { value: 'fee_structure', label: 'Fee structure (proposal only)' },
-  { value: 'manual_transfer_process', label: 'Manual bank-transfer process' },
   { value: 'reconciliation_process', label: 'Reconciliation procedure' },
   { value: 'receipt_design', label: 'Receipt design and requirements' },
   { value: 'compensation_rule', label: 'Tutor compensation concept' },
@@ -57,6 +57,7 @@ export default function FinancePage() {
   const { account } = useAuth();
   const canPropose = Boolean(account && FINANCE_ROLES.has(account.role));
   const canOpenClassPayments = Boolean(account && canAccessPath(account.role,'/classes',account.studentTier));
+  void canOpenClassPayments;
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [category, setCategory] = useState<ProposalType>('fee_structure');
   const [title, setTitle] = useState('');
@@ -143,7 +144,7 @@ export default function FinancePage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance management</h1>
-        <p>Manage the internal learning-plan reference and prepare finance-policy proposals without activating charges.</p>
+        <p>Monitor Paystack-verified tuition payments and tutor transfers alongside audited learning plans.</p>
       </div>
       <span className="module-status"><span/> Finance controls</span>
     </div>
@@ -151,9 +152,7 @@ export default function FinancePage() {
     <div className="module-notice">
       <div className="notice-icon"><ShieldCheck size={20}/></div>
       <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Owner, Admin and Assistant Admin may equally view and submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
-          ?<Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link>
-          :<strong>Classes &amp; timetable · Payments (authorised administrators)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
+        <p>Owner, Admin and Assistant Admin have equal access to automated Paystack revenue, webhook statuses and tutor payroll. Historical manual records remain archived and do not activate new payments.</p>
       </div>
     </div>
 
@@ -168,13 +167,13 @@ export default function FinancePage() {
       </div>
       <div className="finance-summary-card">
         <FileText size={20}/>
-        <strong>Manual workflow</strong>
-        <span>Fee assignments and evidence review</span>
+        <strong>Paystack checkout</strong>
+        <span>Verified student revenue</span>
       </div>
       <div className="finance-summary-card">
         <Banknote size={20}/>
-        <strong>Verification required</strong>
-        <span>Transfers and tutor payment records</span>
+        <strong>Webhook verified</strong>
+        <span>Tutor transfer status</span>
       </div>
     </div>
 
@@ -185,6 +184,7 @@ export default function FinancePage() {
         onClick={() => { void refresh(); }}><RefreshCw size={15}/> Refresh</button>
     </div>
 
+    <PaystackPaymentsLedger/>
     <PaidPlanSettings/>
 
     {canPropose && <section className="panel finance-proposal-editor">
@@ -242,7 +242,7 @@ export default function FinancePage() {
         <p className="user-caption">These proposals do not authorise a charge or bank transfer. Review notes are recorded separately in <Link to="/finance/reviews">Finance review</Link>.</p>
       </div></div>
       {!loading && proposals.length === 0 && <p className="academic-empty">
-        No general finance-policy proposals have been submitted yet. Individual private-class fee assignments and manual transfer verification are managed separately.
+        No general finance-policy proposals have been submitted. New tuition payments and tutor transfers use Paystack only.
       </p>}
       <div className="finance-proposals">
         {proposals.map(proposal => <article className="finance-proposal" key={proposal.id}>
@@ -262,11 +262,6 @@ export default function FinancePage() {
       </div>
     </section>
     <p className="module-footnote"><LockKeyhole size={15}/>
-      DLI’s finance workspace includes editable, audited internal rate references, planned tutor compensation
-      and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
-      and credit-date verification are handled in {canOpenClassPayments
-        ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
-        :<strong>the authorised class finance workspace</strong>}.
-      No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
+      Financials uses verified Paystack payments and disbursements. Pending provider requests and screenshots are never considered completed. Approved rates and historical finance proposals remain auditable.</p>
   </div>;
 }
