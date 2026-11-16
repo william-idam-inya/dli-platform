@@ -153,6 +153,12 @@ export default function GuidedTour(){
   return()=>window.removeEventListener('dli-tour-replay',replay);
  },[replay]);
 
+ // Keep workspace panels expanded for the entire tour, not just each step.
+ useEffect(()=>{
+  if(!visible)return;
+  window.dispatchEvent(new Event('dli-tour-begin'));
+  return()=>window.dispatchEvent(new Event('dli-tour-end'));
+ },[visible]);
  const dismiss=useCallback((skipped:boolean)=>{
   setVisible(false);setIndex(-1);setSpotlight(null);
   openedBy.current?.focus({preventScroll:true});
@@ -166,7 +172,6 @@ export default function GuidedTour(){
 
  useEffect(()=>{
   if(!visible)return;
-  window.dispatchEvent(new Event('dli-tour-begin'));
   const old=document.body.style.overflow;
   document.body.style.overflow='hidden';
   const frame=requestAnimationFrame(()=>panel.current?.querySelector<HTMLElement>('[data-tour-primary]')?.focus());
@@ -180,7 +185,7 @@ export default function GuidedTour(){
    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
   document.addEventListener('keydown',keys,true);
-  return()=>{document.body.style.overflow=old;cancelAnimationFrame(frame);document.removeEventListener('keydown',keys,true);window.dispatchEvent(new Event('dli-tour-end'));};
+  return()=>{document.body.style.overflow=old;cancelAnimationFrame(frame);document.removeEventListener('keydown',keys,true);};
  },[visible,index,dismiss]);
 
  // Locate each real, role-visible feature after router navigation and page render.

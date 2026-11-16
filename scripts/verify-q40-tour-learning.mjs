@@ -13,12 +13,12 @@ const rls=read('supabase/migrations/20261116072000_stage_q40_catalogue_rls_cycle
 const onboard=read('supabase/migrations/20261116072005_stage_q40_guided_tour_progress.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 for(const txt of [
- "const TOUR_VERSION=1", "account.role==='student'", "account.role==='tutor'",
+ "const TOUR_VERSION=2", "account.role==='student'", "account.role==='tutor'",
  'canAccessPath(account.role', "client.auth.getUser()",
  "client.from('dli_guided_tour_state')",
  "upsert({", "was_skipped:skipped",
  "window.localStorage.setItem", "dli-tour-replay",
- "Skip tour", "Start guide", "Replay anytime", "index===steps.length-1?'Finish'",
+ "Skip tour", "Start guide", "Replay from More", "index===steps.length-1?'Finish'",
  "navigate(steps[next].route)", "event.key==='Escape'",
  "document.body.style.overflow='hidden'",
 ])assert.ok(guide.includes(txt),'Tour missing user feature '+txt);
