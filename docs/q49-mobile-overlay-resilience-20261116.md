@@ -12,7 +12,8 @@
 - Drawer is full-height navy with explicit high-contrast text and a sticky accessible close/header, above the sticky site header.
 - Quick Menu is portalled to body, uses the actual trigger bounding rectangle to clamp its width/position, repositions on resize/scroll, closes by outside press/Escape.
 - Focus sheets remain real mounted form state, within 8px phone gutters and the visual viewport, with compact dark close button and internal scrolling. Missing focus titles can use their first label.
-- Forward dialog becomes a portal; remaining dialog families receive bounded heights and header/button accessibility. The floating chat is hidden when modal overlays are active.
+- Forward dialog becomes a portal; remaining dialog families receive bounded heights and header/button accessibility.
+- Student bank-transfer and tutor payout receipt previews also move to body portals, with mobile-bounded PDF/image viewers and sticky Close/Save access. These existing private transfer workflows are otherwise unchanged. The floating chat is hidden when modal overlays are active.
 - Existing permission, messaging and call signaling backends are unchanged.
 
 ## Verification
