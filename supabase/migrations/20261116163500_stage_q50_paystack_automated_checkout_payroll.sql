@@ -250,7 +250,12 @@ grant execute on function public.dli_paystack_finalize_transfer(text,bigint,text
 revoke execute on function public.dli_apply_paid_v2(text,uuid,uuid,uuid[]) from public,anon,authenticated;
 revoke execute on function public.dli_review_paid(uuid,text,text,date,text) from public,anon,authenticated;
 revoke execute on function public.dli_payroll_mark_paid(text,integer,date,text) from public,anon,authenticated;
-revoke execute on function public.dli_tutor_acknowledge_payout(uuid,boolean,text) from public,anon,authenticated;
+do $retire_optional_rpc$
+begin
+ if to_regprocedure('public.dli_tutor_acknowledge_payout(uuid,boolean,text)') is not null then
+  execute 'revoke execute on function public.dli_tutor_acknowledge_payout(uuid,boolean,text) from public,anon,authenticated';
+ end if;
+end $retire_optional_rpc$;
 drop policy if exists dli_upgrade_proof_submit on public.dli_enrollment_proofs;
 drop policy if exists receipt_insert on public.private_payment_receipts;
 drop policy if exists receipt_review on public.private_payment_receipts;
