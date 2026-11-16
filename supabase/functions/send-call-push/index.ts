@@ -145,6 +145,7 @@ Deno.serve(async(req:Request)=>{
  catch{return reply(503,{error:'Invalid Web Push configuration'},origin);}
  let body:{kind?:unknown;sourceId?:unknown;dispatch?:unknown};
  try{body=await req.json();}catch{return reply(400,{error:'Invalid request'},origin);}
+ try{
  const admin=createClient(project,service,{auth:{persistSession:false,autoRefreshToken:false}});
  if(internal&&body?.dispatch===true){
   const prepared=await admin.rpc('dli_push_enqueue_due_conferences');
