@@ -14,6 +14,7 @@ import WorkspaceFocus from './WorkspaceFocus';
 import GuidedTour from './GuidedTour';
 import GlobalSearch from './GlobalSearch';
 import QuickMenu from './QuickMenu';
+import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
@@ -410,6 +411,7 @@ export default function AppShell({ children }: AppShellProps) {
         </button>
       </nav>}
     <GuidedTour/>
+    <FloatingMessenger/>
     </div></CallProvider>
   );
 }
