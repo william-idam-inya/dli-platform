@@ -552,19 +552,29 @@ export default function DirectMessagesPage(){
   }
 
   return <div className="module-page dli-direct-page">
-    <div className="module-page-hero">
-      <span className="module-page-icon"><MessageCircle size={25}/></span>
-      <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
-        <h1>Messages</h1><p>Private conversations with authorised DLI members, in any language.</p>
+    <div className="module-page-hero dli-direct-hero">
+      <span className="module-page-icon" aria-hidden="true"><MessageCircle size={25}/></span>
+      <div className="module-page-copy">
+        <div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
+        <h1>Messages</h1>
+        <p>{account?.role==='student'||account?.role==='tutor'
+          ?'Chat privately with DLI administration.'
+          :'Private conversations with authorised DLI members.'}</p>
       </div>
-      <button type="button" className="user-outline-button" onClick={()=>void enableAlerts()}>
-        <BellRing size={16}/> Enable browser alerts
+      <button type="button" className="user-outline-button dli-direct-alerts-button" onClick={()=>void enableAlerts()}>
+        <BellRing size={16} aria-hidden="true"/> Enable browser alerts
       </button>
     </div>
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
-      <strong>Institutional messaging with safeguarding oversight</strong>
-      <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is separately audited for safeguarding and abuse prevention. Subject-group chats are paused. Always report unsafe messages.</p>
-    </div></div>
+    <details className="dli-direct-safety">
+      <summary>
+        <ShieldCheck size={18} aria-hidden="true"/>
+        <span>Messaging safety &amp; permissions</span>
+        <span className="dli-direct-safety-hint" aria-hidden="true">Details</span>
+      </summary>
+      <div className="dli-direct-safety-body">
+        <p>Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin. Those three staff roles can contact any active member. Direct student-to-student and student-to-tutor messages are restricted. Founder/Admin oversight is separately audited for safeguarding and abuse prevention. Subject-group chats are paused. Always report unsafe messages.</p>
+      </div>
+    </details>
     {['owner','admin','tutor'].includes(account?.role??'')&&<p className="dli-direct-drafts-link">
       Official message templates and internal writing are retained under <Link to="/communications/drafts">Communication drafts</Link>.
     </p>}
