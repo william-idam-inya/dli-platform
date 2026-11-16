@@ -96,3 +96,54 @@
  .dli-global-search{max-width:145px;min-width:0}
  .dli-global-search>input::placeholder{font-size:0}
 }
+
+/* Q45 role-oriented photographic canvas with gradient fallback. The imagery
+   is decorative and never holds required text. Each role keeps the same
+   accessible card hierarchy and approved dark blue/gold palette. */
+.app-layout[data-dli-role='student']{
+ --dli-role-scene:url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=75');
+}
+.app-layout[data-dli-role='tutor']{
+ --dli-role-scene:url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=75');
+}
+.app-layout[data-dli-role='owner'],
+.app-layout[data-dli-role='admin'],
+.app-layout[data-dli-role='assistant_admin']{
+ --dli-role-scene:url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1800&q=75');
+}
+.app-layout[data-dli-role]{
+ background-color:#09264b;
+ background-image:
+  linear-gradient(135deg,rgba(4,22,49,.78),rgba(6,30,63,.73)),
+  var(--dli-role-scene),
+  linear-gradient(145deg,#082b58,#0c4678);
+ background-size:cover,cover,cover;
+ background-position:center,center,center;
+ background-repeat:no-repeat;
+ background-attachment:fixed;
+}
+:root[data-theme='dark'] .app-layout[data-dli-role]{
+ background-image:
+  linear-gradient(145deg,rgba(3,16,36,.84),rgba(6,28,57,.8)),
+  var(--dli-role-scene),
+  linear-gradient(145deg,#061a38,#09264b);
+}
+.app-layout[data-dli-role] .page-content{
+ background:linear-gradient(140deg,rgba(244,249,255,.91),rgba(242,247,255,.89));
+}
+:root[data-theme='dark'] .app-layout[data-dli-role] .page-content{
+ background:linear-gradient(140deg,rgba(14,26,48,.93),rgba(19,41,66,.91));
+}
+@media(max-width:680px){
+ .app-layout[data-dli-role]{background-attachment:scroll;}
+ .app-layout .ref-mobile-identity{display:none;}
+ .app-layout .dli-topbar-brand{display:inline-flex;}
+ .app-layout .dli-topbar-brand span{display:none;}
+ .app-layout .breadcrumb,.app-layout .ref-desktop-greeting{display:none;}
+}
+@media(min-width:681px){
+ .app-layout .breadcrumb,.app-layout .ref-desktop-greeting{display:none;}
+}
+@media(prefers-reduced-data:reduce){
+ .app-layout[data-dli-role]{background-image:linear-gradient(145deg,#082b58,#0c4678)}
+}
