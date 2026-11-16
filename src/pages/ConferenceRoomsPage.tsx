@@ -147,14 +147,18 @@ export default function ConferenceRoomsPage(){
    if(res.error||res.data!==true){setError('Your conference moderation request was rejected.');return;}
    if(name==='end'||name==='leave'){
     setMediaOpen(false);setActive(null);setJoined(false);
-    // DLI room moderation is verified by the DB. Provider meeting shutdown
-    // is independently attempted by the development Edge Function.
-    if(name==='end'&&mediaDevEnabled){
+    // After the database authorises a leave/end, revoke participant media
+    // tokens (or end the entire provider meeting) on the server.
+    if(mediaDevEnabled){
      const stopped=await supabase.functions.invoke('dli-dev-realtimekit-session',{
-      body:{room_id:active,action:'end'}
+      body:{room_id:active,action:name}
      });
-     if(stopped.error||stopped.data?.providerEnded!==true)
-      setNotice('DLI room ended. Cloudflare media shutdown requires verification.');
+     const success=name==='end'?
+       stopped.data?.providerEnded===true:stopped.data?.providerRevoked===true;
+     if(stopped.error||!success)
+      setNotice(name==='end'?
+       'DLI room ended. Cloudflare media shutdown requires verification.':
+       'DLI room left. Cloudflare token revocation requires verification.');
     }
     await read();
    }
@@ -165,9 +169,18 @@ export default function ConferenceRoomsPage(){
  async function leaveOverview(){
   const id=active;
   setMediaOpen(false);setActive(null);setJoined(false);
-  if(supabase&&id)await supabase.rpc('dli_conference_action',{
-   p_room:id,p_action:'leave',p_user:null
-  });
+  if(supabase&&id){
+   const leaving=await supabase.rpc('dli_conference_action',{
+    p_room:id,p_action:'leave',p_user:null
+   });
+   if(mediaDevEnabled&&leaving.data===true){
+    const result=await supabase.functions.invoke('dli-dev-realtimekit-session',{
+     body:{room_id:id,action:'leave'}
+    });
+    if(result.error||result.data?.providerRevoked!==true)
+     setNotice('DLI room closed. Media-token revocation needs verification.');
+   }
+  }
  }
  async function send(event:FormEvent){
   event.preventDefault();if(!supabase||!active||busy||!draft.trim())return;
