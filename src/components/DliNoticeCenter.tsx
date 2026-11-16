@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {pushConfigured} from '../lib/pushNotifications';
 import { Bell, BellRing, Check, MessageCircle, X } from 'lucide-react';
 import { Link,useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -78,7 +79,7 @@ export function DliNotificationBell(){
         if(previousTutorPayout.current!==null&&result.count>previousTutorPayout.current){
           setNewTutorPayout(true);
           window.dispatchEvent(new Event('dli-notification-chime'));
-          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden&&!pushConfigured){
             try{new Notification(tutorHasPending?'DLI tutor transfer proof':'DLI disputed tutor payout',{
               body:tutorHasPending?'Review and acknowledge your transfer.':'A Tutor disputed receiving a payment.',
               tag:'dli-tutor-payout'
@@ -111,7 +112,7 @@ export function DliNotificationBell(){
         if(previousPending.current!==null&&count>previousPending.current){
           setNewPayment(true);
           window.dispatchEvent(new Event('dli-notification-chime'));
-          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden&&!pushConfigured){
             try{new Notification('DLI receipt awaiting review',{body:'Open Paid enrolment to verify a bank transfer.',tag:'dli-payment-review'});}
             catch{/* User/system browser notifications are optional. */}
           }
@@ -325,7 +326,7 @@ export function DliMessageBadge(){
               notified.current.has(message.id))return;
           notified.current.add(message.id);
           setFlash(true);
-          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden&&!pushConfigured){
             try{new Notification('New DLI message',{body:'Open DLI Messages to read it.',tag:'dli-direct-message'});}
             catch{/* Browser notifications can be blocked by system policy. */}
           }
