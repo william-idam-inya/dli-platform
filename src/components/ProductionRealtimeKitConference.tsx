@@ -69,7 +69,7 @@ export default function ProductionRealtimeKitConference({roomId,onStop}:Props){
    setSession({authToken:data.authToken,meetingId:data.meetingId,
     roomId:data.roomId,preset:data.preset});
   }catch(e){
-   setError(e instanceof Error?e.message:'Could not connect to DLI's conferencing service.');
+   setError(e instanceof Error?e.message:"Could not connect to DLI's conferencing service.");
   }finally{setBusy(false);}
  }
  if(!productionConferenceEnabled)return null;
