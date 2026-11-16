@@ -8,6 +8,8 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import PrivateClassesPage from './PrivateClassesPage';
 import SubjectArtwork from '../components/SubjectArtwork';
+import ChatMemberAvatar from '../components/ChatMemberAvatar';
+import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
 import {makeTopicPacingPreview} from '../lib/topicPacing';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
@@ -101,6 +103,7 @@ export default function ClassesWorkspacePage(){
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
   const [editing,setEditing]=useState<string|null>(null);
   const [search,setSearch]=useState('');
+  const [profileTarget,setProfileTarget]=useState<Person|null>(null);
   const [tutorFilter,setTutorFilter]=useState('');
   const [showArchived,setShowArchived]=useState(false);
   const [busy,setBusy]=useState(false);
@@ -173,6 +176,24 @@ export default function ClassesWorkspacePage(){
   const eligibleStudents=students.filter(p=>form.class_type==='free_demo'||paidStudents.includes(p.auth_user_id));
   const studentOptions=eligibleStudents.filter(p=>p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
   const chosenSet=useMemo(()=>new Set(chosen),[chosen]);
+  // Only actual active enrolment rows count as CURRENT classes.
+  // The class being edited/created is a proposed destination, not enrolment.
+  const studentClassNames=useMemo(()=>{
+    const byClass=new Map(classes.map(c=>[c.id,c]));
+    const byStudent=new Map<string,Set<string>>();
+    for(const member of members){
+      if(!member.is_active)continue;
+      const cl=byClass.get(member.class_id);
+      if(!cl||cl.state==='archived')continue;
+      const name=cl.class_group_name?.trim()||cl.subject_name?.trim();
+      if(!name)continue;
+      const list=byStudent.get(member.student_id)??new Set<string>();
+      list.add(name);
+      byStudent.set(member.student_id,list);
+    }
+    return new Map([...byStudent].map(([id,names])=>[id,[...names].sort()]));
+  },[members,classes]);
+  const targetClassName=form.class_group_name.trim()||selectedCohort?.name||'Choose a cohort first';
 
   const groups=useMemo(()=>{
     const result=new Map<string,ClassGroup>();
@@ -475,12 +496,34 @@ export default function ClassesWorkspacePage(){
               <button type="button" disabled={!chosen.length||busy} onClick={()=>setChosen([])}>Clear students</button>
             </div>
             <div className="classes-student-list">
-              {studentOptions.map(s=><label key={s.id}>
-                <input type="checkbox" checked={chosenSet.has(s.auth_user_id)}
-                  disabled={busy||(!chosenSet.has(s.auth_user_id)&&capacity!==null&&chosen.length>=capacity)}
-                  onChange={e=>setStudent(s.auth_user_id,e.target.checked)}/>
-                <span>{s.full_name}</span>
-              </label>)}
+              {studentOptions.map(s=>{
+                const current=studentClassNames.get(s.auth_user_id)??[];
+                const selected=chosenSet.has(s.auth_user_id);
+                const checkboxId='class-student-'+s.id;
+                return <div key={s.id} className={'classes-student-option'+(selected?' selected':'')}>
+                  <button type="button" className="classes-student-photo-button"
+                    onClick={()=>setProfileTarget(s)}
+                    aria-label={'View verified profile for '+s.full_name}
+                    title={'View '+s.full_name+' profile'}>
+                    <ChatMemberAvatar userId={s.auth_user_id} name={s.full_name}
+                      className="classes-student-photo"/>
+                    <span>View profile</span>
+                  </button>
+                  <div className="classes-student-info">
+                    <label htmlFor={checkboxId} className="classes-student-identity">
+                      <strong>{s.full_name}</strong>
+                      <span>{current.length?'Current class: '+current.join(', '):'No active class recorded'}</span>
+                      <span className="classes-student-target">Assign to: {targetClassName}</span>
+                    </label>
+                    <label htmlFor={checkboxId} className="classes-student-check">
+                      <input id={checkboxId} type="checkbox" checked={selected}
+                        disabled={busy||(!selected&&capacity!==null&&chosen.length>=capacity)}
+                        onChange={e=>setStudent(s.auth_user_id,e.target.checked)}/>
+                      <span>{selected?'Selected':'Select student'}</span>
+                    </label>
+                  </div>
+                </div>;
+              })}
               {!studentOptions.length&&<p className="academic-empty">
                 {form.class_type==='free_demo'?'No active students yet. You can still save and publish a free class.':
                   'No approved Paid Students yet. Save this class as a draft; student enrolment must be approved before publication.'}
@@ -689,5 +732,22 @@ export default function ClassesWorkspacePage(){
       </section>
       
     </>}
+    {profileTarget&&<ChatMemberProfileOverlay
+      userId={profileTarget.auth_user_id} fallbackName={profileTarget.full_name}
+      contextItems={[
+        {label:'Current classes',value:(studentClassNames.get(profileTarget.auth_user_id)??[]).join(', ')||'No active class recorded'},
+        {label:'Class being assigned',value:targetClassName},
+      ]}
+      confirmLabel={chosenSet.has(profileTarget.auth_user_id)?'Remove from selection':'Select this student'}
+      onConfirm={()=>{
+        const alreadyChosen=chosenSet.has(profileTarget.auth_user_id);
+        if(!alreadyChosen&&capacity!==null&&chosen.length>=capacity){
+          setError('This class has reached its '+capacity+'-student limit.');
+          return;
+        }
+        setStudent(profileTarget.auth_user_id,!alreadyChosen);
+        setProfileTarget(null);
+      }}
+      onClose={()=>setProfileTarget(null)}/>}
   </div>;
 }

@@ -62,3 +62,16 @@
  .app-layout .page-content{background:var(--bg);}
  .app-layout .topbar{background:var(--surface);}
 }
+
+/* Q44: backdrop-filter establishes an unintended fixed-position containing
+   block. Disable it only while a focus overlay is active so viewport scroll
+   geometry is correct; retain the normal frosted shell when the panel closes. */
+.app-layout:has(.dli-workspace-backdrop) .page-content{
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ transform:none!important;filter:none!important;contain:initial!important;
+ overflow:visible!important;
+}
+.app-layout:has(.dli-workspace-backdrop) .module-page{
+ transform:none!important;filter:none!important;contain:initial!important;
+ overflow:visible!important;
+}

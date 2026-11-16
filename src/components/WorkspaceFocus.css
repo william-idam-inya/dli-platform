@@ -68,3 +68,27 @@
 }
 
 body:has(.dli-workspace-backdrop){overflow:hidden}
+
+/* Q44: the original panel stays mounted but scrolls through all content from
+   its first field to the bottom action inside the actual browser viewport. */
+.dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]{
+ box-sizing:border-box!important;
+ min-height:0!important;
+ height:auto!important;
+ max-height:calc(100dvh - 84px)!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ scrollbar-gutter:stable;
+ scroll-padding-top:20px;
+ -webkit-overflow-scrolling:touch;
+ touch-action:pan-y;
+ overscroll-behavior-y:contain!important;
+}
+.dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]:focus{outline:none;}
+@media(max-width:680px){
+ .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]{
+  top:62px!important;max-height:calc(100dvh - 62px)!important;
+  min-height:0!important;height:auto!important;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom))!important;
+ }
+}

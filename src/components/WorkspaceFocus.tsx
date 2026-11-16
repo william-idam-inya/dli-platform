@@ -128,17 +128,20 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   if(!compressed)return;
   previousFocused.current=trigger;
   activePanel.current=panel;
+  // Never reopen a long workspace halfway down.
+  panel.scrollTop=0;
+  panel.scrollLeft=0;
+  panel.setAttribute('tabindex','-1');
   setActive(key);
   requestAnimationFrame(()=>{
-   const first=panel.querySelector<HTMLElement>(
-    'input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled]),a[href],[tabindex="0"]'
-   );
-   (first??panel).focus({preventScroll:true});
+   panel.scrollTop=0;
+   panel.focus({preventScroll:true});
   });
  },[compressed]);
  useEffect(()=>{
   if(active===null)return;
   function onKey(event:KeyboardEvent){
+   if(document.querySelector('.dli-chat-profile-backdrop'))return;
    if(event.key==='Escape'){event.stopPropagation();close();return;}
    if(event.key!=='Tab'||!activePanel.current)return;
    const nodes=[...activePanel.current.querySelectorAll<HTMLElement>(
