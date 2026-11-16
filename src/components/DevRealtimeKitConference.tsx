@@ -84,7 +84,7 @@ export default function DevRealtimeKitConference({roomId,onStop}:Props){
    <p>Cloudflare RealtimeKit provides the actual meeting gallery, microphone, camera,
     screensharing and preset-authorised host controls. Your DLI room membership
     is checked again before a participant token is issued.</p>
-   <p>Audio and video start **off**. Cloudflare may charge for connected participant minutes.
+   <p>Audio and video start <strong>off</strong>. Cloudflare may charge for connected participant minutes.
     Use a development account only.</p>
    <button type="button" disabled={busy} onClick={()=>void connect()}>
     {busy?<LoaderCircle size={16} className="dli-rtk-spinner"/>:<Camera size={16}/>}
