@@ -39,12 +39,13 @@ export default function DirectCallOverlay({
  },[localStream,remoteStream,session.mode]);
  useEffect(()=>{
   function key(event:KeyboardEvent){
+   if(minimized)return;
    if(event.key==='Escape'){event.stopPropagation();
     session.direction==='incoming'&&session.state==='ringing'?onReject():onEnd();}
   }
   window.addEventListener('keydown',key,true);
   return()=>window.removeEventListener('keydown',key,true);
- },[session.direction,session.state,onReject,onEnd]);
+ },[session.direction,session.state,onReject,onEnd,minimized]);
  const ringing=session.direction==='incoming'&&session.state==='ringing';
  return <div className={'dli-call-backdrop'+(minimized?' minimized':'')} role="presentation"
    onMouseDown={e=>{if(!minimized&&e.target===e.currentTarget){
