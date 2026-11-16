@@ -3,9 +3,8 @@ import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
-import DirectCallOverlay from '../components/DirectCallOverlay';
-import {useDirectRealtime,type DliCallSignal} from '../lib/useDirectRealtime';
-import {useDirectPeerCall} from '../lib/useDirectPeerCall';
+import {useDirectRealtime} from '../lib/useDirectRealtime';
+import {useDliCalls} from '../components/CallProvider';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -49,7 +48,6 @@ export default function DirectMessagesPage(){
   const {account}=useAuth();
   const [query,setQuery]=useSearchParams();
   const directTargetHandled=useRef('');
-  const callHandler=useRef<(signal:DliCallSignal)=>void>(()=>{});
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
@@ -123,9 +121,8 @@ export default function DirectMessagesPage(){
  },[newContacts,permittedContacts,existingPeerIds,uid]);
  const current=threads.find(t=>t.id===activeId)??null;
   const callPeer=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
-  const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',signal=>callHandler.current(signal));
-  const calling=useDirectPeerCall(realtime.sendCallSignal,activeId,realtime.status==='ready');
-  callHandler.current=calling.signal;
+  const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',()=>{});
+  const calling=useDliCalls();
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
@@ -756,13 +753,13 @@ export default function DirectMessagesPage(){
                 realtime.peerOnline?'Online':'Offline · private chat'}</small></div>
             {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
               <button type="button" aria-label={'Audio call '+memberName(participant(current))}
-                title={realtime.peerOnline?'Start audio call':'Contact must be online in this chat'}
-                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
-                onClick={()=>void calling.start('audio')}><Phone size={19}/></button>
+                title="Ring this DLI member on any open DLI workspace"
+                disabled={!calling.ready||Boolean(calling.session)}
+                onClick={()=>calling.start('audio',current.id,callPeer,memberName(callPeer))}><Phone size={19}/></button>
               <button type="button" aria-label={'Video call '+memberName(participant(current))}
-                title={realtime.peerOnline?'Start video call':'Contact must be online in this chat'}
-                disabled={realtime.status!=='ready'||!realtime.peerOnline||Boolean(calling.session)}
-                onClick={()=>void calling.start('video')}><Video size={19}/></button>
+                title="Ring this DLI member on any open DLI workspace"
+                disabled={!calling.ready||Boolean(calling.session)}
+                onClick={()=>calling.start('video',current.id,callPeer,memberName(callPeer))}><Video size={19}/></button>
             </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
@@ -868,7 +865,7 @@ export default function DirectMessagesPage(){
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls require both users online, camera/microphone consent, and compatible networks. Cloudflare TURN/SFU conferences are not yet activated.</p>
+    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls can ring on any open authenticated DLI workspace and require microphone/camera consent. A TURN relay and group SFU are not yet configured.</p>
     {forwardTarget&&<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
@@ -893,13 +890,6 @@ export default function DirectMessagesPage(){
       <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
       <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
     </div>}
-    {calling.session&&current&&mode==='inbox'&&<DirectCallOverlay
-      session={calling.session} name={memberName(callPeer)}
-      localStream={calling.localStream} remoteStream={calling.remoteStream}
-      muted={calling.muted} cameraOff={calling.cameraOff} sharing={calling.sharing}
-      onAnswer={()=>void calling.answer()} onReject={calling.reject} onEnd={calling.end}
-      onMute={calling.toggleMute} onCamera={calling.toggleCamera}
-      onScreen={()=>void calling.toggleScreen()}/>}
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
       onClose={closeMemberProfile}/>}

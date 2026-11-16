@@ -6,6 +6,7 @@ export type DliActivity='typing'|'recording_audio'|'recording_video'|null;
 export type DliCallSignal={
  callId:string;from:string;to:string;kind:'ring'|'offer'|'answer'|'candidate'|'hangup'|'decline';
  mode:'audio'|'video';sdp?:string;candidate?:RTCIceCandidateInit;
+ threadId?:string;senderName?:string;
 };
 type Status='connecting'|'ready'|'unavailable';
 /** Private per-thread Broadcast + Presence. No public channel or broad user roster. */

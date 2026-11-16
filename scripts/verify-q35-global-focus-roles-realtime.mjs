@@ -21,6 +21,7 @@ const composer=read('src/components/DirectMessageComposer.tsx');
 const rec=read('src/components/ChatMediaRecorder.tsx');
 const live=read('src/lib/useDirectRealtime.ts');
 const rtc=read('src/lib/useDirectPeerCall.ts');
+const globalCalls=read('src/components/CallProvider.tsx');
 const overlay=read('src/components/DirectCallOverlay.tsx');
 const nav=read('src/data/navigation.ts');
 const app=read('src/App.tsx');
@@ -73,7 +74,7 @@ for(const t of ["role='student'::public.dli_role",'dli_people_directory',
  assert.ok(peopleSQL.includes(t),'Missing privacy-secured people or private Realtime '+t);
 for(const t of ["chatRoles.map(group=>", "query.get('compose')",
   'dli-live-chat-header','dli-live-call-actions','useDirectRealtime',
-  'useDirectPeerCall','<DirectCallOverlay','onActivity={realtime.sendActivity}'])
+  'useDliCalls','onClick={()=>calling.start(\'audio\'','onActivity={realtime.sendActivity}'])
  assert.ok(dm.includes(t),'Missing role-grouped live chat feature '+t);
 assert.ok(composer.includes("onRecordingChange=")&&composer.includes("onActivity(e.target.value.trim()?'typing':null)"),
  'Composer must dispatch actual activity');
@@ -83,9 +84,11 @@ for(const t of ['private:true','presence:{key:uid}',"event:'dli_activity'",
   "event:'dli_call'","event:'sync'",'window.setTimeout(()=>setActivity(null),3000)'])
  assert.ok(live.includes(t),'Presence/Broadcast missing security or auto-clear '+t);
 for(const t of ['RTCPeerConnection','getUserMedia','getDisplayMedia','replaceTrack',
-  "iceServers:[{urls:'stun:stun.l.google.com:19302'}]","kind:'candidate'",
+  "urls:'stun:stun.cloudflare.com:3478'","kind:'candidate'",
   't.stop()', 'sendRef.current'])
  assert.ok(rtc.includes(t),'Private P2P WebRTC media/signal controls missing '+t);
+assert.ok(globalCalls.includes('useDirectPeerCall')&&globalCalls.includes('<DirectCallOverlay')
+ &&shell.includes('<CallProvider>'),'Calls must be globally mounted on all authenticated dashboards');
 assert.ok(overlay.includes('role="dialog"')&&overlay.includes('onAnswer')
   &&overlay.includes('onScreen'),'Focus call UI missing necessary controls');
 for(const f of [

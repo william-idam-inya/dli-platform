@@ -25,6 +25,12 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
  const shareRef=useRef<MediaStream|null>(null);
  const callRef=useRef<CallSession|null>(null);
  const queuedIce=useRef<RTCIceCandidateInit[]>([]);
+ const earlyLocalIce=useRef<RTCIceCandidateInit[]>([]);
+ const sdpQueued=useRef(false);
+ const ringTimer=useRef<number|null>(null);
+ const clearRingTimer=()=>{
+  if(ringTimer.current!==null){window.clearTimeout(ringTimer.current);ringTimer.current=null;}
+ };
  const sendRef=useRef(send);
  sendRef.current=send;
  const update=(next:CallSession|null)=>{callRef.current=next;setSession(next);};
@@ -34,6 +40,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   shareRef.current?.getTracks().forEach(t=>t.stop());shareRef.current=null;
   setLocalStream(null);setRemoteStream(null);setMuted(false);
   setCameraOff(false);setSharing(false);queuedIce.current=[];
+  earlyLocalIce.current=[];sdpQueued.current=false;clearRingTimer();
  };
  const close=(notify:boolean)=>{
   const current=callRef.current;
@@ -49,7 +56,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   const capture=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true},video:mode==='video'});
   if(!callRef.current||callRef.current.id!==callId){capture.getTracks().forEach(t=>t.stop());throw Error('Call was cancelled');}
   localRef.current=capture;setLocalStream(capture);
-  const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.cloudflare.com:3478'},{urls:'stun:stun.l.google.com:19302'}]});
   pcRef.current=pc;
   for(const track of capture.getTracks())pc.addTrack(track,capture);
   pc.ontrack=event=>{
@@ -57,12 +64,14 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    setRemoteStream(stream);
   };
   pc.onicecandidate=event=>{
-   if(event.candidate&&callRef.current?.id===callId)sendRef.current({
-    callId,kind:'candidate',mode,candidate:event.candidate.toJSON()});
+   if(!event.candidate||callRef.current?.id!==callId)return;
+   const candidate=event.candidate.toJSON();
+   if(!sdpQueued.current)earlyLocalIce.current.push(candidate);
+   else sendRef.current({callId,kind:'candidate',mode,candidate});
   };
   pc.onconnectionstatechange=()=>{
    if(callRef.current?.id!==callId)return;
-   if(pc.connectionState==='connected')update({...callRef.current,state:'connected'});
+   if(pc.connectionState==='connected'){clearRingTimer();update({...callRef.current,state:'connected'});}
    else if(pc.connectionState==='failed')update({...callRef.current,state:'failed',
      error:'Direct WebRTC connection failed. This network may require a TURN relay.'});
   };
@@ -83,9 +92,24 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    const pc=await prepare(mode,id);
    const offer=await pc.createOffer();
    await pc.setLocalDescription(offer);
+   const active=callRef.current as CallSession|null;
+   if(!active||active.id!==id)return;
    if(!sendRef.current({callId:id,mode,kind:'offer',sdp:offer.sdp})){
-    update({...callRef.current!,state:'failed',error:'The private signaling channel is not connected.'});
+    stop();update({id,mode,direction:'outgoing',state:'failed',
+     error:'The private calling channel is not connected.'});return;
    }
+   sdpQueued.current=true;
+   for(const ice of earlyLocalIce.current)sendRef.current({callId:id,mode,kind:'candidate',candidate:ice});
+   earlyLocalIce.current=[];
+   update({...active,state:'ringing'});
+   clearRingTimer();
+   ringTimer.current=window.setTimeout(()=>{
+    const pending=callRef.current;
+    if(!pending||pending.id!==id||pending.state==='connected')return;
+    sendRef.current({callId:id,mode,kind:'hangup'});
+    stop();update({...pending,state:'failed',
+     error:'No answer received. The recipient must have DLI open and connected. Retry later.'});
+   },45000);
   }catch(err){
    if((callRef.current as CallSession|null)?.id!==id)return;
    stop();update({id,mode,direction:'outgoing',state:'failed',
@@ -104,7 +128,14 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    await addQueuedIce();
    const ans=await pc.createAnswer();
    await pc.setLocalDescription(ans);
-   sendRef.current({kind:'answer',mode:incoming.mode,callId:incoming.id,sdp:ans.sdp});
+   if(!callRef.current||callRef.current.id!==incoming.id)return;
+   if(!sendRef.current({kind:'answer',mode:incoming.mode,callId:incoming.id,sdp:ans.sdp})){
+    throw Error('Answer delivery was not verified');
+   }
+   sdpQueued.current=true;
+   for(const ice of earlyLocalIce.current)sendRef.current({
+    callId:incoming.id,mode:incoming.mode,kind:'candidate',candidate:ice});
+   earlyLocalIce.current=[];
   }catch(err){
    if(callRef.current?.id!==incoming.id)return;
    sendRef.current({kind:'decline',mode:incoming.mode,callId:incoming.id});
@@ -129,7 +160,7 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   if(event.kind==='decline'||event.kind==='hangup'){close(false);return;}
   if(event.kind==='answer'&&event.sdp&&pcRef.current&&
     current.direction==='outgoing'&&!pcRef.current.remoteDescription){
-   try{await pcRef.current.setRemoteDescription({type:'answer',sdp:event.sdp});await addQueuedIce();}
+   try{clearRingTimer();await pcRef.current.setRemoteDescription({type:'answer',sdp:event.sdp});await addQueuedIce();}
    catch{update({...current,state:'failed',error:'Remote call confirmation was invalid.'});}
   }
   if(event.kind==='candidate'&&event.candidate){
@@ -170,7 +201,14 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    if(!sender){capture.getTracks().forEach(t=>t.stop());return;}
    await sender.replaceTrack(track);
    shareRef.current=capture;setSharing(true);
-   track.onended=()=>{void toggleScreen();};
+   track.onended=()=>{
+    const current=pcRef.current;
+    const sender=current?.getSenders().find(x=>x.track?.kind==='video');
+    const original=localRef.current?.getVideoTracks()[0];
+    if(sender&&original)void sender.replaceTrack(original);
+    shareRef.current?.getTracks().forEach(x=>x.stop());
+    shareRef.current=null;setSharing(false);
+   };
   }catch{/* Screen selection was cancelled. */}
  };
  return {session,localStream,remoteStream,muted,cameraOff,sharing,

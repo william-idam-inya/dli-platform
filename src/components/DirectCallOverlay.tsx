@@ -37,7 +37,7 @@ export default function DirectCallOverlay({
    <header><div><small>PRIVATE DLI WEBRTC CALL</small>
       <h2>{name}</h2><p>{ringing?'Incoming '+session.mode+' call':session.state==='connecting'?
        'Connecting encrypted media…':session.state==='connected'?'Connected · '+session.mode+' call':
-       'Connection unavailable'}</p></div>
+       session.state==='ringing'?'Ringing… waiting for '+name+' to answer':'Connection unavailable'}</p></div>
     <button type="button" aria-label="End or decline call" onClick={ringing?onReject:onEnd}><X size={21}/></button>
    </header>
    <div className={'dli-call-media'+(session.mode==='audio'?' audio':'')}>
@@ -74,7 +74,7 @@ export default function DirectCallOverlay({
      <button type="button" className="decline" onClick={onEnd}><PhoneOff size={20}/> End</button>
     </>}
    </div>
-   <footer><ShieldCheck size={15}/> Calls require mutual browser consent and a permitted DLI chat. STUN-only WebRTC may fail on restricted networks; Cloudflare TURN/SFU is not yet configured.</footer>
+   <footer><ShieldCheck size={15}/> Calls require mutual browser consent and a permitted DLI chat. Calls ring across open DLI workspaces. STUN-only media may fail on restricted networks; a TURN relay is not yet configured.</footer>
   </section>
  </div>;
 }
