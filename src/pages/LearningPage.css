@@ -41,3 +41,21 @@
   .learning-resource .academic-toggle { margin-left:24px; }
   .learning-editor .academic-submit { width:100%; }
 }
+
+/* Q40: short, accessible classroom-access guidance instead of a large stage notice. */
+.learning-page .learning-access-details{
+ margin:0 0 14px;border:1px solid var(--border);border-radius:12px;
+ background:var(--surface);color:var(--text);
+}
+.learning-page .learning-access-details summary{
+ display:flex;align-items:center;gap:8px;min-height:44px;
+ padding:9px 13px;list-style:none;cursor:pointer;font-size:12px;font-weight:750;
+}
+.learning-page .learning-access-details summary::-webkit-details-marker{display:none}
+.learning-page .learning-access-details summary svg{color:var(--purple);flex:0 0 17px}
+.learning-page .learning-access-details>p{
+ margin:0;padding:4px 13px 13px;color:var(--muted);font-size:12px;line-height:1.6;
+}
+.learning-page .learning-access-details summary:focus-visible{
+ outline:3px solid var(--dli-focus,var(--purple));outline-offset:2px;
+}

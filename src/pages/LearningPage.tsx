@@ -73,6 +73,7 @@ export default function LearningPage() {
       return;
     }
     setLoading(true);
+    try {
     const [offeringsResult, coursesResult, cohortsResult, lessonsResult, resourcesResult] =
       await Promise.all([
         supabase.from('course_offerings').select('id,course_id,cohort_id,is_active')
@@ -88,7 +89,12 @@ export default function LearningPage() {
       ]);
     if (offeringsResult.error || coursesResult.error || cohortsResult.error ||
         lessonsResult.error || resourcesResult.error) {
-      setError('Learning content could not be loaded. Check your permissions and refresh.');
+      console.warn('[DLI] Learning catalogue request failed',{
+        offerings:offeringsResult.error?.code,courses:coursesResult.error?.code,
+        cohorts:cohortsResult.error?.code,lessons:lessonsResult.error?.code,
+        resources:resourcesResult.error?.code,
+      });
+      setError('Learning content is temporarily unavailable. Try Refresh or contact DLI support if it continues.');
     } else {
       setOfferings((offeringsResult.data ?? []) as Offering[]);
       setCourses((coursesResult.data ?? []) as Course[]);
@@ -97,7 +103,11 @@ export default function LearningPage() {
       setResources((resourcesResult.data ?? []) as LearningResource[]);
       setError(null);
     }
-    setLoading(false);
+    } catch {
+      setError('The learning connection was interrupted. Try Refresh or contact DLI support.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { void refresh(); }, [refresh]);
@@ -256,30 +266,24 @@ export default function LearningPage() {
         <p>{canEdit ? 'Draft and publish lessons and resource links for authorised classes.'
           : 'Read published lessons and links for classes you are enrolled in.'}</p>
       </div>
-      <span className="module-status"><span/> Stage E2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div>
-        <strong>Lesson access follows active class membership</strong>
-        <p>{canEdit
-          ? 'Academic staff may manage active classes; Tutors may edit only classes assigned to them. Unpublished lessons and links remain hidden from Students.'
-          : 'Only published lessons and published resource links for your active enrolments are available here.'}
-          {' '}Private lesson files are available in Stage E2; student assignment submissions and quizzes remain future work.</p>
-      </div>
-    </div>
-
+    <details className="learning-access-details">
+      <summary><ShieldCheck size={17} aria-hidden="true"/> Lesson access &amp; privacy</summary>
+      <p>{canEdit
+        ? 'Administrators and assigned tutors can manage eligible lessons. Unpublished material remains restricted to authorised teaching staff.'
+        : 'Published lessons and links appear for your eligible classes. Free and Paid Students can use lessons, assignments, quizzes and attendance assigned to them.'}</p>
+    </details>
     {error && <p role="alert" className="auth-feedback error">{error}</p>}
     {notice && <p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
-      <div><GraduationCap size={18}/><strong>{offered.length}</strong><span>Accessible classes</span></div>
-      <div><BookOpen size={18}/><strong>{lessons.length}</strong><span>Visible lessons</span></div>
-      <div><FileText size={18}/><strong>{lessons.filter(x => x.is_published).length}</strong><span>Published lessons</span></div>
-      <div><Link2 size={18}/><strong>{resources.length}</strong><span>Visible links</span></div>
+      <div><GraduationCap size={18}/><strong>{loading?'…':error?'—':offered.length}</strong><span>Accessible classes</span></div>
+      <div><BookOpen size={18}/><strong>{loading?'…':error?'—':lessons.length}</strong><span>Visible lessons</span></div>
+      <div><FileText size={18}/><strong>{loading?'…':error?'—':lessons.filter(x => x.is_published).length}</strong><span>Published lessons</span></div>
+      <div><Link2 size={18}/><strong>{loading?'…':error?'—':resources.length}</strong><span>Visible links</span></div>
     </div>
 
     <div className="academic-top-actions">
-      <p role="status">{loading ? 'Loading authorised lessons…' : 'Live DLI development learning records'}</p>
+      <p role="status">{loading ? 'Loading authorised lessons…' : error ? 'Learning content needs attention' : 'Your authorised learning records'}</p>
       <button type="button" className="user-outline-button" disabled={loading || Boolean(saving)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
     </div>
@@ -431,9 +435,9 @@ export default function LearningPage() {
         </form>
       </section>
     </div>}
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      Only members with current class permissions can access these lessons.
-      Private file uploads and authenticated downloads are available. <Link to="/study?tab=assignments">Assignments and grading</Link>, <Link to="/study?tab=quizzes">quizzes and results</Link>, and <Link to="/study?tab=attendance">attendance</Link> are accessible through this learning workspace, subject to your active course membership. AI generation is not connected.
-    </div>
+    <p className="module-footnote"><LockKeyhole size={15} aria-hidden="true"/>
+      Learning access follows your active class permissions. For questions about enrolment or missing lessons,
+      <Link to="/feedback">contact DLI support</Link>.
+    </p>
   </div>;
 }
