@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Camera, CheckCircle2, LockKeyhole, RefreshCw, Save, ShieldCheck, UserRound } from 'lucide-react';
+import { Camera, CheckCircle2, LockKeyhole, RefreshCw, Save, ShieldCheck, UserRound, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels } from '../auth/permissions';
@@ -168,6 +168,9 @@ export default function MemberProfilePage(){
     <h1>My profile &amp; preferences</h1>
     <p>Complete your personal details once and use the same profile when you sign in on another device.</p>
    </div></div>
+  <button type="button" className="dli-tour-launch" onClick={()=>window.dispatchEvent(new Event('dli-tour-replay'))}>
+    <HelpCircle size={17} aria-hidden="true"/> Replay guided app tour
+  </button>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
     <strong>Protected account and profile details</strong>
     <p>Only you can edit your personal details or upload a new photo. Your saved photo may appear to

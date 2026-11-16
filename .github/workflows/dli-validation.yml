@@ -155,6 +155,9 @@ jobs:
       - name: Verify Q39 mobile messaging header and compact safeguarding disclosure
         run: npm run check:q39-messages-mobile
 
+      - name: Verify Q40 first-login tour, mobile footnotes and secure Learning RLS
+        run: npm run check:q40-tour-learning
+
       - name: Verify TypeScript
         run: npm run typecheck
 

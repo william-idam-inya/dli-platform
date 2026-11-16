@@ -431,6 +431,14 @@
     {
       "file": "20261116061000_stage_q37_global_call_signalling.sql",
       "gitBlobSha1": "ca8f862b8328c87acc02bee42c34b98dc5664773"
+    },
+    {
+      "file": "20261116072000_stage_q40_catalogue_rls_cycle_fix.sql",
+      "gitBlobSha1": "6aad74003eebfb8afd5a4adf2f727eb01cc989b0"
+    },
+    {
+      "file": "20261116072005_stage_q40_guided_tour_progress.sql",
+      "gitBlobSha1": "d4b837e5aca0e9cfd4ff612df5c75aa249c7d204"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, Grid2X2, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
@@ -11,6 +11,7 @@ import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
 import WorkspaceFocus from './WorkspaceFocus';
+import GuidedTour from './GuidedTour';
 import {CallProvider} from './CallProvider';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
@@ -97,6 +98,9 @@ function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut
 
       <div className="ref-sidebar-actions">
         <NavLink to="/profile" onClick={onNavigate}><span aria-hidden="true">⚙</span> My profile &amp; appearance</NavLink>
+        <button type="button" className="dli-tour-launch" onClick={()=>{
+         onNavigate?.();window.dispatchEvent(new Event('dli-tour-replay'));
+        }}><HelpCircle size={17} aria-hidden="true"/> Guided app tour</button>
         <button type="button" onClick={()=>{onSignOut?.();onNavigate?.();}}>
           <LogOut size={17} aria-hidden="true"/> Sign out
         </button>
@@ -379,6 +383,7 @@ export default function AppShell({ children }: AppShellProps) {
           <span>More</span>
         </button>
       </nav>}
+    <GuidedTour/>
     </div></CallProvider>
   );
 }

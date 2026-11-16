@@ -185,7 +185,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(117, 91, 215, .3
 .scope-number { color: var(--faint); font-family: Manrope, sans-serif; font-size: 10px; font-weight: 800; }
 .scope-item span:nth-child(2) { flex: 1; }
 .scope-item svg { color: var(--faint); }
-.module-footnote { display: flex; align-items: center; gap: 7px; margin-top: 17px; color: var(--muted); font-size: 9px; }
+.module-footnote { display: block; max-width: 100%; margin-top: 17px;
+  color: var(--muted); font-size: 12px; line-height: 1.65;
+  overflow-wrap: break-word; white-space: normal; }
+.module-footnote svg { display: inline-block; vertical-align: -3px; margin-right: 6px; }
+.module-footnote a { display: inline; color: var(--purple); text-decoration: underline; text-underline-offset: 2px; }
 .not-found { max-width: 520px; margin: 90px auto; text-align: center; }
 .not-found-icon { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 17px; border-radius: 17px; background: var(--purple-soft); color: var(--purple); }
 .not-found h1 { margin: 8px 0; font-family: Manrope, sans-serif; font-size: 25px; letter-spacing: -.8px; }
