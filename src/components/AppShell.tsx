@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
@@ -132,6 +132,41 @@ export default function AppShell({ children }: AppShellProps) {
     const { error } = await supabase.auth.signOut();
     if (error) setLogoutError('Could not sign out. Please retry.');
   };
+  // Sidebar visibility belongs to this device; no RBAC or route changes.
+  const [desktopSidebarCollapsed,setDesktopSidebarCollapsed]=useState(()=>{
+    try{return window.localStorage.getItem('dli-desktop-sidebar-v1')==='collapsed';}
+    catch{return false;}
+  });
+  const desktopSidebarRef=useRef<HTMLElement>(null);
+  const collapsedRef=useRef(desktopSidebarCollapsed);
+  const beforeTourRef=useRef<boolean|null>(null);
+  useEffect(()=>{
+    collapsedRef.current=desktopSidebarCollapsed;
+    if(desktopSidebarRef.current)desktopSidebarRef.current.inert=desktopSidebarCollapsed;
+    if(beforeTourRef.current!==null)return;
+    try{window.localStorage.setItem('dli-desktop-sidebar-v1',
+      desktopSidebarCollapsed?'collapsed':'expanded');}
+    catch{/* Browser preferences unavailable; manual toggle still works. */}
+  },[desktopSidebarCollapsed]);
+  // The contextual red-rim guide temporarily reveals the sidebar for its
+  // navigation step, then restores the user's previous visibility setting.
+  useEffect(()=>{
+    const reveal=()=>{
+      if(beforeTourRef.current===null)beforeTourRef.current=collapsedRef.current;
+      setDesktopSidebarCollapsed(false);
+    };
+    const restore=()=>{
+      if(beforeTourRef.current===null)return;
+      setDesktopSidebarCollapsed(beforeTourRef.current);
+      beforeTourRef.current=null;
+    };
+    window.addEventListener('dli-tour-begin',reveal);
+    window.addEventListener('dli-tour-end',restore);
+    return()=>{
+      window.removeEventListener('dli-tour-begin',reveal);
+      window.removeEventListener('dli-tour-end',restore);
+    };
+  },[]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -270,8 +305,9 @@ export default function AppShell({ children }: AppShellProps) {
     :undefined;
 
   return (
-    <CallProvider><div className="app-layout">
-      <aside className="desktop-sidebar">
+    <CallProvider><div className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
+      <aside ref={desktopSidebarRef} id="dli-desktop-sidebar" className="desktop-sidebar"
+        aria-hidden={desktopSidebarCollapsed}>
         <Sidebar onSignOut={()=>{void signOut();}}/>
       </aside>
 
@@ -297,6 +333,13 @@ export default function AppShell({ children }: AppShellProps) {
               aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation"
               aria-label="Open all navigation">
               <Menu size={21} />
+            </button>
+            <button type="button" className="dli-desktop-sidebar-toggle icon-button"
+              onClick={()=>setDesktopSidebarCollapsed(value=>!value)}
+              aria-controls="dli-desktop-sidebar" aria-expanded={!desktopSidebarCollapsed}
+              aria-label={desktopSidebarCollapsed?'Show sidebar':'Hide sidebar'}
+              title={desktopSidebarCollapsed?'Show sidebar':'Hide sidebar'}>
+              {desktopSidebarCollapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}
             </button>
             <div className="ref-mobile-identity">
               <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
