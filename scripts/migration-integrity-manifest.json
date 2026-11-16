@@ -447,6 +447,10 @@
     {
       "file": "20261116112223_stage_q47_private_executive_role_masking.sql",
       "gitBlobSha1": "ef0118d53e73b79864d1ffbbf36f068fe85c4be5"
+    },
+    {
+      "file": "20261116124000_stage_q46_dev_turn_credential_gate.sql",
+      "gitBlobSha1": "288058b8e9383bfa30f568dc506c866ed2c27673"
     }
   ]
 }
