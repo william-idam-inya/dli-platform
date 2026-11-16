@@ -3,7 +3,7 @@ import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, PanelLeftClose, P
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
-import { learningAreas, learningAreaUrl } from '../data/learningAreas';
+import { learningAreas } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
