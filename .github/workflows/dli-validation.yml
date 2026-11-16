@@ -167,6 +167,9 @@ jobs:
       - name: Verify Q43 one identity per dashboard and role-safe navigation
         run: npm run check:q43-dashboard-identity
 
+      - name: Verify Q44 complete focus scrolling and verified student photo selection
+        run: npm run check:q44-focus-student-profile
+
       - name: Verify TypeScript
         run: npm run typecheck
 
