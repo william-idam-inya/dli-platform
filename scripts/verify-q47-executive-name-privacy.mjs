@@ -17,7 +17,7 @@ for(const [token,label] of [
  ['Q47 baseline mismatch','fail closed on unrecognised database version'],
  ['EXECUTE replace(ddl','safe checked replacement'],
 ])assert.ok(migration.includes(token),'Q47 reviewed privacy patch missing '+label);
-assert.ok(migration.includes('public RPC signatures and permission checks are untouched'),
+assert.ok(migration.includes('Public RPC signatures and permission checks are untouched'),
  'Existing privilege model must be preserved');
 assert.ok(direct.includes("rpc('dli_people_directory')")||
  direct.includes("rpc('dli_direct_directory')")||
