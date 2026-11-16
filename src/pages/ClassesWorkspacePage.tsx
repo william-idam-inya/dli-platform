@@ -370,12 +370,12 @@ export default function ClassesWorkspacePage(){
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
-    <div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
+    {staff&&<div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
       <div><strong>One class · approved courses · two tutors per subject</strong>
         <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
           Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
       </div>
-    </div>
+    </div>}
     {(paying||communicating)&&<nav className="classes-tabs" aria-label="Class workspace sections">
       <button className={tab==='classes'?'selected':''} type="button" onClick={()=>setParams({tab:'classes'})}>
         <CalendarClock size={15}/> Classes &amp; schedule
@@ -389,7 +389,10 @@ export default function ClassesWorkspacePage(){
       {error&&<p className="auth-feedback error" role="alert">{error}</p>}
       {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
       <div className="academic-top-actions">
-        <p>{loading?'Loading authorised classes…':groups.length+' class group'+(groups.length===1?'':'s')+' visible to your role'}</p>
+        <p>{loading?'Loading authorised classes…':
+          staff?groups.length+' class group'+(groups.length===1?'':'s')+' visible to your role':
+          account?.role==='student'?groups.length+' class'+(groups.length===1?'':'es')+' in your timetable':
+          groups.length+' teaching class'+(groups.length===1?'':'es')+' assigned'}</p>
         <button className="user-outline-button" type="button" disabled={busy||loading} onClick={()=>void refresh()}>
           <RefreshCw size={15}/> Refresh
         </button>
@@ -605,7 +608,9 @@ export default function ClassesWorkspacePage(){
             onChange={e=>setShowArchived(e.target.checked)}/> Include archived</label>
         </div>}
         {!loading&&!groups.length&&<p className="academic-empty">
-          {staff?'No classes yet. Create a group draft above and add its subjects.':'Your administrator will assign your classes.'}
+          {staff?'No classes yet. Create a group draft above and add its subjects.':
+            account?.role==='student'?'No classes are available to you yet. Check back for published sessions or contact DLI administration.':
+            'Your DLI administrator will assign your teaching classes.'}
         </p>}
         <div className="classes-cards">{groups.map(group=>{
           const activeRows=group.rows.filter(c=>c.state!=='archived');
@@ -682,8 +687,7 @@ export default function ClassesWorkspacePage(){
           </article>;
         })}</div>
       </section>
-      <p className="module-footnote"><Link to="/academics">Academic Setup</Link> defines the course catalogue. Classes &amp; Timetable handles teaching assignments and student enrolments.
-        Lessons, quizzes and attendance are organised under <Link to="/study">Learning &amp; results</Link>.</p>
+      
     </>}
   </div>;
 }

@@ -149,6 +149,9 @@ jobs:
       - name: Verify Q37 cross-workspace calling, media lifecycle and role-safe signal routing
         run: npm run check:q37-global-calling
 
+      - name: Verify Q38 clean mobile classes workspace and learner-only guidance
+        run: npm run check:q38-classes-mobile
+
       - name: Verify TypeScript
         run: npm run typecheck
 
