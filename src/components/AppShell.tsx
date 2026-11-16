@@ -11,6 +11,7 @@ import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
 import WorkspaceFocus from './WorkspaceFocus';
+import {CallProvider} from './CallProvider';
 import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
 
 function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut?: () => void }) {
@@ -108,7 +109,7 @@ function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut
         </div>
       </div>
       <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
-    </div>
+    </div></CallProvider>
   );
 }
 
@@ -265,7 +266,7 @@ export default function AppShell({ children }: AppShellProps) {
     :undefined;
 
   return (
-    <div className="app-layout">
+    <CallProvider><div className="app-layout">
       <aside className="desktop-sidebar">
         <Sidebar onSignOut={()=>{void signOut();}}/>
       </aside>
