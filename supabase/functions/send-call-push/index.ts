@@ -148,6 +148,9 @@ Deno.serve(async(req:Request)=>{
  try{
  const admin=createClient(project,service,{auth:{persistSession:false,autoRefreshToken:false}});
  if(internal&&body?.dispatch===true){
+  // Bounded retention and recovery of interrupted outbox claims.
+  const house=await admin.rpc('dli_push_dispatch_housekeeping');
+  if(house.error)return reply(503,{error:'Push housekeeping unavailable'},origin);
   const prepared=await admin.rpc('dli_push_enqueue_due_conferences');
   if(prepared.error)return reply(503,{error:'Conference reminder enqueue failed'},origin);
   const {data:rows,error}=await admin.from('dli_push_outbox').select('*')
