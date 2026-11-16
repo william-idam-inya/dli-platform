@@ -11,6 +11,7 @@ import './reference-shell.css';
 import './sidebar-navigation-fix.css';
 import './q36-workspace-theme.css';
 import './q45-shell.css';
+import './mobile-overlay-resilience.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 
 // Apply saved visual preferences before React paints the authorised workspace.

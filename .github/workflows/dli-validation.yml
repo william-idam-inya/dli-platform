@@ -182,6 +182,9 @@ jobs:
       - name: Verify Q48 responsive header structure and non-overlapping layout tracks
         run: npm run check:q48-header-overlap
 
+      - name: Verify Q49 mobile call and overlay containment across viewports
+        run: npm run check:q49-mobile-overlays
+
       - name: Verify TypeScript
         run: npm run typecheck
 

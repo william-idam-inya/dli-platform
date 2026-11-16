@@ -274,10 +274,13 @@ export default function AppShell({ children }: AppShellProps) {
           <aside id="dli-mobile-navigation" className="mobile-sidebar" role="dialog"
             aria-modal="true" aria-label="All DLI navigation" ref={drawerRef}
             onClick={(event) => event.stopPropagation()}>
-            <button ref={closeRef} type="button" className="mobile-close icon-button"
-              onClick={closeNavigation} aria-label="Close navigation">
-              <X size={20} />
-            </button>
+            <div className="dli-mobile-drawer-heading">
+              <strong>DLI navigation</strong>
+              <button ref={closeRef} type="button" className="mobile-close icon-button"
+                onClick={closeNavigation} aria-label="Close navigation">
+                <X size={20} />
+              </button>
+            </div>
             <Sidebar onNavigate={closeNavigation} onSignOut={()=>{void signOut();}} />
           </aside>
         </div>

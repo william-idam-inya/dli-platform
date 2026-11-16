@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -892,7 +893,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       </section>
     </div>
     <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls can ring on any open authenticated DLI workspace and require microphone/camera consent. A TURN relay and group SFU are not yet configured.</p>
-    {forwardTarget&&<div className="dli-telegram-forward-backdrop" role="presentation"
+    {forwardTarget&&createPortal(<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
         aria-label="Forward text message to a permitted conversation">
@@ -911,7 +912,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         {!threads.some(t=>(t.participant_a===uid||t.participant_b===uid)&&
           t.id!==forwardTarget.thread_id)&&<p>No other conversation is available. Start a permitted chat with the pencil icon first.</p>}
       </div>
-    </div>}
+    </div>,document.body)}
     {realtime.onlineToast&&current&&<div className="dli-live-online-toast" role="status">
       <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
       <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
