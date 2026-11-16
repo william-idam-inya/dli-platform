@@ -77,6 +77,7 @@ export function DliNotificationBell(){
         if(!active||result.error||typeof result.count!=='number')return;
         if(previousTutorPayout.current!==null&&result.count>previousTutorPayout.current){
           setNewTutorPayout(true);
+          window.dispatchEvent(new Event('dli-notification-chime'));
           if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
             try{new Notification(tutorHasPending?'DLI tutor transfer proof':'DLI disputed tutor payout',{
               body:tutorHasPending?'Review and acknowledge your transfer.':'A Tutor disputed receiving a payment.',
@@ -109,6 +110,7 @@ export function DliNotificationBell(){
         const count=result.count;
         if(previousPending.current!==null&&count>previousPending.current){
           setNewPayment(true);
+          window.dispatchEvent(new Event('dli-notification-chime'));
           if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&document.hidden){
             try{new Notification('DLI receipt awaiting review',{body:'Open Paid enrolment to verify a bank transfer.',tag:'dli-payment-review'});}
             catch{/* User/system browser notifications are optional. */}
@@ -127,12 +129,36 @@ export function DliNotificationBell(){
     return()=>{active=false;window.clearInterval(interval);window.removeEventListener('focus',focus);void client.removeChannel(channel);};
   },[account?.id,account?.role,canReviewPayments]);
   const [open,setOpen]=useState(false);
+  const [noticeFilter,setNoticeFilter]=useState<'all'|'unread'>('all');
+  const [soundOn,setSoundOn]=useState(()=>{
+    try{return window.localStorage.getItem('dli-sound-alerts')==='on';}
+    catch{return false;}
+  });
   const [popup,setPopup]=useState<string|null>(null);
   const [sessionDismissed,setSessionDismissed]=useState<string[]>([]);
   const [busy,setBusy]=useState<string|null>(null);
   const seenMap=new Map(seen.map(s=>[s.notice_id,s]));
   const unread=visible.filter(n=>!seenMap.get(n.id)?.read_at);
   const totalAlerts=unread.length+pendingPayments+pendingTutorPayouts;
+  const filteredNotices=noticeFilter==='unread'?unread:visible;
+  useEffect(()=>{
+    function chime(){
+      if(!soundOn)return;
+      try{
+        const ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain();
+        osc.type='sine';osc.frequency.setValueAtTime(740,ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1020,ctx.currentTime+.12);
+        gain.gain.setValueAtTime(.0001,ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(.035,ctx.currentTime+.018);
+        gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.2);
+        osc.connect(gain);gain.connect(ctx.destination);
+        osc.start();osc.stop(ctx.currentTime+.21);
+        osc.onended=()=>{void ctx.close();};
+      }catch{/* Opt-in sound never blocks visible notifications. */}
+    }
+    window.addEventListener('dli-notification-chime',chime);
+    return()=>window.removeEventListener('dli-notification-chime',chime);
+  },[soundOn]);
   useEffect(()=>{
     // A new published, non-dismissed notice appears in the login overlay.
     // The backend stores the dismissal; user can still find the notice later.
@@ -175,6 +201,20 @@ export function DliNotificationBell(){
         <strong>Notifications</strong>
         <button type="button" onClick={()=>setOpen(false)} aria-label="Close notifications"><X size={17}/></button>
       </div>
+      <div className="dli-notice-filter-row" role="group" aria-label="Filter notifications">
+        <button type="button" className={noticeFilter==='all'?'selected':''}
+          aria-pressed={noticeFilter==='all'} onClick={()=>setNoticeFilter('all')}>All</button>
+        <button type="button" className={noticeFilter==='unread'?'selected':''}
+          aria-pressed={noticeFilter==='unread'} onClick={()=>setNoticeFilter('unread')}>
+          Unread ({unread.length})</button>
+        <button type="button" className={'dli-sound-toggle'+(soundOn?' selected':'')}
+          aria-pressed={soundOn} onClick={()=>{
+            const next=!soundOn;setSoundOn(next);
+            try{window.localStorage.setItem('dli-sound-alerts',next?'on':'off');}catch{/* Session only */}
+          }} aria-label={soundOn?'Mute DLI notification sounds':'Enable DLI notification sounds'}>
+          {soundOn?'Sound on':'Sound off'}
+        </button>
+      </div>
       {canReviewPayments&&pendingPayments>0&&<Link className="dli-payment-review-alert" to="/enrolment" onClick={()=>{setOpen(false);setNewPayment(false);}}>
         <strong>{pendingPayments} payment receipt{pendingPayments===1?'':'s'} awaiting verification</strong>
         <span>View private evidence and confirm actual bank credit before approving Paid Student access.</span>
@@ -184,8 +224,10 @@ export function DliNotificationBell(){
         <span>{tutorHasPending?'Check your bank account and confirm receipt or dispute the transfer.':'Review the tutor response and bank transfer record.'}</span>
       </Link>}
       {error&&<p role="alert">Could not refresh notices. Try again later.</p>}
-      {!visible.length&&!pendingPayments&&!pendingTutorPayouts&&<p>No current notifications.</p>}
-      {visible.slice(0,12).map(n=><button type="button" key={n.id}
+      {!filteredNotices.length&&!pendingPayments&&!pendingTutorPayouts&&<p>
+        {noticeFilter==='unread'?'No unread announcements.':'No current notifications.'}
+      </p>}
+      {filteredNotices.slice(0,12).map(n=><button type="button" key={n.id}
         className={'dli-notification-item '+(!seenMap.get(n.id)?.read_at?'unread':'')}
         onClick={()=>{void mark(n,true);setOpen(false);}}>
         <strong>{n.title}</strong>
@@ -259,6 +301,7 @@ export function DliMessageBadge(){
       const count=Math.max(0,result.data);
       if(latestCount.current!==null&&count>latestCount.current){
         setFlash(true);
+        window.dispatchEvent(new Event('dli-notification-chime'));
       }
       latestCount.current=count;
       setUnread(count);
@@ -317,4 +360,26 @@ export function DliMessageBadge(){
       <button type="button" onClick={()=>setFlash(false)} aria-label="Dismiss message notice"><X size={16}/></button>
     </div>}
   </div>;
+}
+
+/** Role-targeted active notices, never manually dismissible in the ticker.
+    Published notices expire automatically based on the source record. */
+export function DliAnnouncementTicker(){
+  const {visible,error}=useVisibleNotices(false);
+  if(error||!visible.length)return null;
+  return <aside className="dli-announcement-ticker" aria-label="Current DLI announcements">
+    <span className="dli-ticker-label">ANNOUNCEMENTS</span>
+    <div className="dli-ticker-mask"><div className="dli-ticker-track">
+      {visible.slice(0,8).map(n=>{
+        const meeting=/^\[(?:meeting|conference|seminar)\]/i.test(n.title);
+        return <Link key={n.id} to={meeting?'/conferences':'/announcements'}
+          className="dli-ticker-item" title={n.title}>
+          <span aria-hidden="true">●</span>
+          <strong>{meeting?'UPCOMING MEETING':'DLI UPDATE'}</strong>
+          {n.title.replace(/^\[(?:meeting|conference|seminar)\]\s*/i,'')}
+        </Link>;
+      })}
+    </div></div>
+    <Link className="dli-ticker-all" to="/announcements">View all</Link>
+  </aside>;
 }
