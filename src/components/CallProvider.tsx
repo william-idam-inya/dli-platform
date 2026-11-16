@@ -5,6 +5,7 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 import {beginDliCallTone} from '../lib/callTones';
+import {pushConfigured} from '../lib/pushNotifications';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -124,7 +125,7 @@ export function CallProvider({children}:{children:ReactNode}){
       targetRef.current=incomingTarget;
       setPeer(incomingTarget);
       setTransportError(null);
-      if(document.hidden&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
+      if(document.hidden&&typeof Notification!=='undefined'&&Notification.permission==='granted'&&!pushConfigured){
        try{new Notification('DLI incoming call',{body:incomingTarget.name+' is calling',tag:'dli-call'});}
        catch{/* In-app call overlay remains the source of truth. */}
       }
