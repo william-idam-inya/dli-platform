@@ -188,6 +188,9 @@ jobs:
       - name: Verify Q50 production media authorizations and secure launch gating
         run: npm run check:q50-prod-realtimekit
 
+      - name: Verify Q52 PWA, push and phone-call safeguards (no network)
+        run: npm run check:q52-pwa-push
+
       - name: Verify TypeScript
         run: npm run typecheck
 
