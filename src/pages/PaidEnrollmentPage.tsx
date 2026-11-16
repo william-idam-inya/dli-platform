@@ -437,7 +437,7 @@ export default function PaidEnrollmentPage(){
        onChange={e=>setBankRefs(v=>({...v,[req.id]:e.target.value}))}/></label>
      <div><button type="button" disabled={busy} onClick={()=>void decide(req,'approved')}>Verify and upgrade to Paid</button>
       <button type="button" disabled={busy} onClick={()=>void decide(req,'rejected')}>Reject evidence</button></div>
-    </div>,document.body)}
+    </div>}
    </article>)}</div>
   </section>}
   {preview&&createPortal(<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
@@ -451,6 +451,6 @@ export default function PaidEnrollmentPage(){
       <a className="user-outline-button" href={preview.url} download={preview.name+(preview.mime==='application/pdf'?'.pdf':'.jpg')}>
        <Download size={14}/> Save receipt</a>
     </div>
-  </div>}
+  </div>,document.body)}
  </div>;
 }
