@@ -179,6 +179,9 @@ jobs:
       - name: Verify Q47 protected executive names in chat directory and profile RPC migration
         run: npm run check:q47-executive-name-privacy
 
+      - name: Verify Q48 development RealtimeKit and TURN safeguards
+        run: npm run check:q48-dev-media-provisioning
+
       - name: Verify TypeScript
         run: npm run typecheck
 
