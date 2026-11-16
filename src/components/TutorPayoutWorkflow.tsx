@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useState,type FormEvent} from 'react';
-import {Banknote,CheckCircle2,RefreshCw,ShieldCheck,Wallet} from 'lucide-react';
+import {Banknote,RefreshCw,ShieldCheck,Wallet} from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
 import './TutorPayoutWorkflow.css';
