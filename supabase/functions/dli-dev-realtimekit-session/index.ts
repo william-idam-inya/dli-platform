@@ -3,6 +3,12 @@ import {createClient} from "npm:@supabase/supabase-js@2";
 
 const APP_ID="161c52bf-6af5-4a2b-9acd-336fc139e311";
 const ACCOUNT_ID="640c7c5c0ba8ae42c6c24f9bc18c6d27";
+const SAFE_PRESET_IDS:Record<string,string>={
+ group_call_host:'d20cdfbe-8841-4df4-90c2-0d1686b6ff4f',
+ group_call_participant:'adff97b3-a70a-4004-bcef-0c88342e296d',
+ webinar_presenter:'7e356a6f-d634-4f38-9b51-a3b2390ef376',
+ webinar_viewer:'ec3175cd-6ff3-41e5-a049-8760fafb5a51'
+};
 const DEV_ORIGINS=new Set(["http://localhost:5173","http://127.0.0.1:5173",
  "https://feature-stage-q49-realtimeki.dli-platform-qa.pages.dev"]);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -150,6 +156,21 @@ Deno.serve(async(request:Request)=>{
  };
  if(context.user_id!==auth.user.id)
   return respond(403,{error:"Conference member mismatch"},origin);
+ // Provider presets are separate from DLI's RLS-protected chat. Reject
+ // media issuance if a Cloudflare preset enables private messaging or a
+ // second unmoderated public chat that could bypass DLI safeguarding.
+ try{
+  const presetId=SAFE_PRESET_IDS[context.preset];
+  if(!presetId)throw Error('Unsupported provider role preset');
+  const providerPreset=await cloudflareRequest('GET','/presets/'+presetId);
+  const chat=providerPreset?.permissions?.chat;
+  if(!chat || chat.public?.can_send!==false ||
+     chat.private?.can_send!==false ||
+     chat.private?.can_receive!==false)
+   throw Error('Independent provider chat permissions are unsafe');
+ }catch{
+  return respond(503,{error:'DLI conferencing safeguards require verification'},origin);
+ }
  try{
   const admin=createClient(projectUrl,serviceKey,{
    auth:{persistSession:false,autoRefreshToken:false}
