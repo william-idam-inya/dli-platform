@@ -51,6 +51,12 @@ assert.ok(!ui.includes('DLI_DEV_CLOUDFLARE_REALTIMEKIT_TOKEN') &&
  'Browser must not receive server tokens or persist participant JWTs');
 for(const s of [
  'DLI_DEV_CLOUDFLARE_REALTIMEKIT_TOKEN',
+ 'SAFE_PRESET_IDS',
+ "chat.public?.can_send!==false",
+ "chat.private?.can_send!==false",
+ "chat.private?.can_receive!==false",
+ "cloudflareRequest('GET','/presets/'+presetId)",
+ "DLI conferencing safeguards require verification",
  'SUPABASE_SERVICE_ROLE_KEY',
  "http://localhost:5173",
  'DEV_ORIGINS.has(origin)',
