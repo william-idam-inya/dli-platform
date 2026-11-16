@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const sql=read('supabase/migrations/20261116163500_stage_q50_paystack_automated_checkout_payroll.sql');
-const replay=read('supabase/migrations/20261116170000_stage_q50b_payment_replay_and_alert_ack.sql');
+const replay=read('supabase/migrations/20261116182000_stage_q50b_payment_replay_and_alert_ack.sql');
 const config=read('supabase/config.toml');
 const checkout=read('supabase/functions/paystack-checkout/index.ts');
 const webhook=read('supabase/functions/paystack-webhook/index.ts');
