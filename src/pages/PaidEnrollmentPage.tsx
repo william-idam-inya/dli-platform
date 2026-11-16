@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useState,type FormEvent} from 'react';
-import {BookOpen,CheckCircle2,CreditCard,RefreshCw,ShieldCheck,Wallet} from 'lucide-react';
+import {CheckCircle2,CreditCard,RefreshCw,ShieldCheck} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
