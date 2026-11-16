@@ -65,7 +65,8 @@
     "check:q45-overhaul": "node scripts/verify-q45-overhaul.mjs",
     "check:q46-release-structure": "node scripts/verify-q46-release-structure.mjs",
     "check:q47-executive-name-privacy": "node scripts/verify-q47-executive-name-privacy.mjs",
-    "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs"
+    "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs",
+    "check:q49-mobile-overlays": "node scripts/verify-q49-mobile-overlays.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

@@ -50,7 +50,9 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   const next:FocusSection[]=[];
   unique.forEach((panel,index)=>{
    const title=panel.querySelector('h2,h3,legend')?.textContent?.trim()
-     ||panel.getAttribute('aria-label')||'Workspace section '+(index+1);
+     ||panel.getAttribute('aria-label')
+     ||panel.querySelector('label')?.textContent?.trim()
+     ||'Workspace section '+(index+1);
    const key=String(index);
    const rows=panel.querySelectorAll(
     '.academic-record,.classes-card,.user-card,tbody tr,.private-fee-item,.dli-cohort-topic-row'

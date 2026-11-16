@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import {createPortal} from 'react-dom';
 import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -439,7 +440,7 @@ export default function PaidEnrollmentPage(){
     </div>}
    </article>)}</div>
   </section>}
-  {preview&&<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
+  {preview&&createPortal(<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
     <div className="upgrade-receipt-modal" role="dialog" aria-modal="true" aria-label="Review private payment receipt">
       <div className="upgrade-receipt-heading"><strong>{preview.name}</strong>
         <button type="button" className="user-outline-button" onClick={closePreview}>Close</button></div>
@@ -450,6 +451,6 @@ export default function PaidEnrollmentPage(){
       <a className="user-outline-button" href={preview.url} download={preview.name+(preview.mime==='application/pdf'?'.pdf':'.jpg')}>
        <Download size={14}/> Save receipt</a>
     </div>
-  </div>}
+  </div>,document.body)}
  </div>;
 }
