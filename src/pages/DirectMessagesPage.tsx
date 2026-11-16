@@ -776,7 +776,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
                 realtime.activity==='typing'?'Typing...':
                 realtime.activity==='recording_audio'?'Recording audio...':
                 realtime.activity==='recording_video'?'Recording video...':
-                realtime.peerOnline?'Online':'Offline · private chat'}</small></div>
+                realtime.peerOnline?'Online in this chat':'Not active in this chat'}</small></div>
             {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
               <button type="button" aria-label={'Audio call '+memberName(participant(current))}
                 title="Ring this DLI member on any open DLI workspace"
