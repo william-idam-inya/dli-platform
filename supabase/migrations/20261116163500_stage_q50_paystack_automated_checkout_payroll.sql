@@ -259,9 +259,15 @@ end $retire_optional_rpc$;
 drop policy if exists dli_upgrade_proof_submit on public.dli_enrollment_proofs;
 drop policy if exists receipt_insert on public.private_payment_receipts;
 drop policy if exists receipt_review on public.private_payment_receipts;
-drop policy if exists payout_receipt_submit on public.dli_tutor_payout_proofs;
-revoke insert,update,delete on public.dli_enrollment_proofs,public.private_payment_receipts,
- public.dli_tutor_payout_proofs from authenticated;
+do $retire_old_payouts$
+begin
+ if to_regclass('public.dli_tutor_payout_proofs') is not null then
+  execute 'drop policy if exists payout_receipt_submit on public.dli_tutor_payout_proofs';
+  execute 'revoke insert,update,delete on public.dli_tutor_payout_proofs from authenticated';
+ end if;
+end $retire_old_payouts$;
+revoke insert,update,delete on public.dli_enrollment_proofs,public.private_payment_receipts
+ from authenticated;
 -- Never expose the old institutional account number to students.
 drop policy if exists dli_upgrade_bank_read on public.private_bank_details;
 drop policy if exists bank_read on public.private_bank_details;
