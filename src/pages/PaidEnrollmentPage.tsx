@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import {createPortal} from 'react-dom';
 import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -436,10 +437,10 @@ export default function PaidEnrollmentPage(){
        onChange={e=>setBankRefs(v=>({...v,[req.id]:e.target.value}))}/></label>
      <div><button type="button" disabled={busy} onClick={()=>void decide(req,'approved')}>Verify and upgrade to Paid</button>
       <button type="button" disabled={busy} onClick={()=>void decide(req,'rejected')}>Reject evidence</button></div>
-    </div>}
+    </div>,document.body)}
    </article>)}</div>
   </section>}
-  {preview&&<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
+  {preview&&createPortal(<div className="upgrade-receipt-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closePreview();}}>
     <div className="upgrade-receipt-modal" role="dialog" aria-modal="true" aria-label="Review private payment receipt">
       <div className="upgrade-receipt-heading"><strong>{preview.name}</strong>
         <button type="button" className="user-outline-button" onClick={closePreview}>Close</button></div>
