@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,BookOpen,CheckCircle2,GraduationCap,HelpCircle,MapPin,ShieldCheck,SkipForward,X} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CheckCircle2,GraduationCap,HelpCircle,MapPin,ShieldCheck,SkipForward,X} from 'lucide-react';
 import {useLocation,useNavigate} from 'react-router-dom';
 import {useAuth} from '../auth/AuthProvider';
 import {canAccessPath,type Account} from '../auth/permissions';
@@ -166,6 +166,7 @@ export default function GuidedTour(){
 
  useEffect(()=>{
   if(!visible)return;
+  window.dispatchEvent(new Event('dli-tour-begin'));
   const old=document.body.style.overflow;
   document.body.style.overflow='hidden';
   const frame=requestAnimationFrame(()=>panel.current?.querySelector<HTMLElement>('[data-tour-primary]')?.focus());
@@ -179,7 +180,7 @@ export default function GuidedTour(){
    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
   document.addEventListener('keydown',keys,true);
-  return()=>{document.body.style.overflow=old;cancelAnimationFrame(frame);document.removeEventListener('keydown',keys,true);};
+  return()=>{document.body.style.overflow=old;cancelAnimationFrame(frame);document.removeEventListener('keydown',keys,true);window.dispatchEvent(new Event('dli-tour-end'));};
  },[visible,index,dismiss]);
 
  // Locate each real, role-visible feature after router navigation and page render.
