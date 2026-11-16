@@ -14,7 +14,6 @@ const headingByRole:Record<Account['role'],string>={
 };
 function stepsFor(account:Account):GuideStep[]{
  const isStudent=account.role==='student';
- const admin=['owner','admin','assistant_admin'].includes(account.role);
  const tutor=account.role==='tutor';
  const all:GuideStep[]=[
   {title:'Your DLI dashboard',route:'/',
@@ -77,6 +76,7 @@ export default function GuidedTour(){
 
  useEffect(()=>{
   let cancelled=false;
+  let uid='';
   setVisible(false);setIndex(-1);setVerifiedUserId('');
   if(!account||!supabase)return;
   const client=supabase;
@@ -84,7 +84,7 @@ export default function GuidedTour(){
    try{
     const auth=await client.auth.getUser();
     if(cancelled||auth.error||!auth.data.user)return;
-    const uid=auth.data.user.id;
+    uid=auth.data.user.id;
     setVerifiedUserId(uid);
     const key=keyFor(uid);
     const localDone=readLocal(key);
@@ -95,7 +95,7 @@ export default function GuidedTour(){
     if(localDone)return;
     // Do not block the session for a failed preference lookup: a user may skip.
     setVisible(true);
-   }catch{if(!cancelled&&verifiedUserId&&!readLocal(keyFor(verifiedUserId)))setVisible(true);}
+   }catch{if(!cancelled&&uid&&!readLocal(keyFor(uid)))setVisible(true);}
   })();
   return()=>{cancelled=true;};
  },[account?.id]);
@@ -141,7 +141,7 @@ export default function GuidedTour(){
  const goTo=useCallback((next:number)=>{
   if(next>=steps.length){dismiss(false);return;}
   setIndex(next);
-  navigate(steps[next].route);
+  if(next>=0)navigate(steps[next].route);
   window.scrollTo({top:0,behavior:'auto'});
  },[steps,navigate,dismiss]);
  if(!account||!visible)return null;
@@ -169,7 +169,7 @@ export default function GuidedTour(){
     <button type="button" className="dli-tour-skip" onClick={()=>dismiss(true)}>
      <SkipForward size={15} aria-hidden="true"/> Skip tour
     </button>
-    {step&&<button type="button" className="dli-tour-back" onClick={()=>setIndex(v=>v===0?-1:v-1)}>
+    {step&&<button type="button" className="dli-tour-back" onClick={()=>goTo(index===0?-1:index-1)}>
       <ArrowLeft size={15}/> Back
     </button>}
     <button data-tour-primary type="button" className="dli-tour-next"
