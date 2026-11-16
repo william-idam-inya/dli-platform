@@ -630,7 +630,8 @@ export default function ClassesWorkspacePage(){
           Submitting a receipt never confirms a bank credit or grants access automatically.</p>
         <p><strong>Selected class structure:</strong> {tier(form.class_type).label} · {chosen.length} student{chosen.length===1?'':'s'} selected.
           Fee amounts and rates are managed in the existing finance editor, not inferred from topic counts.</p>
-        <PrivateClassesPage billingOnly embedded/>
+        <p>New class fees and tuition upgrades are processed only through the verified Paystack checkout. Legacy class receipt assignments remain archived for audit.</p>
+        <Link className="user-outline-button" to="/enrolment">Open Paystack enrolment</Link>
       </details>}
       {staff&&selectedCohort&&!paidCohort&&<p className="classes-free-billing-note">
         <CheckCircle2 size={17}/> Free Scholars Club cohort · No payment assignment or bank details required.
