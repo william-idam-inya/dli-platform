@@ -48,6 +48,12 @@ self.addEventListener('notificationclick',event=>{
   const data=event.notification.data||{};
   const action=data.kind==='call'&&['accept','decline'].includes(event.action)?event.action:'view';
   let path=safePath(data.path);
+  if(data.kind==='message'){
+   const requested=new URL(path,self.location.origin).searchParams.get('dli_thread');
+   if(UUID.test(String(requested||''))){
+    path='/?dli_thread='+encodeURIComponent(requested);
+   }
+  }
   if(data.kind==='call'&&UUID.test(String(data.callId||''))){
    path='/?dli_call='+encodeURIComponent(data.callId)+'&dli_action='+action;
   }
