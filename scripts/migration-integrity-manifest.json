@@ -427,6 +427,10 @@
     {
       "file": "20261115230000_stage_q36_new_direct_contact_directory.sql",
       "gitBlobSha1": "a37b01063d1f1c38db0c493ad0a41c343226582d"
+    },
+    {
+      "file": "20261116061000_stage_q37_global_call_signalling.sql",
+      "gitBlobSha1": "ca8f862b8328c87acc02bee42c34b98dc5664773"
     }
   ]
 }
