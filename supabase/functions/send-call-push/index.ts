@@ -52,17 +52,34 @@ async function recipientEligible(admin:Admin,row:EventRow){
  if(error||!recipient||recipient.status!=='active')return false;
  if(new Date(row.expires_at).getTime()<=Date.now())return false;
  if(row.kind==='call'){
-  const {data}=await admin.from('dli_call_pending_offers').select('state,expires_at,recipient_id')
+  const {data}=await admin.from('dli_call_pending_offers')
+    .select('state,expires_at,recipient_id,sender_id,thread_id')
     .eq('call_id',row.source_id).maybeSingle();
-  return data?.state==='ringing' && data.recipient_id===row.recipient_id
-   && new Date(data.expires_at).getTime()>Date.now();
+  if(data?.state!=='ringing'||data.recipient_id!==row.recipient_id||
+    data.sender_id!==row.sender_id||
+    new Date(data.expires_at).getTime()<=Date.now())return false;
+  const [{data:caller},{data:thread}]=await Promise.all([
+   admin.from('authorised_users').select('status').eq('auth_user_id',data.sender_id).maybeSingle(),
+   admin.from('dli_direct_threads').select('participant_a,participant_b').eq('id',data.thread_id).maybeSingle()
+  ]);
+  return caller?.status==='active'&&!!thread&&
+   [thread.participant_a,thread.participant_b].includes(row.recipient_id)&&
+   [thread.participant_a,thread.participant_b].includes(data.sender_id);
  }
  if(row.kind==='urgent_notice'){
   const {data}=await admin.from('dli_notices')
-   .select('status,is_urgent,publish_at,expires_at').eq('id',row.source_id).maybeSingle();
-  return !!data && data.status==='live' && data.is_urgent===true
-   && new Date(data.publish_at).getTime()<=Date.now()
-   && (!data.expires_at||new Date(data.expires_at).getTime()>Date.now());
+   .select('status,is_urgent,publish_at,expires_at,target_role,audience_mode')
+   .eq('id',row.source_id).maybeSingle();
+  if(!data||data.status!=='live'||!data.is_urgent||
+   data.target_role!==recipient.role||
+   new Date(data.publish_at).getTime()>Date.now()||
+   (data.expires_at&&new Date(data.expires_at).getTime()<=Date.now()))return false;
+  if(data.audience_mode==='all')return true;
+  if(data.audience_mode!=='selected')return false;
+  const {data:entry}=await admin.from('dli_notice_recipients')
+   .select('user_id').eq('notice_id',row.source_id)
+   .eq('user_id',row.recipient_id).maybeSingle();
+  return !!entry;
  }
  if(row.kind==='conference_reminder'){
   const [{data:schedule},{data:room}]=await Promise.all([
@@ -75,7 +92,16 @@ async function recipientEligible(admin:Admin,row:EventRow){
  // Message was recorded by a server-side trigger after RLS-authorised insert.
  const {data:message}=await admin.from('dli_direct_messages')
    .select('id,thread_id,sender_id').eq('id',row.source_id).maybeSingle();
- return !!message&&message.sender_id===row.sender_id;
+ if(!message||message.sender_id!==row.sender_id)return false;
+ const [{data:thread},{data:sender}]=await Promise.all([
+   admin.from('dli_direct_threads').select('participant_a,participant_b')
+     .eq('id',message.thread_id).maybeSingle(),
+   admin.from('authorised_users').select('status')
+     .eq('auth_user_id',message.sender_id).maybeSingle()
+ ]);
+ return sender?.status==='active'&&!!thread&&
+   [thread.participant_a,thread.participant_b].includes(message.sender_id)&&
+   [thread.participant_a,thread.participant_b].includes(row.recipient_id);
 }
 async function handleEvent(admin:Admin,row:EventRow){
  const claimed=await admin.from('dli_push_outbox')
