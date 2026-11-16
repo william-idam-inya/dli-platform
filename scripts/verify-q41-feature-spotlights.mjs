@@ -68,11 +68,10 @@ for(const part of [
  '@media(max-width:640px)',
  'pointer-events:none',
 ])assert.ok(css.includes(part),'Red-rim mobile spotlight CSS missing '+part);
-assert.ok(workspace.includes("window.addEventListener('dli-tour-begin',begin)")
- &&workspace.includes("window.addEventListener('dli-tour-end',end)")
- &&workspace.includes('tourPriorCompressedRef.current')
- &&workspace.includes('setCompressed(tourPriorCompressedRef.current)'),
- 'Hidden focus panels must be revealed only during tours then restored');
+assert.ok(workspace.includes("window.addEventListener('dli-tour-begin',closeTour)")
+ &&workspace.includes('dli-workspace-trigger-row')
+ &&!workspace.includes('setCompressed('),
+ 'Guided tours must highlight launch pills without re-enabling inline expanded panels');
 assert.ok(app.includes('<GuidedTour/>')&&app.includes('Guided app tour'),
  'Spotlights must be globally available for all authenticated roles');
 assert.ok(!tour.includes('service_role')&&!tour.includes('role:service_role'),
