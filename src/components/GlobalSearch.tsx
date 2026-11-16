@@ -6,7 +6,9 @@ import {canAccessPath} from '../auth/permissions';
 import {supabase} from '../lib/supabase';
 
 type Hit={kind:'person'|'course'|'cohort'|'class'|'message';id:string;title:string;detail:string;to:string};
-const clean=(s:string)=>s.trim().replace(/[%_\\]/g,'').slice(0,70);
+// PostgREST .or() is parsed as a filter expression, not a bound parameter.
+ // Strip query punctuation/operators so user input cannot modify its grammar.
+const clean=(s:string)=>s.trim().replace(/[^\p{L}\p{N}\s-]/gu,'').slice(0,70);
 const permissions=(role:Parameters<typeof canAccessPath>[0],tier:'free'|'paid',path:string)=>
  canAccessPath(role,path,tier);
 export default function GlobalSearch(){
