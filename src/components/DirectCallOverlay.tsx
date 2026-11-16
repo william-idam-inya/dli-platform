@@ -3,13 +3,13 @@ import {Camera,CameraOff,Mic,MicOff,MonitorUp,PhoneOff,Phone,ShieldCheck,Video,M
 import type {CallSession} from '../lib/useDirectPeerCall';
 import './DirectCallOverlay.css';
 type Props={
- session:CallSession;name:string;localStream:MediaStream|null;remoteStream:MediaStream|null;
+ session:CallSession;name:string;roleLabel?:string;localStream:MediaStream|null;remoteStream:MediaStream|null;
  muted:boolean;cameraOff:boolean;sharing:boolean;
  onAnswer:()=>void;onReject:()=>void;onEnd:()=>void;onMute:()=>void;
  onCamera:()=>void;onScreen:()=>void;
 };
 export default function DirectCallOverlay({
- session,name,localStream,remoteStream,muted,cameraOff,sharing,
+ session,name,roleLabel,localStream,remoteStream,muted,cameraOff,sharing,
  onAnswer,onReject,onEnd,onMute,onCamera,onScreen,
 }:Props){
  const local=useRef<HTMLVideoElement>(null);
@@ -57,7 +57,8 @@ export default function DirectCallOverlay({
    <header onPointerDown={beginDrag} onPointerMove={moveDrag}
      onPointerUp={endDrag} onPointerCancel={endDrag}>
     <div><small>PRIVATE DLI WEBRTC CALL</small>
-      <h2>{name}</h2><p>{ringing?'Incoming '+session.mode+' call':session.state==='connecting'?
+      <h2>{name}</h2>{roleLabel&&<span className="dli-call-role-badge">{roleLabel}</span>}
+      <p>{ringing?'Incoming '+session.mode+' call':session.state==='connecting'?
        'Connecting encrypted media…':session.state==='connected'?'Connected · '+session.mode+' call':
        session.state==='ringing'?'Ringing… waiting for '+name+' to answer':'Connection unavailable'}</p></div>
     <div className="dli-call-header-buttons">
