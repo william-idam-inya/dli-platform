@@ -157,7 +157,7 @@ export default function GuidedTour(){
  useEffect(()=>{
   if(!visible)return;
   window.dispatchEvent(new Event('dli-tour-begin'));
-  return()=>window.dispatchEvent(new Event('dli-tour-end'));
+  return()=>{window.dispatchEvent(new Event('dli-tour-end'));};
  },[visible]);
  const dismiss=useCallback((skipped:boolean)=>{
   setVisible(false);setIndex(-1);setSpotlight(null);
@@ -194,12 +194,13 @@ export default function GuidedTour(){
  useEffect(()=>{
   setSpotlight(null);setUnavailable(false);
   if(!visible||!step)return;
+  const activeStep=step;
   let cancelled=false,frame=0,found=false,scrolled=false;
   let target:HTMLElement|null=null;
-  const expectedPath=step.route.split('?')[0];
+  const expectedPath=activeStep.route.split('?')[0];
   function measure(){
    if(cancelled||location.pathname!==expectedPath)return;
-   target=findVisibleTarget(step);
+   target=findVisibleTarget(activeStep);
    if(!target)return;
    const viewportH=window.innerHeight,viewportW=window.innerWidth;
    let rect=target.getBoundingClientRect();
