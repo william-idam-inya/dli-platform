@@ -72,3 +72,22 @@
  .dli-conference-chat{min-height:260px}
  .dli-conference-chat-history{max-height:30dvh}
 }
+
+/* Q49: live meeting is a separate permission-gated stage, never a fake video tile. */
+.dli-conference-media-actions{display:flex;align-items:center;gap:11px;
+ flex-wrap:wrap}
+.dli-conference-media-actions>button{display:flex;align-items:center;gap:8px;
+ min-height:45px;padding:10px 14px;border:1px solid var(--purple);
+ border-radius:10px;background:var(--purple-soft);color:var(--purple);
+ font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.dli-conference-media-actions>button[aria-pressed=true]{
+ background:var(--purple);color:white}
+.dli-conference-media-actions>small{font-size:11px;color:var(--muted)}
+.dli-conference-backdrop:has(.dli-rtk-preview) .dli-conference-overlay{
+ max-height:calc(100dvh - 15px);overflow-y:auto;overscroll-behavior-y:contain}
+.dli-conference-panel-grid:has(.dli-rtk-preview){
+ grid-template-columns:minmax(0,1fr) minmax(235px,295px)}
+@media(max-width:960px){
+ .dli-conference-panel-grid:has(.dli-rtk-preview){grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.dli-conference-media-actions>button{transition:none}}
