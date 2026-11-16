@@ -48,9 +48,6 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/finance': ['owner', 'admin', 'assistant_admin'],
   '/finance/reviews': ['owner', 'admin', 'assistant_admin'],
   '/communications': DLI_ROLES, // Per-contact RLS restricts non-admin roles to three administrators.
-  '/communications/drafts': ['owner', 'admin', 'assistant_admin', 'tutor'],
-  '/communications/reviews': ['owner', 'admin', 'assistant_admin', 'tutor'],
-  '/communications/templates': ['owner', 'admin', 'assistant_admin', 'tutor'],
   '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'tutor'],
   '/announcements': DLI_ROLES,
   '/reports': ['owner', 'admin', 'assistant_admin'],

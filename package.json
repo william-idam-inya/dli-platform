@@ -62,7 +62,8 @@
     "check:q42-desktop-sidebar": "node scripts/verify-q42-desktop-sidebar.mjs",
     "check:q43-dashboard-identity": "node scripts/verify-q43-dashboard-identity.mjs",
     "check:q44-focus-student-profile": "node scripts/verify-q44-focus-student-profile.mjs",
-    "check:q45-overhaul": "node scripts/verify-q45-overhaul.mjs"
+    "check:q45-overhaul": "node scripts/verify-q45-overhaul.mjs",
+    "check:q46-release-structure": "node scripts/verify-q46-release-structure.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
