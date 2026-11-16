@@ -109,7 +109,7 @@ function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut
         </div>
       </div>
       <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
-    </div></CallProvider>
+    </div>
   );
 }
 
@@ -379,6 +379,6 @@ export default function AppShell({ children }: AppShellProps) {
           <span>More</span>
         </button>
       </nav>}
-    </div>
+    </div></CallProvider>
   );
 }
