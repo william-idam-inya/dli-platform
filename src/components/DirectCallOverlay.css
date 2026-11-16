@@ -91,3 +91,8 @@
  }
 }
 @media(prefers-reduced-motion:reduce){.dli-call-panel{transition:none}}
+
+.dli-call-role-badge{display:inline-flex;align-items:center;justify-content:center;
+ border:1px solid color-mix(in srgb,var(--purple) 45%,var(--border));
+ border-radius:999px;background:var(--purple-soft);color:var(--purple-dark);
+ padding:4px 10px;font-weight:850;font-size:11px;line-height:1.3;margin-bottom:7px}
