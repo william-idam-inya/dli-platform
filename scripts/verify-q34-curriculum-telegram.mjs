@@ -43,7 +43,7 @@ for(const token of [
  'cohortReady','chooseCohort(','topics_per_meeting',
  "rpc('dli_save_cohort_class'", "'dli_set_cohort_class_state'",
  'makeTopicPacingPreview','classes-pacing-control','classes-pacing-preview',
- 'classes-cohort-billing','<PrivateClassesPage billingOnly embedded/>',
+ 'classes-cohort-billing','Open Paystack enrolment',
  "cohortProgramme?.code==='dli-online'",
  'classes-delivery-list'
 ])assert.ok(classes.includes(token),'Missing cohort timetable integration '+token);
