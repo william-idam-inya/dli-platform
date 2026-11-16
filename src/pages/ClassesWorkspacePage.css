@@ -118,3 +118,52 @@
  .classes-pacing-preview>div,.classes-delivery-list>span{flex-direction:column;gap:.2rem}
  .classes-workspace .classes-cohort-billing{padding:.8rem}
 }
+
+/* Q44: real private student photos, names, existing memberships and destination. */
+.classes-workspace .classes-student-list{
+ grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));
+ gap:10px;max-height:min(405px,48dvh);overflow-y:auto;
+ overscroll-behavior-y:contain;scrollbar-gutter:stable;
+}
+.classes-workspace .classes-student-option{
+ display:flex;gap:12px;align-items:flex-start;min-width:0;padding:12px;
+ border:1px solid var(--border);border-radius:13px;background:var(--surface-soft);
+}
+.classes-workspace .classes-student-option.selected{
+ border-color:var(--purple);background:color-mix(in srgb,var(--purple) 7%,var(--surface));
+}
+.classes-workspace .classes-student-photo-button{
+ display:grid;justify-items:center;gap:6px;flex:0 0 78px;min-width:78px;
+ padding:0;border:0;background:transparent;color:var(--purple);
+ font:inherit;font-size:10px;font-weight:800;cursor:pointer;line-height:1.25;text-align:center;
+}
+.classes-workspace .classes-student-photo-button .classes-student-photo{
+ display:grid;place-items:center;width:66px;height:66px;
+ border:2px solid var(--border);border-radius:15px;overflow:hidden;flex:0 0 66px;
+ color:var(--text);background:var(--purple-soft);font-size:25px;font-weight:850;
+}
+.classes-workspace .classes-student-photo-button .classes-student-photo img{
+ width:100%;height:100%;object-fit:cover;display:block;
+}
+.classes-workspace .classes-student-info{display:grid;gap:9px;min-width:0;flex:1}
+.classes-workspace .classes-student-identity{display:grid;gap:5px;min-width:0;cursor:pointer}
+.classes-workspace .classes-student-identity strong{
+ font-size:14px;line-height:1.35;overflow-wrap:anywhere;
+}
+.classes-workspace .classes-student-identity span{
+ font-size:11px;line-height:1.5;color:var(--muted);overflow-wrap:break-word;
+}
+.classes-workspace .classes-student-target{color:var(--text)!important;font-weight:700}
+.classes-workspace .classes-student-check{
+ display:inline-flex;align-items:center;gap:7px;justify-self:start;
+ cursor:pointer;font-size:12px;font-weight:750;
+}
+.classes-workspace .classes-student-check input{
+ width:19px;height:19px;min-width:19px;accent-color:var(--purple);margin:0;
+}
+.classes-workspace .classes-student-photo-button:focus-visible{
+ outline:3px solid var(--dli-focus,var(--purple));outline-offset:3px;border-radius:12px;
+}
+@media(max-width:560px){
+ .classes-workspace .classes-student-list{grid-template-columns:1fr;max-height:50dvh}
+}
