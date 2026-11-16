@@ -42,18 +42,41 @@ export function AuthChecking() {
 
 export function AuthTemporarilyUnavailable() {
   const { refresh } = useAuth();
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const signInAgain = async () => {
+    if (!supabase || resetting) return;
+    setResetting(true);
+    setResetError(null);
+    try {
+      // User-initiated local recovery: leave sessions on other devices untouched.
+      // Supabase clears browser session even if server revocation is unavailable.
+      await supabase.auth.signOut({ scope: 'local' });
+      window.location.assign('/login');
+    } catch {
+      setResetError('Could not reset this browser session. Open the site in a private browser window and sign in there.');
+      setResetting(false);
+    }
+  };
   return <AuthLayout title="Access check temporarily unavailable"
     intro="We could not confirm your current DLI membership. Your workspace remains restricted until verification succeeds.">
     <p role="alert" className="auth-feedback error">
-      The authentication service or account registry could not be reached.
+      Your saved session or the account verification service could not be verified.
       This does not necessarily mean your account was removed.
     </p>
-    <button type="button" className="auth-submit"
+    <button type="button" className="auth-submit" disabled={resetting}
       onClick={() => { void refresh(); }}>
       Retry secure access check
     </button>
-    <p className="auth-helper">Check your internet connection. If the problem persists,
-      contact DLI administration. Do not share passwords or invitation links.</p>
+    <button type="button" className="auth-submit" disabled={resetting}
+      onClick={() => { void signInAgain(); }}>
+      {resetting ? 'Preparing secure sign-in…' : 'Sign in again on this device'}
+    </button>
+    <Feedback error message={resetError} />
+    <p className="auth-helper">Signing in again clears only this browser's saved DLI session;
+      your account and sessions on other devices remain unchanged. If verification still
+      fails, check your connection or try a private browser window. Never share passwords
+      or invitation links.</p>
   </AuthLayout>;
 }
 
