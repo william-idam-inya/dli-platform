@@ -67,7 +67,8 @@
     "check:q47-executive-name-privacy": "node scripts/verify-q47-executive-name-privacy.mjs",
     "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs",
     "check:q49-mobile-overlays": "node scripts/verify-q49-mobile-overlays.mjs",
-    "check:q50-prod-realtimekit": "node scripts/verify-q50-prod-realtimekit.mjs"
+    "check:q50-prod-realtimekit": "node scripts/verify-q50-prod-realtimekit.mjs",
+    "check:q50-paystack-overlays": "node scripts/verify-q50-paystack-overlays.mjs"
   },
   "dependencies": {
     "@cloudflare/realtimekit": "2.0.2",

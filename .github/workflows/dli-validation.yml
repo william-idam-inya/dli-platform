@@ -107,10 +107,10 @@ jobs:
       - name: Verify Q22 feature-by-feature production reconciliation
         run: npm run check:q22-feature-reconciliation
 
-      - name: Verify Q23 manual bank transfer and private receipt review
+      - name: Verify Q23 historical receipt audit and Paystack replacement
         run: npm run check:q23-manual-payments
 
-      - name: Verify two-party Tutor payouts and three equal admin finance roles
+      - name: Verify Q24 historical payouts and Q50 Paystack disbursement
         run: npm run check:q24-tutor-payout
 
       - name: Verify Q25 privileged API hardening and operational transparency
@@ -187,6 +187,9 @@ jobs:
 
       - name: Verify Q50 production media authorizations and secure launch gating
         run: npm run check:q50-prod-realtimekit
+
+      - name: Verify Q50 server-priced Paystack checkout and overlay-only navigation
+        run: npm run check:q50-paystack-overlays
 
       - name: Verify TypeScript
         run: npm run typecheck
