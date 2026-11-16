@@ -591,7 +591,7 @@ export default function DirectMessagesPage(){
       <aside className="dli-direct-sidebar" aria-label="Conversation directory">
          {mode==='inbox'&&<div className="dli-telegram-sidebar-header">
            <h2>Chats</h2>
-           <button className="dli-telegram-new-message" type="button"
+           <button className="dli-telegram-new-message" data-dli-tour="new-message" type="button"
              aria-label="New message" aria-expanded={composeOpen}
              onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
              {composeOpen?<X size={20}/>:<Pencil size={20}/>}

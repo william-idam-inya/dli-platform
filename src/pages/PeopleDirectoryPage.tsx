@@ -59,7 +59,7 @@ export default function PeopleDirectoryPage(){
    </div>
   </div>
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
-  <div className="dli-people-actions">
+  <div data-dli-tour="people" className="dli-people-actions">
    <label><Search size={17}/><span className="sr-only">Search people</span>
     <input value={search} onChange={e=>setSearch(e.target.value)}
       placeholder="Search people or roles…" type="search"/></label>

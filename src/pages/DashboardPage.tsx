@@ -103,7 +103,7 @@ export default function DashboardPage(){
     : 'Manage classes';
 
   return <div className="dashboard-page unified-overview" data-dli-role={account?.role ?? 'guest'}>
-    <section className="welcome-row">
+    <section data-dli-tour="dashboard" className="welcome-row">
       <div>
         <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
         <h1>{headline}</h1>

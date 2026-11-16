@@ -283,7 +283,7 @@ export default function PaidEnrollmentPage(){
 
  function toggle(id:string){setSelected(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);}
  return <div className="module-page paid-upgrade">
-  <div className="module-page-hero">
+  <div data-dli-tour="enrolment" className="module-page-hero">
    <span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> AUTHORISED DLI ENROLMENT</div>
     <h1>{isManager?'Paid enrolment approvals':'Free Demo & paid enrolment'}</h1>

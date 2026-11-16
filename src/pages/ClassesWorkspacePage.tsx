@@ -593,7 +593,7 @@ export default function ClassesWorkspacePage(){
         <CheckCircle2 size={17}/> Free Scholars Club cohort · No payment assignment or bank details required.
       </p>}
 
-      <section className="panel classes-directory">
+      <section data-dli-tour="classes" className="panel classes-directory">
         <div className="panel-heading"><div>
           <p className="section-kicker">CLASS REGISTER</p>
           <h2>{staff?'All individual and group classes':account?.role==='tutor'?'My assigned subject sessions':'My subject timetable'}</h2>

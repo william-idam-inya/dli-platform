@@ -171,7 +171,7 @@ export default function FeedbackPage() {
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
-    {!staff&&<section className="panel member-feedback-form">
+    {!staff&&<section data-dli-tour="feedback" className="panel member-feedback-form">
       <div className="panel-heading"><div>
         <p className="section-kicker">01 · SEND FEEDBACK</p>
         <h2>Tell us what needs attention</h2>

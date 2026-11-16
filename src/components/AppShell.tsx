@@ -331,7 +331,7 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
           <div className="topbar-actions">
             <DliMessageBadge/>
-            <DliNotificationBell/>
+            <span data-dli-tour="notifications" className="dli-tour-notification-anchor"><DliNotificationBell/></span>
             <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
             <button
               className="icon-button theme-toggle"

@@ -138,7 +138,7 @@ export default function FinancePage() {
   }
 
   return <div className="module-page finance-page">
-    <div className="module-page-hero">
+    <div data-dli-tour="finance" className="module-page-hero">
       <span className="module-page-icon"><Wallet size={25}/></span>
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>

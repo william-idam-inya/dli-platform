@@ -277,7 +277,7 @@ export default function UserManagementPage() {
         <button type="button" onClick={()=>setNotice(null)} aria-label="Dismiss confirmation">Dismiss</button>
       </div>}
 
-      <section className="panel user-registry" id="account-registry">
+      <section data-dli-tour="users" className="panel user-registry" id="account-registry">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">AUTHORISED DIRECTORY</p>
