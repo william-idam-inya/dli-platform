@@ -55,9 +55,13 @@ for(const token of [
 ])finder(css,token,'Private payment preview safeguard missing');
 for(const p of ['src/pages/PaidEnrollmentPage.tsx','src/components/TutorPayoutWorkflow.tsx']){
  const source=read(p);
- finder(source,"import {createPortal} from 'react-dom'", 'Receipt preview portal');
- finder(source,'{preview&&createPortal(<div', 'Receipt not rendered as portal');
- finder(source,'</div>,document.body)}','Receipt portal must close in the body layer');
+ assert.ok(!source.includes('{preview&&createPortal(<div'),
+  'Retired manual receipt preview must not be mounted in Paystack workflows');
+}
+for(const p of ['src/pages/PaidEnrollmentPage.tsx','src/components/TutorPayoutWorkflow.tsx']){
+ const source=read(p);
+ assert.ok(source.includes('paystack-'),
+  'Automated payment workflow must replace legacy receipt modal: '+p);
 }
 
 console.log('Q49 static overlay guards passed: audio layout, accessible mobile drawer, Quick Menu portal, focus scrolling, nested dialogs and Messenger occlusion.');
