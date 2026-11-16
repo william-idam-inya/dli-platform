@@ -1,0 +1,13 @@
+# Webhooks from Paystack have no Supabase JWT.
+# Verify the raw request HMAC before parsing or fulfilling transactions.
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.paystack-checkout]
+verify_jwt = true
+
+[functions.paystack-bank-recipient]
+verify_jwt = true
+
+[functions.paystack-disburse-payout]
+verify_jwt = true

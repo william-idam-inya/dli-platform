@@ -455,6 +455,14 @@
     {
       "file": "20261116173000_stage_q50_prod_media_admin_pilot.sql",
       "gitBlobSha1": "577c1e6488cac716d76c7acbc711c788f8ed3e72"
+    },
+    {
+      "file": "20261116152642_stage_q50_paystack_automated_checkout_payroll.sql",
+      "gitBlobSha1": "7afa928abf73c727e961501f13e5f65689ea86ca"
+    },
+    {
+      "file": "20261116154342_stage_q50b_payment_replay_and_alert_ack.sql",
+      "gitBlobSha1": "bd10ba1f722813cec7c38cdd6c9cce278671d917"
     }
   ]
 }
