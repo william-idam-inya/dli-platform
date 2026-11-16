@@ -324,8 +324,6 @@ export default function AppShell({ children }: AppShellProps) {
               <strong>{activeItem?.label ?? ({
                 '/cohorts':'Advanced curriculum','/assignments':'Legacy course assignments',
                 '/schedule':'Legacy course timetable','/finance/reviews':'Finance policy reviews',
-                '/communications/reviews':'Communication reviews',
-                '/communications/templates':'Message templates',
                 '/communications/reminders':'Internal reminders',
                 '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
                 '/my-classes':'Classes & timetable',
