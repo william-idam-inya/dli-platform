@@ -101,7 +101,8 @@ const confSql=read('supabase/migrations/20261115220000_stage_q35c_conference_gov
 for(const token of ['student_seminar','tutors_conference','admin_leadership',
  'Free Students','Paid Students','dli_conference_create',
  'dli_conference_join','dli_conference_action','dli_conference_send',
- 'Media streams not yet provisioned','Host actions are stored as server-side moderation requests'])
+ 'Media streams not yet provisioned','DLI moderation actions are stored as audited requests',
+  'mediaProdEnabled','dli-conference-sfu-note'])
  assert.ok(conf.includes(token),'Role conference governance missing '+token);
 for(const token of ['CREATE TABLE public.dli_conference_rooms',
  'CREATE TABLE public.dli_conference_attendees','CREATE TABLE public.dli_conference_chat',
