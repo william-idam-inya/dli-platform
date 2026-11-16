@@ -12,100 +12,52 @@ import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
 import WorkspaceFocus from './WorkspaceFocus';
 import GuidedTour from './GuidedTour';
+import GlobalSearch from './GlobalSearch';
+import QuickMenu from './QuickMenu';
 import {CallProvider} from './CallProvider';
-import { DliMessageBadge, DliNotificationBell } from './DliNoticeCenter';
+import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
-function Sidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut?: () => void }) {
-  const { account } = useAuth();
-  const location = useLocation();
-  const selectedLearningArea = new URLSearchParams(location.search).get('tab') ?? 'lessons';
-  const [expandedSections,setExpandedSections] = useState<Record<string,boolean>>({});
-  const permittedSections = permittedNavigation(path=>Boolean(
-    account && canAccessPath(account.role,path,account.studentTier),
-  ));
-
-  // Open the active route's section while retaining an explicitly expanded
-  // section. Native details/summary provides mouse and keyboard toggling.
-  useEffect(()=>{
-    const selected=permittedSections.find(section=>
-      section.items.some(item=>item.path===location.pathname));
-    if(!selected)return;
-    setExpandedSections(current=>current[selected.label]
-      ?current:{...current,[selected.label]:true});
-  },[location.pathname,account?.role,account?.studentTier]);
-
-  return (
-    <div className="sidebar-inner">
-      <NavLink to="/" className="brand" onClick={onNavigate} aria-label="DLI Platform home">
-        <span className="brand-mark"><OfficialDliLogo decorative /></span>
-        <span className="brand-copy">
-          <strong>DLI Platform</strong>
-          <small>Detailed Learning Institute</small>
-        </span>
-      </NavLink>
-
-      <nav className="primary-nav" aria-label="Main navigation">
-        {permittedSections.map((section) => (
-          <details className="nav-section" key={section.label}
-            open={expandedSections[section.label] ?? (section.label === 'Workspace')}
-            onToggle={event=>{
-              const isOpen=event.currentTarget.open;
-              setExpandedSections(current=>current[section.label]===isOpen
-                ?current:{...current,[section.label]:isOpen});
-            }}>
-            <summary className="nav-section-label nav-section-toggle">
-              <span>{section.label}</span><ChevronDown size={15} aria-hidden="true"/>
-            </summary>
-            <div className="nav-section-links">
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.path} className="sidebar-navigation-item">
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end
-                  onClick={onNavigate}
-                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
-                >
-                  <Icon size={18} strokeWidth={1.8} />
-                  <span>{item.label}</span>
-                </NavLink>
-                {item.path==='/study'&&<div className="sidebar-learning-links" aria-label="Learning sections">
-                  {learningAreas.map(area=><Link key={area.id} to={learningAreaUrl(area.id)}
-                    onClick={onNavigate}
-                    aria-current={location.pathname==='/study'&&selectedLearningArea===area.id?'page':undefined}
-                    className={'sidebar-learning-link'+(
-                      location.pathname==='/study'&&selectedLearningArea===area.id?' active':''
-                    )}>{area.label}</Link>)}
-                </div>}
-              </div>
-              );
-            })}
-            </div>
-          </details>
-        ))}
-      </nav>
-
-      <div className="ref-sidebar-actions">
-        <NavLink to="/profile" onClick={onNavigate}><span aria-hidden="true">⚙</span> My profile &amp; appearance</NavLink>
-        <button type="button" className="dli-tour-launch" onClick={()=>{
-         onNavigate?.();window.dispatchEvent(new Event('dli-tour-replay'));
-        }}><HelpCircle size={17} aria-hidden="true"/> Guided app tour</button>
-        <button type="button" onClick={()=>{onSignOut?.();onNavigate?.();}}>
-          <LogOut size={17} aria-hidden="true"/> Sign out
-        </button>
-      </div>
-      <div className="sidebar-footer">
-        <div className="sidebar-help-icon">?</div>
-        <div>
-          <strong>Connected class management</strong>
-          <p>One student or a group, with subject, tutor, timetable and secure payment review.</p>
-        </div>
-      </div>
-      <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
-    </div>
-  );
+function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
+ const {account}=useAuth();
+ const [showMore,setShowMore]=useState(false);
+ const allowed=permittedNavigation(path=>Boolean(
+  account&&canAccessPath(account.role,path,account.studentTier)))
+  .flatMap(section=>section.items);
+ const preferred=['/','/profile','/classes','/study','/communications','/announcements','/enrolment'];
+ const primary=preferred.flatMap(path=>allowed.filter(item=>item.path===path));
+ const other=allowed.filter(item=>!preferred.includes(item.path));
+ const destinations=[...primary,...other];
+ const visible=showMore?destinations:destinations.slice(0,7);
+ return <div className="sidebar-inner">
+  <NavLink to="/profile" onClick={onNavigate} className="dli-flat-sidebar-identity" aria-label="My DLI account">
+   {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
+     <span className="profile-placeholder">D</span>}
+   <span><strong>{account?.full_name??'DLI member'}</strong>
+    <small>{account?accountRoleLabel(account):'Verified member'}</small></span>
+  </NavLink>
+  <nav className="primary-nav dli-flat-nav" aria-label="Main navigation">
+   {visible.map(item=>{
+    const Icon=item.icon;
+    return <NavLink key={item.path} to={item.path} end
+      onClick={onNavigate} className={({isActive})=>'nav-link'+(isActive?' active':'')}>
+      <Icon size={19} strokeWidth={1.9}/><span>{item.label}</span>
+    </NavLink>;
+   })}
+   {destinations.length>7&&<button type="button" className="dli-flat-more"
+     onClick={()=>setShowMore(v=>!v)} aria-expanded={showMore}>
+     <Grid2X2 size={17}/>{showMore?'See less':'See more'}
+   </button>}
+  </nav>
+  <div className="ref-sidebar-actions">
+   <button type="button" className="dli-tour-launch" onClick={()=>{
+     onNavigate?.();window.dispatchEvent(new Event('dli-tour-replay'));
+   }}><HelpCircle size={17}/> Guided app tour</button>
+   <button type="button" onClick={()=>{onSignOut?.();onNavigate?.();}}>
+    <LogOut size={17}/> Sign out
+   </button>
+  </div>
+  <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
+ </div>;
 }
 
 interface AppShellProps {
@@ -158,6 +110,7 @@ export default function AppShell({ children }: AppShellProps) {
       window.removeEventListener('dli-tour-end',restore);
     };
   },[]);
+  const [profileMenuOpen,setProfileMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -296,7 +249,7 @@ export default function AppShell({ children }: AppShellProps) {
     :undefined;
 
   return (
-    <CallProvider><div className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
+    <CallProvider><div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
       <aside ref={desktopSidebarRef} id="dli-desktop-sidebar" className="desktop-sidebar"
         aria-hidden={desktopSidebarCollapsed}>
         <Sidebar onSignOut={()=>{void signOut();}}/>
@@ -332,6 +285,10 @@ export default function AppShell({ children }: AppShellProps) {
               title={desktopSidebarCollapsed?'Show sidebar':'Hide sidebar'}>
               {desktopSidebarCollapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}
             </button>
+            <Link to="/" className="dli-topbar-brand" aria-label="DLI Platform home">
+              <OfficialDliLogo decorative/><span>DLI Platform</span>
+            </Link>
+            <GlobalSearch/>
             <div className="ref-mobile-identity">
               <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
               <NavLink to="/profile" className="ref-mobile-avatar" aria-label="My profile">
@@ -363,7 +320,25 @@ export default function AppShell({ children }: AppShellProps) {
                 <strong>{activeLearningArea.label}</strong></>}
             </div>}
           </div>
+          <nav className="dli-primary-tabs" aria-label="Primary modules">
+            {([
+              {path:'/',label:'Overview'},{path:'/academics',label:'Academics'},
+              {path:'/classes',label:'Classes & timetable'},
+              {path:'/people',label:'People'},{path:'/finance',label:'Financials'},
+            ] as const).filter(t=>account&&canAccessPath(account.role,t.path,account.studentTier))
+              .map(t=>{
+                const item=navigationItems.find(i=>i.path===t.path);
+                if(!item)return null;
+                const Icon=item.icon;
+                return <NavLink key={t.path} to={t.path} end={t.path==='/'}
+                  className={({isActive})=>'dli-primary-tab'+(isActive?' active':'')}
+                  aria-label={t.label} title={t.label}>
+                  <Icon size={21} aria-hidden="true"/><span>{t.label}</span>
+                </NavLink>;
+              })}
+          </nav>
           <div className="topbar-actions">
+            <QuickMenu/>
             <DliMessageBadge/>
             <span data-dli-tour="notifications" className="dli-tour-notification-anchor"><DliNotificationBell/></span>
             <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
@@ -376,15 +351,32 @@ export default function AppShell({ children }: AppShellProps) {
             >
               {darkMode ? <Sun size={19} /> : <Moon size={19} />}
             </button>
+            <div className="dli-profile-menu">
             <NavLink to="/profile" className="account-mini" title="My profile and settings">
               {account ? <ProfileAvatar key={account.id} name={account.full_name} /> :
                 <span className="profile-placeholder">D</span>}
               <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? accountRoleLabel(account) : ''}</small></span>
             </NavLink>
-            <button className="icon-button" onClick={() => { void signOut(); }}
-              aria-label="Sign out" title="Sign out"><LogOut size={17} /></button>
+            <button type="button" className="dli-profile-toggle"
+              aria-label="Open account menu" aria-controls="dli-account-dropdown"
+              aria-expanded={profileMenuOpen} onClick={()=>setProfileMenuOpen(v=>!v)}>
+              <ChevronDown size={17}/>
+            </button>
+            {profileMenuOpen&&<div id="dli-account-dropdown" className="dli-profile-dropdown"
+              role="region" aria-label="Account shortcuts">
+              <strong>{account?.full_name}</strong>
+              <Link to="/profile" onClick={()=>setProfileMenuOpen(false)}>My profile and settings</Link>
+              <button type="button" onClick={()=>{
+                setProfileMenuOpen(false);window.dispatchEvent(new Event('dli-tour-replay'));
+              }}>Replay guided tour</button>
+              <button type="button" onClick={()=>{setProfileMenuOpen(false);void signOut();}}>
+                <LogOut size={16}/> Sign out
+              </button>
+            </div>}
+            </div>
           </div>
         </header>
+        <DliAnnouncementTicker/>
 
         <div className="page-content">
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
