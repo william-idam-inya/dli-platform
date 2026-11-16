@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode, type CSSProperties } from
 import {
   ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2,
   ClipboardCheck, Coins, FileCheck2, GraduationCap, LayoutDashboard,
-  ShieldCheck, Users, Wallet, FileText, UserCheck,
+  ShieldCheck, Users, Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -43,7 +43,7 @@ const EMPTY_METRICS: DashboardMetrics = {
 
 const STUDENT_LINKS: QuickAction[] = [
   {name:'My Classes',href:'/classes',permission:'/classes',icon:CalendarClock,tone:'blue'},
-  {name:'Assignments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'gold',badge:3},
+  {name:'Assignments',href:'/study?tab=assignments',permission:'/study',icon:ClipboardCheck,tone:'gold'},
   {name:'Quizzes',href:'/study?tab=quizzes',permission:'/study',icon:GraduationCap,tone:'violet'},
   {name:'Resources',href:'/study?tab=lessons',permission:'/study',icon:BookOpen,tone:'teal'},
 ];
@@ -146,12 +146,13 @@ function SectionHead({title,action,children}:{
     {action&&<Link to={action.to}>{action.label} <ArrowRight size={15} aria-hidden="true"/></Link>}
   </header>;
 }
-function KpiCard({label,value,icon:Icon,tone,detail,badge,badgeTone}:{
-  label:string;value:Metric;icon:LucideIcon;
+function KpiCard({label,value,icon:Icon,tone,detail,badge,badgeTone,to}:{
+  label:string;value:Metric;icon:LucideIcon;to:string;
   tone:'blue'|'teal'|'gold'|'violet';detail:string;
   badge?:string;badgeTone?:'success'|'warning'|'info';
 }) {
-  return <div className="ref-kpi-card" title={detail}>
+  return <Link className="ref-kpi-card" to={to} title={detail}
+    aria-label={label+' — '+shown(value)+'. Open '+label+' workspace'}>
     <div className="ref-kpi-top">
       <span className={'ref-kpi-icon ref-tone-'+tone}><Icon size={20} aria-hidden="true"/></span>
       {badge && <span className={'ref-kpi-pill ' + (badgeTone ?? 'info')}>{badge}</span>}
@@ -159,7 +160,8 @@ function KpiCard({label,value,icon:Icon,tone,detail,badge,badgeTone}:{
     <strong>{shown(value)}</strong>
     <span>{label}</span>
     <small>{value===null?'Count unavailable':'Verified from accessible records'}</small>
-  </div>;
+    <ArrowRight size={16} aria-hidden="true" className="ref-kpi-open"/>
+  </Link>;
 }
 function EventChart({events}:{events:AuditRow[]}) {
   const data=useMemo(()=>{
@@ -227,44 +229,36 @@ function LearningProgress({account,academicCounts,academicLoading,metrics}:{
   academicLoading:boolean;
   metrics:DashboardMetrics;
 }) {
-  const free=account.studentTier!=='paid';
   const total=academicCounts?.quizzes??null;
   const attempts=metrics.attempts;
-  const ratio=free||total===null||total===0||attempts===null
+  const ratio=total===null||total===0||attempts===null
     ?null:Math.min(100,Math.round(attempts/total*100));
-  const progressText=free?'Free':academicLoading?'…':ratio===null?'—':ratio+'%';
+  const progressText=academicLoading?'…':ratio===null?'—':ratio+'%';
   return <section className="ref-surface ref-progress-panel">
     <header className="ref-section-heading">
-      <div>
-        <h2>My learning progress</h2>
-        <p>Real-time completion across course topics</p>
-      </div>
+      <div><h2>My learning activity</h2>
+        <p>Published coursework available under active class permissions</p></div>
       <div className="ref-progress-actions">
-        <select className="ref-term-select" aria-label="Filter progress by term">
-          <option>This Term</option>
-          <option>Last Term</option>
-          <option>Full Year</option>
-        </select>
         <Link to="/study">See learning <ArrowRight size={14} aria-hidden="true"/></Link>
       </div>
     </header>
     <div className="ref-progress-content">
       <div className="ref-progress-ring-box">
         <div className="ref-progress-ring" style={{'--ref-progress':ratio===null?'0%':ratio+'%'} as CSSProperties}>
-          <span>{progressText}</span>
-          <small>{free?'Demo access':'Overall progress'}</small>
+          <span>{progressText}</span><small>Quiz participation</small>
         </div>
       </div>
       <div className="ref-progress-records">
-        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Lessons completed</span><strong>{free?'Preview':(shown(academicCounts?.lessons??null) + ' / 36')}</strong></div>
-        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Assignments</span><strong>{free?'Locked':(shown(academicCounts?.assignments??null) + ' / 24')}</strong></div>
-        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/><span>Quizzes</span><strong>{free?'Locked':(shown(metrics.attempts) + ' / 8')}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/>
+          <span>Visible lessons</span><strong>{shown(academicCounts?.lessons??null)}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/>
+          <span>Assignments</span><strong>{shown(academicCounts?.assignments??null)}</strong></div>
+        <div><CheckCircle2 size={17} className="ref-check-green" aria-hidden="true"/>
+          <span>Quiz attempts</span><strong>{shown(metrics.attempts)}</strong></div>
       </div>
     </div>
-    <p className="ref-panel-note">{free
-      ?'Paid coursework and results remain restricted until enrolment approval.'
-      :ratio===null?'Progress will display when published quizzes and verified attempts are available.'
-        :'Participation compares your recorded quiz attempts with visible published quizzes; it is not a course-completion grade.'}</p>
+    <p className="ref-panel-note">Free and Paid Students can access class-assigned learning.
+      Counts reflect verified records. Quiz participation is not a course grade.</p>
   </section>;
 }
 function TutorChecklist({metrics,learning}:{
@@ -306,10 +300,19 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
 }) {
   const ownerOrAdmin=account.role==='owner'||account.role==='admin';
   const kpis=[
-    {label:ownerOrAdmin?'Visible users':'Class seats',value:metrics.people,icon:Users,tone:'blue' as const,badge:'+12%',badgeTone:'success' as const,detail:'RLS-scoped registered accounts or class seats'},
-    {label:'Active classes',value:metrics.classes,icon:CalendarClock,tone:'teal' as const,detail:'Published teaching sessions'},
-    {label:'Payment reviews',value:metrics.proofs,icon:FileCheck2,tone:'gold' as const,badge:'Pending',badgeTone:'warning' as const,detail:'Submitted enrolment and class-fee reviews'},
-    {label:'Tutor payouts',value:metrics.payouts,icon:Coins,tone:'violet' as const,badge:'Pending',badgeTone:'warning' as const,detail:'Receipts awaiting tutor acknowledgement'},
+    {label:ownerOrAdmin?'Users & Access':'Class seats',value:metrics.people,icon:Users,
+      tone:'blue' as const,to:ownerOrAdmin?'/users':'/classes',
+      detail:'Verified account or student-seat records visible to your role'},
+    {label:'Classes',value:metrics.classes,icon:CalendarClock,tone:'teal' as const,
+      to:'/classes',detail:'Active published teaching sessions'},
+    {label:'Payments',value:metrics.proofs,icon:FileCheck2,tone:'gold' as const,
+      badge:typeof metrics.proofs==='number'&&metrics.proofs>0?'Pending':undefined,
+      badgeTone:'warning' as const,to:'/enrolment',
+      detail:'Submitted enrolment and class-fee reviews'},
+    {label:'Reports',value:metrics.payouts,icon:Coins,tone:'violet' as const,
+      badge:typeof metrics.payouts==='number'&&metrics.payouts>0?'Pending':undefined,
+      badgeTone:'warning' as const,to:'/reports',
+      detail:'Tutor transfer acknowledgements; view reports for details'},
   ];
   return <>
     <section className="ref-kpi-grid" aria-label="Operations snapshot">
@@ -356,16 +359,10 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
           <span><strong>{row.event_type.replace(/[._]/g,' ')}</strong>
             <small>{formattedTime(row.created_at)} WAT</small></span>
         </div>)}</div>
-        :<div className="ref-recent-list">
-          <div>
-            <span className="ref-recent-dot doc"><FileText size={15}/></span>
-            <span><strong>Payment proof submitted by Samuel O.</strong><small>2 minutes ago</small></span>
-          </div>
-          <div>
-            <span className="ref-recent-dot user"><UserCheck size={15}/></span>
-            <span><strong>New tutor invitation: Ijeoma N.</strong><small>10 minutes ago</small></span>
-          </div>
-        </div>}
+        :<p className="ref-empty" role="status">
+          {auditError?'Audited activity is temporarily unavailable.':'No recent audited activity is available.'}
+        </p>}
+
     </section>}
   </>;
 }
@@ -431,7 +428,7 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
       }else if(isTutor){
         const payouts=await countRecords('dli_tutor_payout_proofs','status','awaiting_tutor');
         if(active)setMetrics({...EMPTY_METRICS,payouts});
-      }else if(isStudent&&account.studentTier==='paid'){
+      }else if(isStudent){
         const auth=await client.auth.getUser();
         if(active&&auth.data.user&&!auth.error){
           const [attempts,submissions]=await Promise.all([
@@ -451,7 +448,7 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
 
   const upcoming=useMemo(()=>[...classes].sort((a,b)=>nextClassTime(a)-nextClassTime(b)),[classes]);
   return <div className={'ref-dashboard-layout ref-dashboard-'+account.role}>
-    <QuickLinks account={account}/>
+    {!isAdmin&&<QuickLinks account={account}/>}
     {isAdmin
       ?<AdminInsights account={account} metrics={metrics}
           audit={audit} auditError={auditError} loading={statsLoading}/>
