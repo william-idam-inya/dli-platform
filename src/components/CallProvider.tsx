@@ -100,6 +100,7 @@ export function CallProvider({children}:{children:ReactNode}){
        catch{/* In-app call overlay remains the source of truth. */}
       }
      }
+     window.dispatchEvent(new Event('dli-notification-chime'));
      void handlerRef.current(signal as DliCallSignal);
     }).subscribe((status)=>{
      if(cancelled)return;
