@@ -191,3 +191,116 @@
  .app-layout .dli-profile-toggle{min-width:34px;min-height:36px}
  .app-layout .dli-global-search-results{width:min(320px,calc(100vw - 18px))}
 }
+
+/* Q48: four explicit header slots prevent the search, primary tabs and
+   utility actions from competing for the same pixels. Responsive rows are
+   selected BEFORE content can collide. The desktop sidebar remains available
+   at all widths, including where the centre tabs are intentionally omitted. */
+.app-layout .dli-grid-topbar{
+ display:grid;
+ grid-template-columns:auto minmax(170px,260px) minmax(0,1fr) auto;
+ grid-template-areas:"brand search tabs actions";
+ align-items:center;
+ column-gap:12px;
+ min-width:0;
+}
+.app-layout .dli-grid-topbar>.topbar-left{
+ grid-area:brand;min-width:0;flex:0 1 auto;
+}
+.app-layout .dli-grid-topbar>.dli-topbar-search{
+ grid-area:search;display:flex;align-items:center;
+ width:100%;min-width:0;max-width:100%;
+}
+.app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+ flex:1 1 auto;width:100%;max-width:none;min-width:0;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs{
+ grid-area:tabs;min-width:0;width:100%;overflow:hidden;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs>a{
+ min-width:0;overflow:hidden;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs>a span{
+ max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;text-align:center;
+}
+.app-layout .dli-grid-topbar>.topbar-actions{
+ grid-area:actions;min-width:0;flex:0 0 auto;
+}
+.app-layout .dli-grid-topbar .dli-topbar-search .dli-global-search-results{
+ max-width:calc(100vw - 24px);
+}
+
+/* On the desktop range shown in the reported screenshot the real sidebar
+   leaves less space than the outer browser viewport suggests. Place all
+   primary destinations on their own accessible row, without hiding links. */
+@media(min-width:1251px) and (max-width:1900px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"brand search actions" "tabs tabs tabs";
+  grid-template-rows:58px 52px;
+  height:110px;min-height:110px;gap:0 15px;
+  padding-block:0;
+ }
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  max-width:460px;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{
+  display:flex;align-self:stretch;height:52px;justify-content:center;
+  border-top:1px solid var(--border);
+  gap:clamp(6px,1.2vw,20px);
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs>a{
+  flex:0 1 170px;max-width:190px;min-width:48px;
+  font-size:11px;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs>a span{display:block;}
+}
+
+/* Compact laptops: protect utilities and preserve a full-width usable
+   search on the second row. All destinations remain in the desktop sidebar. */
+@media(min-width:681px) and (max-width:1250px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"brand actions" "search search";
+  grid-template-rows:58px 52px;
+  height:110px;min-height:110px;
+  gap:0 10px;padding-block:0;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{display:none;}
+ .app-layout .dli-grid-topbar>.dli-topbar-search{
+  justify-content:center;align-self:start;
+  border-top:1px solid var(--border);padding-top:5px;
+ }
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  max-width:min(100%,560px);
+ }
+ .app-layout .dli-grid-topbar>.topbar-actions{gap:5px;}
+}
+@media(min-width:681px) and (max-width:950px){
+ .app-layout .dli-grid-topbar .account-mini{display:none;}
+ .app-layout .dli-grid-topbar .preview-label{display:none;}
+ .app-layout .dli-grid-topbar .dli-topbar-brand span{display:none;}
+}
+@media(max-width:680px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"brand search actions";
+  grid-template-rows:70px;
+  height:70px;min-height:70px;gap:0 6px;
+  padding:0 9px;
+ }
+ .app-layout .dli-grid-topbar>.topbar-left{gap:0;min-width:0;}
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{display:none;}
+ .app-layout .dli-grid-topbar>.dli-topbar-search{width:100%;min-width:0;}
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  flex:1 1 auto;width:100%;max-width:none;min-width:0;
+ }
+ .app-layout .dli-grid-topbar>.topbar-actions{gap:3px;}
+ /* A search results popover must fit the actual phone viewport, not the
+    width of its small header input. */
+ .app-layout .dli-grid-topbar .dli-global-search-results{
+  position:fixed;top:65px;left:8px;right:8px;
+  width:auto;max-width:none;max-height:calc(100dvh - 150px);
+ }
+}

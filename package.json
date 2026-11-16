@@ -64,7 +64,8 @@
     "check:q44-focus-student-profile": "node scripts/verify-q44-focus-student-profile.mjs",
     "check:q45-overhaul": "node scripts/verify-q45-overhaul.mjs",
     "check:q46-release-structure": "node scripts/verify-q46-release-structure.mjs",
-    "check:q47-executive-name-privacy": "node scripts/verify-q47-executive-name-privacy.mjs"
+    "check:q47-executive-name-privacy": "node scripts/verify-q47-executive-name-privacy.mjs",
+    "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

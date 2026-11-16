@@ -284,7 +284,7 @@ export default function AppShell({ children }: AppShellProps) {
       )}
 
       <main className="main-area">
-        <header className="topbar">
+        <header className="topbar dli-grid-topbar">
           <div className="topbar-left">
             <button type="button" className="mobile-menu icon-button"
               onClick={(event) => openNavigation(event.currentTarget)}
@@ -302,7 +302,6 @@ export default function AppShell({ children }: AppShellProps) {
             <Link to="/" className="dli-topbar-brand" aria-label="DLI Platform home">
               <OfficialDliLogo decorative/><span>DLI Platform</span>
             </Link>
-            <GlobalSearch/>
             <div className="ref-mobile-identity">
               <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
               <NavLink to="/profile" className="ref-mobile-avatar" aria-label="My profile">
@@ -332,6 +331,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <strong>{activeLearningArea.label}</strong></>}
             </div>}
           </div>
+          <div className="dli-topbar-search"><GlobalSearch/></div>
           <nav className="dli-primary-tabs" aria-label="Primary modules">
             {([
               {path:'/',label:'Overview'},{path:'/academics',label:'Academics'},
