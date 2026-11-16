@@ -35,7 +35,7 @@ export default function InAppAnnouncementsPage(){
   const [body,setBody]=useState('');
   const [when,setWhen]=useState<'now'|'later'>('now');
   const [postAt,setPostAt]=useState(nowWAT);
-  const [expiration,setExpiration]=useState<'manual'|'date'>('manual');
+  const [expiration,setExpiration]=useState<'day'|'manual'|'date'>('day');
   const [expires,setExpires]=useState('');
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
@@ -84,7 +84,8 @@ export default function InAppAnnouncementsPage(){
       setError('Enter a complete date and time in West Africa Time.');return;
     }
     const published=when==='now'?new Date():new Date(toUtc(postAt));
-    const expiry=expiration==='date'?new Date(toUtc(expires)):null;
+    const expiry=expiration==='date'?new Date(toUtc(expires)):
+      expiration==='day'?new Date(published.getTime()+24*60*60*1000):null;
     if(!Number.isFinite(published.getTime())||(when==='later'&&published.getTime()<=Date.now())||
       (expiration==='date'&&(!expiry||!Number.isFinite(expiry.getTime())))||
       (expiry&&expiry.getTime()<=published.getTime())){
@@ -114,7 +115,7 @@ export default function InAppAnnouncementsPage(){
       }
       setNotice(when==='now'?'The in-app announcement is now available to its audience.':
         'Announcement scheduled. It will appear automatically at its WAT publication time while the app is open or upon next login.');
-      setTitle('');setBody('');setSelection([]);setMode('all');setWhen('now');setExpiration('manual');setExpires('');
+      setTitle('');setBody('');setSelection([]);setMode('all');setWhen('now');setExpiration('day');setExpires('');
       await refresh();
     }catch{setError('The request was interrupted. Refresh the drafts before submitting again.');}
     finally{setSaving(false);}
@@ -198,7 +199,8 @@ export default function InAppAnnouncementsPage(){
             onChange={e=>setPostAt(e.target.value)}/>
         </label>}
         <label htmlFor="bc-expire-mode">6. Remove automatically?</label>
-        <select id="bc-expire-mode" value={expiration} onChange={e=>setExpiration(e.target.value as 'manual'|'date')}>
+        <select id="bc-expire-mode" value={expiration} onChange={e=>setExpiration(e.target.value as 'day'|'manual'|'date')}>
+          <option value="day">Expire 24 hours after publication (default)</option>
           <option value="manual">Remain until withdrawn by an administrator</option>
           <option value="date">Disappear at a specified date/time</option>
         </select>
