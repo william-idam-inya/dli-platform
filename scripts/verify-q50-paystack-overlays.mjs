@@ -38,7 +38,7 @@ has(sql,[
  'drop policy if exists dli_upgrade_bank_read',
  'dli_student_entitlements','student_enrolments','dli_payroll_paid_cycles'
 ],'Q50 SQL');
-has(replay,['pg_advisory_xact_lock','Existing checkout is already pending',
+has(replay,['pg_advisory_xact_lock','A checkout is already pending',
  'replay-safe charges','replay-safe transfers','dli_paystack_alerts_acknowledge',
  'grant update(read_at)'],'Q50b replay safety');
 has(config,['[functions.paystack-webhook]','verify_jwt = false','[functions.paystack-checkout]',
@@ -55,7 +55,7 @@ has(banks,['auth.getUser(token)',"role.role!=='tutor'",'/bank/resolve','/transfe
  'dli_tutor_bank_accounts','dli_paystack_recipients','account_number'],'Tutor verified bank');
 has(transfer,['auth.getUser(token)',"['owner','admin','assistant_admin']",
  'dli_payroll_snapshot','dli_paystack_payouts','/transfer',
- 'recipient_code','allocation_review','c.payout_status'],'One-click payroll');
+ 'recipient_code','allocation_review','record.payout_status'],'One-click payroll');
 has(student,["functions.invoke('paystack-checkout'",'resumeTransaction',
  'dli_paystack_plan_catalogue','dli_paystack_checkout_intents',
  'Paid (Automated)','refreshAccount','Free Student classes'],'Student page');
