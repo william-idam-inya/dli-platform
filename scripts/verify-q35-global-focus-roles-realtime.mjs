@@ -55,7 +55,7 @@ assert.ok(pwd.includes('auth-password-toggle')&&pwd.includes('<Eye'),
  'All reusable password fields must have reveal button');
 assert.ok(styles.includes('.auth-password-field>.auth-password-toggle')&&styles.includes('right:4px'),
  'Password visibility control must be inside input right edge');
-for(const t of ['Compress all','Expand all','data-dli-focus-panel','MutationObserver',
+for(const t of ['dli-workspace-trigger-row','data-dli-focus-panel','MutationObserver',
  "event.key==='Escape'",'dli-workspace-backdrop','dli-workspace-focus-close'])
  assert.ok(focus.includes(t),'Missing compact focus interaction '+t);
 assert.ok(shell.includes('<WorkspaceFocus>{children}</WorkspaceFocus>'),
