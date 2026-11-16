@@ -18,7 +18,7 @@ const trim=(s:unknown)=>typeof s==='string'?s.trim():'';
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin')??'';
  if(origin&&!origins.has(origin))return response(403,origin,{error:'Origin not permitted'});
- if(req.method==='OPTIONS')return response(204,origin,{});
+ if(req.method==='OPTIONS')return response(200,origin,{ok:true});
  if(req.method!=='POST')return response(405,origin,{error:'POST required'});
  const token=req.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
  if(!token)return response(401,origin,{error:'Verified sign-in required'});
