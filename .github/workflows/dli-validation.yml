@@ -194,6 +194,9 @@ jobs:
       - name: Verify Q54 recipient-confirmed ringing and private durable signal fallback
         run: node scripts/verify-q54-call-delivery.mjs
 
+      - name: Verify Q52 Web Push source and privacy safety
+        run: npm run check:q52-pwa-push
+
       - name: Verify TypeScript
         run: npm run typecheck
 
