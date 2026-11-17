@@ -76,7 +76,14 @@ export default function AppShell({ children }: AppShellProps) {
     setLogoutError(null);
     clearNotice();
     // Remove this browser's push endpoint BEFORE removing its JWT.
-    await disableDliDevicePush();
+    // A failed server revocation must not silently leave the previous
+    // member's private notifications active on a shared device.
+    try{await disableDliDevicePush();}
+    catch(error){
+      setLogoutError(error instanceof Error?error.message:
+        'Could not disable device alerts. Please retry before signing out.');
+      return;
+    }
     const { error } = await supabase.auth.signOut();
     if (error) setLogoutError('Could not sign out. Please retry.');
   };
