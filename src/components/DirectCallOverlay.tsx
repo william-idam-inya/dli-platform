@@ -61,7 +61,8 @@ export default function DirectCallOverlay({
       <h2>{name}</h2>{roleLabel&&<span className="dli-call-role-badge">{roleLabel}</span>}
       <p>{ringing?'Incoming '+session.mode+' call':session.state==='connecting'?
        'Connecting encrypted media…':session.state==='connected'?'Connected · '+session.mode+' call':
-       session.state==='ringing'?'Ringing… waiting for '+name+' to answer':'Connection unavailable'}</p></div>
+       session.state==='ringing'?'Ringing… waiting for '+name+' to answer':
+        session.state==='dialing'?'Calling… waiting for their device to confirm':'Connection unavailable'}</p></div>
     <div className="dli-call-header-buttons">
       {!ringing&&<button type="button"
         aria-label={minimized?'Expand call':'Minimize call to floating window'}

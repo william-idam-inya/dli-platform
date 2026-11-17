@@ -191,6 +191,9 @@ jobs:
       - name: Verify Q53 call ringtone, ringback and privacy lifecycle
         run: node scripts/verify-q53-foreground-ringtone.mjs
 
+      - name: Verify Q54 recipient-confirmed ringing and private durable signal fallback
+        run: node scripts/verify-q54-call-delivery.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
