@@ -37,7 +37,15 @@ export function CallProvider({children}:{children:ReactNode}){
     p_kind:signal.kind,p_mode:signal.mode,
     p_sdp:signal.sdp??null,p_candidate:signal.candidate??null,
    });
-   return !result.error&&result.data===true;
+   const ok=!result.error&&result.data===true;
+   if(ok&&signal.kind==='offer'){
+    // The Q54 database trigger has already verified and queued the event.
+    // The browser sends only the immutable call id, never a target or label.
+    void supabase.functions.invoke('send-call-push',{
+     body:{kind:'call',sourceId:signal.callId}
+    }).catch(()=>{/* Foreground signalling remains independent of push. */});
+   }
+   return ok;
   }catch{return false;}
  },[]);
  const send=useCallback((signal:Omit<DliCallSignal,'from'|'to'>):boolean=>{
@@ -56,6 +64,8 @@ export function CallProvider({children}:{children:ReactNode}){
  sessionRef.current=calling.session;
  const handlerRef=useRef(calling.signal);
  handlerRef.current=calling.signal;
+ const answerRef=useRef(calling.answer);
+ answerRef.current=calling.answer;
 
  // Call sounds no longer depend on the generic DLI announcement sound toggle.
  // Both outgoing ringback and incoming ringtone stop on answer, failure or end.
@@ -123,7 +133,24 @@ export function CallProvider({children}:{children:ReactNode}){
    // The sender may play ringback only after this server-validated receipt.
    if(signal.kind==='offer'&&!receipts.has(signal.callId!)){
     receipts.add(signal.callId!);
-    void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
+    const query=new URLSearchParams(window.location.search);
+    const intent=query.get('dli_call')===signal.callId
+     ?query.get('dli_action'):null;
+    // The caller hears ringback only after the authenticated recipient sees
+    // an actual offer. A decline notification must not ring the recipient.
+    if(intent!=='decline'){
+     void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
+    }
+    if(intent==='decline')rejectRef.current();
+    else if(intent==='accept'){
+     // OS click opens the app; mic/camera approval may need an extra gesture.
+     void answerRef.current();
+    }
+    if(intent){
+     query.delete('dli_call');query.delete('dli_action');
+     window.history.replaceState(window.history.state,'',window.location.pathname+
+       (query.size?'?'+query.toString():'')+window.location.hash);
+    }
    }
   };
   let removePollListeners:(()=>void)|null=null;
