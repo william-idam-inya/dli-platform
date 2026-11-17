@@ -197,6 +197,9 @@ jobs:
       - name: Verify Q52 Web Push source and privacy safety
         run: npm run check:q52-pwa-push
 
+      - name: Verify Q57 phone header actions and accessible device alert control
+        run: node scripts/verify-q57-mobile-header.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
