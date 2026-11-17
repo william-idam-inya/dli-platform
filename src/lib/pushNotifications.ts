@@ -57,10 +57,12 @@ export async function enableDliDevicePush():Promise<void>{
  });
  await storeSubscription(next);
 }
-export async function synchronizeDliPush():Promise<void>{
- if(!pushConfigured||Notification.permission!=='granted')return;
+export async function synchronizeDliPush():Promise<boolean>{
+ if(!pushConfigured||Notification.permission!=='granted')return false;
  const {subscription}=await currentPushSubscription();
- if(subscription)await storeSubscription(subscription);
+ if(!subscription)return false;
+ await storeSubscription(subscription);
+ return true;
 }
 export async function disableDliDevicePush():Promise<void>{
  if(!pushAvailable)return;
