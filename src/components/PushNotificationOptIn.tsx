@@ -13,9 +13,9 @@ function setupGuidance():string {
  const standalone=window.matchMedia?.('(display-mode: standalone)').matches||
   ('standalone' in navigator&&Boolean((navigator as Navigator&{standalone?:boolean}).standalone));
  if(isAppleMobile&&!standalone)
-  return 'On iPhone/iPad, add the DLI QA website to your Home Screen using the browser Share menu, then open the installed app to enable notifications.';
+  return 'On iPhone/iPad, add the DLI website to your Home Screen using the browser Share menu, then open the installed app to enable notifications.';
  if(/Android/i.test(agent))
-  return 'Open the DLI QA website directly in Chrome (not WhatsApp or an in-app browser). Allow notifications in Chrome site settings and Android app settings.';
+  return 'Open the DLI website directly in Chrome (not WhatsApp or an in-app browser). Allow notifications in Chrome site settings and Android app settings.';
  return 'Use a browser with Web Push enabled, allow site notifications, and reload this page.';
 }
 

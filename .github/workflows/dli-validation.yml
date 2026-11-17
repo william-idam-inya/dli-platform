@@ -197,6 +197,9 @@ jobs:
       - name: Verify Q52 Web Push source and privacy safety
         run: npm run check:q52-pwa-push
 
+      - name: Verify Q58 guarded production notification rollout
+        run: node scripts/verify-q58-production-push-gate.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

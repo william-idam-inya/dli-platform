@@ -2,6 +2,7 @@ import {lazy,Suspense,useCallback,useEffect,useMemo,useState,type FormEvent} fro
 import {CalendarDays,CameraOff,Hand,Lock,LockOpen,MessageSquareText,MicOff,Plus,RefreshCw,ShieldCheck,Users,Video, X} from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
+import {pushConfigured} from '../lib/pushNotifications';
 import './ConferenceRoomsPage.css';
 
 // RealtimeKit's large SDK is never loaded on production; the existing
@@ -68,7 +69,7 @@ export default function ConferenceRoomsPage(){
    ]);
    if(auth.error||!auth.data.user||room.error){setError('Could not verify accessible conference rooms.');return;}
    setUid(auth.data.user.id);setRooms((room.data??[]) as Room[]);
-   if(room.data?.length){
+   if(pushConfigured&&room.data?.length){
     const schedule=await supabase.from('dli_conference_schedules')
       .select('room_id,starts_at').in('room_id',room.data.map(item=>item.id));
     if(!schedule.error)setRoomSchedules(Object.fromEntries(
@@ -131,7 +132,7 @@ export default function ConferenceRoomsPage(){
     p_cohort:kind==='student_seminar'&&cohortId?cohortId:null,
    });
    if(res.error||!res.data){setError('Room creation was denied for this role, cohort or audience.');return;}
-   if(scheduledAt){
+   if(pushConfigured&&scheduledAt){
     const when=new Date(scheduledAt);
     const scheduled=Number.isFinite(when.getTime())?await supabase.rpc('dli_schedule_conference',{
      p_room:res.data,p_start:when.toISOString()
@@ -253,11 +254,11 @@ export default function ConferenceRoomsPage(){
       {cohorts.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}
      </select></label>
     </>}
-    <label>Scheduled start (optional; your device's local time)
+    {pushConfigured&&<label>Scheduled start (optional; your device's local time)
       <input type="datetime-local" value={scheduledAt}
        onChange={e=>setScheduledAt(e.target.value)}/>
       <small>For reminders, schedule at least 11 minutes ahead.</small>
-    </label>
+    </label>}
     <button className="academic-submit" disabled={busy} type="submit">
      <Plus size={16}/> Create restricted room</button>
    </form>

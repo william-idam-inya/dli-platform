@@ -436,7 +436,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       }
       // The database trigger creates a verified push event only after RLS
       // permits insertion. Failure to push must never duplicate a message.
-      void supabase.functions.invoke('send-call-push',{
+      if(pushConfigured)void supabase.functions.invoke('send-call-push',{
        body:{kind:'message',sourceId:result.data.id}
       }).catch(()=>{});
       setDraft('');setAttachment(null);setReplyTarget(null);realtime.sendActivity(null);

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, ShieldCheck, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import {pushConfigured} from '../lib/pushNotifications';
 import type { DliNotice } from '../components/DliNoticeCenter';
 import './AcademicSetupPage.css';
 import './InAppAnnouncementsPage.css';
@@ -98,7 +99,8 @@ export default function InAppAnnouncementsPage(){
     setSaving(true);setError(null);setNotice(null);
     try{
       const result=await supabase.from('dli_notices').insert({
-        title:cleanTitle,body:cleanBody,target_role:target,audience_mode:mode,is_urgent:urgent,
+        title:cleanTitle,body:cleanBody,target_role:target,audience_mode:mode,
+        ...(pushConfigured?{is_urgent:urgent}:{}),
         publish_at:published.toISOString(),expires_at:expiry?.toISOString()??null,
       }).select('id').single();
       if(result.error||!result.data){setError('Announcement draft could not be saved.');return;}
@@ -114,7 +116,7 @@ export default function InAppAnnouncementsPage(){
         setError('Notice saved as a draft but could not be activated. No audience has been notified.');
         await refresh();return;
       }
-      if(urgent&&when==='now'){
+      if(pushConfigured&&urgent&&when==='now'){
         // Recipients are computed by the server-side publication trigger.
         void supabase.functions.invoke('send-call-push',{
           body:{kind:'urgent_notice',sourceId:id}
@@ -197,10 +199,10 @@ export default function InAppAnnouncementsPage(){
         <label htmlFor="bc-message">4. Announcement message</label>
         <textarea id="bc-message" required rows={5} minLength={10} maxLength={3500}
           value={body} onChange={e=>setBody(e.target.value)}/>
-        <label className="dli-urgent-toggle">
+        {pushConfigured&&<label className="dli-urgent-toggle">
           <input type="checkbox" checked={urgent} onChange={e=>setUrgent(e.target.checked)}/>
           Urgent announcement — notify subscribed devices when published
-        </label>
+        </label>}
         <label htmlFor="bc-when">5. Publish</label>
         <select id="bc-when" value={when} onChange={e=>setWhen(e.target.value as 'now'|'later')}>
           <option value="now">Immediately</option><option value="later">At a scheduled date and time</option>

@@ -5,7 +5,7 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 import {startCallRingtone} from '../lib/callRingtone';
-import {notifyHiddenIncomingDliCall} from '../lib/pushNotifications';
+import {notifyHiddenIncomingDliCall,pushConfigured} from '../lib/pushNotifications';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -39,7 +39,7 @@ export function CallProvider({children}:{children:ReactNode}){
     p_sdp:signal.sdp??null,p_candidate:signal.candidate??null,
    });
    const ok=!result.error&&result.data===true;
-   if(ok&&signal.kind==='offer'){
+   if(ok&&signal.kind==='offer'&&pushConfigured){
     // The Q54 database trigger has already verified and queued the event.
     // The browser sends only the immutable call id, never a target or label.
     void supabase.functions.invoke('send-call-push',{
