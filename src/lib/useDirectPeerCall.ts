@@ -3,7 +3,7 @@ import type {DliCallSignal} from './useDirectRealtime';
 
 export type CallMode='audio'|'video';
 export type CallSession={
- id:string;mode:CallMode;direction:'incoming'|'outgoing';state:'ringing'|'connecting'|'connected'|'failed';
+ id:string;mode:CallMode;direction:'incoming'|'outgoing';state:'dialing'|'ringing'|'connecting'|'connected'|'failed';
  offer?:string;error?:string;
 };
 type Send=(signal:Omit<DliCallSignal,'from'|'to'>)=>boolean;
@@ -101,7 +101,8 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    sdpQueued.current=true;
    for(const ice of earlyLocalIce.current)sendRef.current({callId:id,mode,kind:'candidate',candidate:ice});
    earlyLocalIce.current=[];
-   update({...active,state:'ringing'});
+   // The caller is dialing until the recipient actually confirms receipt.
+   update({...active,state:'dialing'});
    clearRingTimer();
    ringTimer.current=window.setTimeout(()=>{
     const pending=callRef.current;
@@ -157,6 +158,10 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    return;
   }
   if(!current||event.callId!==current.id)return;
+  if(event.kind==='receipt'){
+   if(current.direction==='outgoing'&&current.state==='dialing')update({...current,state:'ringing'});
+   return;
+  }
   if(event.kind==='decline'||event.kind==='hangup'){close(false);return;}
   if(event.kind==='answer'&&event.sdp&&pcRef.current&&
     current.direction==='outgoing'&&!pcRef.current.remoteDescription){

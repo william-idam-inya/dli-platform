@@ -4,7 +4,7 @@ import {supabase} from './supabase';
 
 export type DliActivity='typing'|'recording_audio'|'recording_video'|null;
 export type DliCallSignal={
- callId:string;from:string;to:string;kind:'ring'|'offer'|'answer'|'candidate'|'hangup'|'decline';
+ callId:string;from:string;to:string;kind:'ring'|'offer'|'answer'|'candidate'|'hangup'|'decline'|'receipt';
  mode:'audio'|'video';sdp?:string;candidate?:RTCIceCandidateInit;
  threadId?:string;senderName?:string;senderRole?:string;senderRoleLabel?:string;
 };
