@@ -121,6 +121,7 @@ export function CallProvider({children}:{children:ReactNode}){
     void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
    }
   };
+  let removePollListeners:(()=>void)|null=null;
   void (async()=>{
    try{
     const auth=await client.auth.getUser();
@@ -177,7 +178,6 @@ export function CallProvider({children}:{children:ReactNode}){
     }catch{/* Durable authenticated inbox remains available while WebSocket reconnects. */}
    }catch{if(!cancelled){readyRef.current=false;setReady(false);}}
   })();
-  let removePollListeners:(()=>void)|null=null;
   return()=>{
    cancelled=true;readyRef.current=false;
    if(pollTimer!==null)window.clearInterval(pollTimer);
