@@ -188,6 +188,9 @@ jobs:
       - name: Verify Q50 production media authorizations and secure launch gating
         run: npm run check:q50-prod-realtimekit
 
+      - name: Verify Q53 call ringtone, ringback and privacy lifecycle
+        run: node scripts/verify-q53-foreground-ringtone.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
