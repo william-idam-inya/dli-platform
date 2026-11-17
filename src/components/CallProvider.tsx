@@ -61,8 +61,13 @@ export function CallProvider({children}:{children:ReactNode}){
  // Both outgoing ringback and incoming ringtone stop on answer, failure or end.
  useEffect(()=>{
   const session=calling.session;
-  if(!session||session.state!=='ringing')return;
-  return startCallRingtone(session.direction);
+  if(!session)return;
+  // A gentle dial tone gives the caller feedback without claiming delivery.
+  // Actual ringback begins only when the recipient acknowledges the offer.
+  if(session.direction==='outgoing'&&session.state==='dialing')
+   return startCallRingtone('dialing');
+  if(session.state==='ringing')
+   return startCallRingtone(session.direction);
  },[calling.session?.id,calling.session?.state,calling.session?.direction]);
  // Reject unanswered incoming calls at the same 45-second limit as the caller.
  const rejectRef=useRef(calling.reject);

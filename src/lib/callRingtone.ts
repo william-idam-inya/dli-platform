@@ -24,7 +24,7 @@ export function initializeCallRingtone(): void {
   window.addEventListener('pointerdown', unlock, true);
   window.addEventListener('keydown', unlock, true);
 }
-export function startCallRingtone(direction: 'incoming' | 'outgoing'): () => void {
+export function startCallRingtone(direction: 'incoming' | 'outgoing' | 'dialing'): () => void {
   if (!unlocked || !audio || audio.state !== 'running') return () => {};
   const ctx = audio;
   let active = true;
@@ -32,9 +32,13 @@ export function startCallRingtone(direction: 'incoming' | 'outgoing'): () => voi
   const play = () => {
     if (!active || ctx.state !== 'running') return;
     const now = ctx.currentTime;
+    // Dialing tone is intentionally distinct from ringback: it means that
+    // the call request was started, NOT that another device received it.
     const notes = direction === 'incoming'
       ? [{freq:740,start:0,duration:.28},{freq:930,start:.4,duration:.32}]
-      : [{freq:435,start:0,duration:.28},{freq:480,start:.34,duration:.28}];
+      : direction === 'dialing'
+        ? [{freq:390,start:0,duration:.13}]
+        : [{freq:435,start:0,duration:.28},{freq:480,start:.34,duration:.28}];
     for (const note of notes) {
       try {
         const oscillator = ctx.createOscillator();
@@ -43,7 +47,7 @@ export function startCallRingtone(direction: 'incoming' | 'outgoing'): () => voi
         oscillator.type = 'sine';
         oscillator.frequency.value = note.freq;
         gain.gain.setValueAtTime(.0001, at);
-        gain.gain.exponentialRampToValueAtTime(.15, at + .025);
+        gain.gain.exponentialRampToValueAtTime(direction === 'dialing' ? .075 : .15, at + .025);
         gain.gain.exponentialRampToValueAtTime(.0001, at + note.duration);
         oscillator.connect(gain).connect(ctx.destination);
         oscillator.start(at);
@@ -62,7 +66,8 @@ export function startCallRingtone(direction: 'incoming' | 'outgoing'): () => voi
     }
   };
   play();
-  const repeating = window.setInterval(play, direction === 'incoming' ? 1900 : 2600);
+  const repeating = window.setInterval(play,
+    direction === 'incoming' ? 1900 : direction === 'dialing' ? 3200 : 2600);
   return () => {
     active = false;
     window.clearInterval(repeating);
