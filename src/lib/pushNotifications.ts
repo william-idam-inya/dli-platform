@@ -66,13 +66,18 @@ export async function synchronizeDliPush():Promise<boolean>{
 }
 export async function disableDliDevicePush():Promise<void>{
  if(!pushAvailable)return;
- try{
-  const registration=await navigator.serviceWorker.getRegistration('/');
-  const subscription=await registration?.pushManager.getSubscription();
-  if(!subscription)return;
-  if(supabase){
-   await supabase.from('user_push_subscriptions').delete().eq('endpoint',subscription.endpoint);
-  }
-  await subscription.unsubscribe();
- }catch{/* Local sign-out must proceed even when notifications are unavailable. */}
+ // getRegistration resolves even if the worker was blocked. Do not wait
+ // indefinitely on navigator.serviceWorker.ready during sign-out.
+ const registration=await navigator.serviceWorker.getRegistration('/');
+ if(!registration)return;
+ const subscription=await registration.pushManager.getSubscription();
+ if(!subscription)return;
+ if(!supabase)throw Error('Sign in to revoke this device subscription.');
+ // Revoke server-side BEFORE removing the browser endpoint. Otherwise a
+ // failed network request could leave a former user's notifications active.
+ const {error}=await supabase.from('user_push_subscriptions')
+   .delete().eq('endpoint',subscription.endpoint);
+ if(error)throw Error('Cannot securely revoke device notifications. Retry before signing out.');
+ const cancelled=await subscription.unsubscribe();
+ if(!cancelled)throw Error('Browser could not stop device alerts. Try again.');
 }
