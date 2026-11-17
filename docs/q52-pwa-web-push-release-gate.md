@@ -1,6 +1,15 @@
 # Q52 — Secure PWA Web Push rollout gate
 
-Status: staged on draft PR #98. Development migrations applied, development send-call-push Edge Function active. NOT enabled for production users.
+## November 17 activation checkpoint
+- **Current integration:** draft PR #102 on branch `feature/stage-q52-production-push-activation-20261117`, based on Q55. Do not merge PR #98; it predates Q54 durable calls.
+- Development Q52 migrations and Q52 activation compatibility successfully applied in project `pbepbcdkrdqnepvcwtyw`.
+- Development Edge Function `send-call-push` v4 active with JWT verification.
+- Q52 GitHub CI and Cloudflare QA branch preview builds passed. No VAPID keys or registered live subscriptions yet; end-to-end delivery not verified.
+- Production database, production Edge deployment, and production Pages do not contain the Q52 activation changes.
+- **Credential dependency:** the connected Supabase app can deploy Edge Functions and migrations but cannot write their Secrets. Add the three values securely via Dashboard, never in GitHub or chat. Cloudflare QA needs only the public key, after which the QA preview must rebuild.
+
+
+Status: staged on draft PR #98. Development migrations and Q52 activation RPC applied; development send-call-push Edge Function v4 active. NOT enabled for production users.
 
 ## Browser and OS limits
 - Web Push may show system notifications while the site is minimized or the browser tab is closed, if installed/subscribed and the OS/browser delivers them; delivery is not guaranteed.
@@ -14,7 +23,7 @@ Status: staged on draft PR #98. Development migrations applied, development send
 - `src/lib/callTones.ts` produces original gesture-unlocked ringing in the foreground.
 - `src/components/CallProvider.tsx` hydrates only authenticated and unexpired pending offers from the database.
 - `supabase/functions/send-call-push/index.ts` verifies caller and database event, uses VAPID to send to allowed push endpoints.
-- SQL migrations `20261116234500_stage_q52_secure_pwa_web_push.sql` and `20261116235500_stage_q52_push_cleanup.sql` create private queue, call state, reminders, cleanup and role-masked events.
+- SQL migrations `20261116234500_stage_q52_secure_pwa_web_push.sql`, `20261116235500_stage_q52_push_cleanup.sql` and `20261117183000_stage_q52_push_activation_compat.sql` create private queue, call state, reminders, cleanup, per-device registration RPC and Q54-compatible event capture. No Q45/Q54 RPC is overwritten.
 
 ## Activation prerequisites (never share secret values in chat, screenshots, or source control)
 1. Generate separate DEVELOPMENT and PRODUCTION VAPID key pairs in a trusted local Codespace CLI; never commit the private key.
