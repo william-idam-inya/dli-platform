@@ -12,7 +12,7 @@ export default function PushNotificationOptIn(){
  useEffect(()=>{
   if(!account||!pushConfigured)return;
   if(Notification.permission==='granted'){
-   void synchronizeDliPush().then(()=>setEnabled(true)).catch(()=>setError('This device could not refresh its alert subscription.'));
+   void synchronizeDliPush().then(setEnabled).catch(()=>setError('This device could not refresh its alert subscription.'));
   }
  },[account?.id]);
  if(!account||!pushAvailable||!pushConfigured)return null;
