@@ -5,6 +5,7 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 import {startCallRingtone} from '../lib/callRingtone';
+import {notifyHiddenIncomingDliCall} from '../lib/pushNotifications';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -122,11 +123,11 @@ export function CallProvider({children}:{children:ReactNode}){
     targetRef.current=incomingTarget;
     setPeer(incomingTarget);
     setTransportError(null);
-    if(document.hidden&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
-     try{new Notification('DLI incoming call',{
-      body:incomingTarget.name+' is calling',tag:'dli-call'});
-     }catch{/* Browser notifications are optional. */}
-    }
+    // Mobile browsers throw for new Notification(). The Service Worker can
+    // show a native notification while this authenticated tab is hidden.
+    // Neither this nor Web Push changes the live call signalling flow.
+    if(document.hidden)
+     void notifyHiddenIncomingDliCall(incomingTarget.name,signal.callId!);
    }
    await handlerRef.current(signal as DliCallSignal);
    // Only the recipient's authenticated, active app sends a call receipt.

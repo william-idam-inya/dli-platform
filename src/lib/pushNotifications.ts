@@ -6,7 +6,8 @@ export const pushAvailable=typeof window!=='undefined' && window.isSecureContext
  navigatorAvailable && 'serviceWorker' in navigator &&
  'PushManager' in window && 'Notification' in window;
 
-export const pushConfigured=pushAvailable && vapidPublic.length>=80;
+export const pushKeyProvided=vapidPublic.length>=80;
+export const pushConfigured=pushAvailable && pushKeyProvided;
 const pushEndpointPattern=/^https:\/\/[^\s]+$/i;
 
 function decodeBase64Url(value:string):Uint8Array<ArrayBuffer>{
@@ -80,4 +81,32 @@ export async function disableDliDevicePush():Promise<void>{
  if(error)throw Error('Cannot securely revoke device notifications. Retry before signing out.');
  const cancelled=await subscription.unsubscribe();
  if(!cancelled)throw Error('Browser could not stop device alerts. Try again.');
+}
+
+/**
+ * Foreground tab became hidden while an existing authenticated DLI call was
+ * being offered. Mobile browsers reject new Notification(), so try the
+ * installed Service Worker first. This is UI only: never alters signalling,
+ * call acceptance, credentials or media permissions.
+ */
+export async function notifyHiddenIncomingDliCall(senderName:string,callId:string):Promise<void>{
+ if(typeof document==='undefined'||!document.hidden||
+   typeof Notification==='undefined'||Notification.permission!=='granted')return;
+ const title='DLI incoming call';
+ const opts:NotificationOptions={
+   body:senderName.slice(0,150)+' is calling',
+   tag:'dli-incoming-call',
+   icon:'/dli-mark.svg?v=20261113',
+   data:{kind:'call',callId,path:'/'},
+   requireInteraction:true
+ };
+ try{
+  const worker=await navigator.serviceWorker?.getRegistration('/');
+  if(worker&&'showNotification' in worker){
+   await worker.showNotification(title,opts);
+   return;
+  }
+ }catch{/* Desktop constructor fallback below; ringing stays independent. */}
+ try{new Notification(title,opts);}
+ catch{/* Most mobile browsers do not support the constructor. */}
 }

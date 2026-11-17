@@ -35,3 +35,12 @@ assert.ok(ui.includes("Enable device alerts")&&call.includes('startCallRingtone'
 assert.ok(!sw.includes('service_role')&&!sw.includes('PRIVATE_KEY'),'Worker must not hold credentials');
 assert.ok(read('public/manifest.json').includes('"display": "standalone"'));
 console.log('Q52 source contracts passed. Browser/OS acceptance and credentials still required.');
+
+const mobileUi=ui;
+assert.ok(mobileUi.includes('setupGuidance')&&mobileUi.includes('Home Screen')
+  &&mobileUi.includes('Android')&&mobileUi.includes('Device alerts help'),
+  'Phone users must see actionable Web Push setup guidance');
+assert.ok(reg.includes('notifyHiddenIncomingDliCall')
+  &&reg.includes('worker.showNotification')
+  &&call.includes('notifyHiddenIncomingDliCall'),
+  'Mobile incoming call alerts must use a service worker, not only new Notification()');

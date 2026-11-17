@@ -1,8 +1,19 @@
-.dli-push-opt-in{position:relative;display:flex;align-items:center;min-width:0}
+.dli-push-opt-in{position:relative;display:flex;align-items:center;flex:0 0 auto;min-width:34px}
 .dli-push-button{display:inline-flex;gap:6px;align-items:center;justify-content:center;
  border:1px solid #64748b88;border-radius:12px;background:#1e293b;color:#f8fafc;
- padding:7px 10px;font-weight:600;font-size:11px;line-height:1.3;font-family:inherit;cursor:pointer;white-space:nowrap}
+ padding:7px 10px;font-weight:600;font-size:11px;line-height:1.3;font-family:inherit;
+ cursor:pointer;white-space:nowrap;flex:0 0 auto;min-width:34px;min-height:34px}
 .dli-push-button:disabled{opacity:.55;cursor:wait}
-.dli-push-error{position:absolute;top:100%;right:0;max-width:min(290px,80vw);
- background:#3b2026;color:#fff0f0;padding:9px;border-radius:7px;z-index:3000;font-size:12px}
-@media(max-width:700px){.dli-push-button span{display:none}.dli-push-button{width:36px;height:36px;padding:6px}}
+.dli-push-error{position:absolute;top:calc(100% + 7px);right:0;
+ width:min(320px,calc(100vw - 20px));max-width:calc(100vw - 20px);
+ background:#1e293b;color:#fff;padding:12px;border-radius:10px;z-index:3000;
+ font-size:12px;line-height:1.45;box-shadow:0 8px 28px #0005;
+ white-space:normal;overflow-wrap:anywhere}
+.dli-push-error button{display:block;margin-top:10px;border:1px solid #94a3b8;
+ border-radius:6px;background:#334155;color:#fff;padding:6px 12px;cursor:pointer}
+@media(max-width:700px){
+ .dli-push-button span{display:none}
+ .dli-push-button{width:34px;height:36px;padding:6px}
+ .dli-push-error{position:fixed;top:76px;right:10px;left:auto;
+  width:min(330px,calc(100vw - 20px));z-index:4000}
+}
