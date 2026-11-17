@@ -14,10 +14,12 @@ import './q45-shell.css';
 import './mobile-overlay-resilience.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 import {initializeCallRingtone} from './lib/callRingtone';
+import {registerDliNotificationWorker} from './lib/pushNotifications';
 
 // Apply saved visual preferences before React paints the authorised workspace.
 initializeAppearance();
 initializeCallRingtone();
+registerDliNotificationWorker();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -61,6 +61,7 @@ export async function enableDliDeviceAlerts():Promise<void>{
  );
  const worker=await registration();
  let sub=await worker.pushManager.getSubscription();
+ const newlyCreated=!sub;
  if(!sub){
   sub=await worker.pushManager.subscribe({
    userVisibleOnly:true,applicationServerKey:decodeKey(publicVapid)
@@ -71,10 +72,8 @@ export async function enableDliDeviceAlerts():Promise<void>{
   // Do not leave a newly subscribed endpoint active without a server owner.
   // Existing subscriptions are left untouched; they may be owned by another
   // DLI user, so the UI requires them to sign out and unsubscribe explicitly.
-  if(sub){try{
-   const json=sub.toJSON();
-   if(!json.keys?.auth)await sub.unsubscribe();
-  }catch{/* Ignore hardware/browser errors. */}}
+  if(newlyCreated&&sub){try{await sub.unsubscribe();}
+   catch{/* Ignore hardware/browser errors. */}}
   throw error;
  }
 }
@@ -88,7 +87,8 @@ export async function disableDliDeviceAlerts():Promise<void>{
  if(!dliPushSupported)return;
  // Browser may have an earlier registration even when the deployment's
  // current VAPID public key isn't configured.
- const worker=await navigator.serviceWorker.ready;
+ const worker=await navigator.serviceWorker.getRegistration('/');
+ if(!worker)return;
  const sub=await worker.pushManager.getSubscription();
  if(!sub)return;
  if(!supabase)throw Error('A verified login is needed to remove this device.');

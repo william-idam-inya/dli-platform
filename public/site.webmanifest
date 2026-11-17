@@ -14,5 +14,18 @@
       "sizes": "any",
       "purpose": "any"
     }
+  ],
+  "id": "/",
+  "shortcuts": [
+    {
+      "name": "DLI Messenger",
+      "short_name": "Messages",
+      "url": "/communications"
+    },
+    {
+      "name": "DLI Conferences",
+      "short_name": "Conferences",
+      "url": "/conferences"
+    }
   ]
 }
