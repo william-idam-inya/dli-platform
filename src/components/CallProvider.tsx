@@ -4,6 +4,7 @@ import {supabase} from '../lib/supabase';
 import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirectPeerCall';
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
+import {startCallRingtone} from '../lib/callRingtone';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -56,6 +57,25 @@ export function CallProvider({children}:{children:ReactNode}){
  const handlerRef=useRef(calling.signal);
  handlerRef.current=calling.signal;
 
+ // Call sounds no longer depend on the generic DLI announcement sound toggle.
+ // Both outgoing ringback and incoming ringtone stop on answer, failure or end.
+ useEffect(()=>{
+  const session=calling.session;
+  if(!session||session.state!=='ringing')return;
+  return startCallRingtone(session.direction);
+ },[calling.session?.id,calling.session?.state,calling.session?.direction]);
+ // Reject unanswered incoming calls at the same 45-second limit as the caller.
+ const rejectRef=useRef(calling.reject);
+ rejectRef.current=calling.reject;
+ useEffect(()=>{
+  const session=calling.session;
+  if(!session||session.direction!=='incoming'||session.state!=='ringing')return;
+  const timeout=window.setTimeout(()=>{
+   if(sessionRef.current?.id===session.id&&sessionRef.current.state==='ringing')rejectRef.current();
+  },45000);
+  return()=>window.clearTimeout(timeout);
+ },[calling.session?.id,calling.session?.state,calling.session?.direction]);
+
  useEffect(()=>{
   if(!account||!supabase){readyRef.current=false;setReady(false);setUid('');return;}
   let cancelled=false;
@@ -101,7 +121,7 @@ export function CallProvider({children}:{children:ReactNode}){
        catch{/* In-app call overlay remains the source of truth. */}
       }
      }
-     if(!busy&&signal.kind==='offer')window.dispatchEvent(new Event('dli-notification-chime'));
+     // Dedicated call ringtone handles audible incoming calls independently.
      void handlerRef.current(signal as DliCallSignal);
     }).subscribe((status)=>{
      if(cancelled)return;

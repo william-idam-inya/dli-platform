@@ -13,9 +13,11 @@ import './q36-workspace-theme.css';
 import './q45-shell.css';
 import './mobile-overlay-resilience.css';
 import { initializeAppearance } from './lib/appearancePreferences';
+import {initializeCallRingtone} from './lib/callRingtone';
 
 // Apply saved visual preferences before React paints the authorised workspace.
 initializeAppearance();
+initializeCallRingtone();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
