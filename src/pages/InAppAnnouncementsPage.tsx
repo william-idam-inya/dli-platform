@@ -33,6 +33,7 @@ export default function InAppAnnouncementsPage(){
   const [search,setSearch]=useState('');
   const [title,setTitle]=useState('');
   const [body,setBody]=useState('');
+  const [urgent,setUrgent]=useState(false);
   const [when,setWhen]=useState<'now'|'later'>('now');
   const [postAt,setPostAt]=useState(nowWAT);
   const [expiration,setExpiration]=useState<'day'|'manual'|'date'>('day');
@@ -97,7 +98,7 @@ export default function InAppAnnouncementsPage(){
     setSaving(true);setError(null);setNotice(null);
     try{
       const result=await supabase.from('dli_notices').insert({
-        title:cleanTitle,body:cleanBody,target_role:target,audience_mode:mode,
+        title:cleanTitle,body:cleanBody,target_role:target,audience_mode:mode,is_urgent:urgent,
         publish_at:published.toISOString(),expires_at:expiry?.toISOString()??null,
       }).select('id').single();
       if(result.error||!result.data){setError('Announcement draft could not be saved.');return;}
@@ -113,9 +114,15 @@ export default function InAppAnnouncementsPage(){
         setError('Notice saved as a draft but could not be activated. No audience has been notified.');
         await refresh();return;
       }
+      if(urgent&&when==='now'){
+        // Recipients are computed by the server-side publication trigger.
+        void supabase.functions.invoke('send-call-push',{
+          body:{kind:'urgent_notice',sourceId:id}
+        }).catch(()=>{});
+      }
       setNotice(when==='now'?'The in-app announcement is now available to its audience.':
         'Announcement scheduled. It will appear automatically at its WAT publication time while the app is open or upon next login.');
-      setTitle('');setBody('');setSelection([]);setMode('all');setWhen('now');setExpiration('day');setExpires('');
+      setTitle('');setBody('');setUrgent(false);setSelection([]);setMode('all');setWhen('now');setExpiration('day');setExpires('');
       await refresh();
     }catch{setError('The request was interrupted. Refresh the drafts before submitting again.');}
     finally{setSaving(false);}
@@ -190,6 +197,10 @@ export default function InAppAnnouncementsPage(){
         <label htmlFor="bc-message">4. Announcement message</label>
         <textarea id="bc-message" required rows={5} minLength={10} maxLength={3500}
           value={body} onChange={e=>setBody(e.target.value)}/>
+        <label className="dli-urgent-toggle">
+          <input type="checkbox" checked={urgent} onChange={e=>setUrgent(e.target.checked)}/>
+          Urgent announcement — notify subscribed devices when published
+        </label>
         <label htmlFor="bc-when">5. Publish</label>
         <select id="bc-when" value={when} onChange={e=>setWhen(e.target.value as 'now'|'later')}>
           <option value="now">Immediately</option><option value="later">At a scheduled date and time</option>

@@ -39,6 +39,8 @@ export default function ConferenceRoomsPage(){
  const [joined,setJoined]=useState(false);
  const [mediaOpen,setMediaOpen]=useState(false);
  const [title,setTitle]=useState('');
+ const [scheduledAt,setScheduledAt]=useState('');
+ const [roomSchedules,setRoomSchedules]=useState<Record<string,string>>({});
  const [kind,setKind]=useState<Room['room_type']>('student_seminar');
  const [audience,setAudience]=useState<Room['audience']>('all');
  const [cohortId,setCohortId]=useState('');
@@ -66,6 +68,12 @@ export default function ConferenceRoomsPage(){
    ]);
    if(auth.error||!auth.data.user||room.error){setError('Could not verify accessible conference rooms.');return;}
    setUid(auth.data.user.id);setRooms((room.data??[]) as Room[]);
+   if(room.data?.length){
+    const schedule=await supabase.from('dli_conference_schedules')
+      .select('room_id,starts_at').in('room_id',room.data.map(item=>item.id));
+    if(!schedule.error)setRoomSchedules(Object.fromEntries(
+      (schedule.data??[]).map(item=>[item.room_id,item.starts_at])));
+   }else setRoomSchedules({});
    if(!cohort.error)setCohorts((cohort.data??[]) as Cohort[]);
    if(!dir.error)setPeople((dir.data??[]) as Person[]);
    setError(null);
@@ -123,7 +131,16 @@ export default function ConferenceRoomsPage(){
     p_cohort:kind==='student_seminar'&&cohortId?cohortId:null,
    });
    if(res.error||!res.data){setError('Room creation was denied for this role, cohort or audience.');return;}
-   setTitle('');setNotice(mediaProdEnabled?
+   if(scheduledAt){
+    const when=new Date(scheduledAt);
+    const scheduled=Number.isFinite(when.getTime())?await supabase.rpc('dli_schedule_conference',{
+     p_room:res.data,p_start:when.toISOString()
+    }):null;
+    if(!scheduled||scheduled.error||scheduled.data!==true){
+     setError('Room created, but its scheduled reminder could not be confirmed.');
+    }
+   }
+   setTitle('');setScheduledAt('');setNotice(mediaProdEnabled?
     'Restricted conference created. Join it to open secure conferencing.':
     'Role-restricted room created. Media service is not yet provisioned.');
    await read();
@@ -236,6 +253,11 @@ export default function ConferenceRoomsPage(){
       {cohorts.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}
      </select></label>
     </>}
+    <label>Scheduled start (optional; your device's local time)
+      <input type="datetime-local" value={scheduledAt}
+       onChange={e=>setScheduledAt(e.target.value)}/>
+      <small>For reminders, schedule at least 11 minutes ahead.</small>
+    </label>
     <button className="academic-submit" disabled={busy} type="submit">
      <Plus size={16}/> Create restricted room</button>
    </form>
@@ -250,6 +272,7 @@ export default function ConferenceRoomsPage(){
       <div><strong>{r.title}</strong><small>
        {r.audience==='all'?'All eligible participants':r.audience==='free'?'Free Students':'Paid Students'} ·
        {r.is_locked?' Locked':' Waiting/open'} · {r.state}
+       {roomSchedules[r.id]?' · Scheduled '+new Date(roomSchedules[r.id]).toLocaleString('en-NG',{timeZone:'Africa/Lagos'}):''}
       </small></div>
       <button type="button" className="user-outline-button" disabled={busy} onClick={()=>void join(r)}>
        Join room

@@ -16,6 +16,8 @@ import GlobalSearch from './GlobalSearch';
 import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
+import PushNotificationOptIn from './PushNotificationOptIn';
+import {disableDliDevicePush} from '../lib/pushNotifications';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
 function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
@@ -73,6 +75,8 @@ export default function AppShell({ children }: AppShellProps) {
     if (!supabase) return;
     setLogoutError(null);
     clearNotice();
+    // Remove this browser's push endpoint BEFORE removing its JWT.
+    await disableDliDevicePush();
     const { error } = await supabase.auth.signOut();
     if (error) setLogoutError('Could not sign out. Please retry.');
   };
@@ -355,6 +359,7 @@ export default function AppShell({ children }: AppShellProps) {
           <div className="topbar-actions">
             <QuickMenu/>
             <DliMessageBadge/>
+            <PushNotificationOptIn/>
             <span data-dli-tour="notifications" className="dli-tour-notification-anchor"><DliNotificationBell/></span>
             <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
             <button
