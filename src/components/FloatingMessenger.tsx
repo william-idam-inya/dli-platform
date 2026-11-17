@@ -19,6 +19,15 @@ export default function FloatingMessenger(){
  const dock=useRef<HTMLDivElement|null>(null);
  const onMessagesPage=location.pathname==='/communications';
  useEffect(()=>{
+  if(!account||onMessagesPage)return;
+  // A system notification can navigate directly to a verified conversation.
+  // DirectMessagesPage rechecks thread RLS before opening its content.
+  const requested=new URLSearchParams(location.search).get('dli_thread');
+  if(requested&&/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(requested)){
+   setOpen(true);setMinimized(false);setCompose(false);
+  }
+ },[account?.id,onMessagesPage,location.search]);
+ useEffect(()=>{
   const show=(event:Event)=>{
    if(onMessagesPage)return;
    opener.current=document.activeElement instanceof HTMLElement?document.activeElement:null;

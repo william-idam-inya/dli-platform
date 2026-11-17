@@ -457,8 +457,20 @@
       "gitBlobSha1": "577c1e6488cac716d76c7acbc711c788f8ed3e72"
     },
     {
+      "file": "20261116234500_stage_q52_secure_pwa_web_push.sql",
+      "gitBlobSha1": "12e6daf4d05c4519ec024ab6fb023d616a52d454"
+    },
+    {
+      "file": "20261116235500_stage_q52_push_cleanup.sql",
+      "gitBlobSha1": "3290e9cd2b36d93d96acf1241ba53983ce0ab309"
+    },
+    {
       "file": "20261117164000_stage_q54_durable_call_delivery.sql",
       "gitBlobSha1": "e8aae4ddaa5fb36d9d1b99c395a15fe7807c679c"
+    },
+    {
+      "file": "20261117183000_stage_q52_push_activation_compat.sql",
+      "gitBlobSha1": "7a6d1d7ec221b573c2b64d38fdc83d9100ef52ee"
     }
   ]
 }

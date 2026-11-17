@@ -44,9 +44,9 @@ assert.match(css, /:root\[data-theme='dark'\] \.art-cap/);
 assert.match(css, /\.art-cap \{position:absolute;top:29px;left:55px;width:112px;/);
 
 const html = read('index.html');
-const manifest = JSON.parse(read('public/site.webmanifest'));
+const manifest = JSON.parse(read('public/manifest.json'));
 assert.match(html, /rel="icon".*dli-mark\.svg/);
-assert.match(html, /rel="manifest" href="\/site\.webmanifest"/);
+assert.match(html, /rel="manifest" href="\/manifest\.json"/);
 assert.match(html, /theme-color/);
 assert.equal(manifest.icons[0].src, '/dli-mark.svg?v=20261113');
 assert.equal(manifest.icons[0].type, 'image/svg+xml');

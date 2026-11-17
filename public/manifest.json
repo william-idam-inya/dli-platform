@@ -1,0 +1,18 @@
+{
+  "name": "DLI-ONLINE | Detailed Learning Institute",
+  "short_name": "DLI-ONLINE",
+  "description": "Role-restricted learning, secure messaging and conferencing",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#082877",
+  "icons": [
+    {"src":"/dli-mark.svg?v=20261113","type":"image/svg+xml","sizes":"any","purpose":"any"}
+  ],
+  "shortcuts": [
+    {"name":"DLI Messages","short_name":"Messages","url":"/communications"},
+    {"name":"Conference Rooms","short_name":"Conferences","url":"/conferences"}
+  ]
+}

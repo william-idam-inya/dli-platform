@@ -5,6 +5,7 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 import {startCallRingtone} from '../lib/callRingtone';
+import {notifyHiddenIncomingDliCall,pushConfigured} from '../lib/pushNotifications';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -37,7 +38,15 @@ export function CallProvider({children}:{children:ReactNode}){
     p_kind:signal.kind,p_mode:signal.mode,
     p_sdp:signal.sdp??null,p_candidate:signal.candidate??null,
    });
-   return !result.error&&result.data===true;
+   const ok=!result.error&&result.data===true;
+   if(ok&&signal.kind==='offer'&&pushConfigured){
+    // The Q54 database trigger has already verified and queued the event.
+    // The browser sends only the immutable call id, never a target or label.
+    void supabase.functions.invoke('send-call-push',{
+     body:{kind:'call',sourceId:signal.callId}
+    }).catch(()=>{/* Foreground signalling remains independent of push. */});
+   }
+   return ok;
   }catch{return false;}
  },[]);
  const send=useCallback((signal:Omit<DliCallSignal,'from'|'to'>):boolean=>{
@@ -56,6 +65,8 @@ export function CallProvider({children}:{children:ReactNode}){
  sessionRef.current=calling.session;
  const handlerRef=useRef(calling.signal);
  handlerRef.current=calling.signal;
+ const answerRef=useRef(calling.answer);
+ answerRef.current=calling.answer;
 
  // Call sounds no longer depend on the generic DLI announcement sound toggle.
  // Both outgoing ringback and incoming ringtone stop on answer, failure or end.
@@ -112,18 +123,35 @@ export function CallProvider({children}:{children:ReactNode}){
     targetRef.current=incomingTarget;
     setPeer(incomingTarget);
     setTransportError(null);
-    if(document.hidden&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
-     try{new Notification('DLI incoming call',{
-      body:incomingTarget.name+' is calling',tag:'dli-call'});
-     }catch{/* Browser notifications are optional. */}
-    }
+    // Mobile browsers throw for new Notification(). The Service Worker can
+    // show a native notification while this authenticated tab is hidden.
+    // Neither this nor Web Push changes the live call signalling flow.
+    if(document.hidden)
+     void notifyHiddenIncomingDliCall(incomingTarget.name,signal.callId!);
    }
    await handlerRef.current(signal as DliCallSignal);
    // Only the recipient's authenticated, active app sends a call receipt.
    // The sender may play ringback only after this server-validated receipt.
    if(signal.kind==='offer'&&!receipts.has(signal.callId!)){
     receipts.add(signal.callId!);
-    void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
+    const query=new URLSearchParams(window.location.search);
+    const intent=query.get('dli_call')===signal.callId
+     ?query.get('dli_action'):null;
+    // The caller hears ringback only after the authenticated recipient sees
+    // an actual offer. A decline notification must not ring the recipient.
+    if(intent!=='decline'){
+     void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
+    }
+    if(intent==='decline')rejectRef.current();
+    else if(intent==='accept'){
+     // OS click opens the app; mic/camera approval may need an extra gesture.
+     void answerRef.current();
+    }
+    if(intent){
+     query.delete('dli_call');query.delete('dli_action');
+     window.history.replaceState(window.history.state,'',window.location.pathname+
+       (query.size?'?'+query.toString():'')+window.location.hash);
+    }
    }
   };
   let removePollListeners:(()=>void)|null=null;

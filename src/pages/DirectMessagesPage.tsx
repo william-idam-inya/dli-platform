@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
 import {useDirectRealtime} from '../lib/useDirectRealtime';
 import {useDliCalls} from '../components/CallProvider';
+import {enableDliDevicePush,pushConfigured} from '../lib/pushNotifications';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
@@ -62,6 +63,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [threads,setThreads]=useState<Thread[]>([]);
   const [reports,setReports]=useState<Report[]>([]);
   const [activeId,setActiveId]=useState('');
+  // OS notification links may identify a verified existing conversation.
+  useEffect(()=>{
+   const wanted=query.get('dli_thread');
+   if(!wanted||!threads.some(t=>t.id===wanted))return;
+   setMode('inbox');setActiveId(wanted);setComposeOpen(false);
+   setQuery(previous=>{const next=new URLSearchParams(previous);next.delete('dli_thread');return next;},{replace:true});
+  },[query,threads,setQuery]);
   const [messages,setMessages]=useState<DirectMessage[]>([]);
   const [files,setFiles]=useState<DirectFile[]>([]);
   const [reads,setReads]=useState<DirectRead[]>([]);
@@ -100,14 +108,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
     try{localStorage.setItem('dli-chat-pins:'+uid,JSON.stringify(next));}catch{/* Optional local pins. */}
   };
   async function enableAlerts(){
-    if(typeof Notification==='undefined'){
-      setNotice('Browser notifications are unavailable on this device. In-app message alerts still work.');return;
+    if(!pushConfigured){
+      setNotice('Background Web Push is not configured for this device. In-app alerts remain available.');return;
     }
     try{
-      const result=await Notification.requestPermission();
-      setNotice(result==='granted'?'Browser alerts enabled while DLI is open.':
-        'Browser alerts were not enabled. In-app notifications remain available.');
-    }catch{setNotice('Browser permission could not be enabled. In-app alerts remain available.');}
+      await enableDliDevicePush();
+      setNotice('Device notifications registered for calls and messages.');
+    }catch(e){setNotice(e instanceof Error?e.message:'Could not enable device notifications.');}
   }
   const moderator=isOversight(account?.role);
   const canStartWithAnyone=STAFF_CONTACT_ROLES.has(account?.role??'');
@@ -427,6 +434,11 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         setError(cleaned?'Message delivery was not confirmed. Refresh the thread before resending to avoid duplicates.':
           'Message delivery could not be confirmed and the attachment is still protected or pending. Refresh first; contact DLI administration if unresolved.');return;
       }
+      // The database trigger creates a verified push event only after RLS
+      // permits insertion. Failure to push must never duplicate a message.
+      if(pushConfigured)void supabase.functions.invoke('send-call-push',{
+       body:{kind:'message',sourceId:result.data.id}
+      }).catch(()=>{});
       setDraft('');setAttachment(null);setReplyTarget(null);realtime.sendActivity(null);
       setMediaReset(value=>value+1);
       await loadThread(current.id);

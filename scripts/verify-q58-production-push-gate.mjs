@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const call=read('src/components/CallProvider.tsx');
+const message=read('src/pages/DirectMessagesPage.tsx');
+const notice=read('src/pages/InAppAnnouncementsPage.tsx');
+const conference=read('src/pages/ConferenceRoomsPage.tsx');
+const ui=read('src/components/PushNotificationOptIn.tsx');
+const push=read('src/lib/pushNotifications.ts');
+const sw=read('public/sw.js');
+assert.match(push,/pushConfigured=pushAvailable && pushKeyProvided/);
+assert.match(ui,/if\(!account\|\|!pushKeyProvided\)return null/);
+assert.match(call,/if\(ok&&signal.kind==='offer'&&pushConfigured\)/);
+assert.match(message,/if\(pushConfigured\)void supabase.functions.invoke\('send-call-push'/);
+assert.match(notice,/\.\.\.\(pushConfigured\?\{is_urgent:urgent\}:\{\}\)/);
+assert.match(notice,/\{pushConfigured&&<label className="dli-urgent-toggle"/);
+assert.match(conference,/if\(pushConfigured&&room.data\?\.length\)/);
+assert.match(conference,/if\(pushConfigured&&scheduledAt\)/);
+assert.match(conference,/\{pushConfigured&&<label>Scheduled start/);
+assert.ok(sw.includes("self.addEventListener('push'")&&!sw.includes("addEventListener('fetch'"));
+assert.ok(!read('src/q45-shell.css').includes('Q57: phone header accessibility'));
+console.log('Q58 production VAPID gate, legacy database compatibility, restored header and call isolation verified.');
