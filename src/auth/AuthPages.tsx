@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import {dliPasskeysEnabled,passkeyError,webAuthnSupported} from '../lib/passkeys';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
 import { PasswordInput } from './PasswordInput';
@@ -104,6 +105,16 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const signInWithPasskey=async()=>{
+    if(!supabase||pending||!webAuthnSupported())return;
+    setPending(true);setError(null);clearNotice();
+    try{
+      const {error:failure}=await supabase.auth.signInWithPasskey();
+      if(failure)throw failure;
+      // AuthProvider independently revalidates authorised_users and role.
+    }catch(e){setError(passkeyError(e));}
+    finally{setPending(false);}
+  };
   if (state === 'active') return <Navigate replace to={afterLogin} />;
   if (state === 'config-error') return <MissingConfiguration />;
   if (state === 'checking') return <AuthChecking />;
@@ -143,6 +154,10 @@ export function LoginPage() {
         <LockKeyhole size={16} /> {pending ? 'Signing in…' : 'Sign in'}
       </button>
     </form>
+    {dliPasskeysEnabled&&<button type="button" className="user-outline-button"
+      disabled={pending||!webAuthnSupported()} onClick={()=>void signInWithPasskey()}>
+      {pending?'Checking device…':'Sign in with passkey / biometrics'}
+    </button>}
     <div className="auth-links"><Link to="/forgot-password">Forgot your password?</Link></div>
     <p className="auth-helper">There is no public registration. Contact DLI administration to request access.</p>
     {deploymentIdentity.kind==='qa'&&<p className="auth-helper">
