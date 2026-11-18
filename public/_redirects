@@ -29,7 +29,6 @@
 /reports/audit /index.html 200
 /reports /index.html 200
 /settings /index.html 200
-* /index.html 200
 /login /index.html 200
 /forgot-password /index.html 200
 /auth/confirm /index.html 200
