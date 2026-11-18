@@ -23,7 +23,8 @@ assert.ok(notices.includes('onClick={()=>void toggle()}'),'Request device push p
 assert.ok(read('src/lib/pushNotifications.ts').includes('Notification.requestPermission()'),'Browser permission must be requested within the user-initiated push flow');
 assert.ok(notices.includes('when the')&&notices.includes('background'),'Background push disclosure must be accurate');
 assert.ok(settings.includes("account?.role==='assistant_admin')&&<p><Link to=\"/enrolment\""),'Assistant Admin finance route missing');
-assert.ok(settings.includes('Manual Student bank-transfer evidence and Tutor payout confirmations'),'Payment status text misleading');
+assert.ok(settings.includes('Pause new applications')&&settings.includes('Manage bank details and review uploaded receipts'),
+ 'Do not remove real paid-enrolment controls or payment-review navigation');
 assert.ok(payment.includes('dli_review_paid')&&payroll.includes('dli_tutor_acknowledge_payout'),'Protect manual payment confirmations');
 for(const phrase of ['Real Tutor and Student accounts','No bank details','Paid admissions remain closed','QA password recovery redirect','Backup restoration','External provider credentials']){
  assert.ok(docs.includes(phrase),'Outstanding limitation not disclosed: '+phrase);
