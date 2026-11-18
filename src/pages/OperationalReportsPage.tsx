@@ -200,16 +200,7 @@ export default function OperationalReportsPage(){
       </div>
       <span className="module-status"><span/> Linked operations</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Database-enforced permissions, not invented performance metrics</strong>
-        <p>Counts are calculated only from rows the signed-in account can
-          read under PostgreSQL Row Level Security. They are not
-          institution-wide totals unless your role is authorised to
-          view all relevant records. No financial figures, automated
-          comparisons or performance percentages are generated. Only the verified\n          non-identifying aggregate counts can be downloaded.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     <div className="operational-report-controls">
       <div><strong>Development operations snapshot</strong>
@@ -233,10 +224,6 @@ export default function OperationalReportsPage(){
         <span>Institutional audit history is separately restricted.</span>
         <Link to="/reports/audit">View audit trail</Link>
       </div>}
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      This is a restricted development dashboard, not a production
-      financial statement or certified attendance report. Sensitive
-      bulk personal-data exports and unapproved policy settings remain restricted.\n      The optional CSV contains only the counts visible to your current role.
-    </p>
+    
   </div>;
 }

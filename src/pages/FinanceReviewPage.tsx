@@ -141,15 +141,7 @@ export default function FinanceReviewPage(){
       </div>
       <span className="module-status"><span/> Stage G2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Leadership review is not financial approval</strong>
-        <p>Owner, Admin and Assistant Admin may add comments and recommendations. Each may
-          record one non-binding planning outcome per proposal. All parent proposals remain
-          Pending Approval; neither review nor shortlisting enables charges, invoices,
-          bank transfers, receipts or payouts.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
@@ -240,9 +232,6 @@ export default function FinanceReviewPage(){
         </button>
       </form>
     </section>}
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      All finance proposals remain pending approval. Any effective policy or
-      monetary feature must be separately specified, approved, audited and tested.
-    </p>
+    
   </div>;
 }

@@ -196,14 +196,7 @@ export default function QuizPage(){
    </div>
    <span className="module-status"><span/> Stage E4</span>
   </div>
-  <div className="module-notice">
-   <div className="notice-icon"><ShieldCheck size={20}/></div>
-   <div><strong>Answer keys remain protected in PostgreSQL</strong>
-    <p>Students receive question choices only, never the correct-option field. Submitted answers
-     are checked on the server. This release allows one saved attempt per Student per quiz;
-     retake and pass-mark rules require separate DLI approval.</p>
-   </div>
-  </div>
+  
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
   <div className="academic-summary">
@@ -365,9 +358,6 @@ export default function QuizPage(){
     })}
    </div>
   </section>
-  <p className="module-footnote"><LockKeyhole size={15}/>
-   Quizzes use exactly four choices and 1 point per correct response.
-   No automatic pass grade, retake scheduling, time limit or quiz certificate is configured.
-  </p>
+  
  </div>;
 }

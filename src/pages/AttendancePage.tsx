@@ -162,14 +162,7 @@ export default function AttendancePage(){
       </div>
       <span className="module-status"><span/> Stage F2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Attendance is recorded manually by authorised staff</strong>
-        <p>No automatic absence or attendance percentages are calculated. An unmarked Student
-          remains <strong>Not recorded</strong>. Only a started, published, non-cancelled session
-          can accept marks, and every correction is audited.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <div className="academic-summary">
@@ -277,9 +270,6 @@ export default function AttendancePage(){
         </div>):<p className="academic-empty">Not recorded. This does not mean you were absent.</p>}
       </>:<p className="academic-empty">Select an active class session to view a recorded mark.</p>}
     </section>}
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      This report counts explicitly recorded statuses only. It is not a final
-      attendance score, disciplinary decision or promotion requirement.
-    </div>
+    
   </div>;
 }

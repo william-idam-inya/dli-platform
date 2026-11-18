@@ -281,14 +281,7 @@ export default function SchedulePage() {
       </div>
       <span className="module-status"><span/> Stage F1</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Only authorised class members can view published sessions</strong>
-        <p>Staff and assigned Tutors manage their class schedules. Students see published
-          sessions only for their current enrolments. Cancelling retains the event and shows
-          its cancelled status. Attendance is handled separately under Attendance & reports; automated reminders and external calendar syncing are not enabled.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
@@ -397,9 +390,6 @@ export default function SchedulePage() {
         </article>)}
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      Attendance records are managed separately in Stage F2 under Attendance & reports.
-      No reminders or external meeting invites are sent.
-    </p>
+    
   </div>;
 }

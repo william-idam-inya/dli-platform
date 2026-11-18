@@ -209,15 +209,7 @@ export default function AcademicRelationsPage() {
       </div>
       <span className="module-status"><span/> Stage D2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div>
-        <strong>Catalogue relationships are checked in PostgreSQL</strong>
-        <p>Offerings must match their cohort's programme and academic level.
-          This page does not enrol students, assign tutors, create live classes or send invitations.
-          Owner, Admin and Academic Coordinator can manage these records.</p>
-      </div>
-    </div>
+    
     {error && <p className="auth-feedback error" role="alert">{error}</p>}
     {notice && <p className="auth-feedback success" role="status">{notice}</p>}
     <div className="academic-summary">
@@ -367,9 +359,6 @@ export default function AcademicRelationsPage() {
         </p>}
       </div>
     </section>
-    <div className="module-footnote">
-      <ShieldCheck size={15}/> Stage D3 will add controlled tutor assignments and student enrolments.
-      No learner record or teaching attendance is created here.
-    </div>
+    
   </div>;
 }
