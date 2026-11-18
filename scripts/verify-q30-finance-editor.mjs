@@ -10,7 +10,7 @@ const classes=read('src/pages/ClassesWorkspacePage.tsx');
 const source=JSON.parse(read('src/data/paidLearningPlans.json'));
 const migration=read('supabase/migrations/20261115140000_stage_q29_editable_paid_plan_reference.sql');
 for(const label of ['Edit plan &amp; rates','paid-plan-top-edit','paid-plan-more',
- 'View all staffing, subjects and hours','dli-plan-editor','paid-plan-edit-guidance',
+ 'View all staffing, subjects and hours','dli-plan-editor',
  'Save plan changes',"eq('revision',editing.revision)",
  "from('dli_paid_plan_settings')","from('dli_paid_plan_revisions')"]){
  assert.ok(page.includes(label),'Missing usable, audited plan editing: '+label);
@@ -21,7 +21,9 @@ assert.ok(editor>0&&grid>editor,'Editor must appear ahead of the long plan cards
 assert.ok(page.indexOf('paid-plan-top-edit')<page.indexOf('source-plan-details'),
  'Edit action must precede lengthy details');
 assert.ok(!page.includes('Edit this plan'),'Hidden bottom-card edit action must be removed');
-for(const style of ['.paid-plan-top-edit','.paid-plan-more','.paid-plan-edit-guidance',
+assert.ok(!page.includes('className="source-plan-locked"') && !page.includes('className="paid-plan-edit-guidance"'),
+ 'Reference and governance callouts must stay removed while editing works');
+for(const style of ['.paid-plan-top-edit','.paid-plan-more',
  'scroll-margin-top'])assert.ok(css.includes(style),'Missing visible edit styling: '+style);
 assert.ok(source.plans.find(p=>p.id==='group_5_science')?.name==='Group of 5 Students');
 assert.ok(classes.includes("label:'Group of 5 Students'"),
