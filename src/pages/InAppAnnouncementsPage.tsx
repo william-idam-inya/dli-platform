@@ -156,17 +156,10 @@ export default function InAppAnnouncementsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> DLI COMMUNICATION</div>
         <h1>Announcements</h1>
-        <p>{staff?'Broadcast to all or selected Tutors/Students, immediately or on a schedule.':
-          'Read the announcements currently intended for your DLI account.'}</p>
+
       </div>
     </div>
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
-      <strong>Targeted internal notices, with administrative oversight</strong>
-      <p>Only the Founder, Admin and Assistant Admin can publish or withdraw notices.
-        All three can review notices regardless of the selected audience. The Student/Tutor audience
-        sees only announcements addressed to them and active within their scheduled dates.
-        No SMS, email, WhatsApp or device push is sent.</p>
-    </div></div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     {staff&&<section className="panel dli-broadcast-composer">
