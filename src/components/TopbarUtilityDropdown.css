@@ -29,6 +29,16 @@
   box-shadow:0 22px 60px rgba(6,23,48,.28);
 }
 .app-layout .dli-utility-dropdown[hidden]{display:none!important}
+.app-layout .dli-utility-account{
+  display:grid;gap:4px;padding:2px 0 6px;min-width:0;
+  border-bottom:1px solid var(--border);
+}
+.app-layout .dli-utility-account strong{
+  font-size:13px;overflow-wrap:anywhere;
+}
+.app-layout .dli-utility-account small{
+  font-size:11px;color:var(--muted);
+}
 .app-layout .dli-utility-heading{
   font-size:13px;padding:0;color:var(--text);
 }
