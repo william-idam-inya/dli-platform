@@ -212,6 +212,9 @@ jobs:
       - name: Verify Q64 security-invoker media scope, dynamic facets and legacy search
         run: node scripts/verify-q64-media-search.mjs
 
+      - name: Verify Q65 compact search and utility dropdown safety
+        run: node scripts/verify-q65-compact-topbar.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
