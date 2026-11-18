@@ -420,12 +420,7 @@ export default function ClassesWorkspacePage(){
           'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
       </div>
     </div>
-    {staff&&<div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
-      <div><strong>One class · approved courses · two tutors per subject</strong>
-        <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
-          Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
-      </div>
-    </div>}
+    
     {(paying||communicating)&&<nav className="classes-tabs" aria-label="Class workspace sections">
       <button className={tab==='classes'?'selected':''} type="button" onClick={()=>setParams({tab:'classes'})}>
         <CalendarClock size={15}/> Classes &amp; schedule

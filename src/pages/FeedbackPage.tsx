@@ -158,15 +158,7 @@ export default function FeedbackPage() {
       <span className="module-status"><span/> Stage K7</span>
     </div>
 
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>{staff?'Restricted institutional reports':'Private, account-linked feedback'}</strong>
-        <p>{staff?'These reports are submitted by authorised DLI members for administrative review.':'Only you and authorised DLI support administrators can see your report.'}
-          Please do not enter passwords, patient details, home addresses, phone numbers,
-          or information that identifies another student. No file attachments or automated
-          external messages are sent.</p>
-      </div>
-    </div>
+    
 
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
@@ -246,10 +238,6 @@ export default function FeedbackPage() {
           </article>)}
         </div>}
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      Feedback is stored in the restricted DLI database and linked to your signed-in account.
-      A report's status does not mean an administrator has contacted you.
-      Data-retention and child privacy procedures must be approved before wider learner onboarding.
-    </p>
+    
   </div>;
 }

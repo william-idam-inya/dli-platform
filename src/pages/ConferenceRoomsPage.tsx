@@ -221,14 +221,7 @@ export default function ConferenceRoomsPage(){
     <p>Role-targeted seminar, tutor and leadership room governance and moderated discussions.</p>
    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
-   <strong>{mediaProdEnabled?'Administrator video-conference pilot available':'Media provisioning not yet active'}</strong>
-   {mediaProdEnabled?
-    <p>Cloudflare RealtimeKit video conferencing is connected to this protected DLI room.
-     Only DLI-authorised members may request media tokens. Live camera, microphone and permitted host controls require device permissions and a working connection.</p>:
-    <p>Room permissions, membership, in-room text messages and host moderation are backed by Supabase.
-     Live multi-user camera, microphone and screen-sharing are not enabled in production.</p>}
-  </div></div>
+  
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   <div className="academic-top-actions"><p>{loading?'Verifying rooms…':rooms.length+' room'+(rooms.length===1?'':'s')+' available'}</p>

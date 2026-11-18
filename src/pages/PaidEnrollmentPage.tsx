@@ -300,10 +300,7 @@ export default function PaidEnrollmentPage(){
       'Join a free demonstration lesson or apply for the paid subjects you want to study.'}</p>
    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Invite-only accounts · independently verified payments</strong>
-   <p>Uploading a transfer screenshot does not confirm payment. Access upgrades happen only after Owner, Admin or Assistant Admin checks the actual bank credit and approves the application.</p>
-  </div></div>
+  
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   <button type="button" className="user-outline-button" disabled={loading||busy}

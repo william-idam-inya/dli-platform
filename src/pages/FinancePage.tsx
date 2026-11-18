@@ -148,14 +148,7 @@ export default function FinancePage() {
       <span className="module-status"><span/> Finance controls</span>
     </div>
 
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Owner, Admin and Assistant Admin may equally view and submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
-          ?<Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link>
-          :<strong>Classes &amp; timetable · Payments (authorised administrators)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
-      </div>
-    </div>
+    
 
     {error && <p role="alert" className="auth-feedback error">{error}</p>}
     {notice && <p role="status" className="auth-feedback success">{notice}</p>}
@@ -261,12 +254,6 @@ export default function FinancePage() {
         </article>)}
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      DLI’s finance workspace includes editable, audited internal rate references, planned tutor compensation
-      and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
-      and credit-date verification are handled in {canOpenClassPayments
-        ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
-        :<strong>the authorised class finance workspace</strong>}.
-      No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
+    
   </div>;
 }
