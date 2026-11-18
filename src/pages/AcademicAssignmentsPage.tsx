@@ -185,7 +185,7 @@ export default function AcademicAssignmentsPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Class assignments</h1>
-        <p>Assign verified tutors and enrol authorised students into approved course offerings.</p>
+        
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>

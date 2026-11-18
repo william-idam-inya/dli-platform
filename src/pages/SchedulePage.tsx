@@ -275,9 +275,7 @@ export default function SchedulePage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Timetable &amp; class scheduling</h1>
-        <p>{canEdit
-          ? 'Plan and publish class sessions for approved course offerings.'
-          : 'View the published timetable for classes in your active enrolment.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage F1</span>
     </div>

@@ -206,7 +206,7 @@ export default function ReminderPlannerPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Internal reminders</h1>
-        <p>Keep private records of communication preparation tasks and when to review them.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H4</span>
     </div>

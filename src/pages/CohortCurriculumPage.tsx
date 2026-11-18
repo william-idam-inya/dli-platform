@@ -155,7 +155,7 @@ export default function CohortCurriculumPage(){
    <span className="module-page-icon"><Layers3 size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC CURRICULUM</div>
     <h1>Cohorts, courses &amp; topic sequencing</h1>
-    <p>Set up the learning structure in order. Only completed cohort courses can be scheduled.</p>
+    
    </div>
   </div>
   

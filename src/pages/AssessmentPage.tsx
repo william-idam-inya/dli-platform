@@ -259,8 +259,7 @@ export default function AssessmentPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Assignments &amp; feedback</h1>
-        <p>{canEdit?'Publish class assignments, review student responses and record manual grades.'
-          :'Submit responses and view your own graded feedback.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage E3</span>
     </div>

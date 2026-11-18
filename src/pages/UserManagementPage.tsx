@@ -253,7 +253,7 @@ export default function UserManagementPage() {
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> PEOPLE & ACCESS</div>
           <h1>User management</h1>
-          <p>Review authorised accounts, manage permitted roles and access, and track changes.</p>
+          
         </div>
 
       </div>

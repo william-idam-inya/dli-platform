@@ -205,7 +205,7 @@ export default function AcademicRelationsPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Cohorts &amp; topics</h1>
-        <p>Organise approved courses into topics and cohorts, with course offerings linked to each group.</p>
+        
       </div>
       <span className="module-status"><span/> Stage D2</span>
     </div>

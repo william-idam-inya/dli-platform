@@ -156,9 +156,7 @@ export default function AttendancePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Attendance &amp; reports</h1>
-        <p>{canEdit
-          ?'Record verified Student attendance for completed or started class sessions.'
-          :'View the attendance marks explicitly recorded for your own classes.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage F2</span>
     </div>

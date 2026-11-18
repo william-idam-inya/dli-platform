@@ -256,9 +256,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> PRIVATE LEARNING</div>
         <h1>{isStaff?'Private-class management':isTutor?'My private teaching':'My private classes'}</h1>
-        <p>{isStaff?'Manage each learner’s fee, receipt review and subject-by-subject timetable.':
-          isTutor?'See your assigned students, subjects and Google Meet schedule.':
-          'View your monthly fee, submit transfer proof and join your assigned lessons.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage L1</span>
     </div>}

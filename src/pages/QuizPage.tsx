@@ -191,8 +191,7 @@ export default function QuizPage(){
    <div className="module-page-copy">
     <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
     <h1>Quizzes &amp; results</h1>
-    <p>{canEdit?'Prepare multiple-choice questions, publish quizzes and review saved results.'
-     :'Answer published quizzes from your enrolled classes and review your results.'}</p>
+    
    </div>
    <span className="module-status"><span/> Stage E4</span>
   </div>
