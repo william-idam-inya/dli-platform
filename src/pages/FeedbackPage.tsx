@@ -153,7 +153,7 @@ export default function FeedbackPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> MEMBER SUPPORT</div>
         <h1>{staff?'Support inbox &amp; reports':'Feedback &amp; support'}</h1>
-        <p>{staff?'Review concerns submitted by learners and tutors, prioritise incidents and update their progress.':'Report class problems, missed lessons, conduct concerns and application errors privately to DLI support.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage K7</span>
     </div>

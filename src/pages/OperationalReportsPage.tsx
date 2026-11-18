@@ -196,7 +196,7 @@ export default function OperationalReportsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Operational reports</h1>
-        <p>Live, role-scoped counts covering unified classes, course content, and authorised manual payment review.</p>
+        
       </div>
       <span className="module-status"><span/> Linked operations</span>
     </div>

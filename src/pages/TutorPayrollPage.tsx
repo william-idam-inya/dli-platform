@@ -95,7 +95,7 @@ export default function TutorPayrollPage(){
   <div className="module-page-hero"><span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI FINANCE</div>
     <h1>{staff?'Tutor compensation & monthly payroll':'My tutor compensation'}</h1>
-    <p>Live group and private assignments determine monthly rates; due dates stay anchored to class start dates.</p>
+    
    </div></div>
   
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}

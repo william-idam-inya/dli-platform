@@ -416,8 +416,7 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Select a completed cohort: its courses and ordered topics populate the weekly timetable automatically.':
-          'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
+        
       </div>
     </div>
     

@@ -296,8 +296,7 @@ export default function PaidEnrollmentPage(){
    <span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> AUTHORISED DLI ENROLMENT</div>
     <h1>{isManager?'Paid enrolment approvals':'Free Demo & paid enrolment'}</h1>
-    <p>{isManager?'Review bank-transfer evidence and approve the selected learning plan.':
-      'Join a free demonstration lesson or apply for the paid subjects you want to study.'}</p>
+    
    </div>
   </div>
   

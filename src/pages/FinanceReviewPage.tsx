@@ -137,7 +137,7 @@ export default function FinanceReviewPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance proposal review</h1>
-        <p>Record comments and Leadership planning outcomes without approving financial transactions.</p>
+        
       </div>
       <span className="module-status"><span/> Stage G2</span>
     </div>

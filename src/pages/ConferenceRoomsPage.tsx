@@ -218,7 +218,7 @@ export default function ConferenceRoomsPage(){
    <span className="module-page-icon"><Video size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI LIVE COORDINATION</div>
     <h1>Conference rooms</h1>
-    <p>Role-targeted seminar, tutor and leadership room governance and moderated discussions.</p>
+    
    </div>
   </div>
   

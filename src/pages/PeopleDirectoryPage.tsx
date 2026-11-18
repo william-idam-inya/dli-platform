@@ -49,7 +49,7 @@ export default function PeopleDirectoryPage(){
    <span className="module-page-icon"><Users size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> USERS &amp; PEOPLE</div>
     <h1>People directory</h1>
-    <p>Explore active members by role and begin an authorised private conversation.</p></div>
+    </div>
   </div>
   
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}

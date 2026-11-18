@@ -143,7 +143,7 @@ export default function FinancePage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance management</h1>
-        <p>Manage the internal learning-plan reference and prepare finance-policy proposals without activating charges.</p>
+        
       </div>
       <span className="module-status"><span/> Finance controls</span>
     </div>
