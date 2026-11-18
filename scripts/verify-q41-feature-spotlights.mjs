@@ -72,7 +72,7 @@ assert.ok(workspace.includes("window.addEventListener('dli-tour-begin',closeTour
  &&workspace.includes("dli-workspace-trigger-row")
  &&!workspace.includes('setCompressed('),
  'Guided tour must not re-enable deprecated inline expanded workspaces');
-assert.ok(app.includes('<GuidedTour/>')&&app.includes('Guided app tour'),
+assert.ok(app.includes('<GuidedTour/>')&&app.includes('Replay guide'),
  'Spotlights must be globally available for all authenticated roles');
 assert.ok(!tour.includes('service_role')&&!tour.includes('role:service_role'),
  'Tour must not bypass backend permissions');
