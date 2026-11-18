@@ -475,6 +475,10 @@
     {
       "file": "20261117234102_stage_q59_web_push_fail_safe_activation.sql",
       "gitBlobSha1": "cd073239bb27a7e9a125914cc7e3e634ef2f9e9a"
+    },
+    {
+      "file": "20261118070000_stage_q60_push_housekeeping.sql",
+      "gitBlobSha1": "70f0957fe2e1c524aab6703b1905938431266948"
     }
   ]
 }

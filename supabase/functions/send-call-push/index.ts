@@ -127,6 +127,9 @@ async function handleEvent(admin:Admin,row:EventRow){
  };
  const urgency=row.kind==='call'?'high':'normal';
  let delivered=0, transient=0;
+ // Store only sanitized transport diagnostics. Never log private VAPID keys,
+ // subscription endpoints, recipient IDs or notification payloads.
+ let transportReason='Unknown transport error';
  for(const sub of subs){
   if(!safeEndpoint(sub.endpoint))continue;
   try{
@@ -142,18 +145,26 @@ async function handleEvent(admin:Admin,row:EventRow){
    if(status===404||status===410){
     await admin.from('user_push_subscriptions').update({is_active:false})
      .eq('id',sub.id).eq('user_id',row.recipient_id);
-   }else transient++;
+   }else{
+    transient++;
+    const code=(e as {code?:unknown})?.code;
+    transportReason=typeof status==='number'&&status>=400&&status<=599
+     ? 'Provider HTTP '+status
+     : typeof code==='string'&&/^[A-Z][A-Z0-9_]{2,45}$/.test(code)
+       ? 'Runtime '+code : 'Transport exception';
+   }
   }
  }
  if(delivered){await complete('sent');return 'sent';}
  if(transient>0&&row.attempts<3&&Date.now()<new Date(row.expires_at).getTime()-30000){
   const retryAfter=new Date(Date.now()+Math.min(120000,10000*2**row.attempts)).toISOString();
   await admin.from('dli_push_outbox')
-    .update({status:'pending',deliver_after:retryAfter,last_error:'Push transport retry'})
+    .update({status:'pending',deliver_after:retryAfter,last_error:'Push transport retry: '+transportReason})
     .eq('id',row.id);
   return 'retry';
  }
- await complete('failed','No endpoint accepted delivery');
+ await complete('failed',transient>0?'No endpoint accepted delivery: '+transportReason
+   :'No compatible endpoint accepted delivery');
  return 'failed';
 }
 Deno.serve(async(req:Request)=>{

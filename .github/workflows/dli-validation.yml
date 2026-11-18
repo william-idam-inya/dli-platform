@@ -200,6 +200,9 @@ jobs:
       - name: Verify Q58 guarded production notification rollout
         run: node scripts/verify-q58-production-push-gate.mjs
 
+      - name: Verify Q60 sanitized Web Push diagnostics and housekeeping
+        run: node scripts/verify-q60-push-housekeeping.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
