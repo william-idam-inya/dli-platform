@@ -44,7 +44,7 @@ for(const token of [
 ]) assert.ok(css.includes(token),'Responsive reference detail absent: '+token);
 for(const token of [
   'ref-mobile-identity','ref-mobile-greeting',
-  'ref-sidebar-actions','onSignOut','OfficialDliLogo',
+  'dli-sidebar-quick-actions','onSignOut','OfficialDliLogo',
   'mobilePriorityPaths(account, allowedPaths)','aria-label="Quick mobile navigation"',
 ]) assert.ok(shell.includes(token),'Branding/navigation must not regress: '+token);
 for(const token of ['.desktop-sidebar','.ref-mobile-avatar','.ref-course-banner','.ref-course-tabs',
