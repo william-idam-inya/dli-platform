@@ -18,7 +18,6 @@ import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
 import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
-import './TopbarUtilityDropdown.css';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
 function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
