@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import {
-  BookOpen, CalendarClock, CheckCircle2, ExternalLink,
-  LockKeyhole, RefreshCw, Save, Settings2, ShieldCheck, Users,
-} from 'lucide-react';
+import { BookOpen, CalendarClock, CheckCircle2, LockKeyhole, RefreshCw, Save, Settings2, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';

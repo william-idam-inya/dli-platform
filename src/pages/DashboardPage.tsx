@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReferenceHeroArtwork from '../components/ReferenceHeroArtwork';
 import ReferenceDashboard from '../components/ReferenceDashboard';

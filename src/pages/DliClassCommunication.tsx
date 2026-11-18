@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { CheckCircle2, LockKeyhole, MessageCircle, Phone, RefreshCw, Send, ShieldCheck, Users } from 'lucide-react';
+import { CheckCircle2, LockKeyhole, MessageCircle, Phone, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';

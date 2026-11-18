@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { CheckCircle2, Clock3, LockKeyhole, MessageSquareText, RefreshCw, Send, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Clock3, MessageSquareText, RefreshCw, Send } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';

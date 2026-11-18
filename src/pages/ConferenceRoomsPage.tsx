@@ -1,5 +1,5 @@
 import {lazy,Suspense,useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
-import {CalendarDays,CameraOff,Hand,Lock,LockOpen,MessageSquareText,MicOff,Plus,RefreshCw,ShieldCheck,Users,Video, X} from 'lucide-react';
+import { CalendarDays, CameraOff, Hand, Lock, LockOpen, MessageSquareText, MicOff, Plus, RefreshCw, Users, Video, X } from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
 import {pushConfigured} from '../lib/pushNotifications';

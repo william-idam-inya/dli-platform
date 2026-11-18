@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';

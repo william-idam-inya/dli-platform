@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, ShieldCheck, Users, X } from 'lucide-react';
+import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import {pushConfigured} from '../lib/pushNotifications';

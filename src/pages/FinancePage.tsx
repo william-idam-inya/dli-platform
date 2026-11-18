@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banknote, Clock3, FileText, LockKeyhole,
-  Plus, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
+import { Banknote, Clock3, FileText, Plus, RefreshCw, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import PaidPlanSettings from '../components/PaidPlanSettings';
@@ -56,7 +54,6 @@ function proposalName(type: ProposalType): string {
 export default function FinancePage() {
   const { account } = useAuth();
   const canPropose = Boolean(account && FINANCE_ROLES.has(account.role));
-  const canOpenClassPayments = Boolean(account && canAccessPath(account.role,'/classes',account.studentTier));
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [category, setCategory] = useState<ProposalType>('fee_structure');
   const [title, setTitle] = useState('');

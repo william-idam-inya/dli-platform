@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Calculator, CheckCircle2, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { Calculator, CheckCircle2, RefreshCw, Users, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import paidLearningPlans from '../data/paidLearningPlans.json';
