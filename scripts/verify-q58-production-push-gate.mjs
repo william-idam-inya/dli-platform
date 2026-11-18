@@ -8,7 +8,7 @@ const notice=read('src/pages/InAppAnnouncementsPage.tsx');
 const conference=read('src/pages/ConferenceRoomsPage.tsx');
 const ui=read('src/components/PushNotificationOptIn.tsx');
 const push=read('src/lib/pushNotifications.ts');
-const sw=read('public/sw.js');
+const sw=read('src/sw.ts');
 assert.match(push,/pushConfigured=pushAvailable && pushKeyProvided/);
 assert.match(ui,/if\(!account\|\|!pushKeyProvided\)return null/);
 assert.match(call,/if\(ok&&signal.kind==='offer'&&pushConfigured\)/);
@@ -18,6 +18,9 @@ assert.match(notice,/\{pushConfigured&&<label className="dli-urgent-toggle"/);
 assert.match(conference,/if\(pushConfigured&&room.data\?\.length\)/);
 assert.match(conference,/if\(pushConfigured&&scheduledAt\)/);
 assert.match(conference,/\{pushConfigured&&<label>Scheduled start/);
-assert.ok(sw.includes("self.addEventListener('push'")&&!sw.includes("addEventListener('fetch'"));
+assert.ok(sw.includes("sw.addEventListener('push'")&&
+ sw.includes("url.origin===sw.location.origin")&&
+ sw.includes("precacheAndRoute(sw.__WB_MANIFEST)"),
+ 'Q62 worker must preserve secure push and cache only same-origin app shell');
 assert.ok(!read('src/q45-shell.css').includes('Q57: phone header accessibility'));
 console.log('Q58 production VAPID gate, legacy database compatibility, restored header and call isolation verified.');
