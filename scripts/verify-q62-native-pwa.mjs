@@ -29,7 +29,7 @@ assert.ok(read('public/_headers').includes('/manifest.webmanifest')&&
 const redirects=read('public/_redirects');
 assert.ok(redirects.includes('/communications /index.html 200')&&
  redirects.includes('/classes /index.html 200'));
-assert.ok(!redirects.includes('/* /index.html 200'),'Do not rewrite missing images, worker or API paths');
+assert.ok(!redirects.split('\n').some(line=>line.trim()==='/* /index.html 200'||line.trim()==='* /index.html 200'),'Do not rewrite missing images, worker or API paths');
 assert.ok(!existsSync(new URL('../public/sw.js',import.meta.url)),
  'Old unbundled worker must not overwrite Workbox output');
 assert.ok(read('src/components/BrowserAlertPermission.tsx').includes('enableDliDevicePush()'));
