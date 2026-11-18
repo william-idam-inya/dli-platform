@@ -22,8 +22,7 @@ export default function LearningHubPage(){
     <span className="learning-hub-symbol"><BookOpen size={23}/></span>
     <div><p className="section-kicker">ONE CONNECTED ACADEMIC WORKSPACE</p>
       <h1>Learning &amp; results</h1>
-      <p>Lessons, assignments, quizzes and attendance share one academic workspace.
-        Free and Paid Students can access content published to their assigned classes; paid-only material remains restricted.</p>
+      <p>Open lessons, assignments, quizzes and attendance for your classes.</p>
     </div>
   </div>
   <nav className="learning-hub-tabs" aria-label="Learning and progress sections">

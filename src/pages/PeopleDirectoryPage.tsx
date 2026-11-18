@@ -49,7 +49,7 @@ export default function PeopleDirectoryPage(){
    <span className="module-page-icon"><Users size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> USERS &amp; PEOPLE</div>
     <h1>People directory</h1>
-    <p>Explore active members by role and begin an authorised private conversation.</p></div>
+    <p>Find authorised members and start a conversation.</p></div>
   </div>
   <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div>
    <div><strong>Role-scoped directory</strong>

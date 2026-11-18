@@ -136,7 +136,6 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
     aria-label={'Open '+section.title}
     onClick={event=>{const panel=sectionMap.current.get(section.key);if(panel)open(section.key,panel,event.currentTarget);}}>
     {sectionIcon(section.title)}<span>{section.title}</span>
-    {section.rows>0&&<small aria-label={section.rows+' entries'}>{section.rows}</small>}
    </button>)}
   </nav>}
   {children}
