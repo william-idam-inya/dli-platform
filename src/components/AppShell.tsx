@@ -17,7 +17,7 @@ import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
-import {disableDliDevicePush} from '../lib/pushNotifications';
+import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
 function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
@@ -130,7 +130,10 @@ export default function AppShell({ children }: AppShellProps) {
       if(!profileMenuRef.current?.contains(event.target as Node))setProfileMenuOpen(false);
     };
     const esc=(event:KeyboardEvent)=>{
-      if(event.key==='Escape')setProfileMenuOpen(false);
+      if(event.key==='Escape'){
+        setProfileMenuOpen(false);
+        profileMenuRef.current?.querySelector<HTMLButtonElement>('.dli-utility-trigger')?.focus();
+      }
     };
     document.addEventListener('pointerdown',outside);
     document.addEventListener('keydown',esc);
@@ -363,43 +366,69 @@ export default function AppShell({ children }: AppShellProps) {
                 </NavLink>;
               })}
           </nav>
-          <div className="topbar-actions">
-            <QuickMenu/>
-            <DliMessageBadge/>
-            <PushNotificationOptIn/>
-            <span data-dli-tour="notifications" className="dli-tour-notification-anchor"><DliNotificationBell/></span>
-            <span className="preview-label" title="Environment determined by deployed Supabase project"><span className="preview-dot" /> {deploymentIdentity.label}</span>
-            <button
-              className="icon-button theme-toggle"
-              onClick={() => { void changeTheme(); }}
-              disabled={themeSyncing}
-              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {darkMode ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
-            <div className="dli-profile-menu" ref={profileMenuRef}>
-            <NavLink to="/profile" className="account-mini" title="My profile and settings">
-              {account ? <ProfileAvatar key={account.id} name={account.full_name} /> :
-                <span className="profile-placeholder">D</span>}
-              <span className="account-mini-copy"><strong>{account?.full_name}</strong><small>{account ? accountRoleLabel(account) : ''}</small></span>
-            </NavLink>
-            <button type="button" className="dli-profile-toggle"
-              aria-label="Open account menu" aria-controls="dli-account-dropdown"
-              aria-expanded={profileMenuOpen} onClick={()=>setProfileMenuOpen(v=>!v)}>
-              <ChevronDown size={17}/>
-            </button>
-            {profileMenuOpen&&<div id="dli-account-dropdown" className="dli-profile-dropdown"
-              role="region" aria-label="Account shortcuts">
-              <strong>{account?.full_name}</strong>
-              <Link to="/profile" onClick={()=>setProfileMenuOpen(false)}>My profile and settings</Link>
-              <button type="button" onClick={()=>{
-                setProfileMenuOpen(false);window.dispatchEvent(new Event('dli-tour-replay'));
-              }}>Replay guided tour</button>
-              <button type="button" onClick={()=>{setProfileMenuOpen(false);void signOut();}}>
-                <LogOut size={16}/> Sign out
+          <div className="topbar-actions dli-compact-actions">
+            <div className="dli-profile-menu dli-utility-menu" ref={profileMenuRef}>
+              <button type="button" className="dli-profile-toggle dli-utility-trigger"
+                aria-label="Open tools, messages, notifications and account"
+                title="More DLI tools"
+                aria-controls="dli-account-dropdown" aria-expanded={profileMenuOpen}
+                onClick={()=>setProfileMenuOpen(value=>!value)}>
+                <ChevronDown size={21} aria-hidden="true"/>
               </button>
-            </div>}
+              {/* Keep notification components mounted while collapsed: subscriptions,
+                  unread polling and alert modals must continue in every dashboard. */}
+              <div id="dli-account-dropdown" className="dli-profile-dropdown dli-utility-dropdown"
+                role="region" aria-label="DLI tools and account" hidden={!profileMenuOpen}>
+                <div className="dli-utility-account">
+                  <strong>{account?.full_name}</strong>
+                  <small>{account?accountRoleLabel(account):'Verified member'}</small>
+                </div>
+                <strong className="dli-utility-heading">Quick access</strong>
+                <div className="dli-utility-grid" aria-label="Workspace utilities">
+                  <div className="dli-utility-tile" aria-label="Quick actions">
+                    <QuickMenu/><small>Apps</small>
+                  </div>
+                  <div className="dli-utility-tile" aria-label="Messages"
+                    onClick={()=>setProfileMenuOpen(false)}>
+                    <DliMessageBadge/><small>Messages</small>
+                  </div>
+                  <div className="dli-utility-tile" data-dli-tour="notifications" aria-label="Notifications">
+                    <span className="dli-tour-notification-anchor"><DliNotificationBell/></span>
+                    <small>Notices</small>
+                  </div>
+                  {pushKeyProvided&&<div className="dli-utility-tile" aria-label="Device alerts">
+                    <PushNotificationOptIn/><small>Alerts</small>
+                  </div>}
+                  <div className="dli-utility-tile" aria-label="Theme setting">
+                    <button type="button" className="icon-button theme-toggle"
+                      onClick={()=>{void changeTheme();}} disabled={themeSyncing}
+                      aria-label={darkMode?'Switch to light mode':'Switch to dark mode'}
+                      title={darkMode?'Switch to light mode':'Switch to dark mode'}>
+                      {darkMode?<Sun size={19}/>:<Moon size={19}/>}
+                    </button><small>Theme</small>
+                  </div>
+                  <NavLink to="/profile" className="dli-utility-tile dli-utility-profile"
+                    aria-label="My profile" onClick={()=>setProfileMenuOpen(false)}>
+                    {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
+                      <span className="profile-placeholder">D</span>}
+                    <small>Profile</small>
+                  </NavLink>
+                </div>
+                <div className="dli-utility-links">
+                  <Link to="/profile" onClick={()=>setProfileMenuOpen(false)}>
+                    My profile and settings
+                  </Link>
+                  <button type="button" onClick={()=>{
+                    setProfileMenuOpen(false);window.dispatchEvent(new Event('dli-tour-replay'));
+                  }}><HelpCircle size={17}/> Replay guided app tour</button>
+                  <span className="dli-utility-environment" title="Deployment environment">
+                    <span className="preview-dot"/> {deploymentIdentity.label}
+                  </span>
+                  <button type="button" onClick={()=>{
+                    setProfileMenuOpen(false);void signOut();
+                  }}><LogOut size={17}/> Sign out</button>
+                </div>
+              </div>
             </div>
           </div>
         </header>
