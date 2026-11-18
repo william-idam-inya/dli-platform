@@ -26,8 +26,12 @@ function destinationFor(data:PushClick):string|null{
   }
   return '/communications';
  }
- if(data.kind==='urgent_notice')return '/announcements';
+ if(data.kind==='urgent_notice'||data.kind==='announcement')return '/announcements';
  if(data.kind==='conference_reminder')return '/conferences';
+ if(data.kind==='class_reminder'||data.kind==='timetable_update'){
+  return data.path==='/schedule'?'/schedule':'/classes';
+ }
+ if(data.kind==='payment')return data.path==='/payroll'?'/payroll':'/enrolment';
  return null;
 }
 

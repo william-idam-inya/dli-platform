@@ -8,6 +8,8 @@ import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
 import RoleProfileFields from '../components/RoleProfileFields';
 import BrowserAlertPermission from '../components/BrowserAlertPermission';
 import AppearancePreferences from '../components/AppearancePreferences';
+import ShareDliLinks from '../components/ShareDliLinks';
+import PasskeySecurityPanel from '../components/PasskeySecurityPanel';
 import './MemberProfilePage.css';
 
 function nigeriaToday():string{
@@ -247,6 +249,8 @@ export default function MemberProfilePage(){
   <RoleProfileFields/>
   <AppearancePreferences/>
   <BrowserAlertPermission/>
+  <PasskeySecurityPanel/>
+  <ShareDliLinks/>
   <section className="panel member-profile-identity">
     <div className="panel-heading"><div><p className="section-kicker">VERIFIED INSTITUTIONAL ACCESS</p>
       <h2>Assigned by DLI administration</h2></div></div>

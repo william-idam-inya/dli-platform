@@ -15,9 +15,11 @@ import './mobile-overlay-resilience.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 import {registerDliServiceWorker} from './lib/pushNotifications';
 import {initializeCallRingtone} from './lib/callRingtone';
+import {watchDliInstallPrompt} from './lib/pwaInstall';
 
 // Apply saved visual preferences before React paints the authorised workspace.
 initializeAppearance();
+watchDliInstallPrompt();
 registerDliServiceWorker();
 initializeCallRingtone();
 

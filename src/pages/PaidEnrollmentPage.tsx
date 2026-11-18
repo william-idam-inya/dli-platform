@@ -376,6 +376,11 @@ export default function PaidEnrollmentPage(){
       <label htmlFor="upgrade-proof">Upload payment evidence · PDF, JPEG or PNG (max 5 MB)</label>
       <input id="upgrade-proof" type="file" accept=".pdf,.jpg,.jpeg,.png"
        onChange={e=>setFile(e.target.files?.[0]??null)}/>
+      <label htmlFor="upgrade-proof-camera">Or take a receipt photo with your device camera</label>
+      <input id="upgrade-proof-camera" type="file" accept="image/jpeg,image/png"
+       capture="environment" aria-label="Take receipt photo"
+       onChange={e=>setFile(e.target.files?.[0]??null)}/>
+      {file&&<p className="user-caption" role="status">Selected receipt: {file.name}</p>}
       <button className="academic-submit" type="button" disabled={busy||!file}
        onClick={()=>void upload(current)}><Upload size={16}/> Submit receipt for review</button>
       </>:<p className="academic-empty">DLI has not activated its verified institutional bank details. Do not make a transfer yet.</p>}

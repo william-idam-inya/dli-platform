@@ -18,6 +18,8 @@ import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
 import {disableDliDevicePush} from '../lib/pushNotifications';
+import {installDliBadgeListeners,clearDliBadge} from '../lib/appBadge';
+import PwaInstallBanner from './PwaInstallBanner';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
 function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
@@ -71,6 +73,7 @@ export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
   const { account, clearNotice } = useAuth();
   const [logoutError, setLogoutError] = useState<string | null>(null);
+  useEffect(()=>installDliBadgeListeners(),[]);
   const signOut = async () => {
     if (!supabase) return;
     setLogoutError(null);
@@ -86,6 +89,7 @@ export default function AppShell({ children }: AppShellProps) {
     }
     const { error } = await supabase.auth.signOut();
     if (error) setLogoutError('Could not sign out. Please retry.');
+    else clearDliBadge();
   };
   // Sidebar visibility belongs to this device; no RBAC or route changes.
   const [desktopSidebarCollapsed,setDesktopSidebarCollapsed]=useState(()=>{
@@ -404,6 +408,7 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
         </header>
         <DliAnnouncementTicker/>
+        <PwaInstallBanner/>
 
         <div className="page-content">
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
