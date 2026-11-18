@@ -266,12 +266,7 @@ export default function LearningPage() {
         
       </div>
     </div>
-    <details className="learning-access-details">
-      <summary><ShieldCheck size={17} aria-hidden="true"/> Lesson access &amp; privacy</summary>
-      <p>{canEdit
-        ? 'Administrators and assigned tutors can manage eligible lessons. Unpublished material remains restricted to authorised teaching staff.'
-        : 'Published lessons and links appear for your eligible classes. Free and Paid Students can use lessons, assignments, quizzes and attendance assigned to them.'}</p>
-    </details>
+
     {error && <p role="alert" className="auth-feedback error">{error}</p>}
     {notice && <p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
@@ -283,6 +278,9 @@ export default function LearningPage() {
 
     <div className="academic-top-actions">
       <p role="status">{loading ? 'Loading authorised lessons…' : error ? 'Learning content needs attention' : 'Your authorised learning records'}</p>
+      <Link to="/study?tab=assignments" className="user-outline-button">
+        <FileText size={16}/> Assignments
+      </Link>
       <button type="button" className="user-outline-button" disabled={loading || Boolean(saving)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
     </div>
