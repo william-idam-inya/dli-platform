@@ -377,6 +377,10 @@ export default function AppShell({ children }: AppShellProps) {
                   unread polling and alert modals must continue in every dashboard. */}
               <div id="dli-account-dropdown" className="dli-profile-dropdown dli-utility-dropdown"
                 role="region" aria-label="DLI tools and account" hidden={!profileMenuOpen}>
+                <div className="dli-utility-account">
+                  <strong>{account?.full_name}</strong>
+                  <small>{account?accountRoleLabel(account):'Verified member'}</small>
+                </div>
                 <strong className="dli-utility-heading">Quick access</strong>
                 <div className="dli-utility-grid" aria-label="Workspace utilities">
                   <div className="dli-utility-tile" aria-label="Quick actions">
