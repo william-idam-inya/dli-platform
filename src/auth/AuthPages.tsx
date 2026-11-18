@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, KeyRound, LockKeyhole } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -15,15 +15,10 @@ function AuthLayout({ title, intro, children }: {
     <main className="auth-frame">
       <div className="auth-panel">
         <div className="auth-mark"><OfficialDliLogo /></div>
-        <p className="auth-eyebrow">
-          DETAILED LEARNING INSTITUTE · {deploymentIdentity.kind==='qa'
-            ? 'QA TESTING' : deploymentIdentity.kind==='production'
-              ? 'PRODUCTION' : 'UNVERIFIED ENVIRONMENT'}
-        </p>
+        <p className="auth-eyebrow">DETAILED LEARNING INSTITUTE</p>
         <h1>{title}</h1>
         <p className="auth-intro">{intro}</p>
         {children}
-        <p className="auth-note"><ShieldCheck size={14} /> Invite-only, role-controlled institutional access</p>
       </div>
     </main>
   );
@@ -35,9 +30,19 @@ function Feedback({ message, error = false }: { message: string | null; error?: 
 }
 
 export function AuthChecking() {
-  return <AuthLayout title="Checking access…" intro="Verifying your session and DLI authorisation.">
-    <p role="status" className="auth-feedback">Contacting Supabase Auth and checking your DLI role.</p>
-  </AuthLayout>;
+  // Presentation only. AuthProvider still verifies Supabase session, member status
+  // and the permitted role before any protected workspace can render.
+  return <main className="auth-frame dli-welcome-loading">
+    <section className="dli-welcome-loading-card" aria-label="Detailed Learning Institute">
+      <div className="dli-welcome-loading-logo"><OfficialDliLogo /></div>
+      <h1>Detailed Learning Institute</h1>
+      <p className="dli-welcome-loading-tagline">DLI-ONLINE · Learn • Improve • Excel</p>
+      <div className="dli-welcome-loading-status" role="status" aria-live="polite">
+        <span className="dli-welcome-loading-spinner" aria-hidden="true"/>
+        <span>Opening your learning space…</span>
+      </div>
+    </section>
+  </main>;
 }
 
 export function AuthTemporarilyUnavailable() {
@@ -59,7 +64,7 @@ export function AuthTemporarilyUnavailable() {
     }
   };
   return <AuthLayout title="Access check temporarily unavailable"
-    intro="We could not confirm your current DLI membership. Your workspace remains restricted until verification succeeds.">
+    intro="We could not confirm your DLI membership. Please retry before continuing.">
     <p role="alert" className="auth-feedback error">
       Your saved session or the account verification service could not be verified.
       This does not necessarily mean your account was removed.
@@ -151,10 +156,7 @@ export function LoginPage() {
       select <Link to="/forgot-password">Forgot your password?</Link> to
       recover this QA account. Resetting it will not change your production password.
     </p>}
-    {deploymentIdentity.kind==='production'&&<p className="auth-helper">
-      <strong>Production:</strong> Testing-site passwords and sessions are separate.
-      Use only the credentials established for this production workspace.
-    </p>}
+
   </AuthLayout>;
 }
 

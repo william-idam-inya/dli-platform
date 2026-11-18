@@ -37,7 +37,7 @@ export function determineDliEnvironment(
   const label = kind === 'qa'
     ? 'QA · Test access'
     : kind === 'production'
-      ? 'Production · Restricted'
+      ? 'Detailed Learning Institute'
       : 'Environment unverified';
   return { kind, expectedKind, mismatch, label };
 }

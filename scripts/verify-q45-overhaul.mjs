@@ -28,7 +28,7 @@ const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 const inc=(source,token,label)=>assert.ok(source.includes(token),label+': '+token);
 for(const t of ['<GlobalSearch/>','<QuickMenu/>','<FloatingMessenger/>','<DliAnnouncementTicker/>',
   'dli-primary-tabs','dli-topbar-brand','dli-flat-sidebar-identity',
-  'destinations.slice(0,7)','See more','See less',
+  'destinations.slice(0,9)','See more','See less',
   "canAccessPath(account.role,path,account.studentTier)",
   'dli-profile-dropdown','dli-desktop-sidebar-toggle','<GuidedTour/>',
 ])inc(shell,t,'Global shell missing');
