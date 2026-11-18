@@ -89,13 +89,7 @@ export default function MyClassesPage() {
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Private, role-scoped class access</strong>
-        <p>Database policies verify your current account role and assigned or enrolled class.
-          This is a class directory, not an active lesson, attendance system or payment record.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     <div className="academic-top-actions">
       <p role="status">{loading?'Loading your authorised classes…':
@@ -128,9 +122,6 @@ export default function MyClassesPage() {
         </div>
       </section>)}
     </div>
-    <p className="module-footnote"><ShieldCheck size={15}/>
-      Only registered and currently authorised Tutor or Student roles can view this area.
-      Course contents and lesson delivery will be introduced in Stage E.
-    </p>
+    
   </div>;
 }

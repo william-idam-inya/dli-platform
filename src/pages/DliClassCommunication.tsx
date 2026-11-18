@@ -317,8 +317,6 @@ export default function DliClassCommunication(){
         </>}
       </div>
     </div>
-    <p className="module-footnote"><Users size={14}/> These are restricted learning conversations, not an emergency
-      or safeguarding-reporting channel. Administrators can review threads. Do not share passwords,
-      home addresses, medical information or bank details here.</p>
+    
   </section>;
 }

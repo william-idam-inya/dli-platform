@@ -459,9 +459,7 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
             academicLoading={academicLoading} metrics={metrics}/>}
       </div>}
     <div className="ref-dashboard-tail">
-      <p><ShieldCheck size={15} aria-hidden="true"/> Numbers reflect accessible DLI records;
-        unavailable data is not shown as zero. The example numbers in the design reference
-        are not actual student or financial figures.</p>
+
       <button type="button" onClick={()=>setRefreshKey(v=>v+1)}
         disabled={classLoading||statsLoading}>
         <LayoutDashboard size={15} aria-hidden="true"/> Refresh dashboard

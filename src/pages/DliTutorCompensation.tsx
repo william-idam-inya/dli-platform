@@ -105,11 +105,7 @@ export default function DliTutorCompensation(){
         not once for every weekly session or subject. Planning figures do not execute transfers.</p>
     </div><button type="button" className="user-outline-button" disabled={loading||busy} onClick={()=>void refresh()}>
       <RefreshCw size={15}/> Refresh</button></div>
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-      <strong>No automatic tutor payouts</strong>
-      <p>Base + any documented data allowance forms the monthly planned total.
-        Avoid double-counting a tutor who teaches several lessons under one agreed package.</p>
-    </div></div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <label className="dli-tutor-month">Reporting month
@@ -157,8 +153,6 @@ export default function DliTutorCompensation(){
           </div>}
         </article>)}
       </div>}
-    <p className="module-footnote">The source PDF lists ₦20,000 + ₦2,000 data per Group Tutor per month,
-      and ₦25,000 for a private tutor (no data allowance specified). These are reference terms,
-      not proof of services rendered or payments made.</p>
+    
   </section>;
 }
