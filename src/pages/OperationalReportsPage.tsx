@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  BarChart3, BookOpen, CalendarDays, ClipboardCheck, Download, FileText,
-  GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck, Users,
-} from 'lucide-react';
+import { BarChart3, BookOpen, CalendarDays, ClipboardCheck, Download, FileText, GraduationCap, Layers3, LockKeyhole, RefreshCw, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {createPortal} from 'react-dom';
-import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
+import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

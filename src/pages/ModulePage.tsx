@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, LockKeyhole, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { NavigationItem } from '../data/navigation';
 

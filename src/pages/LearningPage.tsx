@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap,
-  Link2, LockKeyhole, Pencil, Plus, RefreshCw, ShieldCheck,
-} from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap, Link2, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

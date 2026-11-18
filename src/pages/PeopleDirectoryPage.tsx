@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {MessageSquareText,RefreshCw,Search,ShieldCheck,Users} from 'lucide-react';
+import { MessageSquareText, RefreshCw, Search, Users } from 'lucide-react';
 import {supabase} from '../lib/supabase';
 import {useAuth} from '../auth/AuthProvider';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
+import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
