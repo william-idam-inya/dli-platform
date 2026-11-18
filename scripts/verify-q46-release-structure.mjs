@@ -73,7 +73,7 @@ for(const [token,description] of [
 ]){
  assert.equal(shell.split(token).length-1,1,'Expected one '+description+' mount');
 }
-assert.ok(shell.includes('destinations.slice(0,7)'), 'Compressed sidebar priority regressed');
+assert.ok(shell.includes('destinations.slice(0,9)'), 'Compact role-allowed sidebar priority regressed');
 for(const token of ['@media(max-width:414px)','flex:1 1 0','width:0;min-width:0;max-width:none',
  'padding-inline:8px','dli-global-search-results','dli-primary-tabs']){
  assert.ok(css.includes(token),'Narrow responsive header contract absent: '+token);
