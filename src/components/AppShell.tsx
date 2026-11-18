@@ -17,7 +17,8 @@ import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
-import {disableDliDevicePush} from '../lib/pushNotifications';
+import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
+import './TopbarUtilityDropdown.css';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
 function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
@@ -388,9 +389,9 @@ export default function AppShell({ children }: AppShellProps) {
                     <span className="dli-tour-notification-anchor"><DliNotificationBell/></span>
                     <small>Notices</small>
                   </div>
-                  <div className="dli-utility-tile" aria-label="Device alerts">
+                  {pushKeyProvided&&<div className="dli-utility-tile" aria-label="Device alerts">
                     <PushNotificationOptIn/><small>Alerts</small>
-                  </div>
+                  </div>}
                   <div className="dli-utility-tile" aria-label="Theme setting">
                     <button type="button" className="icon-button theme-toggle"
                       onClick={()=>{void changeTheme();}} disabled={themeSyncing}
