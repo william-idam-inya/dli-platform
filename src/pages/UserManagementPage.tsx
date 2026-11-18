@@ -261,14 +261,7 @@ export default function UserManagementPage() {
         <a href="#account-registry"><Users size={17} aria-hidden="true"/> Account registry</a>
         <a href="#invite-member"><CheckCircle2 size={17} aria-hidden="true"/> Invite a member</a>
       </div>
-      <details className="dli-user-safety">
-        <summary><ShieldCheck size={18} aria-hidden="true"/>
-          Role-based permissions are enforced on the server
-        </summary>
-        <p>You can manage only permitted roles. Changes are audited in Supabase.
-          Suspension and revocation block DLI data access immediately; existing
-          authentication tokens may remain valid until expiry.</p>
-      </details>
+
 
       {error && <p className="auth-feedback error" role="alert">{error}</p>}
       {notice && <div className="user-action-toast" role="status" aria-live="polite">

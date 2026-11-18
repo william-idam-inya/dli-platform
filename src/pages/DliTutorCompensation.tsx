@@ -101,8 +101,7 @@ export default function DliTutorCompensation(){
   return <section className="panel dli-tutor-compensation">
     <div className="panel-heading"><div><p className="section-kicker">TUTOR COMPENSATION · PLANNING</p>
       <h2>Monthly tutor payment register</h2>
-      <p className="user-caption">Calculate one tutor agreement per actual paid teaching engagement per month,
-        not once for every weekly session or subject. Planning figures do not execute transfers.</p>
+
     </div><button type="button" className="user-outline-button" disabled={loading||busy} onClick={()=>void refresh()}>
       <RefreshCw size={15}/> Refresh</button></div>
     

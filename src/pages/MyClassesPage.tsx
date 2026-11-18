@@ -84,8 +84,7 @@ export default function MyClassesPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> MY LEARNING WORKSPACE</div>
         <h1>My classes</h1>
-        <p>{isTutor?'Only the course offerings assigned to you as an authorised Tutor.':
-          'Only the course offerings where your active enrolment is recorded.'}</p>
+
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>
