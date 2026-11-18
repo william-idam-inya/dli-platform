@@ -14,6 +14,9 @@ export default defineConfig({
       injectRegister: null,
       manifest: false,
       injectManifest: {
+        // Produce /sw.js as a classic worker: existing registered devices
+        // must keep their root-scoped push subscription and click handlers.
+        rollupFormat: 'iife',
         globPatterns: ['**/*.{js,css,html,png,svg,webmanifest,woff2}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },

@@ -15,7 +15,10 @@ assert.match(read('index.html'),/href="\/manifest\.webmanifest"/);
 const vite=read('vite.config.ts'),sw=read('src/sw.ts');
 for(const s of ["strategies: 'injectManifest'","filename: 'sw.ts'","manifest: false"])
  assert.ok(vite.includes(s),'PWA configuration missing '+s);
-assert.ok(sw.includes('precacheAndRoute(sw.__WB_MANIFEST)'));
+assert.ok(sw.includes('self.__WB_MANIFEST')&&sw.includes('precacheAndRoute('),
+ 'Workbox requires the literal self.__WB_MANIFEST injection marker');
+assert.ok(vite.includes("rollupFormat: 'iife'"),
+ 'Keep the classic /sw.js filename used by existing production registrations');
 assert.ok(sw.includes("request.mode==='navigate'"));
 assert.ok(sw.includes("url.origin===sw.location.origin"),'Offline navigation must be same-origin');
 assert.ok(sw.includes("await matchPrecache('/index.html')"),'Offline shell fallback required');
