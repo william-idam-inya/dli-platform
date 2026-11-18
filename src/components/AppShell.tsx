@@ -30,7 +30,7 @@ function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>voi
  const primary=preferred.flatMap(path=>allowed.filter(item=>item.path===path));
  const other=allowed.filter(item=>!preferred.includes(item.path));
  const destinations=[...primary,...other];
- const visible=showMore?destinations:destinations.slice(0,7);
+ const visible=showMore?destinations:destinations.slice(0,9);
  return <div className="sidebar-inner">
   <NavLink to="/profile" onClick={onNavigate} className="dli-flat-sidebar-identity" aria-label="My DLI account">
    {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
@@ -46,20 +46,24 @@ function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>voi
       <Icon size={19} strokeWidth={1.9}/><span>{item.label}</span>
     </NavLink>;
    })}
-   {destinations.length>7&&<button type="button" className="dli-flat-more"
-     onClick={()=>setShowMore(v=>!v)} aria-expanded={showMore}>
-     <Grid2X2 size={17}/>{showMore?'See less':'See more'}
-   </button>}
   </nav>
-  <div className="ref-sidebar-actions">
-   <button type="button" className="dli-tour-launch" onClick={()=>{
+  <div className="dli-sidebar-quick-actions" role="group" aria-label="Navigation shortcuts">
+   {destinations.length>9&&<button type="button" className="dli-sidebar-quick-action dli-flat-more"
+     onClick={()=>setShowMore(v=>!v)} aria-expanded={showMore}
+     aria-label={showMore?'Show fewer navigation sections':'Show all navigation sections'}
+     title={showMore?'See less':'See more'}>
+     <Grid2X2 size={18} aria-hidden="true"/><span>{showMore?'See less':'See more'}</span>
+   </button>}
+   <button type="button" className="dli-sidebar-quick-action dli-tour-launch"
+     title="Replay guided app tour" aria-label="Replay guided app tour" onClick={()=>{
      onNavigate?.();window.dispatchEvent(new Event('dli-tour-replay'));
-   }}><HelpCircle size={17}/> Guided app tour</button>
-   <button type="button" onClick={()=>{onSignOut?.();onNavigate?.();}}>
-    <LogOut size={17}/> Sign out
+   }}><HelpCircle size={18} aria-hidden="true"/><span>Replay guide</span></button>
+   <button type="button" className="dli-sidebar-quick-action"
+     title="Sign out" aria-label="Sign out" onClick={()=>{onSignOut?.();onNavigate?.();}}>
+     <LogOut size={18} aria-hidden="true"/><span>Sign out</span>
    </button>
   </div>
-  <div className="sidebar-version">DLI Academic Pro · Learn • Improve • Excel</div>
+  <div className="sidebar-version">Detailed Learning Institute · Learn • Improve • Excel</div>
  </div>;
 }
 

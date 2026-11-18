@@ -8,7 +8,7 @@ const main=read('src/main.tsx');
 const nav=read('src/data/navigation.ts');
 const areas=read('src/data/learningAreas.ts');
 assert.ok(shell.includes('primary-nav dli-flat-nav'),'Latest spec requires flat sidebar navigation');
-assert.ok(shell.includes('destinations.slice(0,7)'),'Only top seven routes show by default');
+assert.ok(shell.includes('destinations.slice(0,9)'),'Nine role-permitted routes show by default');
 assert.ok(shell.includes('See more')&&shell.includes('See less'),'Expandable flat sidebar required');
 assert.ok(!shell.includes('className="nav-section"'),'Old accordion sidebar must not return');
 assert.ok(shell.includes('end\n'),'Exact route selection required');

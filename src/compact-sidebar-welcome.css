@@ -1,0 +1,116 @@
+/* Q66 — Retain the established DLI topbar and sidebar; only compress the
+   navigation shortcuts and simplify the temporary access-check presentation. */
+.app-layout .sidebar-inner .dli-sidebar-quick-actions{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;gap:6px;width:100%;min-width:0;
+  margin-top:10px;padding:9px 2px 5px;
+  border-top:1px solid var(--border);
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-actions:not(:has(.dli-flat-more)){
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;min-width:0;width:100%;min-height:62px;
+  padding:9px 2px;flex:none;
+  border:1px solid var(--border);border-radius:12px;
+  background:var(--surface-soft);color:var(--text);
+  font:inherit;font-weight:700;font-size:10px;line-height:1.15;
+  text-align:center;cursor:pointer;box-sizing:border-box;
+  margin:0;
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action svg{
+  flex:0 0 18px;width:18px;height:18px;
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action span{
+  display:block;min-width:0;width:100%;
+  overflow-wrap:normal;text-wrap:balance;
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action:hover{
+  background:var(--purple-soft);border-color:var(--purple);
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action:focus-visible{
+  outline:3px solid #e8b758;outline-offset:2px;
+}
+.app-layout .sidebar-inner .dli-sidebar-quick-action.dli-flat-more{
+  background:var(--surface-soft);
+}
+.app-layout .sidebar-inner .sidebar-version{
+  font-size:10px;line-height:1.45;text-align:center;
+  overflow-wrap:anywhere;padding-top:9px;
+}
+@media(max-width:680px){
+  .mobile-sidebar .dli-flat-nav{
+    gap:2px;padding-top:4px;padding-bottom:4px;
+  }
+  .mobile-sidebar .dli-flat-nav .nav-link{
+    min-height:44px;padding:8px 10px;
+  }
+  .mobile-sidebar .dli-flat-sidebar-identity{
+    margin-bottom:7px;padding:8px;
+  }
+  .app-layout .mobile-sidebar .dli-sidebar-quick-actions{
+    position:sticky;bottom:0;z-index:4;
+    padding:9px 2px 8px;margin-top:8px;
+    border-color:rgba(172,202,236,.35);
+    background:#0c294e;
+  }
+  .app-layout .mobile-sidebar .dli-sidebar-quick-action,
+  .app-layout .mobile-sidebar .dli-sidebar-quick-action.dli-flat-more{
+    min-height:60px;background:#163d69;
+    border:1px solid #456a91;color:#e8f2ff;
+  }
+  .app-layout .mobile-sidebar .dli-sidebar-quick-action:hover{
+    background:#205084;color:#fff;
+  }
+  .app-layout .mobile-sidebar .sidebar-version{
+    color:#bed3ee;padding:11px 2px 2px;
+  }
+}
+
+/* Product-facing loading screen. Authentication logic stays in AuthProvider. */
+.dli-welcome-loading{
+  min-height:100dvh;min-height:100vh;
+  display:grid;place-items:center;
+  background:linear-gradient(155deg,#091c35 0%,#0e2949 100%);
+  padding:30px 20px;
+}
+.dli-welcome-loading-card{
+  width:min(100%,380px);display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:35px 23px;border-radius:23px;
+  border:1px solid rgba(132,172,220,.24);
+  background:rgba(26,51,83,.57);
+  box-shadow:0 18px 50px rgba(0,0,0,.13);
+  text-align:center;color:#f5f8ff;
+}
+.dli-welcome-loading-logo{
+  width:76px;height:76px;display:grid;place-items:center;
+  background:#fff;border-radius:18px;overflow:hidden;
+  margin-bottom:23px;
+}
+.dli-welcome-loading-logo .official-dli-logo{
+  max-width:100%;max-height:100%;width:66px;height:66px;object-fit:contain;
+}
+.dli-welcome-loading-card h1{
+  margin:0;font-family:Manrope,'DM Sans',sans-serif;
+  font-size:clamp(19px,5vw,24px);font-weight:800;line-height:1.25;
+}
+.dli-welcome-loading-tagline{
+  margin:9px 0 21px;font-size:11px;letter-spacing:.05em;
+  color:#c8d9ef;
+}
+.dli-welcome-loading-status{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;min-height:32px;font-size:12px;color:#e4edf9;
+}
+.dli-welcome-loading-spinner{
+  display:inline-block;width:17px;height:17px;
+  border:2px solid rgba(233,242,255,.28);
+  border-top-color:#efc963;border-radius:50%;
+  animation:dli-auth-pulse-spin .9s linear infinite;
+}
+@keyframes dli-auth-pulse-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+  .dli-welcome-loading-spinner{animation:none;border-color:#efc963;}
+}
