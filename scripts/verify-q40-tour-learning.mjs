@@ -27,7 +27,7 @@ for(const r of ["'/classes'","'/study?tab=lessons'","'/study?tab=assignments'",
  "'/enrolment'","'/communications'","'/people'","'/finance'","'/users'",
  "'/profile'","'/feedback'"])assert.ok(guide.includes(r),'Role-aware guided tour route missing '+r);
 assert.ok(app.includes('<GuidedTour/>'),'Guided tour must be globally mounted');
-assert.ok(app.includes('Guided app tour')&&app.includes("new Event('dli-tour-replay')"),
+assert.ok(app.includes('Replay guide')&&app.includes("new Event('dli-tour-replay')"),
  'All-role navigation must be able to replay the guide');
 assert.ok(profile.includes('Replay guided app tour'),'Profile must expose guided tour restart');
 assert.ok(guideCSS.includes('z-index:1450')&&guideCSS.includes('max-height:calc(100dvh - 36px)')
