@@ -209,6 +209,9 @@ jobs:
       - name: Verify Q63 global mobile headers and metadata cleanup
         run: node scripts/verify-q63-global-mobile-ui.mjs
 
+      - name: Verify Q64 security-invoker media scope, dynamic facets and legacy search
+        run: node scripts/verify-q64-media-search.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

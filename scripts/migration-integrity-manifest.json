@@ -479,6 +479,10 @@
     {
       "file": "20261118070000_stage_q60_push_housekeeping.sql",
       "gitBlobSha1": "70f0957fe2e1c524aab6703b1905938431266948"
+    },
+    {
+      "file": "20261118142142_stage_q64_platform_media_scope_secure_view.sql",
+      "gitBlobSha1": "25f4d1539dce8a8eef47868283da350b258991a3"
     }
   ]
 }
