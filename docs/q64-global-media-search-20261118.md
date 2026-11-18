@@ -21,3 +21,6 @@ platform_media_index is an always-current PostgreSQL security-invoker view. It h
 - Verify student, free/paid, tutor and three administrative roles on actual test accounts, including unpublished and paid-class isolation.
 - Verify 360, 390, 480px, desktop, private previews/downloads, backspace and live/refocus updates.
 - Development schema first. Do not merge/activate production until security and real-device acceptance.
+
+## Pagination enhancement (Q64b)
+The scope results render 40 accessible records initially. The **Load more media** control requests another 40 by offset from `platform_media_search_page`; this is a security-invoker function and enforces original source-table RLS. No private metadata is copied, and every search refresh resets the result page to avoid stale role/scope state. Facet counts continue to represent all authorized rows, not only visible result pages. Item previews remain on-demand.
