@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Calculator, CheckCircle2, RefreshCw, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { Calculator, CheckCircle2, RefreshCw, Users, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import paidLearningPlans from '../data/paidLearningPlans.json';
@@ -101,15 +101,10 @@ export default function DliTutorCompensation(){
   return <section className="panel dli-tutor-compensation">
     <div className="panel-heading"><div><p className="section-kicker">TUTOR COMPENSATION · PLANNING</p>
       <h2>Monthly tutor payment register</h2>
-      <p className="user-caption">Calculate one tutor agreement per actual paid teaching engagement per month,
-        not once for every weekly session or subject. Planning figures do not execute transfers.</p>
+
     </div><button type="button" className="user-outline-button" disabled={loading||busy} onClick={()=>void refresh()}>
       <RefreshCw size={15}/> Refresh</button></div>
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-      <strong>No automatic tutor payouts</strong>
-      <p>Base + any documented data allowance forms the monthly planned total.
-        Avoid double-counting a tutor who teaches several lessons under one agreed package.</p>
-    </div></div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <label className="dli-tutor-month">Reporting month
@@ -157,8 +152,6 @@ export default function DliTutorCompensation(){
           </div>}
         </article>)}
       </div>}
-    <p className="module-footnote">The source PDF lists ₦20,000 + ₦2,000 data per Group Tutor per month,
-      and ₦25,000 for a private tutor (no data allowance specified). These are reference terms,
-      not proof of services rendered or payments made.</p>
+    
   </section>;
 }

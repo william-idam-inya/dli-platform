@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap,
-  Link2, LockKeyhole, Pencil, Plus, RefreshCw, ShieldCheck,
-} from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap, Link2, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -263,16 +260,10 @@ export default function LearningPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Courses &amp; lessons</h1>
-        <p>{canEdit ? 'Draft and publish lessons and resource links for authorised classes.'
-          : 'Read published lessons and links for classes you are enrolled in.'}</p>
+        
       </div>
     </div>
-    <details className="learning-access-details">
-      <summary><ShieldCheck size={17} aria-hidden="true"/> Lesson access &amp; privacy</summary>
-      <p>{canEdit
-        ? 'Administrators and assigned tutors can manage eligible lessons. Unpublished material remains restricted to authorised teaching staff.'
-        : 'Published lessons and links appear for your eligible classes. Free and Paid Students can use lessons, assignments, quizzes and attendance assigned to them.'}</p>
-    </details>
+
     {error && <p role="alert" className="auth-feedback error">{error}</p>}
     {notice && <p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
@@ -284,6 +275,9 @@ export default function LearningPage() {
 
     <div className="academic-top-actions">
       <p role="status">{loading ? 'Loading authorised lessons…' : error ? 'Learning content needs attention' : 'Your authorised learning records'}</p>
+      <Link to="/study?tab=assignments" className="user-outline-button">
+        <FileText size={16}/> Assignments
+      </Link>
       <button type="button" className="user-outline-button" disabled={loading || Boolean(saving)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
     </div>
@@ -435,12 +429,6 @@ export default function LearningPage() {
         </form>
       </section>
     </div>}
-    <p className="module-footnote"><LockKeyhole size={15} aria-hidden="true"/>
-      Learning access follows your active class permissions. For questions about enrolment or missing lessons,
-      <Link to="/feedback">contact DLI support</Link>.
-      Open <Link to="/study?tab=assignments">Assignments and grading</Link>,
-      <Link to="/study?tab=quizzes">Quizzes &amp; results</Link>, or
-      <Link to="/study?tab=attendance">Attendance</Link> whenever those class activities are available.
-    </p>
+    
   </div>;
 }

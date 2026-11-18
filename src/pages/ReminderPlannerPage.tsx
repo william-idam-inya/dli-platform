@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BellOff, CalendarClock, CheckCircle2, Clock3, Download, FileText,
-  LockKeyhole, Pencil, RefreshCw, Save, ShieldCheck, X,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CalendarClock, CheckCircle2, Clock3, Download, FileText, Pencil, RefreshCw, Save, X } from 'lucide-react';
+
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import { createPersonalReminderIcs } from '../lib/manualExports';
@@ -206,20 +203,11 @@ export default function ReminderPlannerPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Internal reminders</h1>
-        <p>Keep private records of communication preparation tasks and when to review them.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H4</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Reminder records only — no background scheduler</strong>
-        <p>Dates are stored in West Africa Time (UTC+1). Download a private calendar
-          event for a reminder you authored to use your own calendar alerts.
-          DLI does not send messages, notify intended audiences or run a
-          delivery service when this website is closed. Acknowledged only means
-          an internal task was reviewed.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <div className="reminder-summary">
@@ -353,12 +341,6 @@ export default function ReminderPlannerPage(){
         })}
       </div>
     </section>
-    <p className="module-footnote"><BellOff size={15}/>
-      A downloaded calendar file can trigger reminders through your chosen calendar
-      app, but DLI itself does not issue notifications while closed. Actual
-      messages still require authoring in <Link to="/communications">Communications drafts</Link>,
-      independent review, and a separate human decision to send them
-      outside the platform. <LockKeyhole size={14}/>
-    </p>
+    
   </div>;
 }

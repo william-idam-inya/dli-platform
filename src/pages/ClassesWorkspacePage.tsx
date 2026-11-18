@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
-  Plus, RefreshCw, Users, Video, Wallet, MessageCircle,
-} from 'lucide-react';
+import { CalendarClock, CheckCircle2, GraduationCap, Pencil, Plus, RefreshCw, Users, Video, Wallet, MessageCircle } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -387,16 +384,10 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Select a completed cohort: its courses and ordered topics populate the weekly timetable automatically.':
-          'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
+        
       </div>
     </div>
-    {staff&&<div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
-      <div><strong>One class · approved courses · two tutors per subject</strong>
-        <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
-          Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
-      </div>
-    </div>}
+    
     {(paying||communicating)&&<nav className="classes-tabs" aria-label="Class workspace sections">
       <button className={tab==='classes'?'selected':''} type="button" onClick={()=>setParams({tab:'classes'})}>
         <CalendarClock size={15}/> Classes &amp; schedule

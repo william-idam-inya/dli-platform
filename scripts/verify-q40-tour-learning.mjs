@@ -9,6 +9,7 @@ const profile=read('src/pages/MemberProfilePage.tsx');
 const lesson=read('src/pages/LearningPage.tsx');
 const style=read('src/styles.css');
 const academic=read('src/pages/LearningPage.css');
+const learningAreas=read('src/data/learningAreas.ts');
 const rls=read('supabase/migrations/20261116072000_stage_q40_catalogue_rls_cycle_fix.sql');
 const onboard=read('supabase/migrations/20261116072005_stage_q40_guided_tour_progress.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
@@ -51,13 +52,14 @@ assert.ok(style.includes('.module-footnote { display: block')
  &&style.includes('overflow-wrap: break-word;')
  &&style.includes('.module-footnote a { display: inline;'),
  'Global learning footnotes must wrap as readable paragraphs');
-assert.ok(lesson.includes("className=\"learning-access-details\"")
+assert.ok(!lesson.includes('learning-access-details')
  &&!lesson.includes('Live DLI development learning records')
  &&!lesson.includes('Stage E2'),
- 'Learning must not block learners with outdated large notices');
+ 'Do not restore redundant learning governance cards or development metadata');
 assert.ok(lesson.includes('contact DLI support')&&lesson.includes('study?tab=assignments')
- &&lesson.includes('study?tab=quizzes')&&lesson.includes('study?tab=attendance'),
- 'Learning actions and support destinations must remain visible');
+ &&learningAreas.includes("id:'quizzes'")&&learningAreas.includes("id:'attendance'")
+ &&read('src/pages/LearningHubPage.tsx').includes('learningAreas.map'),
+ 'Assignments and the navigable quiz/attendance tabs must remain accessible');
 assert.ok(lesson.includes('finally {')&&lesson.includes('setLoading(false)'),
  'Learning loading state must recover from interrupted queries');
 assert.ok(academic.includes('.learning-page .learning-access-details summary'),

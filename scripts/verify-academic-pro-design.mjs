@@ -49,8 +49,8 @@ assert.ok(dashboard.includes('published=classes.filter('),
 assert.ok(users.includes('id="invite-member"')&&users.includes('id="account-registry"'),
  'Keep invitation and registry discoverable');
 assert.ok(users.includes('<InviteUserPage embedded'),'Keep actual invitation workflow');
-assert.ok(users.includes('Role-based permissions are enforced on the server'),
- 'Keep security disclosure');
+assert.ok(users.includes('canManageRole')&&users.includes('roles.includes(user.role)')&&users.includes('<UserActionDialog'),
+ 'Role-scoped user management must remain enforced and actionable without a redundant disclosure card');
 assert.ok(artwork.includes('mathematics')&&artwork.includes('biology')&&artwork.includes('chemistry'),'Subject graphics must support core science subjects');
 assert.ok(classPage.includes('<SubjectArtwork subject={c.subject_name}/>'),'Decorate only real authorised class subjects');
 assert.ok(dashboard.includes('Personalise appearance'),'Appearance controls must be discoverable from dashboard');

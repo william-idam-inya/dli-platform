@@ -29,7 +29,7 @@ for (const token of [
   "countRecords('learning_quiz_attempts'","countRecords('learning_submissions'",
   'countRecords','ref-progress-ring','ref-kpi-grid',
   'ref-session-join','No published classes yet','Count unavailable',
-  'Free and Paid Students can access class-assigned learning',
+  'studentTier','LearningProgress',
 ]) assert.ok(dashboard.includes(token),'Reference design must remain data-backed: '+token);
 assert.doesNotMatch(dashboard,/(?:68%|248 total users|18 active classes|7 payment proofs|3 tutor payouts)/i,
   'Mockup counts must never appear as real records');
