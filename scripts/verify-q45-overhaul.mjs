@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const shell=read('src/components/AppShell.tsx');
 const search=read('src/components/GlobalSearch.tsx');
+const mediaSearch=read('src/components/SearchBarWithMediaScope.tsx');
 const menu=read('src/components/QuickMenu.tsx');
 const nav=read('src/data/navigation.ts');
 const app=read('src/App.tsx');
@@ -33,8 +34,9 @@ for(const t of ['<GlobalSearch/>','<QuickMenu/>','<FloatingMessenger/>','<DliAnn
 ])inc(shell,t,'Global shell missing');
 for(const t of ["rpc('dli_people_directory')","from('courses')","from('cohorts')",
   "from('teaching_classes')","from('dli_direct_messages')",
-  'canAccessPath(role,path,tier)','search results','No matching records visible to your account.'
+  'canAccessPath(role,path,tier)','search results'
 ])if(t!=='search results')inc(search,t,'Role-safe global search');
+inc(mediaSearch,'No matching records visible to your account.','Role-scoped media empty state');
 for(const t of ['canAccessPath(account.role,item.path,account.studentTier)',
  'Open a workspace','Schedule a class','Publish an announcement'])inc(menu,t,'Quick menu');
 assert.ok(!nav.includes("label: 'Communication drafts'")&&
