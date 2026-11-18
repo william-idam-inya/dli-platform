@@ -110,7 +110,7 @@ export default function CommunicationDraftsPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Communications drafts</h1>
-        <p>Prepare internal messages for later institutional review and manual distribution.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H1</span>
     </div>

@@ -584,9 +584,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
         <h1>Messages</h1>
-        <p>{account?.role==='student'||account?.role==='tutor'
-          ?'Chat privately with DLI administration.'
-          :'Private conversations with authorised DLI members.'}</p>
+        
       </div>
       <button type="button" className="user-outline-button dli-direct-alerts-button" onClick={()=>void enableAlerts()}>
         <BellRing size={16} aria-hidden="true"/> Enable browser alerts

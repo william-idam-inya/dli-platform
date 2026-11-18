@@ -168,7 +168,7 @@ export default function CommunicationTemplatesPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Message templates</h1>
-        <p>Maintain reusable internal writing templates without publishing or sending them.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H3</span>
     </div>

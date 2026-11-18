@@ -95,7 +95,7 @@ export default function AuditLogPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Institutional audit trail</h1>
-        <p>Review database-recorded account and operational events without changing records.</p>
+        
       </div>
       <span className="module-status"><span/> Stage I1</span>
     </div>

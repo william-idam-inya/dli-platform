@@ -164,7 +164,7 @@ export default function InstitutionalSettingsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL GOVERNANCE</div>
         <h1>Institutional settings</h1>
-        <p>Live admission controls, role-scoped group invitations and release safeguards.</p>
+        
       </div>
       <span className="module-status"><span/> Live controls</span>
     </div>

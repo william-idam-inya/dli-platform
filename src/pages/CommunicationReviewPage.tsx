@@ -209,7 +209,7 @@ export default function CommunicationReviewPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Communications review</h1>
-        <p>Review draft revisions and prepare approved text for manual distribution.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H2</span>
     </div>

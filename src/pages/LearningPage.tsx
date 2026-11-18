@@ -263,8 +263,7 @@ export default function LearningPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Courses &amp; lessons</h1>
-        <p>{canEdit ? 'Draft and publish lessons and resource links for authorised classes.'
-          : 'Read published lessons and links for classes you are enrolled in.'}</p>
+        
       </div>
     </div>
     <details className="learning-access-details">

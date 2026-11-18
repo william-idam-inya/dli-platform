@@ -274,7 +274,7 @@ export default function AcademicSetupPage() {
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
           <h1>Academic structure</h1>
-          <p>Choose a DLI programme and academic level to see configured curriculum subjects. Class availability requires a separate approved course offering.</p>
+          
         </div>
       </div>
 
