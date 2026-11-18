@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BellOff, CalendarClock, CheckCircle2, Clock3, Download, FileText,
-  LockKeyhole, Pencil, RefreshCw, Save, ShieldCheck, X,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CalendarClock, CheckCircle2, Clock3, Download, FileText, Pencil, RefreshCw, Save, X } from 'lucide-react';
+
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import { createPersonalReminderIcs } from '../lib/manualExports';

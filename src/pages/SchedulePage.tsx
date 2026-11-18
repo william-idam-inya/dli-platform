@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  CalendarClock, CheckCircle2, CircleOff, Clock3, ExternalLink, GraduationCap,
-  LockKeyhole, MapPin, Pencil, Plus, RefreshCw, ShieldCheck, Video, XCircle,
-} from 'lucide-react';
+import { CalendarClock, CheckCircle2, CircleOff, Clock3, ExternalLink, GraduationCap, MapPin, Pencil, Plus, RefreshCw, Video, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

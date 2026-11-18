@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarClock, CheckCircle2, Clock3, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Clock3, RefreshCw, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './TutorPayrollPage.css';
