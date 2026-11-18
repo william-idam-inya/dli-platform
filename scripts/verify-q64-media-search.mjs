@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const sql=read('supabase/migrations/20261118142142_stage_q64_platform_media_scope_secure_view.sql');
 const component=read('src/components/SearchBarWithMediaScope.tsx');
+const pagination=read('supabase/migrations/20261118144058_stage_q64b_platform_media_pagination.sql');
 const css=read('src/components/SearchBarWithMediaScope.css');
 const legacy=read('src/components/GlobalSearch.tsx');
 for(const token of [
@@ -16,6 +17,10 @@ for(const token of [
  's.is_ready','s.is_published','private.platform_media_touch_revision',
  'alter publication supabase_realtime add table',
 ])assert.ok(sql.includes(token),'Missing secure indexed search: '+token);
+for(const token of ['platform_media_search_page','security invoker','p_offset integer',
+ 'p_scope text','p_term text','to authenticated']){
+ assert.ok(pagination.includes(token),'Q64b paginated security invoker search regression: '+token);
+}
 for(const excluded of [
  "'storage://dli-member-avatars'",
  "'storage://dli-payment-proofs'","'storage://dli-enrolment-proofs'",
@@ -26,6 +31,7 @@ for(const token of [
  'onClick={()=>selectScope(null)}',"event.key==='Backspace'",
  'p_scope:scope','platform_media_facets','platform_media_search',
  'platform_media_revision','window.setInterval','storage_path',
+ 'platform_media_search_page','p_offset:priorCount','setHasMore','Load more media',
  '.download(record.storage_path)','URL.revokeObjectURL',
  "aria-label={'Media type:","scope?'Search '+scope",
 ])assert.ok(component.includes(token),'Media bar regression: '+token);

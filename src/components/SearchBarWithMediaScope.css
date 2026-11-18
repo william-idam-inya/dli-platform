@@ -94,3 +94,11 @@
   background:var(--surface-soft);display:grid;place-items:center;
   overflow:hidden;color:var(--muted)}
 .dli-media-thumbnail img{width:100%;height:100%;object-fit:cover}
+
+.dli-media-search .dli-media-load-more{
+  width:100%;display:block;min-height:39px;margin:8px 0;
+  border:1px solid var(--border);border-radius:9px;
+  background:var(--surface-soft);color:var(--text);
+  font:inherit;font-size:12px;font-weight:600;cursor:pointer
+}
+.dli-media-search .dli-media-load-more:disabled{opacity:.65;cursor:wait}

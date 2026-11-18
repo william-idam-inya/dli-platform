@@ -483,6 +483,10 @@
     {
       "file": "20261118142142_stage_q64_platform_media_scope_secure_view.sql",
       "gitBlobSha1": "25f4d1539dce8a8eef47868283da350b258991a3"
+    },
+    {
+      "file": "20261118144058_stage_q64b_platform_media_pagination.sql",
+      "gitBlobSha1": "0aaf0dae40d471bb766ab9067cd1d294421b4a50"
     }
   ]
 }

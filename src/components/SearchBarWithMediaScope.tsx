@@ -81,6 +81,8 @@ export default function SearchBarWithMediaScope({
   const [resultsOpen,setResultsOpen]=useState(false);
   const [facets,setFacets]=useState<Facet[]>([]);
   const [records,setRecords]=useState<MediaRecord[]>([]);
+  const [hasMore,setHasMore]=useState(false);
+  const [loadingMore,setLoadingMore]=useState(false);
   const [navigation,setNavigation]=useState<NavigationHit[]>([]);
   const [busy,setBusy]=useState(false);
   const [facetsError,setFacetsError]=useState('');
@@ -110,7 +112,7 @@ export default function SearchBarWithMediaScope({
     // A route change or account switch cannot retain another member's private previews.
     ++request.current;
     setTerm('');setScope(null);setMenuOpen(false);setResultsOpen(false);
-    setRecords([]);setNavigation([]);
+    setRecords([]);setNavigation([]);setHasMore(false);setLoadingMore(false);
     if(currentObjectUrl.current)URL.revokeObjectURL(currentObjectUrl.current);
     currentObjectUrl.current=null;setPreview(null);
   },[location.pathname,account?.id]);
@@ -162,34 +164,66 @@ export default function SearchBarWithMediaScope({
 
   useEffect(()=>{
     if(!supabase||!account||(!scope&&!hasSearch)){
-      setRecords([]);setNavigation([]);setBusy(false);setResultsError('');
+      setRecords([]);setNavigation([]);setHasMore(false);
+      setBusy(false);setResultsError('');
       return;
     }
     const current=++request.current;
-    setBusy(true);
+    setBusy(true);setHasMore(false);
     const timer=window.setTimeout(async()=>{
       const client=supabase;
       if(!client)return;
       const [media,old]=await Promise.allSettled([
-        client.rpc('platform_media_search',{
-          p_scope:scope,p_term:trimmed(term)||null,p_limit:40,
+        client.rpc('platform_media_search_page',{
+          p_scope:scope,p_term:trimmed(term)||null,p_limit:40,p_offset:0,
         }),
         !scope&&hasSearch&&loadNavigationMatches?
           loadNavigationMatches(trimmed(term)):Promise.resolve([] as NavigationHit[]),
       ]);
       if(current!==request.current)return;
       if(media.status==='fulfilled'){
-        if(media.value.error){setRecords([]);setResultsError('Media search is temporarily unavailable.');}
-        else{
-          setRecords((Array.isArray(media.value.data)?media.value.data:[]) as MediaRecord[]);
+        if(media.value.error){
+          setRecords([]);setHasMore(false);
+          setResultsError('Media search is temporarily unavailable.');
+        }else{
+          const firstPage=(Array.isArray(media.value.data)?media.value.data:[]) as MediaRecord[];
+          setRecords(firstPage);setHasMore(firstPage.length===40);
           setResultsError('');
         }
-      }else{setRecords([]);setResultsError('Media search could not be completed.');}
+      }else{
+        setRecords([]);setHasMore(false);
+        setResultsError('Media search could not be completed.');
+      }
       setNavigation(old.status==='fulfilled'?old.value:[]);
       setBusy(false);
     },220);
     return()=>{window.clearTimeout(timer);++request.current;};
   },[account?.id,scope,term,hasSearch,revision,loadNavigationMatches]);
+
+  async function loadMore(){
+    if(!supabase||!account||busy||loadingMore||!hasMore)return;
+    const requestVersion=request.current;
+    const priorCount=records.length;
+    setLoadingMore(true);
+    try{
+      const {data,error}=await supabase.rpc('platform_media_search_page',{
+        p_scope:scope,p_term:trimmed(term)||null,p_limit:40,p_offset:priorCount,
+      });
+      if(requestVersion!==request.current)return;
+      if(error)throw error;
+      const batch=(Array.isArray(data)?data:[]) as MediaRecord[];
+      setRecords(previous=>{
+        const already=new Set(previous.map(item=>item.id));
+        return [...previous,...batch.filter(item=>!already.has(item.id))];
+      });
+      setHasMore(batch.length===40);
+    }catch{
+      if(requestVersion===request.current)
+        setResultsError('Could not load more media. Please retry.');
+    }finally{
+      setLoadingMore(false);
+    }
+  }
 
   const selectScope=(next:string|null)=>{
     forgetPreview();setScope(next);setMenuOpen(false);setResultsOpen(true);
@@ -343,6 +377,10 @@ export default function SearchBarWithMediaScope({
             <p role="alert" className="dli-media-error">{mediaError.message}</p>}
         </article>;
       })}
+      {!busy&&hasMore&&<button type="button" className="dli-media-load-more"
+        onClick={()=>void loadMore()} disabled={loadingMore}>
+        {loadingMore?'Loading more media…':'Load more media'}
+      </button>}
       {!busy&&navigation.length>0&&<div className="dli-media-nav-results">
         <strong>Other DLI matches</strong>
         {navigation.map(hit=>{
