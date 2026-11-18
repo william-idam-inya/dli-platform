@@ -189,13 +189,7 @@ export default function AcademicAssignmentsPage() {
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Only existing authorised DLI identities can be assigned</strong>
-        <p>Each person must have the correct active role. PostgreSQL validates the identity and
-        offering and writes an audit event. Assignments are not invitations, lessons, or attendance.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
@@ -225,9 +219,6 @@ export default function AcademicAssignmentsPage() {
       {renderSection('tutor',tutors,'tutor_assignments')}
       {renderSection('student',learners,'student_enrolments')}
     </div>
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      Only staff administrators can manage assignments. Enrolled students and assigned tutors
-      will see their own classes under My classes.
-    </div>
+    
   </div>;
 }

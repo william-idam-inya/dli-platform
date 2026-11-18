@@ -213,14 +213,7 @@ export default function CommunicationReviewPage() {
       </div>
       <span className="module-status"><span/> Stage H2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Manual copy clearance is not publication or delivery</strong>
-        <p>Owner/Admin approval applies only to a specific draft revision and
-          requires a different author and reviewer. Any edit invalidates the earlier clearance.
-          No WhatsApp, email or in-app messages are sent by this module.</p>
-      </div>
-    </div>
+    
     {error && <p className="auth-feedback error" role="alert">{error}</p>}
     {notice && <p className="auth-feedback success" role="status">{notice}</p>}
     <div className="communication-review-summary">
@@ -332,11 +325,6 @@ export default function CommunicationReviewPage() {
         </button>
       </form>
     </section>}
-    <p className="module-footnote"><Clock3 size={15}/>
-      The approval relates to the current message text only. Any edit clears the
-      copy and manual WhatsApp/email composition actions until a different
-      Owner/Admin reviews the new revision. External composers require your
-      own Send action; DLI never claims delivery.
-    </p>
+    
   </div>;
 }

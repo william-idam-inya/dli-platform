@@ -114,14 +114,7 @@ export default function CommunicationDraftsPage() {
       </div>
       <span className="module-status"><span/> Stage H1</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Private drafts only — nothing is sent</strong>
-        <p>Audience and channel describe intended use, not actual recipients.
-          Saving a draft never sends WhatsApp messages, emails or in-app notifications.
-          Students have no access. You can edit only drafts you authored.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="communications-summary">
@@ -205,12 +198,6 @@ export default function CommunicationDraftsPage() {
         </article>)}
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      Private message starters are available under
-      <Link to="/communications/templates"> Message templates</Link>.
-      Independent revision clearance is under
-      <Link to="/communications/reviews"> Communications review</Link>, and planned follow-ups remain under <Link to="/communications/reminders"> Internal reminders</Link>.
-      Approved WhatsApp and email drafts may be handed to an external composer after independent review, with the sender choosing recipients manually. Automatic sending, delivery receipts and external group integrations are not configured.
-    </p>
+    
   </div>;
 }

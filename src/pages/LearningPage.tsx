@@ -435,12 +435,6 @@ export default function LearningPage() {
         </form>
       </section>
     </div>}
-    <p className="module-footnote"><LockKeyhole size={15} aria-hidden="true"/>
-      Learning access follows your active class permissions. For questions about enrolment or missing lessons,
-      <Link to="/feedback">contact DLI support</Link>.
-      Open <Link to="/study?tab=assignments">Assignments and grading</Link>,
-      <Link to="/study?tab=quizzes">Quizzes &amp; results</Link>, or
-      <Link to="/study?tab=attendance">Attendance</Link> whenever those class activities are available.
-    </p>
+    
   </div>;
 }

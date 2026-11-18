@@ -169,16 +169,7 @@ export default function InstitutionalSettingsPage(){
       <span className="module-status"><span/> Live controls</span>
     </div>
 
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div>
-        <strong>Only the Founder can change institutional group links</strong>
-        <p>The Admin may inspect existing configuration without changing it. Assistant Admin can inspect read-only release safeguards, but not private group invitations.
-          Links are kept in PostgreSQL under role-based access policies.
-          Saving a group invitation does not invite or enrol anyone,
-          publish announcements, authorise fees or send a message.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
@@ -294,11 +285,6 @@ export default function InstitutionalSettingsPage(){
             User-directory, payment evidence and raw audit exports remain restricted.</p></div>
       </div>
     </section>
-    <p className="module-footnote"><ExternalLink size={15}/>
-      Group invitation links are private institutional configuration,
-      not proof that a message was delivered or a learner joined.
-      Other settings, such as the academic calendar, exchange rates,
-      compensation and billing, require separate requirements and approval.
-    </p>
+    
   </div>;
 }

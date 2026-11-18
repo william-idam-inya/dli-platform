@@ -904,7 +904,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls can ring on any open authenticated DLI workspace and require microphone/camera consent. A TURN relay and group SFU are not yet configured.</p>
+    
     {forwardTarget&&createPortal(<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"

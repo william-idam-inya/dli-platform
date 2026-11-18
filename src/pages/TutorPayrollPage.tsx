@@ -97,10 +97,7 @@ export default function TutorPayrollPage(){
     <h1>{staff?'Tutor compensation & monthly payroll':'My tutor compensation'}</h1>
     <p>Live group and private assignments determine monthly rates; due dates stay anchored to class start dates.</p>
    </div></div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Audited manual payout confirmation</strong>
-   <p>The system calculates scheduled compensation and updates Paid/Due Today/Overdue automatically from stored dates. It never initiates a bank payment. Owner, Admin or Assistant Admin uploads proof of an external transfer; the Tutor must confirm receiving it before payroll is marked Paid.</p>
-  </div></div>
+  
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
   <div className="payroll-filters">
@@ -166,6 +163,6 @@ export default function TutorPayrollPage(){
       </div>
     </article>)}</div>
   </section>
-  <p className="module-footnote">Standard reference rates: group tutor ₦20,000 plus ₦2,000 data per month; private tutor ₦25,000. Payouts recur monthly from each engagement's start date (e.g., started 11 November → first due 11 December). Extra allocation is not automatically priced.</p>
+  
  </div>;
 }

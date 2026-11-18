@@ -491,10 +491,7 @@ export default function UserManagementPage() {
           pendingAction.user,pendingAction.action,reason,pendingAction.newRole,
         );}}
       />}
-      <p className="module-footnote"><LockKeyhole size={15}/>
-        Restoring access requires a verified identity and authorised staff approval. Removing a revoked record from the register archives it; no permanent deletion is performed.
-        Never share invitation links or administrator credentials publicly.
-      </p>
+      
     </div>
   );
 }
