@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BookOpen, FilePlus2, FileText, LockKeyhole, Pencil,
-  RefreshCw, Save, Search, ShieldCheck, X,
-} from 'lucide-react';
+import { BookOpen, FilePlus2, FileText, LockKeyhole, Pencil, RefreshCw, Save, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -168,19 +165,11 @@ export default function CommunicationTemplatesPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Message templates</h1>
-        <p>Maintain reusable internal writing templates without publishing or sending them.</p>
+        
       </div>
       <span className="module-status"><span/> Stage H3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Templates are private starting points, never approved messages</strong>
-        <p>Creating a draft from a template makes a separate, unreviewed message.
-          Intended audience and channel are planning labels only. A different
-          authorised reviewer must clear each draft revision before manual copying.
-          No WhatsApp, email or in-app delivery is performed.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">
       {notice}{notice.startsWith('A NEW')&&<>
@@ -312,10 +301,6 @@ export default function CommunicationTemplatesPage() {
         </article>)}
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      Templates do not hold approvals. Every generated draft starts private and
-      requires its own review under <Link to="/communications/reviews">Communications review</Link>.
-      After independent approval, WhatsApp and email drafts can be opened in manual composers. Templates themselves never send, publish or select recipients automatically.
-    </p>
+    
   </div>;
 }

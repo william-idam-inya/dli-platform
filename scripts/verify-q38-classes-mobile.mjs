@@ -6,8 +6,8 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const page=read('src/pages/ClassesWorkspacePage.tsx');
 const app=read('src/App.tsx');
 const styles=read('src/pages/ClassesWorkspacePage.css');
-assert.ok(page.includes("{staff&&<div className=\"module-notice\""),
- 'Technical class creation notice must be limited to authorised administration');
+assert.ok(!page.includes('className="module-notice"')&&page.includes('staff&&')&&page.includes('classes-form'),
+ 'Remove redundant class governance box while preserving authorised class creation controls');
 assert.ok(!page.includes('<p className="module-footnote"><Link to="/academics">Academic Setup'),
  'Broken administrative navigation note must not return to learner footer');
 assert.ok(page.includes("account?.role==='student'?groups.length+' class'"),

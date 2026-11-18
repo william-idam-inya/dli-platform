@@ -411,7 +411,7 @@ export default function AppShell({ children }: AppShellProps) {
           <WorkspaceFocus>{children}</WorkspaceFocus>
           <footer className="page-footer">
             <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
-            <span>Built with security and learner privacy as priorities.</span>
+
           </footer>
         </div>
       </main>

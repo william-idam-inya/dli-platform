@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
@@ -584,9 +584,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
         <h1>Messages</h1>
-        <p>{account?.role==='student'||account?.role==='tutor'
-          ?'Chat privately with DLI administration.'
-          :'Private conversations with authorised DLI members.'}</p>
+        
       </div>
       <button type="button" className="user-outline-button dli-direct-alerts-button" onClick={()=>void enableAlerts()}>
         <BellRing size={16} aria-hidden="true"/> Enable browser alerts
@@ -904,7 +902,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         </>}
       </section>
     </div>
-    <p className="module-footnote"><Users size={14}/> Private messages and call signals are restricted to authorised participants. Online status reflects the open chat session; browser-to-browser calls can ring on any open authenticated DLI workspace and require microphone/camera consent. A TURN relay and group SFU are not yet configured.</p>
+    
     {forwardTarget&&createPortal(<div className="dli-telegram-forward-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)setForwardTarget(null);}}>
       <div className="dli-telegram-forward-dialog" role="dialog" aria-modal="true"
