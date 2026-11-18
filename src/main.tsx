@@ -13,6 +13,7 @@ import './q36-workspace-theme.css';
 import './q45-shell.css';
 import './mobile-overlay-resilience.css';
 import './global-page-header-cleanup.css';
+import './components/TopbarUtilityDropdown.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 import {registerDliServiceWorker} from './lib/pushNotifications';
 import {initializeCallRingtone} from './lib/callRingtone';
