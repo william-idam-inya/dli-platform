@@ -479,6 +479,10 @@
     {
       "file": "20261118070000_stage_q60_push_housekeeping.sql",
       "gitBlobSha1": "70f0957fe2e1c524aab6703b1905938431266948"
+    },
+    {
+      "file": "20261118083000_stage_q62_general_device_notification_kinds.sql",
+      "gitBlobSha1": "de118868c0b507e40c1a05ff29c9f1c0fef8ec40"
     }
   ]
 }
