@@ -9,7 +9,7 @@ const edge=read('supabase/functions/send-call-push/index.ts');
 const reg=read('src/lib/pushNotifications.ts');
 const ui=read('src/components/PushNotificationOptIn.tsx');
 const call=read('src/components/CallProvider.tsx');
-for(const t of ["self.addEventListener('push'",'showNotification','notificationclick','accept','decline','requireInteraction','vibrate','clients.openWindow'])
+for(const t of ["sw.addEventListener('push'",'showNotification','notificationclick','accept','decline','requireInteraction','vibrate','clients.openWindow'])
  assert.ok(sw.includes(t),'Missing worker action '+t);
 for(const t of ['user_push_subscriptions','ENABLE ROW LEVEL SECURITY','dli_push_outbox',
  'dli_call_pending_offers','dli_pending_calls','dli_push_enqueue_due_conferences',

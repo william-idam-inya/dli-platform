@@ -1,0 +1,35 @@
+name: Q62 generate exact PWA lockfile and official PNG icons
+on:
+  push:
+    branches:
+      - feature/stage-q62-native-pwa-foundation-20261118
+permissions:
+  contents: write
+jobs:
+  generate:
+    if: github.repository == 'william-idam-inya/dli-platform'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve reviewed pinned Workbox dependencies
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Generate exact official icon assets
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          python scripts/generate-q62-pwa-icons.py
+      - name: Commit generated lockfile and images to this feature branch only
+        shell: bash
+        run: |
+          git add package-lock.json public/dli-icon-192.png public/dli-icon-512.png
+          if git diff --cached --quiet; then
+            echo "Generated files already committed."
+            exit 0
+          fi
+          git -c user.name="DLI CI" -c user.email="actions@users.noreply.github.com" \
+            commit -m "Q62: lock PWA dependencies and add official device icon bitmaps"
+          git push origin "HEAD:feature/stage-q62-native-pwa-foundation-20261118"
