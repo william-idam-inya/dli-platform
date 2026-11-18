@@ -166,7 +166,7 @@ export default function MemberProfilePage(){
   <div className="module-page-hero"><span className="module-page-icon"><UserRound size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> MY ACCOUNT</div>
     <h1>My profile &amp; preferences</h1>
-    <p>Complete your personal details once and use the same profile when you sign in on another device.</p>
+    <p>Manage your profile and appearance preferences.</p>
    </div></div>
   <button type="button" className="dli-tour-launch" onClick={()=>window.dispatchEvent(new Event('dli-tour-replay'))}>
     <HelpCircle size={17} aria-hidden="true"/> Replay guided app tour

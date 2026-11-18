@@ -409,10 +409,6 @@ export default function AppShell({ children }: AppShellProps) {
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
           {themeSyncWarning && <p role="alert" className="auth-feedback error">{themeSyncWarning}</p>}
           <WorkspaceFocus>{children}</WorkspaceFocus>
-          <footer className="page-footer">
-            <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
-            <span>Built with security and learner privacy as priorities.</span>
-          </footer>
         </div>
       </main>
       {account && <nav className="mobile-bottom-nav" aria-label="Quick mobile navigation">
