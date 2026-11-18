@@ -14,7 +14,7 @@ assert.ok(shell.includes('className="dli-topbar-brand"')
  &&shell.includes('<OfficialDliLogo decorative/>')
  &&shell.includes('DLI Platform'),
  'Latest spec keeps DLI logo in global top navigation');
-assert.ok(shell.includes('className="account-mini"')
+assert.ok(shell.includes('className="dli-utility-account"')
  &&shell.includes('<strong>{account?.full_name}</strong>')
  &&shell.includes("accountRoleLabel(account)"),
  'Keep the green-marked actual logged-in member and role');
