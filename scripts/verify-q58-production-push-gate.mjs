@@ -20,7 +20,7 @@ assert.match(conference,/if\(pushConfigured&&scheduledAt\)/);
 assert.match(conference,/\{pushConfigured&&<label>Scheduled start/);
 assert.ok(sw.includes("sw.addEventListener('push'")&&
  sw.includes("url.origin===sw.location.origin")&&
- sw.includes("precacheAndRoute(sw.__WB_MANIFEST)"),
+ sw.includes('precacheAndRoute(')&&sw.includes('self.__WB_MANIFEST'),
  'Q62 worker must preserve secure push and cache only same-origin app shell');
 assert.ok(!read('src/q45-shell.css').includes('Q57: phone header accessibility'));
 console.log('Q58 production VAPID gate, legacy database compatibility, restored header and call isolation verified.');
