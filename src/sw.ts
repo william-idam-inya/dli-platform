@@ -21,7 +21,7 @@ const badgeNavigator=sw.navigator as WorkerNavigator&{
  clearAppBadge?:()=>Promise<void>
 };
 // The exact self.__WB_MANIFEST injection marker must survive bundling.
-precacheAndRoute((self as typeof sw).__WB_MANIFEST);
+precacheAndRoute((self as unknown as typeof sw).__WB_MANIFEST);
 cleanupOutdatedCaches();
 sw.addEventListener('install',event=>event.waitUntil(sw.skipWaiting()));
 sw.addEventListener('activate',event=>event.waitUntil(sw.clients.claim()));
