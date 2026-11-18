@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowLeft, KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
 import { PasswordInput } from './PasswordInput';
@@ -95,11 +95,16 @@ export function MissingConfiguration() {
 
 export function LoginPage() {
   const { state, notice, clearNotice } = useAuth();
+  const location=useLocation();
+  const from=(location.state as {from?:unknown}|null)?.from;
+  const afterLogin=typeof from==='string'&&from.startsWith('/')&&
+    !from.startsWith('//')&&!from.includes('\\')&&from.length<=350&&
+    !from.startsWith('/login')?from:'/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  if (state === 'active') return <Navigate replace to="/" />;
+  if (state === 'active') return <Navigate replace to={afterLogin} />;
   if (state === 'config-error') return <MissingConfiguration />;
   if (state === 'checking') return <AuthChecking />;
   if (state === 'unavailable') return <AuthTemporarilyUnavailable />;

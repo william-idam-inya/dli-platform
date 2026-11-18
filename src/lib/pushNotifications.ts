@@ -107,6 +107,14 @@ export async function notifyHiddenIncomingDliCall(senderName:string,callId:strin
    return;
   }
  }catch{/* Desktop constructor fallback below; ringing stays independent. */}
- try{new Notification(title,opts);}
- catch{/* Most mobile browsers do not support the constructor. */}
+ try{
+  const notification=new Notification(title,opts);
+  // Legacy desktop fallback notifications are not service-worker events.
+  notification.onclick=()=>{
+   notification.close();window.focus();
+   window.dispatchEvent(new CustomEvent('dli-push-click',{detail:{
+    type:'dli-push-open',kind:'call',callId,path:'/',action:'view'
+   }}));
+  };
+ }catch{/* Most mobile browsers do not support the constructor. */}
 }

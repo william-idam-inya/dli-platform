@@ -203,6 +203,9 @@ jobs:
       - name: Verify Q60 sanitized Web Push diagnostics and housekeeping
         run: node scripts/verify-q60-push-housekeeping.mjs
 
+      - name: Verify Q61 notification click navigation and deep links
+        run: node scripts/verify-q61-notification-click.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
