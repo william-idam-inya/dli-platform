@@ -40,3 +40,4 @@ export default function BrowserAlertPermission(){
    </button>}
   {message&&<p className="user-caption" role="status">{message}</p>}
  </section>;
+}
