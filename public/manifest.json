@@ -1,7 +1,7 @@
 {
-  "name": "DLI-ONLINE | Detailed Learning Institute",
-  "short_name": "DLI-ONLINE",
-  "description": "Role-restricted learning, secure messaging and conferencing",
+  "name": "Detailed Learning Institute",
+  "short_name": "DLI Online",
+  "description": "Detailed Learning Institute — authorised learning, classes and secure messaging",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -9,10 +9,52 @@
   "background_color": "#0F172A",
   "theme_color": "#082877",
   "icons": [
-    {"src":"/dli-mark.svg?v=20261113","type":"image/svg+xml","sizes":"any","purpose":"any"}
+    {
+      "src": "/dli-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/dli-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/dli-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ],
   "shortcuts": [
-    {"name":"DLI Messages","short_name":"Messages","url":"/communications"},
-    {"name":"Conference Rooms","short_name":"Conferences","url":"/conferences"}
+    {
+      "name": "DLI Messages",
+      "short_name": "Messages",
+      "url": "/communications",
+      "icons": [
+        {
+          "src": "/dli-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Classes & Timetable",
+      "short_name": "Classes",
+      "url": "/classes",
+      "icons": [
+        {
+          "src": "/dli-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Conference Rooms",
+      "short_name": "Conferences",
+      "url": "/conferences"
+    }
   ]
 }

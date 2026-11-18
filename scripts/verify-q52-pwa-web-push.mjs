@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const sw=read('public/sw.js'),migration=read('supabase/migrations/20261116234500_stage_q52_secure_pwa_web_push.sql');
+const sw=read('src/sw.ts'),migration=read('supabase/migrations/20261116234500_stage_q52_secure_pwa_web_push.sql');
 const activation=read('supabase/migrations/20261117183000_stage_q52_push_activation_compat.sql');
 const edge=read('supabase/functions/send-call-push/index.ts');
 const reg=read('src/lib/pushNotifications.ts');

@@ -1,0 +1,36 @@
+# Preserve real static assets and /sw.js: only rewrite known client SPA routes.
+# Unknown SPA paths already use Cloudflare Pages' native fallback.
+/change-password /index.html 200
+/profile /index.html 200
+/members/* /index.html 200
+/enrolment /index.html 200
+/payroll /index.html 200
+/feedback /index.html 200
+/users /index.html 200
+/people /index.html 200
+/conferences /index.html 200
+/academics /index.html 200
+/cohorts /index.html 200
+/assignments /index.html 200
+/classes /index.html 200
+/my-classes /index.html 200
+/private-classes /index.html 200
+/study /index.html 200
+/learning /index.html 200
+/assessments /index.html 200
+/quizzes /index.html 200
+/schedule /index.html 200
+/attendance /index.html 200
+/finance /index.html 200
+/finance/reviews /index.html 200
+/communications /index.html 200
+/communications/reminders /index.html 200
+/announcements /index.html 200
+/reports/audit /index.html 200
+/reports /index.html 200
+/settings /index.html 200
+* /index.html 200
+/login /index.html 200
+/forgot-password /index.html 200
+/auth/confirm /index.html 200
+/set-password /index.html 200
