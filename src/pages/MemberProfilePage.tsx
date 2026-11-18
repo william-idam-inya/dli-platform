@@ -199,7 +199,7 @@ export default function MemberProfilePage(){
            }
            setPhoto(selected);
           }}/>
-        <small>JPEG, PNG or WEBP, maximum 2 MB. After choosing a file, crop it below and click Upload photo.</small>
+        <small>JPEG, PNG or WEBP, maximum 2 MB. Your saved photo may appear to authorised DLI chat contacts.</small>
         <span className="member-photo-cloud-state" aria-live="polite">
           {photoStatus??(picture?'Saved photo is available in your DLI cloud account.':'No saved photo could be displayed.')}
         </span>
