@@ -1,0 +1,143 @@
+/* Q65: one mobile header utility trigger, with the original icon controls in a popover.
+   Do not unmount alert components while the popover is closed. */
+.app-layout .dli-grid-topbar>.topbar-actions.dli-compact-actions{
+  grid-area:actions;min-width:44px;flex:0 0 auto;gap:0;
+  display:flex;align-items:center;justify-content:flex-end;
+}
+.app-layout .dli-utility-menu{
+  position:relative;display:flex;align-items:center;
+  min-width:44px;
+}
+.app-layout .dli-utility-trigger{
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  padding:0;display:grid;place-items:center;
+  color:var(--text);background:var(--surface-soft);
+  border:1px solid var(--border);border-radius:14px;
+  cursor:pointer;transition:background .15s ease;
+}
+.app-layout .dli-utility-trigger[aria-expanded="true"]{
+  background:var(--purple-soft);border-color:var(--purple);
+}
+.app-layout .dli-utility-dropdown{
+  position:absolute;top:calc(100% + 9px);right:0;left:auto;
+  z-index:240;display:grid;gap:12px;
+  width:min(350px,calc(100vw - 16px));
+  max-width:none;max-height:none;overflow:visible;
+  padding:15px;border-radius:19px;
+  background:var(--surface);color:var(--text);
+  border:1px solid var(--border);
+  box-shadow:0 22px 60px rgba(6,23,48,.28);
+}
+.app-layout .dli-utility-dropdown[hidden]{display:none!important}
+.app-layout .dli-utility-heading{
+  font-size:13px;padding:0;color:var(--text);
+}
+.app-layout .dli-utility-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  justify-items:stretch;gap:9px;
+}
+.app-layout .dli-utility-tile{
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:6px;min-width:0;min-height:84px;
+  padding:9px 4px;border-radius:14px;
+  border:1px solid var(--border);background:var(--surface-soft);
+  color:var(--text);text-decoration:none;
+}
+.app-layout .dli-utility-tile small{
+  color:var(--muted);font-size:11px;font-weight:650;
+  line-height:1.25;text-align:center;white-space:nowrap;
+}
+.app-layout .dli-utility-tile .icon-button,
+.app-layout .dli-utility-tile .dli-push-button,
+.app-layout .dli-utility-tile .dli-profile-placeholder{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:43px;height:43px;min-height:43px;min-width:43px;
+  border:1px solid var(--border);border-radius:13px;
+  padding:0;background:var(--surface);color:var(--text);
+  cursor:pointer;
+}
+.app-layout .dli-utility-tile .icon-button:hover,
+.app-layout .dli-utility-tile .dli-push-button:hover,
+.app-layout .dli-utility-profile:hover{border-color:var(--purple);color:var(--text)}
+.app-layout .dli-utility-tile .dli-push-button span{display:none!important}
+.app-layout .dli-utility-tile .dli-push-button svg{width:20px;height:20px}
+.app-layout .dli-utility-profile>img,
+.app-layout .dli-utility-profile>.profile-avatar,
+.app-layout .dli-utility-profile>.profile-placeholder{
+  width:43px;height:43px;min-width:43px;min-height:43px;
+  border-radius:13px;object-fit:cover;
+}
+.app-layout .dli-utility-tile .dli-notification-widget,
+.app-layout .dli-utility-tile .dli-message-indicator,
+.app-layout .dli-utility-tile .dli-quick-menu{
+  display:flex;align-items:center;justify-content:center;
+  min-height:43px;min-width:43px;
+}
+.app-layout .dli-utility-tile .dli-notification-panel{
+  z-index:290;
+}
+.app-layout .dli-utility-links{
+  display:grid;gap:3px;
+  border-top:1px solid var(--border);padding-top:7px;
+  max-height:35dvh;overflow-y:auto;
+}
+.app-layout .dli-utility-dropdown .dli-utility-links>a,
+.app-layout .dli-utility-dropdown .dli-utility-links>button{
+  display:flex;align-items:center;gap:9px;
+  border:0;background:transparent;color:var(--text);
+  font:inherit;font-size:12px;text-decoration:none;text-align:left;
+  border-radius:10px;padding:9px 10px;min-height:40px;
+  cursor:pointer;
+}
+.app-layout .dli-utility-dropdown .dli-utility-links>a:hover,
+.app-layout .dli-utility-dropdown .dli-utility-links>button:hover{
+  background:var(--surface-soft);
+}
+.app-layout .dli-utility-environment{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 10px;color:var(--muted);font-size:10px;
+}
+.app-layout .dli-utility-trigger:focus-visible,
+.app-layout .dli-utility-dropdown :is(button,a):focus-visible{
+  outline:2px solid var(--purple);outline-offset:2px;
+}
+
+/* Search gets the centre slot. The menu alone remains on the right. */
+@media(max-width:680px){
+  .app-layout .dli-grid-topbar{
+    grid-template-columns:auto minmax(0,1fr) 44px;
+    grid-template-areas:"brand search actions";
+    column-gap:6px;
+  }
+  .app-layout .dli-grid-topbar>.dli-topbar-search{
+    width:100%;min-width:0;max-width:none;justify-content:stretch;
+  }
+  .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+    width:100%;max-width:none;min-width:0;
+  }
+  .app-layout .dli-grid-topbar>.topbar-actions.dli-compact-actions{
+    width:44px;min-width:44px;gap:0;
+  }
+  .app-layout .dli-utility-dropdown{
+    position:fixed;top:70px;right:8px;left:auto;
+    width:min(350px,calc(100vw - 16px));
+    max-height:calc(100dvh - 85px);overflow-y:auto;
+  }
+  .app-layout .dli-utility-dropdown .dli-utility-links{
+    overflow-y:visible;max-height:none;
+  }
+  .app-layout .dli-utility-tile .dli-notification-panel{
+    position:fixed;top:71px;right:8px;left:auto;
+    width:min(340px,calc(100vw - 16px));max-height:calc(100dvh - 85px);
+    z-index:320;
+  }
+}
+@media(max-width:390px){
+  .app-layout .dli-grid-topbar{column-gap:4px;padding-inline:6px}
+  .app-layout .dli-grid-topbar>.topbar-left{gap:2px}
+  .app-layout .dli-grid-topbar>.dli-topbar-search{min-width:0}
+  .app-layout .dli-utility-dropdown{right:6px;width:calc(100vw - 12px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-layout .dli-utility-trigger{transition:none}
+}
