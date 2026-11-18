@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  CalendarCheck, CalendarClock, CheckCircle2, ClipboardList, GraduationCap,
-  LockKeyhole, RefreshCw, ShieldCheck, UserCheck, UserX,
-} from 'lucide-react';
+import { CalendarCheck, CalendarClock, CheckCircle2, ClipboardList, GraduationCap, RefreshCw, UserCheck, UserX } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

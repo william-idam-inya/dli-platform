@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  ArrowLeft, CheckCircle2, ClipboardCheck, ClipboardCopy, Clock3,
-  FileText, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck,
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ClipboardCheck, ClipboardCopy, FileText, LockKeyhole, MessageSquareText, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ClipboardList, Clock3, FileLock2, ListFilter, LockKeyhole,
-  RefreshCw, ShieldCheck, ScrollText,
-} from 'lucide-react';
+import { ClipboardList, Clock3, FileLock2, ListFilter, LockKeyhole, RefreshCw, ScrollText } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';

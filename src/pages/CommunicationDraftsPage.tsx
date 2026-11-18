@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import {
-  ClipboardEdit, FileText, LockKeyhole, MessageSquareText,
-  Pencil, RefreshCw, Save, ShieldCheck, Users, X,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ClipboardEdit, FileText, LockKeyhole, MessageSquareText, Pencil, RefreshCw, Save, Users, X } from 'lucide-react';
+
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';

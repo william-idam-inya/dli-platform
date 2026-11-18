@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
-import {ArrowDown,ArrowLeft,ArrowUp,BookOpen,CalendarClock,CheckCircle2,GraduationCap,Layers3,Plus,RefreshCw,ShieldCheck,Trash2} from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, CalendarClock, CheckCircle2, GraduationCap, Layers3, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {supabase} from '../lib/supabase';
 import './AcademicSetupPage.css';
