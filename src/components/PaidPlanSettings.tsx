@@ -284,33 +284,20 @@ export default function PaidPlanSettings(){
 
   return <section className="panel finance-source-plans" aria-labelledby="source-plan-title">
     <div className="panel-heading"><div>
-      <p className="section-kicker">INSTITUTIONAL REFERENCE · OWNER/ADMIN EDITABLE</p>
+      
       <h2 id="source-plan-title">DLI Paid Learning Plans</h2>
-      <p className="user-caption">
-        Current saved plan terms are maintained in Supabase. Owner and Admin may edit this
-        reference; the Assistant Admin can view it. Changes are audited and do not
-        automatically update existing fees, approved enrolments, or tutor payments.
-      </p>
+
     </div><button type="button" className="user-outline-button"
       disabled={loading||saving||Boolean(editing)} onClick={()=>{void refresh();}}>
       <RefreshCw size={15}/> Refresh plans
     </button></div>
-    <div className="source-plan-locked" role="note">
-      <LockKeyhole size={17}/>
-      <span>Reference catalogue only. Actual invoices, student charges and tutor transfers follow
-        their separately authorised workflows.</span>
-    </div>
+    
     {loading&&<p role="status" className="paid-plan-status">Loading saved plans…</p>}
     {readError&&<p role="alert" className="auth-feedback error">
       {readError} Editing is disabled until the database can be verified.
     </p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
-    {canEdit&&!readError&&!loading&&<p className="paid-plan-edit-guidance" role="note">
-      <Pencil size={16} aria-hidden="true"/>
-      Founder and Admin: select <strong>Edit plan &amp; rates</strong> on a card to update
-      the plan name, student fees, tutor payments, class size, subjects and teaching hours.
-      Changes save to Supabase and are recorded in revision history.
-    </p>}
+    
     {editing&&draft&&<form id="dli-plan-editor" className="paid-plan-editor"
       aria-label={'Editing '+editing.name}
       onSubmit={event=>{void save(event);}}>
@@ -367,11 +354,6 @@ export default function PaidPlanSettings(){
           editor={canEdit&&!readError&&!loading&&!editing?()=>{void openEditor(row);}:undefined}
           loading={saving}/>)}
     </div>
-    <p className="source-plan-footer">
-      Initial figures originated from <strong>{source.sourceTitle}</strong> (pages 1–2).
-      The user-approved first group name is “Group of 5 Students”. These are editable
-      internal references, not an active payment instruction and not a substitute for
-      programme-specific pricing such as the JAMB bootcamp.
-    </p>
+    
   </section>;
 }

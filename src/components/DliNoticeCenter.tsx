@@ -273,7 +273,7 @@ export function DliDashboardAnnouncements(){
   return <section className="panel dli-dashboard-announcements" aria-labelledby="dashboard-notices-heading">
     <div className="panel-heading"><div><p className="section-kicker">DLI BROADCASTS</p>
       <h2 id="dashboard-notices-heading">Announcements</h2>
-      <p className="user-caption">Current notices for your account; posted notices remain here until expiry or withdrawal.</p>
+
     </div><button type="button" className="user-outline-button" onClick={()=>void refresh()}>Refresh</button></div>
     {error&&<p role="alert">The announcement feed could not be refreshed.</p>}
     {visible.length===0?<p className="academic-empty">There are no currently active announcements.</p>:

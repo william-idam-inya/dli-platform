@@ -63,7 +63,7 @@ export default function RoleProfileFields(){
   <div className="panel-heading"><div>
    <p className="section-kicker">PROFILE DETAILS</p>
    <h2><GraduationCap size={20}/> {profileRoleLabel(account.role)}</h2>
-   <p className="user-caption">Complete your role-specific information. Only you can edit it; approved administrators can view it for DLI operations.</p>
+
   </div>
    <button type="button" className="user-outline-button" onClick={()=>void load()} disabled={saving||loading}><RefreshCw size={15}/> Refresh</button>
   </div>
