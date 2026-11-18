@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banknote, Clock3, FileText, LockKeyhole,
-  Plus, RefreshCw, ShieldCheck, Wallet } from 'lucide-react';
+import { Banknote, Clock3, FileText, Plus, RefreshCw, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
 import PaidPlanSettings from '../components/PaidPlanSettings';
@@ -56,7 +54,6 @@ function proposalName(type: ProposalType): string {
 export default function FinancePage() {
   const { account } = useAuth();
   const canPropose = Boolean(account && FINANCE_ROLES.has(account.role));
-  const canOpenClassPayments = Boolean(account && canAccessPath(account.role,'/classes',account.studentTier));
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [category, setCategory] = useState<ProposalType>('fee_structure');
   const [title, setTitle] = useState('');
@@ -143,19 +140,12 @@ export default function FinancePage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance management</h1>
-        <p>Manage the internal learning-plan reference and prepare finance-policy proposals without activating charges.</p>
+        
       </div>
       <span className="module-status"><span/> Finance controls</span>
     </div>
 
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>General finance proposals remain pending — private tuition is managed separately</strong>
-        <p>Owner, Admin and Assistant Admin may equally view and submit these policy proposals. They do not activate programme-wide charges or tutor payouts. The separate {canOpenClassPayments
-          ?<Link to="/classes?tab=payments">Classes &amp; timetable · Payments</Link>
-          :<strong>Classes &amp; timetable · Payments (authorised administrators)</strong>} area permits explicitly assigned student fees and manual bank-transfer proof verification by authorised administrators.</p>
-      </div>
-    </div>
+    
 
     {error && <p role="alert" className="auth-feedback error">{error}</p>}
     {notice && <p role="status" className="auth-feedback success">{notice}</p>}
@@ -261,12 +251,6 @@ export default function FinancePage() {
         </article>)}
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      DLI’s finance workspace includes editable, audited internal rate references, planned tutor compensation
-      and nonbinding institutional proposals. Individual tuition renewals, bank-transfer proof
-      and credit-date verification are handled in {canOpenClassPayments
-        ?<Link to="/classes?tab=payments">Classes &amp; timetable · Fees</Link>
-        :<strong>the authorised class finance workspace</strong>}.
-      No bank transfers are initiated by the app; tutor payments require independently verified confirmation.</p>
+    
   </div>;
 }

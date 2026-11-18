@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, LockKeyhole, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { NavigationItem } from '../data/navigation';
 
@@ -35,18 +35,12 @@ export default function ModulePage({ item }: ModulePageProps) {
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line" /> {item.group.toUpperCase()}</div>
           <h1>{item.label}</h1>
-          <p>{item.description}</p>
+          
         </div>
         <span className="module-status"><span /> Planned module</span>
       </div>
 
-      <div className="module-notice">
-        <div className="notice-icon"><LockKeyhole size={20} /></div>
-        <div>
-          <strong>This module is not connected yet.</strong>
-          <p>The workspace navigation is ready, but this module has not been activated. Its records and permissions will be implemented against Supabase in the approved build sequence.</p>
-        </div>
-      </div>
+      <p className="auth-feedback" role="status">This module is not available yet.</p>
 
       <section className="panel module-scope-panel">
         <div className="panel-heading">
@@ -67,10 +61,7 @@ export default function ModulePage({ item }: ModulePageProps) {
         </div>
       </section>
 
-      <div className="module-footnote">
-        <LockKeyhole size={15} />
-        No sample learner records or simulated transactions are displayed in this preview.
-      </div>
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
+import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -84,18 +84,11 @@ export default function MyClassesPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> MY LEARNING WORKSPACE</div>
         <h1>My classes</h1>
-        <p>{isTutor?'Only the course offerings assigned to you as an authorised Tutor.':
-          'Only the course offerings where your active enrolment is recorded.'}</p>
+
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Private, role-scoped class access</strong>
-        <p>Database policies verify your current account role and assigned or enrolled class.
-          This is a class directory, not an active lesson, attendance system or payment record.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     <div className="academic-top-actions">
       <p role="status">{loading?'Loading your authorised classes…':
@@ -128,9 +121,6 @@ export default function MyClassesPage() {
         </div>
       </section>)}
     </div>
-    <p className="module-footnote"><ShieldCheck size={15}/>
-      Only registered and currently authorised Tutor or Student roles can view this area.
-      Course contents and lesson delivery will be introduced in Stage E.
-    </p>
+    
   </div>;
 }

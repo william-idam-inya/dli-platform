@@ -253,7 +253,7 @@ export default function UserManagementPage() {
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> PEOPLE & ACCESS</div>
           <h1>User management</h1>
-          <p>Review authorised accounts, manage permitted roles and access, and track changes.</p>
+          
         </div>
 
       </div>
@@ -261,14 +261,7 @@ export default function UserManagementPage() {
         <a href="#account-registry"><Users size={17} aria-hidden="true"/> Account registry</a>
         <a href="#invite-member"><CheckCircle2 size={17} aria-hidden="true"/> Invite a member</a>
       </div>
-      <details className="dli-user-safety">
-        <summary><ShieldCheck size={18} aria-hidden="true"/>
-          Role-based permissions are enforced on the server
-        </summary>
-        <p>You can manage only permitted roles. Changes are audited in Supabase.
-          Suspension and revocation block DLI data access immediately; existing
-          authentication tokens may remain valid until expiry.</p>
-      </details>
+
 
       {error && <p className="auth-feedback error" role="alert">{error}</p>}
       {notice && <div className="user-action-toast" role="status" aria-live="polite">
@@ -491,10 +484,7 @@ export default function UserManagementPage() {
           pendingAction.user,pendingAction.action,reason,pendingAction.newRole,
         );}}
       />}
-      <p className="module-footnote"><LockKeyhole size={15}/>
-        Restoring access requires a verified identity and authorised staff approval. Removing a revoked record from the register archives it; no permanent deletion is performed.
-        Never share invitation links or administrator credentials publicly.
-      </p>
+      
     </div>
   );
 }

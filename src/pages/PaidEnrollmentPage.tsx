@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {createPortal} from 'react-dom';
-import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
+import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -288,14 +288,10 @@ export default function PaidEnrollmentPage(){
    <span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> AUTHORISED DLI ENROLMENT</div>
     <h1>{isManager?'Paid enrolment approvals':'Free Demo & paid enrolment'}</h1>
-    <p>{isManager?'Review bank-transfer evidence and approve the selected learning plan.':
-      'Join a free demonstration lesson or apply for the paid subjects you want to study.'}</p>
+    
    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Invite-only accounts · independently verified payments</strong>
-   <p>Uploading a transfer screenshot does not confirm payment. Access upgrades happen only after Owner, Admin or Assistant Admin checks the actual bank credit and approves the application.</p>
-  </div></div>
+  
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   <button type="button" className="user-outline-button" disabled={loading||busy}

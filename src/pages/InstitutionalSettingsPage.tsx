@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import {
-  BookOpen, CalendarClock, CheckCircle2, ExternalLink,
-  LockKeyhole, RefreshCw, Save, Settings2, ShieldCheck, Users,
-} from 'lucide-react';
+import { BookOpen, CalendarClock, CheckCircle2, LockKeyhole, RefreshCw, Save, Settings2, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -164,21 +161,12 @@ export default function InstitutionalSettingsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL GOVERNANCE</div>
         <h1>Institutional settings</h1>
-        <p>Live admission controls, role-scoped group invitations and release safeguards.</p>
+        
       </div>
       <span className="module-status"><span/> Live controls</span>
     </div>
 
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div>
-        <strong>Only the Founder can change institutional group links</strong>
-        <p>The Admin may inspect existing configuration without changing it. Assistant Admin can inspect read-only release safeguards, but not private group invitations.
-          Links are kept in PostgreSQL under role-based access policies.
-          Saving a group invitation does not invite or enrol anyone,
-          publish announcements, authorise fees or send a message.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
@@ -194,7 +182,7 @@ export default function InstitutionalSettingsPage(){
     </div>
 
     <div className="institutional-settings-actions">
-      <p>Institutional links are not publicly exposed here. Settings shown depend on your authorised DLI role.</p>
+
       <button type="button" className="user-outline-button"
         disabled={loading||saving!==null}
         onClick={()=>{void refresh();}}><RefreshCw size={16}/> Refresh settings</button>
@@ -264,41 +252,7 @@ export default function InstitutionalSettingsPage(){
       </div>
     </section>
 
-    <section className="panel institutional-settings-governance">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">03 · RELEASE SAFEGUARDS</p>
-        <h2>Existing governance restrictions</h2>
-        <p className="user-caption">Information only. This stage does not provide controls
-          to lift these restrictions.</p>
-      </div></div>
-      <div className="institutional-settings-safeguards">
-        <div>
-          <strong>Current in-app notices</strong>
-          <span>{publicationStatus}</span>
-          <p>The current notice centre is backed by the role-scoped dli_notices
-            table, including manual activation, scheduling and withdrawal.
-            This is separate from the retired H5 publication flag, which
-            must not be presented as the status of current notices.
-            {' '}<Link to="/announcements">Open announcement centre</Link>.
-          </p>
-        </div>
-        <div><strong>Finance rates and payments</strong><span>Not configured here</span>
-          <p>Financial policies remain subject to separate institutional approval.
-            Manual Student bank-transfer evidence and Tutor payout confirmations are available in <Link to="/enrolment">Paid enrolment</Link> and <Link to="/payroll">Tutor payroll</Link>. Real transfers still require independent verification. Automatic bank collection and payouts are not connected.</p></div>
-        <div><strong>AI authoring integration</strong><span>Not connected here</span>
-          <p>Stage I3 does not connect an AI API, submit learner data or
-            change the existing Gemini compliance requirement.</p></div>
-        <div><strong>Reporting exports</strong><span>Aggregate CSV available</span>
-          <p>Authorised staff can export verified non-identifying counts in
-            {' '}<Link to="/reports">Operational reports</Link>.
-            User-directory, payment evidence and raw audit exports remain restricted.</p></div>
-      </div>
-    </section>
-    <p className="module-footnote"><ExternalLink size={15}/>
-      Group invitation links are private institutional configuration,
-      not proof that a message was delivered or a learner joined.
-      Other settings, such as the academic calendar, exchange rates,
-      compensation and billing, require separate requirements and approval.
-    </p>
+    
+    
   </div>;
 }

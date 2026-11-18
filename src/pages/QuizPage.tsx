@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap,
-  LockKeyhole, Plus, RefreshCw, ShieldCheck, Send } from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, Plus, RefreshCw, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -191,19 +190,11 @@ export default function QuizPage(){
    <div className="module-page-copy">
     <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
     <h1>Quizzes &amp; results</h1>
-    <p>{canEdit?'Prepare multiple-choice questions, publish quizzes and review saved results.'
-     :'Answer published quizzes from your enrolled classes and review your results.'}</p>
+    
    </div>
    <span className="module-status"><span/> Stage E4</span>
   </div>
-  <div className="module-notice">
-   <div className="notice-icon"><ShieldCheck size={20}/></div>
-   <div><strong>Answer keys remain protected in PostgreSQL</strong>
-    <p>Students receive question choices only, never the correct-option field. Submitted answers
-     are checked on the server. This release allows one saved attempt per Student per quiz;
-     retake and pass-mark rules require separate DLI approval.</p>
-   </div>
-  </div>
+  
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
   <div className="academic-summary">
@@ -365,9 +356,6 @@ export default function QuizPage(){
     })}
    </div>
   </section>
-  <p className="module-footnote"><LockKeyhole size={15}/>
-   Quizzes use exactly four choices and 1 point per correct response.
-   No automatic pass grade, retake scheduling, time limit or quiz certificate is configured.
-  </p>
+  
  </div>;
 }

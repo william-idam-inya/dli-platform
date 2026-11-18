@@ -54,7 +54,7 @@ inc(main,"import './q45-shell.css'","Q45 stylesheet applied");
 for(const t of ['function KpiCard','return <Link className="ref-kpi-card"',
  'label:\'Classes\'','label:\'Payments\'','label:\'Reports\'',
  'No recent audited activity is available.',
- 'Free and Paid Students can access class-assigned learning'])
+ 'studentTier','LearningProgress'])
  inc(dashboard,t,'Real KPI merge');
 assert.ok(!dashboard.includes('Payment proof submitted by Samuel O.')
  &&!dashboard.includes('New tutor invitation: Ijeoma N.')
@@ -95,8 +95,8 @@ inc(rtc,'roleLabel={peer.role}','Display validated sender role');
 for(const t of ['roleLabel&&','minimized','onPointerDown={beginDrag}',
  'Minimize call to floating window','if(minimized)return'])inc(callOverlay,t,'Call PiP');
 inc(callCss,'.dli-call-backdrop.minimized','Call PiP responsive styles');
-assert.ok(conference.includes('Media provisioning not yet active'),
- 'Do not falsely claim conference SFU provisioned');
+assert.ok(conference.includes('productionMediaBuildEnabled')&&conference.includes('mediaProdEnabled'),
+ 'Media access must remain gated by actual production configuration');
 assert.ok(manifest.entries.some(e=>
  e.file==='20261116101500_stage_q45_call_role_masking.sql'&&/^[0-9a-f]{40}$/.test(e.gitBlobSha1)),
  'Privacy migration must appear in content-integrity manifest');

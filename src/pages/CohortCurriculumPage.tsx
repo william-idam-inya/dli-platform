@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
-import {ArrowDown,ArrowLeft,ArrowUp,BookOpen,CalendarClock,CheckCircle2,GraduationCap,Layers3,Plus,RefreshCw,ShieldCheck,Trash2} from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, CalendarClock, CheckCircle2, GraduationCap, Layers3, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {supabase} from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -155,13 +155,10 @@ export default function CohortCurriculumPage(){
    <span className="module-page-icon"><Layers3 size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC CURRICULUM</div>
     <h1>Cohorts, courses &amp; topic sequencing</h1>
-    <p>Set up the learning structure in order. Only completed cohort courses can be scheduled.</p>
+    
    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
-   <strong>One source of truth for the timetable</strong>
-   <p>Step 1 establishes the cohort, Step 2 attaches approved courses, and Step 3 saves each course’s chronological topic order. Classes &amp; Timetable reads these exact live records; no separate assignment copy is needed.</p>
-  </div></div>
+  
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
   <div className="academic-top-actions"><p>{loading?'Loading academic dependencies…':'Live DLI curriculum records'}</p>

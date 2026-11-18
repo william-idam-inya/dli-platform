@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Banknote, CalendarClock, CheckCircle2, Clock3, Download, LockKeyhole, Plus, RefreshCw, ShieldCheck, Upload, Users, Video } from 'lucide-react';
+import { Banknote, CalendarClock, CheckCircle2, Download, LockKeyhole, Plus, RefreshCw, Upload, Users, Video } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -256,16 +256,11 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> PRIVATE LEARNING</div>
         <h1>{isStaff?'Private-class management':isTutor?'My private teaching':'My private classes'}</h1>
-        <p>{isStaff?'Manage each learner’s fee, receipt review and subject-by-subject timetable.':
-          isTutor?'See your assigned students, subjects and Google Meet schedule.':
-          'View your monthly fee, submit transfer proof and join your assigned lessons.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage L1</span>
     </div>}
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={19}/></div><div>
-      <strong>Account-linked private records</strong><p>Bank transfer is manual. Uploading a screenshot or PDF never marks a fee paid.
-      An authorised Admin must check the actual bank credit before verifying the receipt. Private meeting links are visible only to the assigned parties.</p>
-    </div></div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <div className="academic-top-actions">
@@ -473,6 +468,6 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       </div>
       <p className="academic-code-hint"><LockKeyhole size={13}/> Meeting links are visible only to the selected student, assigned tutor and authorised administrative staff. Do not share these links publicly.</p>
     </section>}
-    <p className="module-footnote"><Clock3 size={14}/> Manual bank transfer evidence is reviewed by authorised DLI administrators; submission does not confirm bank credit. No automated collections or tutor payouts are enabled.</p>
+    
   </div>;
 }

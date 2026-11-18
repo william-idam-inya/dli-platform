@@ -206,6 +206,9 @@ jobs:
       - name: Verify Q61 notification click navigation and deep links
         run: node scripts/verify-q61-notification-click.mjs
 
+      - name: Verify Q63 global mobile headers and metadata cleanup
+        run: node scripts/verify-q63-global-mobile-ui.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

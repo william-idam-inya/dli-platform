@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap,
-  LockKeyhole, MessageSquare, PenLine, Plus, RefreshCw, ShieldCheck,
-} from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, MessageSquare, PenLine, Plus, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -259,19 +256,11 @@ export default function AssessmentPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Assignments &amp; feedback</h1>
-        <p>{canEdit?'Publish class assignments, review student responses and record manual grades.'
-          :'Submit responses and view your own graded feedback.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage E3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Class access and grading are checked in PostgreSQL</strong>
-        <p>Only assigned Tutors and academic staff can manage assessments. Students may submit
-          only to published assignments in their own classes. Scores are entered manually;
-          due dates are informational, with no automatic penalties or closing rules.</p>
-      </div>
-    </div>
+    
 
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
@@ -449,9 +438,6 @@ export default function AssessmentPage() {
         })}
       </div>
     </section>
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      No AI grading, grade publication schedule, late penalty or automatic submission deadline is configured.
-      File attachments, quizzes and rubrics are separate future stages.
-    </div>
+    
   </div>;
 }

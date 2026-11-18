@@ -25,8 +25,8 @@ for(const term of [
  "dli_conference_action",
  "dli_conference_send",
  "body:{room_id:active,action:name}",
- "Media provisioning not yet active",
 ])has(page,term,'Production conference gate missing');
+assert.ok(!page.includes('className="module-notice"'),'Do not restore redundant media governance box');
 has(page,"account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'",'Executive pilot UI restriction');
 assert.ok(!page.includes('dli-dev-realtimekit-session'), 'No development issuer on production page');
 for(const term of [

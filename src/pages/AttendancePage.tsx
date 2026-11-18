@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  CalendarCheck, CalendarClock, CheckCircle2, ClipboardList, GraduationCap,
-  LockKeyhole, RefreshCw, ShieldCheck, UserCheck, UserX,
-} from 'lucide-react';
+import { CalendarCheck, CalendarClock, CheckCircle2, ClipboardList, GraduationCap, RefreshCw, UserCheck, UserX } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -156,20 +153,11 @@ export default function AttendancePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Attendance &amp; reports</h1>
-        <p>{canEdit
-          ?'Record verified Student attendance for completed or started class sessions.'
-          :'View the attendance marks explicitly recorded for your own classes.'}</p>
+        
       </div>
       <span className="module-status"><span/> Stage F2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Attendance is recorded manually by authorised staff</strong>
-        <p>No automatic absence or attendance percentages are calculated. An unmarked Student
-          remains <strong>Not recorded</strong>. Only a started, published, non-cancelled session
-          can accept marks, and every correction is audited.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     <div className="academic-summary">
@@ -277,9 +265,6 @@ export default function AttendancePage(){
         </div>):<p className="academic-empty">Not recorded. This does not mean you were absent.</p>}
       </>:<p className="academic-empty">Select an active class session to view a recorded mark.</p>}
     </section>}
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      This report counts explicitly recorded statuses only. It is not a final
-      attendance score, disciplinary decision or promotion requirement.
-    </div>
+    
   </div>;
 }

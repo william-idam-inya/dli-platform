@@ -166,10 +166,7 @@ export default function ChatMemberProfileOverlay({
               <dt>{label}</dt><dd>{value}</dd>
             </div>)}
           </dl>}
-          <p className="dli-chat-profile-footnote">
-            Information is supplied by the verified DLI profile service.
-            Your access follows your assigned institutional role and active classes.
-          </p>
+          
         </>}
         <footer className="dli-chat-profile-actions">
           <button type="button" onClick={onClose}>Close profile</button>
