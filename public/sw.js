@@ -47,27 +47,54 @@ self.addEventListener('notificationclick',event=>{
  event.waitUntil((async()=>{
   const data=event.notification.data||{};
   const action=data.kind==='call'&&['accept','decline'].includes(event.action)?event.action:'view';
-  let path=safePath(data.path);
+  // Use one same-origin, role-protected route for each notification type.
+  // For messages, go to the real Messages workspace; the page revalidates
+  // the requested conversation against the current user's private threads.
+  let path=data.kind==='message'?'/communications':
+    data.kind==='urgent_notice'?'/announcements':
+    data.kind==='conference_reminder'?'/conferences':'/';
   if(data.kind==='message'){
-   const requested=new URL(path,self.location.origin).searchParams.get('dli_thread');
-   if(UUID.test(String(requested||''))){
-    path='/?dli_thread='+encodeURIComponent(requested);
-   }
+   const sourcePath=safePath(data.path);
+   const requested=new URL(sourcePath,self.location.origin).searchParams.get('dli_thread');
+   if(UUID.test(String(requested||'')))
+    path='/communications?dli_thread='+encodeURIComponent(requested);
   }
-  if(data.kind==='call'&&UUID.test(String(data.callId||''))){
+  if(data.kind==='call'&&UUID.test(String(data.callId||'')))
    path='/?dli_call='+encodeURIComponent(data.callId)+'&dli_action='+action;
-  }
   const url=new URL(path,self.location.origin).href;
-  const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-  for(const client of clients){
-   if(new URL(client.url).origin!==self.location.origin)continue;
+  const payload={type:'dli-push-open',kind:data.kind,
+   action,callId:data.callId,sourceId:data.sourceId,path};
+  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  const sameOrigin=windows.filter(client=>{
+   try{return new URL(client.url).origin===self.location.origin;}
+   catch{return false;}
+  });
+  // Existing DLI tabs need React Router navigation, not a silent focus.
+  // Wait briefly for an acknowledgement. Older tabs fall back to full
+  // navigation, so service-worker updates do not strand notifications.
+  for(const client of sameOrigin){
    try{
-    await client.navigate(url);
     await client.focus();
-    client.postMessage({type:'dli-push-open',kind:data.kind,
-      action,callId:data.callId,sourceId:data.sourceId,path});
-    return;
-   }catch{/* Opening a new application window below is the fallback. */}
+    const acknowledged=await new Promise(resolve=>{
+     const channel=new MessageChannel();
+     let finished=false;
+     const done=value=>{
+      if(finished)return;
+      finished=true;clearTimeout(timeout);
+      channel.port1.close();resolve(value);
+     };
+     const timeout=setTimeout(()=>done(false),750);
+     channel.port1.onmessage=event=>{
+      if(event.data?.type==='dli-push-nav-ack')done(true);
+     };
+     try{client.postMessage(payload,[channel.port2]);}
+     catch{done(false);}
+    });
+    if(acknowledged)return;
+    // An old app instance without a message handler still needs to route.
+    const navigated=await client.navigate(url);
+    if(navigated){await navigated.focus();return;}
+   }catch{/* Try another window, then the OS launch path. */}
   }
   await self.clients.openWindow(url);
  })());

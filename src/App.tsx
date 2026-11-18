@@ -11,6 +11,7 @@ import {
 } from './auth/AuthPages';
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { supabase } from './lib/supabase';
+import PushNotificationNavigation from './components/PushNotificationNavigation';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const PaidEnrollmentPage = lazy(() => import('./pages/PaidEnrollmentPage'));
@@ -41,10 +42,12 @@ const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
 
 function RequireWorkspace({ children }: { children: ReactNode }) {
   const { state } = useAuth();
+  const location=useLocation();
   if (state === 'config-error') return <MissingConfiguration />;
   if (state === 'checking') return <AuthChecking />;
   if (state === 'unavailable') return <AuthTemporarilyUnavailable />;
-  if (state !== 'active') return <Navigate to="/login" replace />;
+  if (state !== 'active') return <Navigate to="/login" replace
+    state={{from:location.pathname+location.search}} />;
   return <>{children}</>;
 }
 
@@ -148,11 +151,14 @@ function Workspace() {
 }
 
 export default function App() {
-  return <Routes>
+  return <>
+   <PushNotificationNavigation />
+   <Routes>
     <Route path="/login" element={<LoginPage />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/auth/confirm" element={<ConfirmLinkPage />} />
     <Route path="/set-password" element={<SetPasswordPage />} />
     <Route path="/*" element={<Workspace />} />
-  </Routes>;
+   </Routes>
+  </>;
 }

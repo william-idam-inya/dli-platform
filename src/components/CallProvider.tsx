@@ -1,4 +1,5 @@
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
+import {useLocation,useNavigate} from 'react-router-dom';
 import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
 import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirectPeerCall';
@@ -22,6 +23,8 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export function CallProvider({children}:{children:ReactNode}){
  const {account}=useAuth();
+ const location=useLocation();
+ const navigate=useNavigate();
  const [uid,setUid]=useState('');
  const [ready,setReady]=useState(false);
  const [peer,setPeer]=useState<Target|null>(null);
@@ -83,6 +86,23 @@ export function CallProvider({children}:{children:ReactNode}){
  // Reject unanswered incoming calls at the same 45-second limit as the caller.
  const rejectRef=useRef(calling.reject);
  rejectRef.current=calling.reject;
+ // A notification clicked while this tab is already open may arrive AFTER
+ // the offer. Process the routed Accept/Decline only for this live incoming
+ // session; the call's verified private inbox still governs authorization.
+ useEffect(()=>{
+  const query=new URLSearchParams(location.search);
+  const id=query.get('dli_call'),action=query.get('dli_action');
+  const session=calling.session;
+  if(!id||!UUID.test(id)||!session||session.id!==id||
+     session.direction!=='incoming'||session.state!=='ringing'||
+     !['accept','decline','view'].includes(action??''))return;
+  if(action==='accept')void answerRef.current();
+  else if(action==='decline')rejectRef.current();
+  query.delete('dli_call');query.delete('dli_action');
+  navigate({pathname:location.pathname,
+   search:query.size?'?'+query.toString():'',hash:location.hash},{replace:true});
+ },[location.pathname,location.search,location.hash,calling.session?.id,
+    calling.session?.state,calling.session?.direction,navigate]);
  useEffect(()=>{
   const session=calling.session;
   if(!session||session.direction!=='incoming'||session.state!=='ringing')return;
@@ -142,16 +162,8 @@ export function CallProvider({children}:{children:ReactNode}){
     if(intent!=='decline'){
      void emit(incomingTarget,{callId:signal.callId!,kind:'receipt',mode:signal.mode!});
     }
-    if(intent==='decline')rejectRef.current();
-    else if(intent==='accept'){
-     // OS click opens the app; mic/camera approval may need an extra gesture.
-     void answerRef.current();
-    }
-    if(intent){
-     query.delete('dli_call');query.delete('dli_action');
-     window.history.replaceState(window.history.state,'',window.location.pathname+
-       (query.size?'?'+query.toString():'')+window.location.hash);
-    }
+    // The mounted route effect applies Accept/Decline after the incoming
+    // session is visible; it also handles clicks on already-open tabs.
    }
   };
   let removePollListeners:(()=>void)|null=null;
