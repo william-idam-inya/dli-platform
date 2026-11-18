@@ -130,7 +130,10 @@ export default function AppShell({ children }: AppShellProps) {
       if(!profileMenuRef.current?.contains(event.target as Node))setProfileMenuOpen(false);
     };
     const esc=(event:KeyboardEvent)=>{
-      if(event.key==='Escape')setProfileMenuOpen(false);
+      if(event.key==='Escape'){
+        setProfileMenuOpen(false);
+        profileMenuRef.current?.querySelector<HTMLButtonElement>('.dli-utility-trigger')?.focus();
+      }
     };
     document.addEventListener('pointerdown',outside);
     document.addEventListener('keydown',esc);
@@ -367,7 +370,7 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="dli-profile-menu dli-utility-menu" ref={profileMenuRef}>
               <button type="button" className="dli-profile-toggle dli-utility-trigger"
                 aria-label="Open tools, messages, notifications and account"
-                title="More DLI tools" aria-haspopup="true"
+                title="More DLI tools"
                 aria-controls="dli-account-dropdown" aria-expanded={profileMenuOpen}
                 onClick={()=>setProfileMenuOpen(value=>!value)}>
                 <ChevronDown size={21} aria-hidden="true"/>
@@ -385,7 +388,8 @@ export default function AppShell({ children }: AppShellProps) {
                   <div className="dli-utility-tile" aria-label="Quick actions">
                     <QuickMenu/><small>Apps</small>
                   </div>
-                  <div className="dli-utility-tile" aria-label="Messages">
+                  <div className="dli-utility-tile" aria-label="Messages"
+                    onClick={()=>setProfileMenuOpen(false)}>
                     <DliMessageBadge/><small>Messages</small>
                   </div>
                   <div className="dli-utility-tile" data-dli-tour="notifications" aria-label="Notifications">
