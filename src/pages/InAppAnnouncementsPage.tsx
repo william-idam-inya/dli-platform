@@ -121,6 +121,13 @@ export default function InAppAnnouncementsPage(){
         void supabase.functions.invoke('send-call-push',{
           body:{kind:'urgent_notice',sourceId:id}
         }).catch(()=>{});
+      }else if(pushConfigured&&!urgent&&when==='now'){
+        // Generic alerts are independently role/recipient checked on the server.
+        void supabase.functions.invoke('send-dli-notification',{body:{
+          kind:'announcement',role:target,
+          ...(mode==='selected'?{userIds:selectable}:{}),
+          title:cleanTitle,body:cleanBody,url:'/announcements'
+        }}).catch(()=>{});
       }
       setNotice(when==='now'?'The in-app announcement is now available to its audience.':
         'Announcement scheduled. It will appear automatically at its WAT publication time while the app is open or upon next login.');

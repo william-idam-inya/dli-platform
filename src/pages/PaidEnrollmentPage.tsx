@@ -202,6 +202,14 @@ export default function PaidEnrollmentPage(){
     p_bank_reference:decision==='approved'?reference:null,
    });
    if(res.error||res.data!==true){setError('Review was not confirmed. Verify the application status and bank receipt before retrying.');return;}
+   // Payment records are authoritative. Push is a nonblocking side effect.
+   void supabase.functions.invoke('send-dli-notification',{body:{
+     kind:'payment',userIds:[request.student_id],
+     title:decision==='approved'?'DLI payment verified':'DLI payment review update',
+     body:decision==='approved'?'Your DLI paid enrolment was approved. Open your enrolment workspace.':
+       'Your DLI payment evidence needs attention. Open Enrolment for the review note.',
+     url:'/enrolment'
+   }}).catch(()=>{});
    setNotice(decision==='approved'?'Paid access granted by the database. Class assignment may now proceed.':'Request rejected and recorded.');
    await load();
   }catch{setError('The review result could not be confirmed. Refresh before retrying.');}
