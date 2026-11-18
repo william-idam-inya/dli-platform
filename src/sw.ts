@@ -29,8 +29,8 @@ sw.addEventListener('activate',event=>event.waitUntil(sw.clients.claim()));
 // precached. Cross-origin Supabase/media URLs are NEVER intercepted.
 registerRoute(
  ({request,url})=>request.mode==='navigate'&&url.origin===sw.location.origin,
- async ({event})=>{
-  try{return await fetch(event.request);}
+ async ({request})=>{
+  try{return await fetch(request);}
   catch{return await matchPrecache('/index.html')??Response.error();}
  }
 );
