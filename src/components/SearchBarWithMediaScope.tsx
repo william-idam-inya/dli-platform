@@ -39,6 +39,37 @@ function httpsUrl(input:string|null){
 }
 const trimmed=(term:string)=>term.trim().slice(0,80);
 
+
+/** Lazy, RLS-authenticated image thumbnails; never use public storage URLs. */
+function MediaPhotoThumbnail({record}:{record:MediaRecord}){
+  const target=useRef<HTMLDivElement>(null);
+  const [visible,setVisible]=useState(false);
+  const [src,setSrc]=useState<string|null>(null);
+  useEffect(()=>{
+    const node=target.current;
+    if(!node)return;
+    if(typeof IntersectionObserver==='undefined'){setVisible(true);return;}
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(item=>item.isIntersecting)){setVisible(true);observer.disconnect();}
+    },{rootMargin:'100px'});
+    observer.observe(node);
+    return()=>observer.disconnect();
+  },[record.id]);
+  useEffect(()=>{
+    if(!visible||!supabase||!record.storage_bucket||!record.storage_path)return;
+    let stale=false,objectUrl:string|null=null;
+    void supabase.storage.from(record.storage_bucket).download(record.storage_path)
+      .then(({data,error})=>{
+        if(error||!data||stale)return;
+        objectUrl=URL.createObjectURL(data);setSrc(objectUrl);
+      });
+    return()=>{stale=true;if(objectUrl)URL.revokeObjectURL(objectUrl);};
+  },[visible,record.id,record.storage_bucket,record.storage_path]);
+  return <div ref={target} className="dli-media-thumbnail" aria-hidden="true">
+    {src?<img src={src} alt="" loading="lazy"/>:<ImageIcon size={20}/>}
+  </div>;
+}
+
 export default function SearchBarWithMediaScope({
   loadNavigationMatches,
 }:{loadNavigationMatches?:NavigationLoader}){
@@ -57,7 +88,7 @@ export default function SearchBarWithMediaScope({
   const [revision,setRevision]=useState(0);
   const [preview,setPreview]=useState<Preview|null>(null);
   const [mediaLoading,setMediaLoading]=useState<string|null>(null);
-  const [mediaError,setMediaError]=useState<string|null>(null);
+  const [mediaError,setMediaError]=useState<{id:string;message:string}|null>(null);
   const root=useRef<HTMLDivElement>(null);
   const input=useRef<HTMLInputElement>(null);
   const menu=useRef<HTMLDivElement>(null);
@@ -198,7 +229,7 @@ export default function SearchBarWithMediaScope({
         setPreview({id:record.id,url:blob,mime:record.mime_type||data.type});
       }
     }catch{
-      setMediaError('This file could not be opened. Check your access and try again.');
+      setMediaError({id:record.id,message:'This file could not be opened. Check your access and try again.'});
     }finally{setMediaLoading(null);}
   }
   const canPreview=(record:MediaRecord)=>
@@ -277,6 +308,7 @@ export default function SearchBarWithMediaScope({
         const waiting=mediaLoading===record.id;
         return <article className="dli-media-hit-card" key={record.id}>
           <div className="dli-media-hit-head">
+            {record.media_type==='Photos'&&privateFile&&<MediaPhotoThumbnail record={record}/>}
             <span className="dli-media-hit-type"><Icon size={16} aria-hidden="true"/></span>
             <div className="dli-media-hit-copy">
               <strong>{record.title}</strong>
@@ -307,8 +339,8 @@ export default function SearchBarWithMediaScope({
               record.mime_type==='application/pdf'?<iframe src={preview.url} title={'Preview '+record.title}/>:
               <p>Preview is unavailable for this file format. Use Download.</p>}
           </div>}
-          {mediaError&&mediaLoading===null&&preview?.id!==record.id&&
-            <p role="alert" className="dli-media-error">{mediaError}</p>}
+          {mediaError?.id===record.id&&mediaLoading===null&&
+            <p role="alert" className="dli-media-error">{mediaError.message}</p>}
         </article>;
       })}
       {!busy&&navigation.length>0&&<div className="dli-media-nav-results">
