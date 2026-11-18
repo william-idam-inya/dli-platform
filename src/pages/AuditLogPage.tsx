@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ClipboardList, Clock3, FileLock2, ListFilter, LockKeyhole,
-  RefreshCw, ShieldCheck, ScrollText,
-} from 'lucide-react';
+import { ClipboardList, Clock3, FileLock2, ListFilter, LockKeyhole, RefreshCw, ScrollText } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -95,20 +92,11 @@ export default function AuditLogPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Institutional audit trail</h1>
-        <p>Review database-recorded account and operational events without changing records.</p>
+        
       </div>
       <span className="module-status"><span/> Stage I1</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Restricted, read-only governance records</strong>
-        <p>Only Founder and Admin accounts can view this institutional
-          audit history. Every row comes from live Supabase records under
-          PostgreSQL Row Level Security. This viewer deliberately omits
-          raw event details, names, email addresses, message contents
-          and other potentially sensitive fields. Export is not enabled.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     <div className="audit-log-summary">
       <div><ClipboardList size={19}/><strong>{totalLabel}</strong>
@@ -180,10 +168,6 @@ export default function AuditLogPage(){
           onClick={()=>setPage(p=>p+1)}>Next</button>
       </div>
     </section>
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      Stage I1 is a metadata-only audit viewer. Sensitive exports, full
-      audit payloads and additional operational report categories require
-      separate permission and acceptance checks before activation.
-    </p>
+    
   </div>;
 }

@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  ClipboardCheck, FileText, LockKeyhole,
-  MessageSquareText, RefreshCw, ShieldCheck, ThumbsUp,
-} from 'lucide-react';
+import { ClipboardCheck, FileText, LockKeyhole, MessageSquareText, RefreshCw, ThumbsUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -137,19 +134,11 @@ export default function FinanceReviewPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance proposal review</h1>
-        <p>Record comments and Leadership planning outcomes without approving financial transactions.</p>
+        
       </div>
       <span className="module-status"><span/> Stage G2</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Leadership review is not financial approval</strong>
-        <p>Owner, Admin and Assistant Admin may add comments and recommendations. Each may
-          record one non-binding planning outcome per proposal. All parent proposals remain
-          Pending Approval; neither review nor shortlisting enables charges, invoices,
-          bank transfers, receipts or payouts.</p>
-      </div>
-    </div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
 
@@ -240,9 +229,6 @@ export default function FinanceReviewPage(){
         </button>
       </form>
     </section>}
-    <p className="module-footnote"><LockKeyhole size={15}/>
-      All finance proposals remain pending approval. Any effective policy or
-      monetary feature must be separately specified, approved, audited and tested.
-    </p>
+    
   </div>;
 }

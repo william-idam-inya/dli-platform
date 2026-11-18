@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import {
-  CalendarClock, CheckCircle2, GraduationCap, LockKeyhole, Pencil,
-  Plus, RefreshCw, Users, Video, Wallet, MessageCircle,
-} from 'lucide-react';
+import { CalendarClock, CheckCircle2, GraduationCap, Pencil, Plus, RefreshCw, Users, Video, Wallet, MessageCircle } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -371,12 +368,41 @@ export default function ClassesWorkspacePage(){
         p_group_id:group.id,p_state:state,
       });
       if(result.error||!result.data){setError(errorMessage(result.error));return;}
+      if(state==='published'){
+        // Notification side effect is independent of the published class SQL.
+        const classIds=new Set(group.rows.map(row=>row.id));
+        const studentIds=[...new Set(members.filter(m=>m.is_active&&classIds.has(m.class_id)).map(m=>m.student_id))];
+        if(studentIds.length&&studentIds.length<=50)
+          void supabase.functions.invoke('send-dli-notification',{body:{
+            kind:'timetable_update',userIds:studentIds,
+            title:'DLI class timetable published',
+            body:'Your DLI Classes & Timetable workspace has been updated.',
+            url:'/classes'
+          }}).catch(()=>{/* Published class remains unchanged. */});
+      }
       setNotice(state==='published'?'All courses published: two tutors, academic assignments, student enrolments and weekly schedules synchronised.':'Group archived, including its managed academic offerings and teaching links.');
       await refresh();
     }catch{setError('Group status could not be confirmed. Please refresh.');}
     finally{setBusy(false);}
   }
 
+  async function sendClassReminder(roster:Member[]){
+    if(!supabase||!staff||busy)return;
+    const ids=[...new Set(roster.map(m=>m.student_id))];
+    if(!ids.length||ids.length>50){setError('Choose an active student roster of no more than 50 for a reminder.');return;}
+    if(!window.confirm('Send a class reminder to '+ids.length+' authorised student(s) who enabled notifications?'))return;
+    setBusy(true);setError(null);setNotice(null);
+    try{
+      const result=await supabase.functions.invoke('send-dli-notification',{body:{
+        kind:'class_reminder',userIds:ids,title:'DLI class reminder',
+        body:'Your DLI class timetable is available. Open Classes to review your session.',
+        url:'/classes'
+      }});
+      if(result.error||!result.data?.ok){setError('The class reminder could not be queued. Your class is unchanged.');return;}
+      setNotice('Reminder queued for '+result.data.queued+' authorised learner(s). Delivery depends on device permissions.');
+    }catch{setError('Could not queue the reminder. Try again.');}
+    finally{setBusy(false);}
+  }
   if(params.get('tab')==='messages'&&communicating)
     return <Navigate to={'/communications?section=class'+
       (params.get('class')?'&class='+encodeURIComponent(params.get('class')!):'')} replace/>;
@@ -387,16 +413,10 @@ export default function ClassesWorkspacePage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
-        <p>{staff?'Select a completed cohort: its courses and ordered topics populate the weekly timetable automatically.':
-          'See the subjects, tutors and weekly sessions assigned to your class.'}</p>
+        
       </div>
     </div>
-    {staff&&<div className="module-notice"><div className="notice-icon"><LockKeyhole size={19}/></div>
-      <div><strong>One class · approved courses · two tutors per subject</strong>
-        <p>Cohort courses and their ordered topics are reused here. Each course has a weekly time, two tutors and a topic delivery rate.
-          Only authorised members can see published paid sessions. Free Scholars Club sessions remain accessible to Free Students.</p>
-      </div>
-    </div>}
+    
     {(paying||communicating)&&<nav className="classes-tabs" aria-label="Class workspace sections">
       <button className={tab==='classes'?'selected':''} type="button" onClick={()=>setParams({tab:'classes'})}>
         <CalendarClock size={15}/> Classes &amp; schedule
@@ -720,6 +740,10 @@ export default function ClassesWorkspacePage(){
               {(account?.role==='student'||account?.role==='tutor')&&group.state==='published'&&
                 <Link to={'/feedback?class='+encodeURIComponent(group.first.id)}>Report an issue</Link>}
               {canEdit&&<button type="button" disabled={busy} onClick={()=>editGroup(group.id)}><Pencil size={14}/> Edit group</button>}
+              {staff&&group.state==='published'&&
+                <button type="button" disabled={busy||!roster.length} onClick={()=>void sendClassReminder(roster)}>
+                  <CalendarClock size={14}/> Send class reminder
+                </button>}
               {staff&&group.state==='draft'&&
                 <button type="button" disabled={busy} onClick={()=>void changeState(group,'published')}>
                   <CheckCircle2 size={14}/> Publish entire group

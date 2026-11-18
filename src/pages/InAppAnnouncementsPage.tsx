@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, ShieldCheck, Users, X } from 'lucide-react';
+import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import {pushConfigured} from '../lib/pushNotifications';
@@ -121,6 +121,13 @@ export default function InAppAnnouncementsPage(){
         void supabase.functions.invoke('send-call-push',{
           body:{kind:'urgent_notice',sourceId:id}
         }).catch(()=>{});
+      }else if(pushConfigured&&!urgent&&when==='now'){
+        // Generic alerts are independently role/recipient checked on the server.
+        void supabase.functions.invoke('send-dli-notification',{body:{
+          kind:'announcement',role:target,
+          ...(mode==='selected'?{userIds:selectable}:{}),
+          title:cleanTitle,body:cleanBody,url:'/announcements'
+        }}).catch(()=>{});
       }
       setNotice(when==='now'?'The in-app announcement is now available to its audience.':
         'Announcement scheduled. It will appear automatically at its WAT publication time while the app is open or upon next login.');
@@ -149,17 +156,10 @@ export default function InAppAnnouncementsPage(){
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> DLI COMMUNICATION</div>
         <h1>Announcements</h1>
-        <p>{staff?'Broadcast to all or selected Tutors/Students, immediately or on a schedule.':
-          'Read the announcements currently intended for your DLI account.'}</p>
+
       </div>
     </div>
-    <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div><div>
-      <strong>Targeted internal notices, with administrative oversight</strong>
-      <p>Only the Founder, Admin and Assistant Admin can publish or withdraw notices.
-        All three can review notices regardless of the selected audience. The Student/Tutor audience
-        sees only announcements addressed to them and active within their scheduled dates.
-        No SMS, email, WhatsApp or device push is sent.</p>
-    </div></div>
+    
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     {staff&&<section className="panel dli-broadcast-composer">

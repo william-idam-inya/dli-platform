@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CalendarClock, LockKeyhole, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReferenceHeroArtwork from '../components/ReferenceHeroArtwork';
 import ReferenceDashboard from '../components/ReferenceDashboard';
@@ -128,15 +128,7 @@ export default function DashboardPage(){
     <details className="ref-existing-tools">
       <summary>Explore all authorised DLI tools and detailed reports <ArrowRight size={17}/></summary>
       <div className="ref-existing-body">
-    <section className="status-banner">
-      <div className="status-banner-icon"><ShieldCheck size={20}/></div>
-      <div className="status-banner-copy">
-        <strong>One platform, role-scoped access</strong>
-        <span>Your dashboard shows only authorised tools and records. Student access,
-          manual payment confirmations and teaching assignments require independent
-          verification before they become active.</span>
-      </div>
-    </section>
+    
     {priorityItems.length>0&&<section className="section-block unified-priority-section">
       <div className="section-heading"><div>
         <p className="section-kicker">QUICK START</p><h2>Recommended for your role</h2>
@@ -220,9 +212,7 @@ export default function DashboardPage(){
         </section>)}
       </details>
     </section>}
-    <p className="unified-overview-footnote"><LockKeyhole size={14}/>
-      Sidebar links and dashboard cards never grant privileges. PostgreSQL row-level
-      security and verified membership govern private academic records.</p>
+    
       </div>
     </details>
   </div>;

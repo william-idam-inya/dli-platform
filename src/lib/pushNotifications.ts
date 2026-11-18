@@ -9,6 +9,7 @@ export const pushAvailable=typeof window!=='undefined' && window.isSecureContext
 export const pushKeyProvided=vapidPublic.length>=80;
 export const pushConfigured=pushAvailable && pushKeyProvided;
 const pushEndpointPattern=/^https:\/\/[^\s]+$/i;
+let resubscribeListenerAdded=false;
 
 function decodeBase64Url(value:string):Uint8Array<ArrayBuffer>{
  const text=atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4));
@@ -19,6 +20,13 @@ function decodeBase64Url(value:string):Uint8Array<ArrayBuffer>{
 export function registerDliServiceWorker():void{
  if(!navigatorAvailable||!window.isSecureContext||!('serviceWorker' in navigator))return;
  const start=()=>{
+  if(!resubscribeListenerAdded){
+   resubscribeListenerAdded=true;
+   navigator.serviceWorker.addEventListener('message',event=>{
+    if(event.data?.type==='dli-push-resubscribe')
+     void synchronizeDliPush().catch(()=>{/* Retry on next authenticated session. */});
+   });
+  }
   void navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{
    // Ordinary logged-in workspace still works when workers are disallowed.
   });

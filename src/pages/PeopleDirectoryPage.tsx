@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {MessageSquareText,RefreshCw,Search,ShieldCheck,Users} from 'lucide-react';
+import { MessageSquareText, RefreshCw, Search, Users } from 'lucide-react';
 import {supabase} from '../lib/supabase';
 import {useAuth} from '../auth/AuthProvider';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
@@ -49,15 +49,9 @@ export default function PeopleDirectoryPage(){
    <span className="module-page-icon"><Users size={24}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> USERS &amp; PEOPLE</div>
     <h1>People directory</h1>
-    <p>Explore active members by role and begin an authorised private conversation.</p></div>
+    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={20}/></div>
-   <div><strong>Role-scoped directory</strong>
-    <p>{staff?'Administrative staff can view active DLI members across all five roles.':
-     'Your directory shows only the DLI administrators available for private messaging. Other students and tutors remain private.'}
-     {' '}Messages and profile information remain subject to server-side permissions.</p>
-   </div>
-  </div>
+  
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   <div data-dli-tour="people" className="dli-people-actions">
    <label><Search size={17}/><span className="sr-only">Search people</span>
@@ -94,6 +88,6 @@ export default function PeopleDirectoryPage(){
     </section>;
    })}
   </div>
-  <p className="module-footnote">Student tiers are determined by the verified entitlement record, not by a manually edited label. Direct chats retain the existing DLI role restrictions.</p>
+  
  </div>;
 }

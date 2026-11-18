@@ -1,8 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      // The existing DLI registration controls the same /sw.js scope; never
+      // auto-register a second worker or discard active push subscriptions.
+      injectRegister: null,
+      manifest: false,
+      injectManifest: {
+        // Produce /sw.js as a classic worker: existing registered devices
+        // must keep their root-scoped push subscription and click handlers.
+        rollupFormat: 'iife',
+        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      },
+    }),
+  ],
   appType: 'spa',
   // Vite 8 / Rolldown vendor groups keep the entry file smaller than
   // a single combined React + Supabase SDK bundle. Verify with npm.cmd run build.

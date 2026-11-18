@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, LockKeyhole, Plus, RefreshCw, ShieldCheck, Users } from 'lucide-react';
+import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, Plus, RefreshCw, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/AuthProvider';
@@ -185,17 +185,11 @@ export default function AcademicAssignmentsPage() {
       <div className="module-page-copy">
         <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Class assignments</h1>
-        <p>Assign verified tutors and enrol authorised students into approved course offerings.</p>
+        
       </div>
       <span className="module-status"><span/> Stage D3</span>
     </div>
-    <div className="module-notice">
-      <div className="notice-icon"><ShieldCheck size={20}/></div>
-      <div><strong>Only existing authorised DLI identities can be assigned</strong>
-        <p>Each person must have the correct active role. PostgreSQL validates the identity and
-        offering and writes an audit event. Assignments are not invitations, lessons, or attendance.</p>
-      </div>
-    </div>
+    
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
     <div className="academic-summary">
@@ -225,9 +219,6 @@ export default function AcademicAssignmentsPage() {
       {renderSection('tutor',tutors,'tutor_assignments')}
       {renderSection('student',learners,'student_enrolments')}
     </div>
-    <div className="module-footnote"><LockKeyhole size={15}/>
-      Only staff administrators can manage assignments. Enrolled students and assigned tutors
-      will see their own classes under My classes.
-    </div>
+    
   </div>;
 }

@@ -207,7 +207,7 @@
  background:var(--purple-soft);color:var(--purple);border-radius:10px;
 }
 .ref-dashboard-tail{
- display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+ display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;
  border-top:1px solid var(--border);padding:12px 2px 0;
 }
 .ref-dashboard-tail p{

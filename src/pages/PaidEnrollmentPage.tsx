@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {createPortal} from 'react-dom';
-import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, ShieldCheck, Upload, Wallet } from 'lucide-react';
+import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, Upload, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -202,6 +202,14 @@ export default function PaidEnrollmentPage(){
     p_bank_reference:decision==='approved'?reference:null,
    });
    if(res.error||res.data!==true){setError('Review was not confirmed. Verify the application status and bank receipt before retrying.');return;}
+   // Payment records are authoritative. Push is a nonblocking side effect.
+   void supabase.functions.invoke('send-dli-notification',{body:{
+     kind:'payment',userIds:[request.student_id],
+     title:decision==='approved'?'DLI payment verified':'DLI payment review update',
+     body:decision==='approved'?'Your DLI paid enrolment was approved. Open your enrolment workspace.':
+       'Your DLI payment evidence needs attention. Open Enrolment for the review note.',
+     url:'/enrolment'
+   }}).catch(()=>{});
    setNotice(decision==='approved'?'Paid access granted by the database. Class assignment may now proceed.':'Request rejected and recorded.');
    await load();
   }catch{setError('The review result could not be confirmed. Refresh before retrying.');}
@@ -288,14 +296,10 @@ export default function PaidEnrollmentPage(){
    <span className="module-page-icon"><Wallet size={25}/></span>
    <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> AUTHORISED DLI ENROLMENT</div>
     <h1>{isManager?'Paid enrolment approvals':'Free Demo & paid enrolment'}</h1>
-    <p>{isManager?'Review bank-transfer evidence and approve the selected learning plan.':
-      'Join a free demonstration lesson or apply for the paid subjects you want to study.'}</p>
+    
    </div>
   </div>
-  <div className="module-notice"><div className="notice-icon"><ShieldCheck size={18}/></div><div>
-   <strong>Invite-only accounts · independently verified payments</strong>
-   <p>Uploading a transfer screenshot does not confirm payment. Access upgrades happen only after Owner, Admin or Assistant Admin checks the actual bank credit and approves the application.</p>
-  </div></div>
+  
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   <button type="button" className="user-outline-button" disabled={loading||busy}
@@ -376,6 +380,11 @@ export default function PaidEnrollmentPage(){
       <label htmlFor="upgrade-proof">Upload payment evidence · PDF, JPEG or PNG (max 5 MB)</label>
       <input id="upgrade-proof" type="file" accept=".pdf,.jpg,.jpeg,.png"
        onChange={e=>setFile(e.target.files?.[0]??null)}/>
+      <label htmlFor="upgrade-proof-camera">Or take a receipt photo with your device camera</label>
+      <input id="upgrade-proof-camera" type="file" accept="image/jpeg,image/png"
+       capture="environment" aria-label="Take receipt photo"
+       onChange={e=>setFile(e.target.files?.[0]??null)}/>
+      {file&&<p className="user-caption" role="status">Selected receipt: {file.name}</p>}
       <button className="academic-submit" type="button" disabled={busy||!file}
        onClick={()=>void upload(current)}><Upload size={16}/> Submit receipt for review</button>
       </>:<p className="academic-empty">DLI has not activated its verified institutional bank details. Do not make a transfer yet.</p>}

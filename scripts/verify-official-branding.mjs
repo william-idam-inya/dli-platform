@@ -46,10 +46,14 @@ assert.match(css, /\.art-cap \{position:absolute;top:29px;left:55px;width:112px;
 const html = read('index.html');
 const manifest = JSON.parse(read('public/manifest.json'));
 assert.match(html, /rel="icon".*dli-mark\.svg/);
-assert.match(html, /rel="manifest" href="\/manifest\.json"/);
+assert.match(html, /rel="manifest" href="\/manifest\.webmanifest"/);
 assert.match(html, /theme-color/);
-assert.equal(manifest.icons[0].src, '/dli-mark.svg?v=20261113');
+assert.equal(manifest.icons[0].src, '/dli-mark.svg');
 assert.equal(manifest.icons[0].type, 'image/svg+xml');
 assert.equal(manifest.scope, '/');
 assert.equal(manifest.start_url, '/');
+for(const size of ['192x192','512x512']){
+ assert.ok(manifest.icons.some(icon=>icon.sizes===size&&icon.type==='image/png'),
+  'Official logo must have an installable '+size+' PNG bitmap.');
+}
 console.log('Q14 official DLI-ONLINE branding checks passed: original emblem retained in brand, mobile header, login, dashboard, favicon and metadata without duplicate role tile.');

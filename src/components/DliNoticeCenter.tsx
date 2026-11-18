@@ -3,6 +3,7 @@ import { Bell, BellRing, Check, MessageCircle, X } from 'lucide-react';
 import { Link,useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import {setDliBadgePart} from '../lib/appBadge';
 import './DliNoticeCenter.css';
 
 export type DliNotice = {
@@ -140,6 +141,8 @@ export function DliNotificationBell(){
   const seenMap=new Map(seen.map(s=>[s.notice_id,s]));
   const unread=visible.filter(n=>!seenMap.get(n.id)?.read_at);
   const totalAlerts=unread.length+pendingPayments+pendingTutorPayouts;
+  useEffect(()=>{setDliBadgePart('notices',account?totalAlerts:0);},[account?.id,totalAlerts]);
+  useEffect(()=>()=>setDliBadgePart('notices',0),[]);
   const filteredNotices=noticeFilter==='unread'?unread:visible;
   useEffect(()=>{
     function chime(){
@@ -270,7 +273,7 @@ export function DliDashboardAnnouncements(){
   return <section className="panel dli-dashboard-announcements" aria-labelledby="dashboard-notices-heading">
     <div className="panel-heading"><div><p className="section-kicker">DLI BROADCASTS</p>
       <h2 id="dashboard-notices-heading">Announcements</h2>
-      <p className="user-caption">Current notices for your account; posted notices remain here until expiry or withdrawal.</p>
+
     </div><button type="button" className="user-outline-button" onClick={()=>void refresh()}>Refresh</button></div>
     {error&&<p role="alert">The announcement feed could not be refreshed.</p>}
     {visible.length===0?<p className="academic-empty">There are no currently active announcements.</p>:
@@ -288,6 +291,8 @@ export function DliMessageBadge(){
   const {account}=useAuth();
   const location=useLocation();
   const [unread,setUnread]=useState(0);
+  useEffect(()=>{setDliBadgePart('messages',account?unread:0);},[account?.id,unread]);
+  useEffect(()=>()=>setDliBadgePart('messages',0),[]);
   const [flash,setFlash]=useState(false);
   const currentUid=useRef<string|null>(null);
   const latestCount=useRef<number|null>(null);

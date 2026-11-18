@@ -75,8 +75,8 @@ assert.ok(style.includes('.dli-direct-contact-row')&&style.includes('.dli-chat-a
 assert.ok(modalStyle.includes('.dli-chat-profile-dialog'));
 assert.ok(read('scripts/migration-integrity-manifest.json')
  .includes('20261115160000_stage_q32_chat_profile_access.sql'));
-assert.ok(memberPage.includes('Your saved photo may appear to'),
- 'Profile privacy notice must accurately explain approved chat photo sharing');
+assert.ok(memberPage.includes('Your saved photo may appear to authorised DLI chat contacts.'),
+ 'Keep concise user-facing photo visibility guidance next to the upload, not a governance box');
 assert.ok(!memberPage.includes('Only you can read and edit your birth date and private profile photo'),
  'Outdated profile privacy claim must not survive chat avatar feature');
 console.log('Q32 verified: Founder/Admin full access, Assistant Admin exclusions, tutor/student roster restriction, subject-only tutor previews, private avatars and accessible overlay.');

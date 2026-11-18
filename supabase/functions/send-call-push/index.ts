@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.118.0";
 import webpush from "npm:web-push@3.6.7";
 
-type Kind='call'|'message'|'urgent_notice'|'conference_reminder';
+type Kind='call'|'message'|'urgent_notice'|'conference_reminder'|'class_reminder'|'timetable_update'|'payment'|'announcement';
 type EventRow={id:string;kind:Kind;source_id:string;sender_id:string|null;recipient_id:string;
  title:string;body:string;destination:string;metadata:Record<string,unknown>;
  deliver_after:string;expires_at:string;attempts:number;status:string};
@@ -65,6 +65,20 @@ async function recipientEligible(admin:Admin,row:EventRow){
   return caller?.status==='active'&&!!thread&&
    [thread.participant_a,thread.participant_b].includes(row.recipient_id)&&
    [thread.participant_a,thread.participant_b].includes(data.sender_id);
+ }
+ if(['class_reminder','timetable_update','payment','announcement'].includes(row.kind)){
+  // Verify the administrator who enqueued the event still has permission.
+  if(!row.sender_id)return false;
+  const {data:origin}=await admin.from('authorised_users')
+   .select('role,status').eq('auth_user_id',row.sender_id).maybeSingle();
+  if(origin?.status!=='active'||!['owner','admin','assistant_admin'].includes(origin.role))return false;
+  const allowed:Record<string,string[]>={
+   class_reminder:['/classes','/schedule'],
+   timetable_update:['/classes','/schedule'],
+   payment:['/enrolment','/payroll'],
+   announcement:['/announcements']
+  };
+  return (allowed[row.kind]||[]).includes(row.destination);
  }
  if(row.kind==='urgent_notice'){
   const {data}=await admin.from('dli_notices')
