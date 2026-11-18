@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, BellRing, Check, MessageCircle, X } from 'lucide-react';
 import { Link,useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -236,19 +237,19 @@ export function DliNotificationBell(){
       </button>)}
       <Link to="/announcements" onClick={()=>setOpen(false)}>View all announcements</Link>
     </div>}
-    {canReviewPayments&&newPayment&&pendingPayments>0&&<div className="dli-payment-review-toast" role="status" aria-live="polite">
+    {canReviewPayments&&newPayment&&pendingPayments>0&&createPortal(<div className="dli-payment-review-toast" role="status" aria-live="polite">
       <strong>New payment evidence</strong>
       <span>{pendingPayments} receipt{pendingPayments===1?'':'s'} waiting for bank-credit review.</span>
       <Link to="/enrolment" onClick={()=>setNewPayment(false)}>Review</Link>
       <button type="button" onClick={()=>setNewPayment(false)} aria-label="Dismiss payment notification"><X size={16}/></button>
-    </div>}
-    {newTutorPayout&&pendingTutorPayouts>0&&<div className="dli-payment-review-toast" role="status" aria-live="polite">
+    </div>,document.body)}
+    {newTutorPayout&&pendingTutorPayouts>0&&createPortal(<div className="dli-payment-review-toast" role="status" aria-live="polite">
       <strong>{tutorHasPending?'New Tutor payout receipt':'Tutor payment dispute'}</strong>
       <span>{pendingTutorPayouts} item{pendingTutorPayouts===1?'':'s'} requiring your attention</span>
       <Link to="/payroll" onClick={()=>setNewTutorPayout(false)}>Review payout</Link>
       <button type="button" onClick={()=>setNewTutorPayout(false)} aria-label="Dismiss tutor payout notification"><X size={16}/></button>
-    </div>}
-    {item&&<div className="dli-announcement-shade" role="presentation">
+    </div>,document.body)}
+    {item&&createPortal(<div className="dli-announcement-shade" role="presentation">
       <div role="dialog" aria-modal="true" aria-labelledby="dli-announcement-popup-title"
         className="dli-announcement-popup">
         <span className="dli-popup-kicker"><BellRing size={16}/> DLI announcement</span>
@@ -261,7 +262,7 @@ export function DliNotificationBell(){
           <Link to="/announcements" onClick={()=>{void mark(item,true);}}>Open announcement centre</Link>
         </div>
       </div>
-    </div>}
+    </div>,document.body)}
   </div>;
 }
 
@@ -359,11 +360,11 @@ export function DliMessageBadge(){
       <MessageCircle size={19}/>
       {unread>0&&<span className="dli-notification-count">{unread>99?'99+':unread}</span>}
     </button>
-    {flash&&<div className="dli-incoming-message-notice" role="status" aria-live="polite">
+    {flash&&createPortal(<div className="dli-incoming-message-notice" role="status" aria-live="polite">
       <span><strong>New DLI message</strong><small>{unread?unread+' unread messages':'Check your messages'}</small></span>
       <Link to="/communications" onClick={()=>setFlash(false)}>Open chat</Link>
       <button type="button" onClick={()=>setFlash(false)} aria-label="Dismiss message notice"><X size={16}/></button>
-    </div>}
+    </div>,document.body)}
   </div>;
 }
 
