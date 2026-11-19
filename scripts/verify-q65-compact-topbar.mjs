@@ -7,6 +7,8 @@ const shell=read('src/components/AppShell.tsx');
 const css=read('src/components/TopbarUtilityDropdown.css');
 const notices=read('src/components/DliNoticeCenter.tsx');
 const main=read('src/main.tsx');
+const identity=read('src/lib/environmentPolicy.ts');
+const auth=read('src/auth/AuthProvider.tsx');
 const start=shell.indexOf('          <div className="topbar-actions dli-compact-actions">');
 const end=shell.indexOf('        </header>',start);
 assert.ok(start!==-1&&end>start,'Global topbar utilities container missing');
@@ -24,6 +26,16 @@ for(const token of ['theme-toggle','My profile and settings','Replay guided app 
   assert.ok(toolbar.includes(token),'Original action missing from utility dropdown: '+token);
 }
 assert.ok(toolbar.includes('pushKeyProvided&&'),'Unavailable push capability must not show an inert tile');
+assert.ok(!shell.includes('dli-utility-environment')&&
+ !shell.includes('deploymentIdentity.label')&&
+ !toolbar.includes('Production · Restricted'),
+ 'Do not expose the internal production/restricted environment badge in any visible header/menu');
+assert.ok(!css.includes('.dli-utility-environment'),
+ 'Remove unused environment badge presentation styles');
+assert.ok(identity.includes('const mismatch = expectedKind') &&
+ identity.includes('expectedKind !== kind') &&
+ auth.includes('auth.getUser()'),
+ 'Keep production/QA origin checks and user authentication intact');
 assert.ok(shell.includes('<div className="dli-topbar-search"><GlobalSearch/></div>'),'Search must remain central');
 assert.ok(shell.includes('dli-desktop-sidebar-toggle')&&shell.includes('mobile-menu icon-button'),
  'Sidebars must remain accessible');
