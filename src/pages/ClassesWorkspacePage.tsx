@@ -594,7 +594,7 @@ export default function ClassesWorkspacePage(){
             </fieldset>)}
           </div>
           <p className="academic-code-hint">Courses and their order are controlled in
-            <Link to="/cohorts"> Advanced Curriculum</Link>. Changes there are read here automatically on refresh.</p>
+            <Link to="/cohorts"> Advanced Curriculum</Link>. Refresh this page after making curriculum changes.</p>
           {tutors.length<2&&<p className="academic-code-hint">At least two active tutors are required. Authorise tutors under <Link to="/users">Users &amp; access</Link>.</p>}
 
           <div className="classes-section-heading"><span>6</span><div><h3>One Google Meet link</h3><p>All subject sessions in this class use this link. Tutors and students see it only when permitted.</p></div></div>

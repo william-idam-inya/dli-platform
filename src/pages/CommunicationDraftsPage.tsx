@@ -109,7 +109,7 @@ export default function CommunicationDraftsPage() {
         <h1>Communications drafts</h1>
         
       </div>
-      <span className="module-status"><span/> Stage H1</span>
+
     </div>
     
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -120,8 +120,7 @@ export default function CommunicationDraftsPage() {
       <div><Users size={20}/><strong>0</strong><span>Messages delivered by H1</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading your private communication drafts…'
-        :'Live DLI development communications records'}</p>
+      {loading&&<p role="status">Loading your private communication drafts…</p>}
       <button className="user-outline-button" type="button" disabled={loading||saving}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
     </div>
@@ -154,9 +153,7 @@ export default function CommunicationDraftsPage() {
         <textarea id="h1-body" rows={7} required minLength={10} maxLength={5000}
           placeholder="Prepare the text to review. Do not include private Student contact lists or credentials."
           value={editor.body} onChange={e=>setEditor({...editor,body:e.target.value})}/>
-        <p className="academic-code-hint">{editor.body.length}/5000 characters.
-          No automatic scheduling, sending, AI generation, recipient selection or publishing
-          is implemented in Stage H1. Changes to drafts are audited.</p>
+        <p className="academic-code-hint">{editor.body.length}/5000 characters. Drafts are saved privately and are not sent automatically.</p>
         <div className="communications-actions">
           <button type="submit" className="academic-submit" disabled={loading||saving}>
             <Save size={15}/>{saving?'Saving draft…':editingId?'Save revision':'Save private draft'}

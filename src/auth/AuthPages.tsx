@@ -207,7 +207,7 @@ export function ForgotPasswordPage() {
             <KeyRound size={16} /> {pending ? 'Submitting…' : rateLimited ? 'Email limit reached' : 'Request recovery'}
           </button>
         </form>}
-    <p className="auth-helper">On the Supabase Free default email sender, delivery may be limited to project-team addresses. Ask an administrator for assistance if no email arrives.</p>
+    <p className="auth-helper">If the email doesn't arrive, check your spam folder or contact DLI support.</p>
     <div className="auth-links"><Link to="/login"><ArrowLeft size={14} /> Back to sign in</Link></div>
   </AuthLayout>;
 }

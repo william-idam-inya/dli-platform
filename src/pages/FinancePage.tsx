@@ -142,7 +142,7 @@ export default function FinancePage() {
         <h1>Finance management</h1>
         
       </div>
-      <span className="module-status"><span/> Finance controls</span>
+
     </div>
 
     
@@ -156,21 +156,10 @@ export default function FinancePage() {
         <strong>{proposals.length}</strong>
         <span>Pending proposals</span>
       </div>
-      <div className="finance-summary-card">
-        <FileText size={20}/>
-        <strong>Manual workflow</strong>
-        <span>Fee assignments and evidence review</span>
-      </div>
-      <div className="finance-summary-card">
-        <Banknote size={20}/>
-        <strong>Verification required</strong>
-        <span>Transfers and tutor payment records</span>
-      </div>
     </div>
 
     <div className="academic-top-actions">
-      <p role="status">{loading ? 'Loading restricted finance proposals…'
-        : 'Live DLI development finance-governance records'}</p>
+      {loading&&<p role="status">Loading restricted finance proposals…</p>}
       <button type="button" className="user-outline-button" disabled={loading || saving}
         onClick={() => { void refresh(); }}><RefreshCw size={15}/> Refresh</button>
     </div>
@@ -181,7 +170,6 @@ export default function FinancePage() {
       <div className="panel-heading"><div>
         <p className="section-kicker">01 · GOVERNANCE</p>
         <h2>Submit a pending proposal</h2>
-        <p className="user-caption">This is an internal proposal record, not an approval or financial transaction.</p>
       </div></div>
       <form className="academic-form finance-proposal-form"
         onSubmit={event => { void createProposal(event); }}>
@@ -212,10 +200,7 @@ export default function FinancePage() {
             </select>
           </label>
         </div>
-        <p className="academic-code-hint">Do not enter bank account numbers, card details, payment
-          credentials or real student financial information. Draft records cannot be edited,
-          approved, deleted or used to collect funds in Stage G1. To amend a draft, create
-          a new clearly labelled proposal for review.</p>
+        <p className="academic-code-hint">Do not include payment credentials or private financial information. Proposals cannot collect funds. To make changes, create a new proposal.</p>
         <button type="submit" className="academic-submit"
           disabled={loading || saving}>
           <Plus size={16}/>{saving ? 'Saving pending proposal…' : 'Save pending proposal'}

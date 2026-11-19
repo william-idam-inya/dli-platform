@@ -324,9 +324,9 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
           {ownerOrAdmin?'Visible audit events recorded in the past seven days':'Review authorised class and financial operations'}
         </SectionHead>
         {!ownerOrAdmin?<div className="ref-empty-state">
-          <ShieldCheck size={25} aria-hidden="true"/>
-          <strong>Role-scoped operations</strong>
-          <span>Your dashboard displays available records without exposing the restricted owner audit trail.</span>
+          <BarChart3 size={24} aria-hidden="true"/>
+          <strong>Operations overview</strong>
+          <span>Open Reports to review available activity.</span>
         </div>:loading?<p className="ref-empty">Loading recent audit activity…</p>:
           auditError?<p className="ref-empty">Audit activity is unavailable for your session.</p>:
           audit.length?<EventChart events={audit}/>:<div className="ref-empty-state">

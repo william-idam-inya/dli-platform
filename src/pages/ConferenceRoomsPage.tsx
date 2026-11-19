@@ -334,9 +334,7 @@ export default function ConferenceRoomsPage(){
        </>}
        <button type="button" disabled={busy} onClick={()=>void action('leave')}>Leave DLI room</button>
       </div>
-      <p className="dli-conference-sfu-note">{mediaOpen?
-       'Live microphone, camera and moderation controls are provided by Cloudflare RealtimeKit. DLI attendance and chat remain separate, permission-checked records.':
-       'DLI moderation actions are stored as audited requests; only the Cloudflare meeting interface can control active camera and microphone streams in this production conferencing interface.'}</p>
+      {!mediaOpen&&<p className="dli-conference-sfu-note">Use the meeting window to control cameras and microphones.</p>}
      </div>
      <aside className="dli-conference-chat">
       <h3><MessageSquareText size={17}/> Conference chat</h3>

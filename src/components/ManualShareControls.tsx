@@ -112,11 +112,9 @@ export default function ManualShareControls({
 
   return <section className="manual-share-controls" aria-label="Manual external message preparation">
     <div className="manual-share-title"><ShieldCheck size={16}/>
-      <strong>Stage H6 · Manual external handoff</strong>
+      <strong>Share approved message</strong>
     </div>
-    <p>Only the current independently cleared revision can open a message composer.
-      DLI never selects a recipient or sends a message. WhatsApp and your email
-      application require you to review and press Send yourself.</p>
+    <p>Review the message and choose a recipient before sending it from your email or WhatsApp app.</p>
     <button type="button" className="academic-submit"
       disabled={disabled || preparing || !clearedForCopy}
       onClick={() => { void prepare(); }}>
