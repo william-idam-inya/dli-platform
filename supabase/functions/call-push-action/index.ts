@@ -27,7 +27,7 @@ const reply=(status:number,payload:Record<string,unknown>,origin:string)=>
 Deno.serve(async req=>{
  const origin=req.headers.get('origin')??'';
  if(!validOrigin(origin))return reply(403,{ok:false},origin);
- if(req.method==='OPTIONS')return reply(204,{},origin);
+ if(req.method==='OPTIONS')return reply(200,{ok:true},origin);
  if(req.method!=='POST')return reply(405,{ok:false},origin);
  if(!project||!service)return reply(503,{ok:false},origin);
  const size=Number(req.headers.get('content-length')??0);
