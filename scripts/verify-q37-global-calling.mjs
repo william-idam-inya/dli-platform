@@ -56,7 +56,7 @@ assert.ok(!dm.includes("!realtime.peerOnline||Boolean(calling.session)"),
  'Calls must not be blocked if a peer has not opened the same chat');
 for(const s of ['RTCPeerConnection','getUserMedia','getDisplayMedia',
  'setRemoteDescription','addIceCandidate','queuedIce','earlyLocalIce',
- 'sendRef.current','stun.cloudflare.com:3478','45000','t.stop()','replaceTrack',
+ 'sendRef.current','stun.cloudflare.com:3478','35000','t.stop()','replaceTrack',
  "kind:'hangup'","kind:'answer'","kind:'offer'"])
  assert.ok(peer.includes(s),'Peer media lifecycle missing '+s);
 assert.ok(overlay.includes('onAnswer')&&overlay.includes('onScreen')&&overlay.includes('Ringing…'));
