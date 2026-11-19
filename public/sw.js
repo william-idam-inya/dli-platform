@@ -42,6 +42,14 @@ self.addEventListener('push',event=>{
    ]}:{})
   };
   await self.registration.showNotification(String(data.title||'DLI notification').slice(0,180),options);
+  // Best-effort expiry for a delivered notification. The database independently
+  // expires the call; an OS may stop the worker and manage its own alert UI.
+  if(call&&typeof data.expiresAt==='number'&&options.data.callId){
+   const ms=Math.max(0,Math.min(35000,data.expiresAt-Date.now()));
+   if(ms>0)await new Promise(resolve=>setTimeout(resolve,ms));
+   const outstanding=await self.registration.getNotifications({tag:'call-'+options.data.callId});
+   outstanding.forEach(item=>item.close());
+  }
  })());
 });
 self.addEventListener('notificationclick',event=>{
@@ -59,7 +67,7 @@ self.addEventListener('notificationclick',event=>{
        headers:{'Content-Type':'application/json'},
        body:JSON.stringify({callId:data.callId,token:data.declineToken})
       });
-     if(response.ok)return; // Rejected in the background; do not open a tab.
+     if(response.ok||response.status===410)return; // Rejected or already expired; no tab.
     }catch{/* Offline or provider unsupported: open authenticated DLI fallback. */}
   }
   // Use one same-origin, role-protected route for each notification type.
