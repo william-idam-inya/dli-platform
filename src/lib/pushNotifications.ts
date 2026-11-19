@@ -93,7 +93,7 @@ export async function notifyHiddenIncomingDliCall(senderName:string,callId:strin
  if(typeof document==='undefined'||!document.hidden||
    typeof Notification==='undefined'||Notification.permission!=='granted')return;
  const title='DLI incoming call';
- const opts:NotificationOptions={
+ const opts:NotificationOptions & {actions:{action:string;title:string}[]}={
    body:senderName.slice(0,150)+' is calling',
    tag:'call-'+callId,
    icon:'/dli-mark.svg?v=20261113',
