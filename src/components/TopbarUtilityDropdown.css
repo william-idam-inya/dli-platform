@@ -103,10 +103,6 @@
 .app-layout .dli-utility-dropdown .dli-utility-links>button:hover{
   background:var(--surface-soft);
 }
-.app-layout .dli-utility-environment{
-  display:flex;align-items:center;gap:7px;
-  padding:5px 10px;color:var(--muted);font-size:10px;
-}
 .app-layout .dli-utility-trigger:focus-visible,
 .app-layout .dli-utility-dropdown :is(button,a):focus-visible{
   outline:2px solid var(--purple);outline-offset:2px;

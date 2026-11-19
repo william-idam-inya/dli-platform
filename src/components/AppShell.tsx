@@ -7,7 +7,6 @@ import { learningAreas } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
-import { deploymentIdentity } from '../lib/deploymentIdentity';
 import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
 import WorkspaceFocus from './WorkspaceFocus';
@@ -426,9 +425,6 @@ export default function AppShell({ children }: AppShellProps) {
                   <button type="button" onClick={()=>{
                     setProfileMenuOpen(false);window.dispatchEvent(new Event('dli-tour-replay'));
                   }}><HelpCircle size={17}/> Replay guided app tour</button>
-                  <span className="dli-utility-environment" title="Deployment environment">
-                    <span className="preview-dot"/> {deploymentIdentity.label}
-                  </span>
                   <button type="button" onClick={()=>{
                     setProfileMenuOpen(false);void signOut();
                   }}><LogOut size={17}/> Sign out</button>
