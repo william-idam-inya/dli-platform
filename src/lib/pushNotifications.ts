@@ -95,10 +95,11 @@ export async function notifyHiddenIncomingDliCall(senderName:string,callId:strin
  const title='DLI incoming call';
  const opts:NotificationOptions={
    body:senderName.slice(0,150)+' is calling',
-   tag:'dli-incoming-call',
+   tag:'call-'+callId,
    icon:'/dli-mark.svg?v=20261113',
    data:{kind:'call',callId,path:'/'},
-   requireInteraction:true
+   requireInteraction:true,
+   actions:[{action:'accept',title:'Answer'},{action:'decline',title:'Reject'}]
  };
  try{
   const worker=await navigator.serviceWorker?.getRegistration('/');

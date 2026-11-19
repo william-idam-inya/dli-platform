@@ -17,6 +17,7 @@ import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
+import CallMessageAlertsBanner from './CallMessageAlertsBanner';
 import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
@@ -436,6 +437,7 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
         </header>
+        <CallMessageAlertsBanner/>
         <DliAnnouncementTicker/>
 
         <div className="page-content">

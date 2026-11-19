@@ -83,9 +83,11 @@ export function CallProvider({children}:{children:ReactNode}){
   if(session.state==='ringing')
    return startCallRingtone(session.direction);
  },[calling.session?.id,calling.session?.state,calling.session?.direction]);
- // Reject unanswered incoming calls at the same 45-second limit as the caller.
+ // Expire ringing calls after 35 seconds. The server records them as missed.
  const rejectRef=useRef(calling.reject);
  rejectRef.current=calling.reject;
+ const expireRef=useRef(calling.expire);
+ expireRef.current=calling.expire;
  // A notification clicked while this tab is already open may arrive AFTER
  // the offer. Process the routed Accept/Decline only for this live incoming
  // session; the call's verified private inbox still governs authorization.
@@ -107,8 +109,8 @@ export function CallProvider({children}:{children:ReactNode}){
   const session=calling.session;
   if(!session||session.direction!=='incoming'||session.state!=='ringing')return;
   const timeout=window.setTimeout(()=>{
-   if(sessionRef.current?.id===session.id&&sessionRef.current.state==='ringing')rejectRef.current();
-  },45000);
+   if(sessionRef.current?.id===session.id&&sessionRef.current.state==='ringing')expireRef.current();
+  },35000);
   return()=>window.clearTimeout(timeout);
  },[calling.session?.id,calling.session?.state,calling.session?.direction]);
 
