@@ -54,3 +54,44 @@
  }
  .dli-floating-chat .dli-telegram-mobile-compose{bottom:17px}
 }
+
+
+/* Q69: the dock owns its pencil; its contact list scrolls within the panel,
+   never below the entire conversation directory or above bottom navigation. */
+.dli-floating-chat .dli-telegram-sidebar-header,
+.dli-floating-chat .dli-telegram-mobile-compose{display:none!important}
+.dli-floating-chat .dli-direct-controls{
+ flex:0 0 auto;box-sizing:border-box;display:flex;flex-wrap:nowrap;
+ align-items:center;justify-content:space-between;gap:8px;margin:0;
+ padding:9px 12px;border-bottom:1px solid var(--border)}
+.dli-floating-chat .dli-direct-modes{min-width:0;flex:1;flex-wrap:nowrap}
+.dli-floating-chat .dli-direct-modes>button{
+ min-width:0;min-height:42px;padding:8px 12px;font-size:12px}
+.dli-floating-chat .dli-direct-controls>.user-outline-button{
+ flex:0 0 auto;min-height:42px;padding:8px 10px;font-size:12px;white-space:nowrap}
+.dli-floating-chat .dli-floating-chat-content{overflow:hidden}
+.dli-floating-chat .dli-direct-layout .dli-direct-sidebar{
+ display:flex;flex-direction:column;min-height:0!important;
+ max-height:none!important;overflow:hidden!important;box-sizing:border-box;
+ padding:10px 12px 12px}
+.dli-floating-chat .dli-direct-sidebar>label,
+.dli-floating-chat .dli-direct-sidebar>input,
+.dli-floating-chat .dli-direct-chat-filters{flex:0 0 auto}
+.dli-floating-chat .dli-direct-layout .dli-direct-conversations{
+ order:1;flex:1 1 auto;min-height:0;margin:6px 0 0;
+ padding:8px 0 15px;overflow:auto;overscroll-behavior:contain}
+.dli-floating-chat .dli-direct-layout.compose-open .dli-direct-conversations,
+.dli-floating-chat .dli-direct-layout.compose-open .dli-direct-chat-filters{display:none!important}
+.dli-floating-chat .dli-direct-layout .dli-telegram-contacts-panel{
+ order:1;flex:1 1 auto;min-height:0;max-height:none!important;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ margin:6px 0 0;padding:10px;box-shadow:none;box-sizing:border-box}
+.dli-floating-chat .dli-direct-layout .dli-direct-thread{
+ min-height:0!important;max-height:none!important;overflow-y:auto}
+@media(max-width:680px){
+ .dli-floating-chat .dli-direct-controls{padding:8px 10px}
+ .dli-floating-chat .dli-direct-layout.compose-open .dli-direct-sidebar{
+  min-height:0!important;max-height:none!important}
+ .dli-floating-chat .dli-telegram-contacts-title{
+  position:sticky;top:0;z-index:2;background:var(--surface);padding:3px 0 9px}
+}

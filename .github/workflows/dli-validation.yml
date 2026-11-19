@@ -224,6 +224,9 @@ jobs:
       - name: Verify Q68 native call actions, 35s timeout and private background rejection
         run: node scripts/verify-q68-native-call-actions.mjs
 
+      - name: Verify Q69 compact mobile Messenger, one compose action and visible contact picker
+        run: node scripts/verify-q69-mobile-messenger-compose.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

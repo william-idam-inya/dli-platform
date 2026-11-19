@@ -553,3 +553,34 @@
  }
  .dli-direct-page .dli-direct-alerts-button{justify-self:end}
 }
+
+
+/* Q69: the mobile contact picker replaces conversations rather than being
+   pushed off-screen below them; one Chats header action replaces the FAB. */
+.dli-telegram-contacts-title{min-width:0;gap:8px}
+.dli-telegram-contacts-title>strong{min-width:0;flex:0 1 auto}
+.dli-telegram-contacts-count{min-width:0;flex:1;text-align:right;
+ color:var(--muted);font-size:11px;font-weight:650;line-height:1.35}
+.dli-telegram-contacts-title>button{flex:0 0 44px;min-height:44px}
+.dli-direct-sidebar .dli-telegram-contacts-panel .dli-direct-contacts{
+ box-sizing:border-box;min-width:0;max-width:100%;margin:0;padding:0;border:0}
+@media(max-width:750px){
+ .dli-direct-page .dli-telegram-sidebar-header{
+  position:sticky;top:0;z-index:5;flex:0 0 auto;
+  padding:7px 0 9px;background:var(--surface)}
+ .dli-direct-page .dli-telegram-new-message{display:grid;flex:0 0 44px;min-height:44px}
+ .dli-direct-page .dli-telegram-mobile-compose{display:none!important}
+ .dli-direct-page .dli-direct-layout.compose-open .dli-direct-sidebar>.dli-direct-conversations,
+ .dli-direct-page .dli-direct-layout.compose-open .dli-direct-sidebar>.dli-direct-chat-filters{display:none!important}
+ .dli-direct-page .dli-direct-layout.compose-open .dli-direct-sidebar>.dli-telegram-contacts-panel{
+  order:1;flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;
+  overflow-x:hidden;overscroll-behavior:contain;margin:8px 0 0;
+  padding:9px;box-sizing:border-box;box-shadow:none}
+ .dli-direct-page .dli-direct-layout.compose-open .dli-direct-sidebar{
+  max-height:min(72dvh,650px);min-height:280px}
+}
+@media(max-width:380px){
+ .dli-telegram-contacts-title{flex-wrap:wrap}
+ .dli-telegram-contacts-count{text-align:left}
+ .dli-telegram-contacts-title>button{margin-left:auto}
+}

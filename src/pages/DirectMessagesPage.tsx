@@ -52,6 +52,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const directTargetHandled=useRef('');
   const [uid,setUid]=useState('');
   const threadRef=useRef<HTMLElement>(null);
+  const directoryRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
  const [newContacts,setNewContacts]=useState<Contact[]>([]);
@@ -76,6 +77,8 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
   const [reactions,setReactions]=useState<DirectReaction[]>([]);
   const [composeOpen,setComposeOpen]=useState(initialCompose);
+  // Reopen the contact picker from the top on narrow and floating layouts.
+  useEffect(()=>{if(composeOpen)directoryRef.current?.scrollTo({top:0});},[composeOpen]);
   const [menuTarget,setMenuTarget]=useState<string|null>(null);
   const [expandedReactions,setExpandedReactions]=useState(false);
   const [replyTarget,setReplyTarget]=useState<DirectMessage|null>(null);
@@ -614,17 +617,19 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         <RefreshCw size={15}/> Refresh
       </button>
     </div>
-    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')+(composeOpen?' compose-open':'')}>
-      <aside className="dli-direct-sidebar" aria-label="Conversation directory">
+    <div className={'dli-direct-layout'+((activeId||error)&&!composeOpen?' has-active-chat':'')+(composeOpen?' compose-open':'')}>
+      <aside className="dli-direct-sidebar" ref={directoryRef}
+        aria-label={composeOpen?'New message contacts':'Conversation directory'}>
          {mode==='inbox'&&<div className="dli-telegram-sidebar-header">
-           <h2>Chats</h2>
+           <h2>{composeOpen?'New message':'Chats'}</h2>
            <button className="dli-telegram-new-message" data-dli-tour="new-message" type="button"
-             aria-label="New message" aria-expanded={composeOpen}
+             aria-label={composeOpen?'Back to chats':'New message'}
+             aria-controls="dli-new-contact-picker" aria-expanded={composeOpen}
              onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
              {composeOpen?<X size={20}/>:<Pencil size={20}/>}
            </button>
          </div>}
-        <label htmlFor="direct-search"><Search size={16}/> Search conversations</label>
+        <label htmlFor="direct-search"><Search size={16}/> {composeOpen?'Search contacts':'Search conversations'}</label>
         <input id="direct-search" placeholder={composeOpen?"Search permitted contacts…":"Search conversations…"} value={search} onChange={e=>setSearch(e.target.value)}/>
         {mode==='inbox'&&<nav className="dli-direct-chat-filters" aria-label="Filter conversations">
           <button type="button" className={chatFilter==='all'?'selected':''} aria-pressed={chatFilter==='all'}
@@ -680,13 +685,17 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           })}
           {!visible.length&&!loading&&<p className="dli-direct-empty">No conversations yet. Tap the pencil icon to start a private message with an authorised contact.</p>}
         </section>
-        {mode==='inbox'&&composeOpen&&<div className="dli-telegram-contacts-panel" role="region"
+        {mode==='inbox'&&composeOpen&&<div id="dli-new-contact-picker" className="dli-telegram-contacts-panel" role="region"
           aria-label="Choose an authorised contact to message">
-          <div className="dli-telegram-contacts-title"><strong>New message</strong>
-            <button type="button" aria-label="Close new message contacts" onClick={()=>setComposeOpen(false)}><X size={17}/></button>
+          <div className="dli-telegram-contacts-title">
+            <strong>New message</strong>
+            <span className="dli-telegram-contacts-count" aria-live="polite">
+              {newConversationContacts.length} contact{newConversationContacts.length===1?'':'s'} available
+            </span>
+            <button type="button" aria-label="Back to chats" title="Back to chats"
+              onClick={()=>{setComposeOpen(false);setSearch('');}}><X size={18}/></button>
           </div>
           {mode==='inbox'&&<section className="dli-direct-contacts">
-          <h2>New message · {newConversationContacts.length} new contacts</h2>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p className="dli-direct-empty">Only active accounts registered in the live DLI Platform appear here. To add students or tutors, invite them through the production user register.</p>}
           {chatRoles.map(group=>{
             const people=newConversationContacts.filter(c=>memberGroup(c.user_id)===group.id&&
@@ -759,11 +768,6 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
-        {mode==='inbox'&&<button className="dli-telegram-mobile-compose" data-dli-tour="new-message" type="button"
-          aria-label={composeOpen?'Close contacts':'Compose new message'}
-          onClick={()=>{setComposeOpen(v=>!v);setActiveId('');}}>
-          {composeOpen?<X size={22}/>:<Pencil size={22}/>}
-        </button>}
       </aside>
       <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
         {error&&<p role="alert" className="dli-direct-inline-feedback error">{error}</p>}

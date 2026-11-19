@@ -15,6 +15,7 @@ export default function FloatingMessenger(){
  const [open,setOpen]=useState(false);
  const [minimized,setMinimized]=useState(false);
  const [compose,setCompose]=useState(false);
+ const [composeRequest,setComposeRequest]=useState(0);
  const opener=useRef<HTMLElement|null>(null);
  const dock=useRef<HTMLDivElement|null>(null);
  const onMessagesPage=location.pathname==='/communications';
@@ -57,7 +58,7 @@ export default function FloatingMessenger(){
        <span><MessageCircle size={18}/> DLI Messenger</span>
        <div>
          <button type="button" title="New message" aria-label="New message"
-          onClick={()=>{setCompose(true);setMinimized(false);}}>
+          onClick={()=>{setCompose(true);setComposeRequest(v=>v+1);setMinimized(false);}}>
            <Pencil size={16}/>
          </button>
          <Link to="/communications" title="Open full Messages workspace"
@@ -73,7 +74,7 @@ export default function FloatingMessenger(){
        </div>
      </header>
      <div className="dli-floating-chat-content" ref={dock}>
-       <DirectMessagesPage key={compose?'compose':'inbox'} initialCompose={compose}/>
+       <DirectMessagesPage key={compose?'compose-'+composeRequest:'inbox'} initialCompose={compose}/>
      </div>
    </section>}
    {(!open||minimized)&&<button type="button" className="dli-floating-chat-bubble"
