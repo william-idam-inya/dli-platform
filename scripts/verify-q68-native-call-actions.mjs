@@ -42,7 +42,7 @@ for(const t of ["verify_jwt:false","anonymous"]){
 }
 assert.ok(decline.includes('dli_push_decline_call')&&
  decline.includes("credentials")===false&&
- decline.includes("req.method==='POST'")&&
+ decline.includes("req.method!=='POST'")&&
  decline.includes('^[0-9a-f]{64}$')&&
  decline.includes('validOrigin'),'Background call action must be capability- and origin-scoped');
 assert.ok(calls.includes('35000')&&hook.includes('35000')&&
