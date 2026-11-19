@@ -32,14 +32,24 @@ self.addEventListener('push',event=>{
    data:{
     kind:data.kind,path:safePath(data.path),
     callId:UUID.test(String(data.callId||''))?data.callId:null,
-    sourceId:UUID.test(String(data.sourceId||''))?data.sourceId:null
+    sourceId:UUID.test(String(data.sourceId||''))?data.sourceId:null,
+    declineToken:call&&/^[0-9a-f]{64}$/.test(String(data.declineToken||''))?data.declineToken:null,
+    expiresAt:typeof data.expiresAt==='number'?data.expiresAt:null
    },
    ...(call?{actions:[
-    {action:'accept',title:'Accept'},
-    {action:'decline',title:'Decline'}
+    {action:'accept',title:'Answer'},
+    {action:'decline',title:'Reject'}
    ]}:{})
   };
   await self.registration.showNotification(String(data.title||'DLI notification').slice(0,180),options);
+  // Best-effort expiry for a delivered notification. The database independently
+  // expires the call; an OS may stop the worker and manage its own alert UI.
+  if(call&&typeof data.expiresAt==='number'&&options.data.callId){
+   const ms=Math.max(0,Math.min(35000,data.expiresAt-Date.now()));
+   if(ms>0)await new Promise(resolve=>setTimeout(resolve,ms));
+   const outstanding=await self.registration.getNotifications({tag:'call-'+options.data.callId});
+   outstanding.forEach(item=>item.close());
+  }
  })());
 });
 self.addEventListener('notificationclick',event=>{
@@ -47,6 +57,19 @@ self.addEventListener('notificationclick',event=>{
  event.waitUntil((async()=>{
   const data=event.notification.data||{};
   const action=data.kind==='call'&&['accept','decline'].includes(event.action)?event.action:'view';
+  if(action==='decline'&&UUID.test(String(data.callId||''))&&
+     /^[0-9a-f]{64}$/.test(String(data.declineToken||''))&&
+     typeof data.expiresAt==='number'&&data.expiresAt>Date.now()){
+    try{
+     const response=await fetch(
+      'https://thoinmwqxmqxrnywjuxq.supabase.co/functions/v1/call-push-action',{
+       method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
+       headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({callId:data.callId,token:data.declineToken})
+      });
+     if(response.ok||response.status===410)return; // Rejected or already expired; no tab.
+    }catch{/* Offline or provider unsupported: open authenticated DLI fallback. */}
+  }
   // Use one same-origin, role-protected route for each notification type.
   // For messages, go to the real Messages workspace; the page revalidates
   // the requested conversation against the current user's private threads.

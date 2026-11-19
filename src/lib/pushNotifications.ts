@@ -83,6 +83,15 @@ export async function disableDliDevicePush():Promise<void>{
  if(!cancelled)throw Error('Browser could not stop device alerts. Try again.');
 }
 
+export async function closeDliIncomingCallNotification(callId:string):Promise<void>{
+ if(!/^[0-9a-f-]{36}$/i.test(callId)||!navigatorAvailable||!('serviceWorker' in navigator))return;
+ try{
+  const registration=await navigator.serviceWorker.getRegistration('/');
+  const notifications=await registration?.getNotifications({tag:'call-'+callId});
+  notifications?.forEach(item=>item.close());
+ }catch{/* OS/browser lifecycle may not support programmatic dismissal. */}
+}
+
 /**
  * Foreground tab became hidden while an existing authenticated DLI call was
  * being offered. Mobile browsers reject new Notification(), so try the
@@ -93,12 +102,13 @@ export async function notifyHiddenIncomingDliCall(senderName:string,callId:strin
  if(typeof document==='undefined'||!document.hidden||
    typeof Notification==='undefined'||Notification.permission!=='granted')return;
  const title='DLI incoming call';
- const opts:NotificationOptions={
+ const opts:NotificationOptions & {actions:{action:string;title:string}[]}={
    body:senderName.slice(0,150)+' is calling',
-   tag:'dli-incoming-call',
+   tag:'call-'+callId,
    icon:'/dli-mark.svg?v=20261113',
    data:{kind:'call',callId,path:'/'},
-   requireInteraction:true
+   requireInteraction:true,
+   actions:[{action:'accept',title:'Answer'},{action:'decline',title:'Reject'}]
  };
  try{
   const worker=await navigator.serviceWorker?.getRegistration('/');

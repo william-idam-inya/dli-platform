@@ -32,7 +32,11 @@ export default function PushNotificationOptIn(){
    void synchronizeDliPush().then(active=>{if(current)setEnabled(active);})
     .catch(()=>{if(current)setError('Device registration could not be verified. Enable alerts again or check site permissions.');});
   }
-  return ()=>{current=false;};
+  const synchronize=()=>{if(current&&Notification.permission==='granted'){
+    void synchronizeDliPush().then(active=>{if(current)setEnabled(active);}).catch(()=>{});
+  }};
+  window.addEventListener('dli-push-settings-changed',synchronize);
+  return ()=>{current=false;window.removeEventListener('dli-push-settings-changed',synchronize);};
  },[account?.id]);
  // Production has no public key yet: do not advertise an inactive capability.
  if(!account||!pushKeyProvided)return null;

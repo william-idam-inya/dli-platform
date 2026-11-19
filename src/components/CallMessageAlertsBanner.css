@@ -1,0 +1,22 @@
+.dli-call-alert-banner{display:flex;align-items:center;gap:10px;
+ width:100%;min-width:0;padding:10px 16px;box-sizing:border-box;
+ border-bottom:1px solid var(--border);background:var(--surface);
+ color:var(--text);font-size:12px}
+.dli-call-alert-banner>svg{flex-shrink:0;color:var(--purple)}
+.dli-call-alert-banner-copy{display:grid;gap:3px;min-width:0;flex:1}
+.dli-call-alert-banner-copy strong{font-size:12px;font-weight:800}
+.dli-call-alert-banner-copy span{font-size:11px;color:var(--muted);line-height:1.35}
+.dli-call-alert-banner-copy small{color:#b82c42}
+.dli-call-alert-enable{border:0;border-radius:10px;background:var(--purple);
+ color:white;font-size:11px;font-weight:800;min-height:39px;
+ padding:9px 13px;white-space:nowrap;cursor:pointer}
+.dli-call-alert-enable:disabled{opacity:.65;cursor:wait}
+.dli-call-alert-dismiss{display:grid;place-items:center;flex:0 0 35px;
+ width:35px;height:35px;border:1px solid var(--border);
+ background:var(--surface-soft);color:var(--text);border-radius:9px;
+ cursor:pointer}
+.dli-call-alert-banner button:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+@media(max-width:540px){.dli-call-alert-banner{flex-wrap:wrap;padding:9px 12px}
+ .dli-call-alert-banner-copy{flex-basis:calc(100% - 65px)}
+ .dli-call-alert-enable{margin-left:28px;flex:1}
+ .dli-call-alert-dismiss{order:0}}

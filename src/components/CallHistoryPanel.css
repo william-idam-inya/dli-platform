@@ -1,0 +1,17 @@
+.dli-profile-call-history{padding:14px 22px 18px;display:grid;gap:8px}
+.dli-profile-call-history-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dli-profile-call-history-heading h3{display:flex;align-items:center;gap:8px;margin:0;
+ font-size:13px;font-weight:800}
+.dli-profile-call-history-heading button{display:grid;place-items:center;
+ min-width:40px;min-height:40px;border:1px solid var(--border);
+ border-radius:10px;background:var(--surface-soft);color:var(--text);cursor:pointer}
+.dli-profile-call-event{display:flex;gap:9px;align-items:center;
+ padding:9px;border-radius:11px;background:var(--surface-soft);min-width:0}
+.dli-profile-call-event>svg{flex-shrink:0;color:var(--purple)}
+.dli-profile-call-event>div{display:grid;gap:4px;min-width:0;flex:1}
+.dli-profile-call-event strong{font-size:11px;font-weight:750}
+.dli-profile-call-event small{font-size:10px;color:var(--muted)}
+.dli-profile-call-event>span{font-size:10px;font-weight:800;color:var(--text);
+ padding:5px 8px;border:1px solid var(--border);border-radius:20px}
+.dli-profile-call-history p{margin:0;font-size:11px;color:var(--muted)}
+@media(max-width:480px){.dli-profile-call-history{padding-inline:13px}}

@@ -69,8 +69,8 @@ export default function DirectCallOverlay({
         onClick={()=>{setMinimized(v=>!v);setOffset({x:0,y:0});}}>
         {minimized?<Maximize2 size={20}/>:<Minimize2 size={20}/>}
       </button>}
-      <button type="button" aria-label="End or decline call"
-        onClick={ringing?onReject:onEnd}><X size={21}/></button>
+      {!ringing&&<button type="button" aria-label="End call"
+        onClick={onEnd}><X size={21}/></button>}
     </div>
    </header>
    <div className={'dli-call-media'+(session.mode==='audio'?' audio':'')}>
@@ -86,11 +86,11 @@ export default function DirectCallOverlay({
    {session.error&&<p role="alert" className="dli-call-error">{session.error}</p>}
    <div className="dli-call-controls" aria-label="Call controls">
     {ringing?<>
-     <button type="button" className="decline" onClick={onReject}>
-      <PhoneOff size={21}/> Decline
-     </button>
      <button type="button" className="accept" onClick={onAnswer}>
-      {session.mode==='video'?<Video size={21}/>:<Phone size={21}/>} Accept
+      {session.mode==='video'?<Video size={21}/>:<Phone size={21}/>} Answer
+     </button>
+     <button type="button" className="decline" onClick={onReject}>
+      <PhoneOff size={21}/> Reject
      </button>
     </>:<>
      <button type="button" disabled={!localStream} aria-pressed={muted} onClick={onMute}>

@@ -119,12 +119,28 @@ async function handleEvent(admin:Admin,row:EventRow){
   .select('id,endpoint,p256dh,auth').eq('user_id',row.recipient_id).eq('is_active',true).limit(12);
  if(error){await complete('failed','Subscription lookup failed');return 'error';}
  if(!subs?.length){await complete('no_device');return 'no_device';}
- const payload={
+ const payload:Record<string,unknown>={
   kind:row.kind,title:row.title,body:row.body,path:row.destination,
   sourceId:row.source_id,
   callId:row.kind==='call'?row.source_id:undefined,
   expiresAt:new Date(row.expires_at).getTime()
  };
+ if(row.kind==='call'){
+  const {data:offer,error:offerError}=await admin.from('dli_call_pending_offers')
+   .select('mode,decline_token,state,expires_at')
+   .eq('call_id',row.source_id).maybeSingle();
+  if(offerError||!offer||offer.state!=='ringing'||
+    new Date(offer.expires_at).getTime()<=Date.now()||
+    !/^[0-9a-f]{64}$/.test(offer.decline_token??'')){
+   await complete('failed','Call offer unavailable or expired');
+   return 'ineligible';
+  }
+  // One-time per-call capability; encrypted by Web Push, never saved in
+  // outbox metadata, server logs, a browser URL, or readable page content.
+  payload.declineToken=offer.decline_token;
+  payload.callType=offer.mode;
+  payload.callerDisplay=row.title.replace(/^Incoming Call from /,'');
+ }
  const urgency=row.kind==='call'?'high':'normal';
  let delivered=0, transient=0;
  // Store only sanitized transport diagnostics. Never log private VAPID keys,
@@ -136,7 +152,7 @@ async function handleEvent(admin:Admin,row:EventRow){
    await webpush.sendNotification({endpoint:sub.endpoint,
     keys:{p256dh:sub.p256dh,auth:sub.auth}},
     JSON.stringify(payload),{
-     TTL:row.kind==='call'?40:Math.max(60,Math.min(86400,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))),
+     TTL:row.kind==='call'?Math.max(1,Math.min(35,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))):Math.max(60,Math.min(86400,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))),
      urgency,
     });
    delivered++;

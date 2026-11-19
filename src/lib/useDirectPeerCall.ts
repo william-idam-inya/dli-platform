@@ -107,12 +107,13 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
    ringTimer.current=window.setTimeout(()=>{
     const pending=callRef.current;
     if(!pending||pending.id!==id||pending.state==='connected')return;
-    sendRef.current({callId:id,mode,kind:'hangup'});
+    // Server-side expiry records the call as missed and notifies both members.
+    // Do not send a user-initiated hangup; that would falsely mark it cancelled.
     stop();update({...pending,state:'failed',
      error:pending.state==='dialing'
-      ?'Call not delivered. Ask the recipient to sign in to their own DLI account and keep the app open; background call alerts are not active yet.'
+      ?'Call not answered. The recipient may be offline or may not have enabled device alerts.'
       :'No answer received. The recipient did not answer before the call expired.'});
-   },45000);
+   },35000);
   }catch(err){
    if((callRef.current as CallSession|null)?.id!==id)return;
    stop();update({id,mode,direction:'outgoing',state:'failed',
@@ -181,6 +182,11 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   if(current)sendRef.current({callId:current.id,kind:'decline',mode:current.mode});
   stop();update(null);
  };
+ // Passive expiry is NOT an explicit rejection. The server logs a missed call.
+ const expire=()=>{
+  if(callRef.current?.direction!=='incoming'||callRef.current.state!=='ringing')return;
+  stop();update(null);
+ };
  const toggleMute=()=>{
   const newValue=!muted;localRef.current?.getAudioTracks().forEach(t=>{t.enabled=!newValue;});
   setMuted(newValue);
@@ -219,5 +225,5 @@ export function useDirectPeerCall(send:Send,threadId:string,enabled:boolean){
   }catch{/* Screen selection was cancelled. */}
  };
  return {session,localStream,remoteStream,muted,cameraOff,sharing,
-  start,answer,signal,reject,end:()=>close(true),toggleMute,toggleCamera,toggleScreen};
+  start,answer,signal,reject,expire,end:()=>close(true),toggleMute,toggleCamera,toggleScreen};
 }

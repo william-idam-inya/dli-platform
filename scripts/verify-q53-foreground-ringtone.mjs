@@ -15,7 +15,7 @@ assert.match(provider,/return startCallRingtone\(session.direction\)/);
 assert.match(provider,/session.direction==='outgoing'&&session.state==='dialing'/);
 assert.match(provider,/session.state!=='ringing'/);
 assert.match(provider,/session.direction!=='incoming'/);
-assert.match(provider,/45000/);
+assert.match(provider,/35000/);
 assert.match(provider,/rejectRef.current\(\)/);
 assert.doesNotMatch(provider,/signal.kind==='offer'\)window.dispatchEvent\(new Event\('dli-notification-chime'\)\)/);
 assert.ok(provider.includes('private:true')&&provider.includes("rpc('dli_call_signal_durable'"),'Private call permission check missing');

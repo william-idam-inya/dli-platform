@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { GraduationCap, LockKeyhole, ShieldCheck, UserRound, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ChatMemberAvatar from './ChatMemberAvatar';
+import CallHistoryPanel from './CallHistoryPanel';
 import './ChatMemberProfileOverlay.css';
 
 type MemberPreview = {
@@ -166,6 +167,7 @@ export default function ChatMemberProfileOverlay({
               <dt>{label}</dt><dd>{value}</dd>
             </div>)}
           </dl>}
+          <CallHistoryPanel peerId={profile.user_id}/>
           
         </>}
         <footer className="dli-chat-profile-actions">
