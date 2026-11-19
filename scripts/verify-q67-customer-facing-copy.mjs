@@ -33,7 +33,7 @@ for(const t of ["admin-create-user","allowedRoles","options.includes(role)",
  "Invitations are not sent automatically","One-time link — copy and send privately"])
  assert.ok(invite.includes(t),'Critical invitation control or guidance missing: '+t);
 for(const t of ['UserActionDialog','availableLifecycleActions','canManage(user)',
-  "account.role==='owner'","account.role==='admin'"])
+  'roles.includes(user.role)',"['owner','admin'].includes(account.role)"])
  assert.ok(users.includes(t),'Real registry role/action check missing: '+t);
 for(const t of ["dli-flat-sidebar-identity","dli-sidebar-quick-actions",
    '<GlobalSearch/>','<DliNotificationBell/>','<GuidedTour/>'])
