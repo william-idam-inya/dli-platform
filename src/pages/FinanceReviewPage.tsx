@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ClipboardCheck, FileText, LockKeyhole, MessageSquareText, RefreshCw, ThumbsUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
