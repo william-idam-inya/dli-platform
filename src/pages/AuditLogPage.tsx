@@ -136,7 +136,7 @@ export default function AuditLogPage(){
         </button>
       </div>
       <p role="status" className="audit-log-caption">
-        {loading?'Loading authorised audit metadata…':
+        {loading?'Loading audit history…':
           `Showing ${rangeStart}–${rangeEnd} of ${totalLabel} matching events`}
       </p>
       {!loading&&total===0&&!error&&

@@ -85,7 +85,7 @@ export default function UserManagementPage() {
   const [dialogError, setDialogError] = useState<string|null>(null);
 
   const loadUsers = useCallback(async (reset = true) => {
-    if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
+    if (!supabase) { setError('DLI is temporarily unavailable. Please try again.'); setLoading(false); return; }
     setError(null);
     if (reset) setLoading(true);
     else setLoadingMore(true);

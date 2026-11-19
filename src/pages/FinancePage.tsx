@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banknote, Clock3, FileText, Plus, RefreshCw, Wallet } from 'lucide-react';
+import {  Clock3, Plus, RefreshCw, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';

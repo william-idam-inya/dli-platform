@@ -93,8 +93,8 @@ export function MissingConfiguration() {
       Changing your account password will not correct a database mismatch.
     </p>
   </AuthLayout>;
-  return <AuthLayout title="Setup required" intro="This deployment does not yet have the public Supabase connection settings.">
-    <Feedback error message="Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to a local .env.local file, then restart Vite. Never add a service-role or secret key." />
+  return <AuthLayout title="Sign-in unavailable" intro="DLI sign-in is temporarily unavailable.">
+    <Feedback error message="Please contact DLI support if this problem continues." />
   </AuthLayout>;
 }
 

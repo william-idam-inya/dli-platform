@@ -38,9 +38,8 @@ export default function ManualShareControls({
     if (preparing || disabled || !clearedForCopy || !supabase) return;
     const destination = channel === 'email' ? 'your installed email app' : 'WhatsApp';
     if (!window.confirm(
-      'This action will hand the approved message text to ' + destination +
-      '. DLI will log PREPARATION ONLY, not sending or delivery. ' +
-      'You must choose a recipient, check the message and press Send yourself. Continue?'
+      'This will open the approved message in ' + destination +
+      '. It will not be sent automatically. Choose a recipient, review it and press Send yourself. Continue?'
     )) return;
 
     setPreparing(true);

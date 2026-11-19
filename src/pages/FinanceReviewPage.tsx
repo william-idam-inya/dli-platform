@@ -61,7 +61,7 @@ export default function FinanceReviewPage(){
   const [notice,setNotice]=useState<string|null>(null);
 
   const refresh=useCallback(async()=>{
-    if(!supabase){setError('Supabase is not configured.');setLoading(false);return;}
+    if(!supabase){setError('DLI is temporarily unavailable. Please try again.');setLoading(false);return;}
     setLoading(true);
     const [p,r]=await Promise.all([
       supabase.from('finance_policy_proposals')

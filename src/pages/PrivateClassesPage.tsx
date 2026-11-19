@@ -258,7 +258,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
         <h1>{isStaff?'Private-class management':isTutor?'My private teaching':'My private classes'}</h1>
         
       </div>
-      <span className="module-status"><span/> Stage L1</span>
+
     </div>}
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
