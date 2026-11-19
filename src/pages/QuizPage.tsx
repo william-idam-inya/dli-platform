@@ -49,7 +49,7 @@ export default function QuizPage(){
  const [notice,setNotice]=useState<string|null>(null);
 
  const refresh=useCallback(async()=>{
-  if(!supabase){setError('Supabase is not configured.');setLoading(false);return;}
+  if(!supabase){setError('DLI is temporarily unavailable. Please try again.');setLoading(false);return;}
   setLoading(true);
   const [o,c,h,z,a,b]=await Promise.all([
    supabase.from('course_offerings').select('id,course_id,cohort_id,is_active').eq('is_active',true),
@@ -167,7 +167,7 @@ export default function QuizPage(){
   if(studentQuestions.length===0||studentQuestions.some(q=>!selectedAnswers[q.question_id??q.id])){
    setError('Answer every question before submitting.');return;
   }
-  if(!window.confirm('Submit this quiz now? You cannot change answers or retake it in Stage E4.'))return;
+  if(!window.confirm('Submit this quiz now? You cannot change your answers or retake this quiz.'))return;
   setSaving('submit');setError(null);setNotice(null);
   const {data,error:rpcError}=await supabase.rpc('dli_submit_quiz_attempt',{
    p_quiz_id:activeQuiz,p_answers:selectedAnswers,
@@ -192,7 +192,7 @@ export default function QuizPage(){
     <h1>Quizzes &amp; results</h1>
     
    </div>
-   <span className="module-status"><span/> Stage E4</span>
+
   </div>
   
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -203,7 +203,7 @@ export default function QuizPage(){
    <div><CheckCircle2 size={18}/><strong>{attempts.length}</strong><span>Visible attempts</span></div>
   </div>
   <div className="academic-top-actions">
-   <p role="status">{loading?'Loading authorised quiz records…':'Live DLI development quiz records'}</p>
+   {loading&&<p role="status">Loading authorised quiz records…</p>}
    <button className="user-outline-button" type="button" disabled={loading||Boolean(saving)}
     onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
   </div>

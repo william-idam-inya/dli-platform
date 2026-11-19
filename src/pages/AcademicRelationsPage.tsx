@@ -51,7 +51,7 @@ export default function AcademicRelationsPage() {
 
   const refresh = useCallback(async () => {
     if (!supabase) {
-      setError('The Supabase connection is not configured.');
+      setError('DLI services are temporarily unavailable.');
       setLoading(false);
       return;
     }
@@ -207,7 +207,7 @@ export default function AcademicRelationsPage() {
         <h1>Cohorts &amp; topics</h1>
         
       </div>
-      <span className="module-status"><span/> Stage D2</span>
+
     </div>
     
     {error && <p className="auth-feedback error" role="alert">{error}</p>}
@@ -219,7 +219,7 @@ export default function AcademicRelationsPage() {
       <div><GraduationCap size={18}/><strong>{offerings.length}</strong><span>Course offerings</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading ? 'Loading live academic relationships…' : 'Live DLI development catalogue'}</p>
+      {loading&&<p role="status">Loading live academic relationships…</p>}
       <button className="user-outline-button" type="button" disabled={loading || Boolean(busy)}
         onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
       <Link className="user-outline-button" to="/classes">

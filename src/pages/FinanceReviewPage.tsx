@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ClipboardCheck, FileText, LockKeyhole, MessageSquareText, RefreshCw, ThumbsUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -61,7 +60,7 @@ export default function FinanceReviewPage(){
   const [notice,setNotice]=useState<string|null>(null);
 
   const refresh=useCallback(async()=>{
-    if(!supabase){setError('Supabase is not configured.');setLoading(false);return;}
+    if(!supabase){setError('DLI is temporarily unavailable. Please try again.');setLoading(false);return;}
     setLoading(true);
     const [p,r]=await Promise.all([
       supabase.from('finance_policy_proposals')
@@ -136,7 +135,7 @@ export default function FinanceReviewPage(){
         <h1>Finance proposal review</h1>
         
       </div>
-      <span className="module-status"><span/> Stage G2</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -148,8 +147,7 @@ export default function FinanceReviewPage(){
       <div><ThumbsUp size={19}/><strong>{reviewedIds.size}</strong><span>Recorded administrative planning outcomes</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading restricted review ledger…'
-        :'Live DLI development finance-review records'}</p>
+      {loading&&<p role="status">Loading restricted review ledger…</p>}
       <button type="button" className="user-outline-button"
         disabled={loading||saving} onClick={()=>{void refresh();}}>
         <RefreshCw size={15}/> Refresh
@@ -160,8 +158,6 @@ export default function FinanceReviewPage(){
       <div className="panel-heading"><div>
         <p className="section-kicker">01 · SELECT PROPOSAL</p>
         <h2>Unapproved finance proposals</h2>
-        <p className="user-caption">Read-only proposals from the
-          <Link to="/finance"> Finance Foundation</Link> queue.</p>
       </div></div>
       <label htmlFor="g2-proposal">Proposal to review</label>
       <select id="g2-proposal" value={currentProposal}

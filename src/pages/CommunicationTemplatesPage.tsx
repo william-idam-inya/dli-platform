@@ -167,7 +167,7 @@ export default function CommunicationTemplatesPage() {
         <h1>Message templates</h1>
         
       </div>
-      <span className="module-status"><span/> Stage H3</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -181,12 +181,9 @@ export default function CommunicationTemplatesPage() {
         <span>Accessible private templates</span></div>
       <div><BookOpen size={20}/><strong>{mine}</strong>
         <span>Templates authored by you</span></div>
-      <div><LockKeyhole size={20}/><strong>Not enabled</strong>
-        <span>Automatic sending</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading private templates…'
-        :'Live DLI development communications templates'}</p>
+      {loading&&<p role="status">Loading private templates…</p>}
       <button type="button" className="user-outline-button"
         disabled={loading||saving||Boolean(creatingDraft)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
@@ -196,9 +193,6 @@ export default function CommunicationTemplatesPage() {
       <div className="panel-heading"><div>
         <p className="section-kicker">01 · REUSABLE WRITING</p>
         <h2>{editingId?'Edit your template':'Create a private template'}</h2>
-        <p className="user-caption">
-          Category names help organise your drafts; no official message content is preloaded.
-        </p>
       </div></div>
       <form className="academic-form communication-templates-form"
         onSubmit={event=>{void saveTemplate(event);}}>

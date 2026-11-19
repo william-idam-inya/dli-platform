@@ -23,7 +23,7 @@ assert.ok(operational.includes('createAggregateCsv'),'Role-scoped CSV missing');
 assert.ok(reminders.includes('createPersonalReminderIcs'),'Personal .ics export missing');
 assert.ok(settings.includes("from('dli_notices')"),'Actual notice centre must be queried');
 assert.ok(!settings.includes("from('communication_feature_flags')"),'Legacy flag cannot represent active notices');
-assert.ok(finance.includes('Manual workflow'),'Manual class payment availability lost');
+assert.ok(finance.includes('<PaidPlanSettings/>')&&finance.includes('<TutorPayrollPage/>')&&finance.includes('Proposals cannot collect funds'), 'Manual payment workflows and transaction warnings must stay available');
 assert.ok(comm.includes('manual preparation'),'Manual communication drafts unavailable');
 assert.ok(templates.includes('manual sharing'),'Reviewed template handoff unavailable');
 assert.ok(academic.includes('Catalogue subjects'),'Catalogue must not impersonate active course entitlement');

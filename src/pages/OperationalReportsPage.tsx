@@ -195,12 +195,12 @@ export default function OperationalReportsPage(){
         <h1>Operational reports</h1>
         
       </div>
-      <span className="module-status"><span/> Linked operations</span>
+
     </div>
     
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
     <div className="operational-report-controls">
-      <div><strong>Development operations snapshot</strong>
+      <div><strong>Overview</strong>
         <p role="status">Last checked: {renderedAt}. {loading?'Loading live records…':'Refresh to check for changes.'}</p>
       </div>
       <button type="button" className="user-outline-button"

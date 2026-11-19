@@ -163,7 +163,7 @@ export default function InstitutionalSettingsPage(){
         <h1>Institutional settings</h1>
         
       </div>
-      <span className="module-status"><span/> Live controls</span>
+
     </div>
 
     
@@ -240,7 +240,7 @@ export default function InstitutionalSettingsPage(){
       <div className="institutional-settings-safeguards">
         <div><strong>New applications</strong>
           <span>{enrolmentOpen===null?'Verification unavailable':enrolmentOpen?'Open':'Paused'}</span>
-          <p>This is enforced when a learner submits an application in the database, not just in the browser.</p>
+          
           <p>Opening paid applications requires an active verified bank account. Receipt reviews remain accessible when applications are paused.</p>
           {(account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin')&&<p><Link to="/enrolment">Manage bank details and review uploaded receipts</Link></p>}
           <button type="button" className="user-outline-button"

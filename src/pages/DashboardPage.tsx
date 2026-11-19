@@ -132,7 +132,6 @@ export default function DashboardPage(){
     {priorityItems.length>0&&<section className="section-block unified-priority-section">
       <div className="section-heading"><div>
         <p className="section-kicker">QUICK START</p><h2>Recommended for your role</h2>
-        <p className="user-caption">Your most useful destinations; every other authorised tool remains available below and in More.</p>
       </div></div>
       <div className="module-grid">
         {priorityItems.map(item=><Link className="module-card" to={item.path} key={item.path}>
@@ -145,7 +144,6 @@ export default function DashboardPage(){
     {canViewClasses&&<section className="panel unified-overview-snapshot">
       <div className="panel-heading"><div><p className="section-kicker">CURRENT CLASSES</p>
         <h2>{isManager?'Authorised class register':'My accessible classes'}</h2>
-        <p className="user-caption">Counts reflect database records visible to this signed-in role.</p>
       </div><button type="button" className="user-outline-button" disabled={loading} onClick={()=>void refresh()}>
         <RefreshCw size={15}/> Refresh
       </button></div>

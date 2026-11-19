@@ -218,6 +218,9 @@ jobs:
       - name: Verify Q66 compact sidebar, neutral branding and secure loading
         run: node scripts/verify-q66-sidebar-welcome-branding.mjs
 
+      - name: Verify Q67 customer-facing UI copy and workflow preservation
+        run: node scripts/verify-q67-customer-facing-copy.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

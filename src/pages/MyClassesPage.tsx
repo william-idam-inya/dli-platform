@@ -86,7 +86,7 @@ export default function MyClassesPage() {
         <h1>My classes</h1>
 
       </div>
-      <span className="module-status"><span/> Stage D3</span>
+
     </div>
     
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}

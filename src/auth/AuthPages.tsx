@@ -93,8 +93,8 @@ export function MissingConfiguration() {
       Changing your account password will not correct a database mismatch.
     </p>
   </AuthLayout>;
-  return <AuthLayout title="Setup required" intro="This deployment does not yet have the public Supabase connection settings.">
-    <Feedback error message="Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to a local .env.local file, then restart Vite. Never add a service-role or secret key." />
+  return <AuthLayout title="Sign-in unavailable" intro="DLI sign-in is temporarily unavailable.">
+    <Feedback error message="Please contact DLI support if this problem continues." />
   </AuthLayout>;
 }
 
@@ -207,7 +207,7 @@ export function ForgotPasswordPage() {
             <KeyRound size={16} /> {pending ? 'Submitting…' : rateLimited ? 'Email limit reached' : 'Request recovery'}
           </button>
         </form>}
-    <p className="auth-helper">On the Supabase Free default email sender, delivery may be limited to project-team addresses. Ask an administrator for assistance if no email arrives.</p>
+    <p className="auth-helper">If the email doesn't arrive, check your spam folder or contact DLI support.</p>
     <div className="auth-links"><Link to="/login"><ArrowLeft size={14} /> Back to sign in</Link></div>
   </AuthLayout>;
 }

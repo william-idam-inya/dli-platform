@@ -94,7 +94,7 @@ export default function AuditLogPage(){
         <h1>Institutional audit trail</h1>
         
       </div>
-      <span className="module-status"><span/> Stage I1</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -136,7 +136,7 @@ export default function AuditLogPage(){
         </button>
       </div>
       <p role="status" className="audit-log-caption">
-        {loading?'Loading authorised audit metadata…':
+        {loading?'Loading audit history…':
           `Showing ${rangeStart}–${rangeEnd} of ${totalLabel} matching events`}
       </p>
       {!loading&&total===0&&!error&&

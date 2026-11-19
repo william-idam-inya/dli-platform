@@ -68,7 +68,7 @@ function stepsFor(account:Account):GuideStep[]{
   {title:'Student and staff accounts',route:'/users',
    targets:[at('users'),'.users-page .module-page-hero'],
    body:'Use the account registry to inspect and manage institutionally authorised users and permitted roles.',
-   hint:'Server-side permissions protect all user changes.'},
+   hint:'Account changes are available only to permitted members.'},
   {title:'Tutor payments',route:'/payroll',
    targets:['.module-page .module-page-hero','.module-page .panel-heading'],
    body:'Review the tutor compensation and payment records available to your role.',

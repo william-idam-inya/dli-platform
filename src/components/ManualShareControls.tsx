@@ -38,9 +38,8 @@ export default function ManualShareControls({
     if (preparing || disabled || !clearedForCopy || !supabase) return;
     const destination = channel === 'email' ? 'your installed email app' : 'WhatsApp';
     if (!window.confirm(
-      'This action will hand the approved message text to ' + destination +
-      '. DLI will log PREPARATION ONLY, not sending or delivery. ' +
-      'You must choose a recipient, check the message and press Send yourself. Continue?'
+      'This will open the approved message in ' + destination +
+      '. It will not be sent automatically. Choose a recipient, review it and press Send yourself. Continue?'
     )) return;
 
     setPreparing(true);
@@ -112,11 +111,9 @@ export default function ManualShareControls({
 
   return <section className="manual-share-controls" aria-label="Manual external message preparation">
     <div className="manual-share-title"><ShieldCheck size={16}/>
-      <strong>Stage H6 · Manual external handoff</strong>
+      <strong>Share approved message</strong>
     </div>
-    <p>Only the current independently cleared revision can open a message composer.
-      DLI never selects a recipient or sends a message. WhatsApp and your email
-      application require you to review and press Send yourself.</p>
+    <p>Review the message and choose a recipient before sending it from your email or WhatsApp app.</p>
     <button type="button" className="academic-submit"
       disabled={disabled || preparing || !clearedForCopy}
       onClick={() => { void prepare(); }}>

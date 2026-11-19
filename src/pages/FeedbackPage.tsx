@@ -155,7 +155,7 @@ export default function FeedbackPage() {
         <h1>{staff?'Support inbox &amp; reports':'Feedback &amp; support'}</h1>
         
       </div>
-      <span className="module-status"><span/> Stage K7</span>
+
     </div>
 
     

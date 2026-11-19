@@ -161,7 +161,7 @@ export default function CohortCurriculumPage(){
   
   {error&&<p role="alert" className="auth-feedback error">{error}</p>}
   {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
-  <div className="academic-top-actions"><p>{loading?'Loading academic dependencies…':'Live DLI curriculum records'}</p>
+  <div className="academic-top-actions">{loading&&<p role="status">Loading academic dependencies…</p>}
    <button type="button" className="user-outline-button" disabled={busy||loading} onClick={()=>void refresh()}>
     <RefreshCw size={16}/> Refresh</button></div>
   <div className="dli-cohort-steps" aria-label="Curriculum setup steps">

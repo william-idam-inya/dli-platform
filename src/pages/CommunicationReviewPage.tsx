@@ -208,7 +208,7 @@ export default function CommunicationReviewPage() {
         <h1>Communications review</h1>
         
       </div>
-      <span className="module-status"><span/> Stage H2</span>
+
     </div>
     
     {error && <p className="auth-feedback error" role="alert">{error}</p>}
@@ -219,8 +219,7 @@ export default function CommunicationReviewPage() {
       <div><CheckCircle2 size={19}/><strong>{clearedDraftCount}</strong><span>Current revisions cleared</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading ? 'Loading restricted review records…'
-        : 'Live DLI development draft-review records'}</p>
+      {loading&&<p role="status">Loading restricted review records…</p>}
       <button type="button" className="user-outline-button" disabled={loading || saving}
         onClick={() => { void refresh(); }}><RefreshCw size={15}/> Refresh</button>
     </div>
