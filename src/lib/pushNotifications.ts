@@ -83,6 +83,15 @@ export async function disableDliDevicePush():Promise<void>{
  if(!cancelled)throw Error('Browser could not stop device alerts. Try again.');
 }
 
+export async function closeDliIncomingCallNotification(callId:string):Promise<void>{
+ if(!/^[0-9a-f-]{36}$/i.test(callId)||!navigatorAvailable||!('serviceWorker' in navigator))return;
+ try{
+  const registration=await navigator.serviceWorker.getRegistration('/');
+  const notifications=await registration?.getNotifications({tag:'call-'+callId});
+  notifications?.forEach(item=>item.close());
+ }catch{/* OS/browser lifecycle may not support programmatic dismissal. */}
+}
+
 /**
  * Foreground tab became hidden while an existing authenticated DLI call was
  * being offered. Mobile browsers reject new Notification(), so try the

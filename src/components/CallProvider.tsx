@@ -6,7 +6,7 @@ import {useDirectPeerCall,type CallMode,type CallSession} from '../lib/useDirect
 import type {DliCallSignal} from '../lib/useDirectRealtime';
 import DirectCallOverlay from './DirectCallOverlay';
 import {startCallRingtone} from '../lib/callRingtone';
-import {notifyHiddenIncomingDliCall,pushConfigured} from '../lib/pushNotifications';
+import {notifyHiddenIncomingDliCall,closeDliIncomingCallNotification,pushConfigured} from '../lib/pushNotifications';
 
 type Target={threadId:string;peerId:string;name:string;role?:string};
 type CallContext={
@@ -76,6 +76,8 @@ export function CallProvider({children}:{children:ReactNode}){
  useEffect(()=>{
   const session=calling.session;
   if(!session)return;
+  if(session.direction==='incoming'&&session.state!=='ringing')
+   void closeDliIncomingCallNotification(session.id);
   // A gentle dial tone gives the caller feedback without claiming delivery.
   // Actual ringback begins only when the recipient acknowledges the offer.
   if(session.direction==='outgoing'&&session.state==='dialing')
@@ -151,6 +153,8 @@ export function CallProvider({children}:{children:ReactNode}){
     if(document.hidden)
      void notifyHiddenIncomingDliCall(incomingTarget.name,signal.callId!);
    }
+   if(signal.kind==='hangup'||signal.kind==='decline')
+    void closeDliIncomingCallNotification(signal.callId!);
    await handlerRef.current(signal as DliCallSignal);
    // Only the recipient's authenticated, active app sends a call receipt.
    // The sender may play ringback only after this server-validated receipt.
@@ -249,7 +253,9 @@ export function CallProvider({children}:{children:ReactNode}){
     session={calling.session} name={peer.name} roleLabel={peer.role}
     localStream={calling.localStream} remoteStream={calling.remoteStream}
     muted={calling.muted} cameraOff={calling.cameraOff} sharing={calling.sharing}
-    onAnswer={()=>void calling.answer()} onReject={calling.reject} onEnd={calling.end}
+    onAnswer={()=>{void closeDliIncomingCallNotification(calling.session?.id??'');void calling.answer();}}
+    onReject={()=>{void closeDliIncomingCallNotification(calling.session?.id??'');calling.reject();}}
+    onEnd={calling.end}
     onMute={calling.toggleMute} onCamera={calling.toggleCamera}
     onScreen={()=>void calling.toggleScreen()}/>
   </div>}
