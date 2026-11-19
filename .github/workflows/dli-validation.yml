@@ -221,6 +221,9 @@ jobs:
       - name: Verify Q67 customer-facing UI copy and workflow preservation
         run: node scripts/verify-q67-customer-facing-copy.mjs
 
+      - name: Verify Q68 native call actions, 35s timeout and private background rejection
+        run: node scripts/verify-q68-native-call-actions.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
