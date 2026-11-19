@@ -617,7 +617,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
         <RefreshCw size={15}/> Refresh
       </button>
     </div>
-    <div className={'dli-direct-layout'+(activeId||error?' has-active-chat':'')+(composeOpen?' compose-open':'')}>
+    <div className={'dli-direct-layout'+((activeId||error)&&!composeOpen?' has-active-chat':'')+(composeOpen?' compose-open':'')}>
       <aside className="dli-direct-sidebar" ref={directoryRef}
         aria-label={composeOpen?'New message contacts':'Conversation directory'}>
          {mode==='inbox'&&<div className="dli-telegram-sidebar-header">
@@ -629,7 +629,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
              {composeOpen?<X size={20}/>:<Pencil size={20}/>}
            </button>
          </div>}
-        <label htmlFor="direct-search"><Search size={16}/> Search conversations</label>
+        <label htmlFor="direct-search"><Search size={16}/> {composeOpen?'Search contacts':'Search conversations'}</label>
         <input id="direct-search" placeholder={composeOpen?"Search permitted contacts…":"Search conversations…"} value={search} onChange={e=>setSearch(e.target.value)}/>
         {mode==='inbox'&&<nav className="dli-direct-chat-filters" aria-label="Filter conversations">
           <button type="button" className={chatFilter==='all'?'selected':''} aria-pressed={chatFilter==='all'}
@@ -768,7 +768,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           </div>)}
           {!reports.some(r=>r.status==='open')&&<p className="dli-direct-empty">No open reports.</p>}
         </section>}
-</aside>
+      </aside>
       <section className="dli-direct-thread" aria-label="Selected conversation" ref={threadRef}>
         {error&&<p role="alert" className="dli-direct-inline-feedback error">{error}</p>}
         {notice&&!error&&<p role="status" className="dli-direct-inline-feedback success">{notice}</p>}
