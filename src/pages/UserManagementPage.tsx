@@ -277,7 +277,7 @@ export default function UserManagementPage() {
             <h2>Account registry</h2>
             <p className="user-caption">{error
               ? 'The directory is temporarily unavailable; no account count has been verified.'
-              : `Showing ${users.length} of ${total} ${view==='archived'?'archived':'current'} accounts visible to your role. This is not a system-wide total.`}</p>
+              : `Showing ${users.length} of ${total} ${view==='archived'?'archived':'current'} accounts`}</p>
           </div>
           <button type="button" className="user-outline-button" onClick={() => { void loadUsers(true); void loadAudit(); }} disabled={loading || Boolean(saving)}>
             <RefreshCw size={16}/> Refresh
@@ -289,7 +289,6 @@ export default function UserManagementPage() {
           <button type="button" aria-pressed={view==='archived'} className={view==='archived'?'selected':''}
             onClick={()=>{setView('archived');setFilter('all');setSearch('');}}>Archived records</button>
         </div>
-        <p className="user-caption">Archiving hides a revoked record from the current register; it does not erase the account, its identity or audit history.</p>
         <div className="user-toolbar">
           <label className="user-search">
             <Search size={16}/>
@@ -420,7 +419,7 @@ export default function UserManagementPage() {
                 <details className="user-item-history">
                   <summary>Recent account history</summary>
                   {audit.filter(event=>event.details?.registry_id===user.id).slice(0,6).length===0
-                    ? <p className="user-caption">No matching events among the latest 30 authorised audit entries.</p>
+                    ? <p className="user-caption">No recent activity for this account.</p>
                     : audit.filter(event=>event.details?.registry_id===user.id).slice(0,6)
                       .map(event=><div key={event.id} className="user-history-event">
                         <strong>{event.event_type.replaceAll('.',' · ').replaceAll('_',' ')}</strong>
@@ -449,7 +448,6 @@ export default function UserManagementPage() {
           <div>
             <p className="section-kicker">SECURITY RECORDS</p>
             <h2>Recent audit events</h2>
-            <p className="user-caption">Latest 30 events permitted for your role, most recent first.</p>
           </div>
           <button type="button" className="user-outline-button" onClick={()=>{void loadAudit();}}>
             <RefreshCw size={15}/> Refresh

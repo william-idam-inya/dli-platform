@@ -66,7 +66,7 @@ export default function LearningPage() {
   const refresh = useCallback(async () => {
     if (!supabase) {
       setLoading(false);
-      setError('Supabase is not configured.');
+      setError('DLI is temporarily unavailable. Please try again.');
       return;
     }
     setLoading(true);

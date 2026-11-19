@@ -77,7 +77,7 @@ export default function ReminderPlannerPage(){
   const [notice,setNotice]=useState<string|null>(null);
 
   const refresh=useCallback(async()=>{
-    if(!supabase){setLoading(false);setError('Supabase is not configured.');return;}
+    if(!supabase){setLoading(false);setError('DLI is temporarily unavailable. Please try again.');return;}
     setLoading(true);
     const [r,d]=await Promise.all([
       supabase.from('communication_reminders')
@@ -205,7 +205,7 @@ export default function ReminderPlannerPage(){
         <h1>Internal reminders</h1>
         
       </div>
-      <span className="module-status"><span/> Stage H4</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -216,8 +216,7 @@ export default function ReminderPlannerPage(){
       <div><CheckCircle2 size={19}/><strong>{acknowledged.length}</strong><span>Internally acknowledged</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading internal reminders…':
-        'Live DLI development reminder records · no delivery service'}</p>
+      {loading&&<p role="status">Loading internal reminders…</p>}
       <button type="button" className="user-outline-button"
         disabled={loading||saving||Boolean(changingId)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>

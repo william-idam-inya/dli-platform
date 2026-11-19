@@ -154,7 +154,7 @@ export default function SchedulePage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const refresh = useCallback(async () => {
-    if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
+    if (!supabase) { setError('DLI is temporarily unavailable. Please try again.'); setLoading(false); return; }
     setLoading(true);
     const [offeringResult,courseResult,cohortResult,sessionResult] = await Promise.all([
       supabase.from('course_offerings').select('id,course_id,cohort_id,is_active').eq('is_active',true),
@@ -274,7 +274,7 @@ export default function SchedulePage() {
         <h1>Timetable &amp; class scheduling</h1>
         
       </div>
-      <span className="module-status"><span/> Stage F1</span>
+
     </div>
     
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -286,7 +286,7 @@ export default function SchedulePage() {
       <div><XCircle size={18}/><strong>{sessions.filter(s=>s.is_cancelled).length}</strong><span>Cancelled sessions</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading class sessions…':'Live DLI development timetable'}</p>
+      {loading&&<p role="status">Loading class sessions…</p>}
       <button className="user-outline-button" type="button" disabled={loading||Boolean(saving)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
     </div>

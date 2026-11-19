@@ -50,7 +50,7 @@ export default function AttendancePage(){
   const [notice,setNotice]=useState<string|null>(null);
 
   const refresh=useCallback(async()=>{
-    if(!supabase){setLoading(false);setError('Supabase is not configured.');return;}
+    if(!supabase){setLoading(false);setError('DLI is temporarily unavailable. Please try again.');return;}
     setLoading(true);
     const [o,c,h,s,a,e]=await Promise.all([
       supabase.from('course_offerings').select('id,course_id,cohort_id,is_active').eq('is_active',true),
@@ -155,7 +155,7 @@ export default function AttendancePage(){
         <h1>Attendance &amp; reports</h1>
         
       </div>
-      <span className="module-status"><span/> Stage F2</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
@@ -167,7 +167,7 @@ export default function AttendancePage(){
       <div><UserX size={18}/><strong>{absentCount}</strong><span>Recorded absent</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading authorised attendance…':'Live DLI development attendance records'}</p>
+      {loading&&<p role="status">Loading authorised attendance…</p>}
       <button type="button" className="user-outline-button" disabled={loading||Boolean(saving)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
     </div>

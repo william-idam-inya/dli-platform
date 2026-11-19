@@ -57,7 +57,7 @@ export default function AssessmentPage() {
 
   const refresh = useCallback(async () => {
     if (!supabase) {
-      setError('The Supabase connection is not configured.');
+      setError('DLI services are temporarily unavailable.');
       setLoading(false);
       return;
     }
@@ -177,7 +177,7 @@ export default function AssessmentPage() {
       .eq('id',original.id).select('id').maybeSingle();
     if(writeError||!data)setError('The assignment could not be updated.');
     else {
-      setActiveEditId(null);setNotice('Assignment updated in Supabase.');
+      setActiveEditId(null);setNotice('Assignment updated.');
       await refresh();
     }
     setSaving(null);
@@ -244,7 +244,7 @@ export default function AssessmentPage() {
       setError('The grade was not saved. Check your class assignment and the maximum score.');
     } else {
       setActiveGradeId(null);setGradePoints('');setGradeFeedback('');
-      setNotice('Manual grade and feedback saved to Supabase.');
+      setNotice('Grade and feedback saved.');
       await refresh();
     }
     setSaving(null);
@@ -258,7 +258,7 @@ export default function AssessmentPage() {
         <h1>Assignments &amp; feedback</h1>
         
       </div>
-      <span className="module-status"><span/> Stage E3</span>
+
     </div>
     
 
@@ -271,7 +271,7 @@ export default function AssessmentPage() {
       <div><MessageSquare size={18}/><strong>{grades.length}</strong><span>Visible grades</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading authorised assessment records…':'Live DLI development records'}</p>
+      {loading&&<p role="status">Loading authorised assessment records…</p>}
       <button type="button" className="user-outline-button" disabled={loading||Boolean(saving)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
     </div>

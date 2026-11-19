@@ -94,7 +94,7 @@ export default function AuditLogPage(){
         <h1>Institutional audit trail</h1>
         
       </div>
-      <span className="module-status"><span/> Stage I1</span>
+
     </div>
     
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}

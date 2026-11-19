@@ -79,7 +79,7 @@ export default function AcademicSetupPage() {
 
   const refresh = useCallback(async () => {
     if (!supabase) {
-      setError('The Supabase connection is not configured.');
+      setError('DLI services are temporarily unavailable.');
       setLoading(false);
       return;
     }
@@ -208,7 +208,7 @@ export default function AcademicSetupPage() {
       return;
     }
     void create('programmes', { name, code, description: programmeDescription.trim() },
-      'Programme saved to Supabase.', () => {
+      'Programme saved.', () => {
         setProgrammeName(''); setProgrammeDescription('');
       });
   }
@@ -224,7 +224,7 @@ export default function AcademicSetupPage() {
       return;
     }
     void create('academic_levels', { name, code, sort_order: sortOrder },
-      'Academic level saved to Supabase.', () => {
+      'Academic level saved.', () => {
         setLevelName(''); setLevelOrder('100');
       });
   }
@@ -238,7 +238,7 @@ export default function AcademicSetupPage() {
       return;
     }
     void create('subjects', { academic_level_id: chosenLevelId, name, code },
-      'Subject saved to Supabase.', () => setSubjectName(''));
+      'Subject saved.', () => setSubjectName(''));
   }
 
   function submitCourse(event: FormEvent<HTMLFormElement>) {
@@ -258,7 +258,7 @@ export default function AcademicSetupPage() {
       academic_level_id: courseLevelId,
       subject_id: courseSubjectId,
       title, description: courseDescription.trim(),
-    }, 'Course saved to Supabase.', () => {
+    }, 'Course saved.', () => {
       setCourseTitle(''); setCourseDescription('');
     });
   }
@@ -282,7 +282,7 @@ export default function AcademicSetupPage() {
       <ErrorMessage message={error}/>
 
       <div className="academic-top-actions">
-        <p>{loading ? 'Loading the course catalogue…' : 'Current DLI catalogue · Live database records'}</p>
+        {loading&&<p role="status">Loading the course catalogue…</p>}
         <button type="button" className="user-outline-button" disabled={loading || Boolean(saving)}
           onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
       </div>

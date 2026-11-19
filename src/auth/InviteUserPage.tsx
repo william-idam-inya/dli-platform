@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ClipboardCopy, LockKeyhole, ShieldCheck, UserPlus } from 'lucide-react';
+import { ClipboardCopy, LockKeyhole, UserPlus } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { roleLabels, type DliRole } from './permissions';
 import { supabase } from '../lib/supabase';
@@ -70,24 +70,13 @@ export default function InviteUserPage({ embedded = false, onCreated, allowedRol
         <div className="module-page-copy">
           <div className="eyebrow"><span className="eyebrow-line"/> PEOPLE & ACCESS</div>
           <h1>Invite a DLI member</h1>
-          <p>Issue a one-time invitation link for an approved institutional role.</p>
+          <p>Invite a member to join DLI-ONLINE.</p>
         </div>
-        <span className="module-status"><span/> Stage C</span>
       </div>}
-
-      <div className="module-notice">
-        <div className="notice-icon"><ShieldCheck size={20}/></div>
-        <div>
-          <strong>Authorised staff invitation workflow</strong>
-          <p>Your account is checked against the DLI database before the server generates a link.
-            Only the server can create authorised registry entries. This page does not email or
-            message a recipient automatically.</p>
-        </div>
-      </div>
 
       <section className="panel invite-panel">
         <h2>New invitation</h2>
-        <p className="auth-intro">Founder or Admin assigns each initial institutional role before a member can access DLI. Assistant Admin handles delegated class operations but cannot issue invitations. The recipient must verify their invitation and complete their personal profile.</p>
+        <p className="auth-intro">Enter the member’s details, then copy and share the invitation link privately. Invitations are not sent automatically.</p>
         {error && <p className="auth-feedback error" role="alert">{error}</p>}
         <form className="auth-form" onSubmit={submit}>
           <label htmlFor="invite-name">Full name</label>

@@ -33,7 +33,7 @@ export default function AcademicAssignmentsPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!supabase) { setError('Supabase is not configured.'); setLoading(false); return; }
+    if (!supabase) { setError('DLI is temporarily unavailable. Please try again.'); setLoading(false); return; }
     setLoading(true);
     const [m,o,c,h,t,s] = await Promise.all([
       supabase.from('authorised_users').select('auth_user_id,full_name,email,role,status')
@@ -100,8 +100,8 @@ export default function AcademicAssignmentsPage() {
         : 'Assignment not saved. Check your permissions and selections.');
     } else {
       setNotice(table==='tutor_assignments'
-        ? 'Tutor assigned. The change is stored and audited.'
-        : 'Student enrolled. The change is stored and audited.');
+        ? 'Tutor assigned.'
+        : 'Student enrolled.');
       await refresh();
     }
     setBusy(null);
@@ -124,7 +124,7 @@ export default function AcademicAssignmentsPage() {
     if (writeError || !data) {
       setError('Could not update the link. It may no longer satisfy the active-role requirements.');
     } else {
-      setNotice('Assignment status updated in Supabase and recorded in the audit log.');
+      setNotice('Assignment updated.');
       await refresh();
     }
     setBusy(null);
@@ -187,7 +187,7 @@ export default function AcademicAssignmentsPage() {
         <h1>Class assignments</h1>
         
       </div>
-      <span className="module-status"><span/> Stage D3</span>
+
     </div>
     
     {error&&<p role="alert" className="auth-feedback error">{error}</p>}
@@ -199,7 +199,7 @@ export default function AcademicAssignmentsPage() {
       <div><BookOpen size={18}/><strong>{tutors.filter(x=>x.is_active).length+learners.filter(x=>x.is_active).length}</strong><span>Active class links</span></div>
     </div>
     <div className="academic-top-actions">
-      <p role="status">{loading?'Loading authorised class members…':'Live DLI development records'}</p>
+      {loading&&<p role="status">Loading authorised class members…</p>}
       <button type="button" className="user-outline-button" disabled={loading||Boolean(busy)}
         onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
     </div>
