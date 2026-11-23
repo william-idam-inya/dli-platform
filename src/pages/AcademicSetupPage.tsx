@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  BookOpen, CheckCircle2, CircleOff, GraduationCap, LibraryBig,
-  Plus, RefreshCw, School, ShieldCheck, Settings2, ArrowRight,
+  BookOpen, CheckCircle2, CircleOff,
+  Plus, RefreshCw, School, Settings2, ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './AcademicSetupPage.css';
@@ -263,8 +263,6 @@ export default function AcademicSetupPage() {
     });
   }
 
-  const programmeNameFor = (id: string) => programmes.find(item => item.id === id)?.name ?? 'Unknown programme';
-  const levelNameFor = (id: string) => levels.find(item => item.id === id)?.name ?? 'Unknown level';
   const subjectNameFor = (id: string) => subjects.find(item => item.id === id)?.name ?? 'Unknown subject';
 
   return (
@@ -272,7 +270,6 @@ export default function AcademicSetupPage() {
       <div className="module-page-hero">
         <span className="module-page-icon"><School size={25}/></span>
         <div className="module-page-copy">
-          <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
           <h1>Academic structure</h1>
           
         </div>
@@ -287,13 +284,7 @@ export default function AcademicSetupPage() {
           onClick={() => { void refresh(); }}><RefreshCw size={16}/> Refresh</button>
       </div>
 
-      <div className="academic-overview-stats" aria-label="Academic catalogue totals">
-        <div><LibraryBig size={19}/><strong>{activeProgrammes.length}</strong><span>Active programmes</span></div>
-        <div><BookOpen size={19}/><strong>{subjects.filter(item => item.is_active).length}</strong><span>Subjects by level</span></div>
-        <div><GraduationCap size={19}/><strong>{availableCourses.length}</strong><span>Active catalogue courses</span></div>
-      </div>
-
-      {loading ? (
+       {loading ? (
         <section className="panel academic-pathway" role="status">Loading programmes, levels and subjects…</section>
       ) : activeProgrammes.length === 0 ? (
         <section className="panel academic-pathway">
@@ -304,8 +295,7 @@ export default function AcademicSetupPage() {
         <section className="panel academic-pathway" aria-label="Programme and subject explorer">
           <div className="academic-step">
             <div className="academic-step-title">
-              <span className="academic-step-marker" aria-hidden="true">1</span>
-              <div><h2>Choose a programme</h2><p>Which DLI learning service do you want to view?</p></div>
+              <div><h2>Choose a programme</h2></div>
             </div>
             <div className="academic-choice-grid" role="group" aria-label="Select a DLI programme">
               {activeProgrammes.map(item => (
@@ -314,12 +304,7 @@ export default function AcademicSetupPage() {
                   aria-pressed={item.id === selectedProgramme?.id}
                   onClick={() => { setViewProgramme(item.id); setViewLevel(''); }}>
                   <span className="academic-choice-icon"><School size={20}/></span>
-                  <span className="academic-choice-copy">
-                    <strong>{item.name}</strong>
-                    <small>{item.code === 'dli-scholars-club' ? 'Free weekend lectures' :
-                      item.code === 'dli-online' ? 'DLI online learning' :
-                      item.description || 'DLI learning programme'}</small>
-                  </span>
+                  <span className="academic-choice-copy"><strong>{item.name}</strong></span>
                   {item.id === selectedProgramme?.id && <CheckCircle2 size={19} className="academic-choice-check"/>}
                 </button>
               ))}
@@ -328,8 +313,7 @@ export default function AcademicSetupPage() {
 
           <div className="academic-step">
             <div className="academic-step-title">
-              <span className="academic-step-marker" aria-hidden="true">2</span>
-              <div><h2>Choose an academic level</h2><p>Only levels with an active curriculum course in this programme appear here.</p></div>
+              <div><h2>Choose an academic level</h2></div>
             </div>
             {offeredLevels.length === 0 ? (
               <p className="academic-empty">No academic levels are currently offered in this programme. Configure a course under Catalogue management.</p>
@@ -341,7 +325,6 @@ export default function AcademicSetupPage() {
                     aria-pressed={level.id === selectedLevel?.id}
                     onClick={() => setViewLevel(level.id)}>
                     {level.name}
-                    <span>{programmeCourses.filter(c => c.academic_level_id === level.id).length} subjects</span>
                   </button>
                 ))}
               </div>
@@ -350,11 +333,7 @@ export default function AcademicSetupPage() {
 
           <div className="academic-step academic-step-last">
             <div className="academic-step-title">
-              <span className="academic-step-marker" aria-hidden="true">3</span>
-              <div><h2>Catalogue subjects</h2>
-                <p>{selectedProgramme?.name}{selectedLevel ? ' · ' + selectedLevel.name : ''}</p>
-              </div>
-              <span className="academic-available-count">{pathwayCourses.length} configured</span>
+              <div><h2>Catalogue subjects</h2></div>
             </div>
             {pathwayCourses.length > 0 ? (
               <div className="academic-subject-grid">
@@ -370,25 +349,16 @@ export default function AcademicSetupPage() {
               <p className="academic-empty">No active catalogue subjects for this selection. Check Catalogue management below.</p>
             )}
           </div>
-
-          <div className="academic-definition">
-            <ShieldCheck size={19}/>
-            <div><strong>How do subjects and courses differ?</strong>
-              <p>A subject is what DLI teaches (such as Mathematics).
-                A course is that subject offered within a particular DLI programme and academic level.
-                These catalogue records do not mean a teaching class is published or a lesson or quiz is available. A cohort offering, matching roster and approved access are required separately.</p>
-            </div>
-          </div>
         </section>
       )}
 
       <div className="academic-next-steps" aria-label="Where to go next">
         <Link to="/classes" className="academic-next-link">
-          <span><strong>Organise classes &amp; timetable</strong><small>Set up lessons, sessions, tutors and students.</small></span>
+          <span><strong>Organise classes &amp; timetable</strong></span>
           <ArrowRight size={18}/>
         </Link>
         <Link to="/study" className="academic-next-link">
-          <span><strong>Learning &amp; results</strong><small>View lessons, assignments, quizzes and attendance.</small></span>
+          <span><strong>Learning &amp; results</strong></span>
           <ArrowRight size={18}/>
         </Link>
       </div>
@@ -396,28 +366,19 @@ export default function AcademicSetupPage() {
       <details className="academic-admin-drawer">
         <summary>
           <span className="academic-admin-summary-icon"><Settings2 size={20}/></span>
-          <span><strong>Catalogue management</strong>
-            <small>Advanced settings: create, activate or deactivate programmes, levels, subjects and courses</small>
-          </span>
-          <span className="academic-manage-label">Manage catalogue</span>
+          <span><strong>Catalogue management</strong></span>
         </summary>
         <div className="academic-admin-content">
-          <p className="academic-admin-guidance">
-            These controls change the shared DLI academic catalogue. Use them only for
-            institutionally approved updates. Deactivating a record hides it from new choices
-            but preserves existing records. Class scheduling and assessments are managed separately.
-          </p>
       <div className="academic-columns">
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
-            <p className="section-kicker">01 · INSTITUTION</p>
             <h2>Programmes</h2>
           </div></div>
           {loading ? <p role="status" className="academic-empty">Loading programmes…</p> :
             <div className="academic-record-list">
               {programmes.map(item => <div className="academic-record" key={item.id}>
                 <div className="academic-record-text">
-                  <strong>{item.name}</strong><small>{item.code}</small>
+                  <strong>{item.name}</strong>
                 </div>
                 <Badge active={item.is_active}/>
                 <ActionButton active={item.is_active} disabled={Boolean(saving)}
@@ -433,7 +394,6 @@ export default function AcademicSetupPage() {
             <label htmlFor="programme-description">Description (optional)</label>
             <textarea id="programme-description" maxLength={1000} rows={2}
               value={programmeDescription} onChange={event=>setProgrammeDescription(event.target.value)}/>
-            <p className="academic-code-hint">Code: {codeFor(programmeName) || 'generated-from-name'}</p>
             <button type="submit" className="academic-submit" disabled={Boolean(saving) || loading}>
               <Plus size={15}/> {saving === 'programmes' ? 'Saving programme…' : 'Save programme'}
             </button>
@@ -442,14 +402,13 @@ export default function AcademicSetupPage() {
 
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
-            <p className="section-kicker">02 · DIVISIONS</p>
             <h2>Academic levels</h2>
           </div></div>
           {loading ? <p role="status" className="academic-empty">Loading levels…</p> :
             <div className="academic-record-list">
               {levels.map(item => <div className="academic-record" key={item.id}>
                 <div className="academic-record-text">
-                  <strong>{item.name}</strong><small>{item.code} · Order {item.sort_order}</small>
+                  <strong>{item.name}</strong>
                 </div>
                 <Badge active={item.is_active}/>
                 <ActionButton active={item.is_active} disabled={Boolean(saving)}
@@ -465,7 +424,6 @@ export default function AcademicSetupPage() {
             <label htmlFor="level-order">Display order</label>
             <input id="level-order" type="number" required min={0} max={10000}
               value={levelOrder} onChange={event=>setLevelOrder(event.target.value)}/>
-            <p className="academic-code-hint">Code: {codeFor(levelName) || 'generated-from-name'}</p>
             <button type="submit" className="academic-submit" disabled={Boolean(saving) || loading}>
               <Plus size={15}/> {saving === 'academic_levels' ? 'Saving level…' : 'Save academic level'}
             </button>
@@ -476,7 +434,6 @@ export default function AcademicSetupPage() {
       <div className="academic-columns">
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
-            <p className="section-kicker">03 · SUBJECTS</p>
             <h2>Subject catalogue</h2>
           </div></div>
           <label className="academic-filter" htmlFor="subjects-level">View subjects for</label>
@@ -487,7 +444,7 @@ export default function AcademicSetupPage() {
             <div className="academic-record-list">
               {levelSubjects.map(item => <div className="academic-record" key={item.id}>
                 <div className="academic-record-text">
-                  <strong>{item.name}</strong><small>{item.code}</small>
+                  <strong>{item.name}</strong>
                 </div>
                 <Badge active={item.is_active}/>
                 <ActionButton active={item.is_active} disabled={Boolean(saving)}
@@ -501,7 +458,6 @@ export default function AcademicSetupPage() {
             <input id="subject-name" required minLength={2} maxLength={160}
               value={subjectName} onChange={event=>setSubjectName(event.target.value)}
               placeholder="Name approved by DLI"/>
-            <p className="academic-code-hint">Code: {codeFor(subjectName) || 'generated-from-name'}</p>
             <button className="academic-submit" type="submit"
               disabled={Boolean(saving) || loading || !chosenLevelId}>
               <Plus size={15}/> {saving === 'subjects' ? 'Saving subject…' : 'Save subject'}
@@ -511,7 +467,6 @@ export default function AcademicSetupPage() {
 
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
-            <p className="section-kicker">04 · COURSES</p>
             <h2>Course catalogue</h2>
           </div></div>
           <form className="academic-form academic-course-form" onSubmit={submitCourse}>
@@ -545,14 +500,11 @@ export default function AcademicSetupPage() {
               <Plus size={15}/> {saving === 'courses' ? 'Saving course…' : 'Create course'}
             </button>
           </form>
-          <p className="academic-code-hint">Existing offerings for the programme and level selected above</p>
           <div className="academic-record-list academic-course-list">
             {courses.filter(item => item.programme_id === courseProgrammeId &&
               item.academic_level_id === courseLevelId).map(item => <div className="academic-record" key={item.id}>
               <div className="academic-record-text">
                 <strong>{item.title}</strong>
-                <small>{programmeNameFor(item.programme_id)} · {levelNameFor(item.academic_level_id)}</small>
-                <small>{subjectNameFor(item.subject_id)}</small>
               </div>
               <Badge active={item.is_active}/>
               <ActionButton active={item.is_active} disabled={Boolean(saving)}
