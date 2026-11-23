@@ -3,7 +3,6 @@ import { Bell, ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, MessageCircle, Mo
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
-import { learningAreas } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -237,13 +236,6 @@ export default function AppShell({ children }: AppShellProps) {
     };
   }, [mobileOpen]);
 
-  const hourInLagos=Number(new Intl.DateTimeFormat('en-GB',{
-    timeZone:'Africa/Lagos',hour:'2-digit',hourCycle:'h23'
-  }).format(new Date()));
-  const greeting=hourInLagos<12?'Good morning':hourInLagos<17?'Good afternoon':'Good evening';
-  const firstName=account?.full_name.trim().split(/\s+/)[0]||'Scholar';
-  const shortGreeting=greeting+', '+firstName;
-  const activeItem = navigationItems.find(item=>item.path===location.pathname);
   const allowedPaths = navigationItems.filter(item => Boolean(account &&
     canAccessPath(account.role,item.path,account.studentTier))).map(item=>item.path);
   const mobileItems = account
@@ -251,9 +243,6 @@ export default function AppShell({ children }: AppShellProps) {
       .map(path=>navigationItems.find(item=>item.path===path))
       .filter((item): item is (typeof navigationItems)[number] => Boolean(item))
     : [];
-  const activeLearningArea=location.pathname==='/study'
-    ?learningAreas.find(area=>area.id===(new URLSearchParams(location.search).get('tab')??'lessons'))
-    :undefined;
 
   return (
     <CallProvider><div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
@@ -298,34 +287,7 @@ export default function AppShell({ children }: AppShellProps) {
             <Link to="/" className="dli-topbar-brand" aria-label="DLI Platform home">
               <OfficialDliLogo decorative/><span>DLI Platform</span>
             </Link>
-            <div className="ref-mobile-identity">
-              <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
-              <NavLink to="/profile" className="ref-mobile-avatar" aria-label="My profile">
-                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:<span className="profile-placeholder">D</span>}
-              </NavLink>
-              <div className="ref-mobile-greeting">
-                <strong>{shortGreeting}</strong>
-                <small>{account?accountRoleLabel(account):'Detailed Learning Institute'}</small>
-              </div>
-            </div>
-            {location.pathname==='/'&&account
-              ?<div className="ref-desktop-greeting">
-                <strong>{shortGreeting}</strong>
-                <small>Your personalised workspace</small>
-              </div>
-              :<div className="breadcrumb">
-              <span>DLI Workspace</span>
-              <span className="breadcrumb-divider">/</span>
-              <strong>{activeItem?.breadcrumbTitle ?? activeItem?.label ?? ({
-                '/cohorts':'Advanced curriculum','/assignments':'Course assignments',
-                '/schedule':'Course timetable','/finance/reviews':'Finance policy reviews',
-                '/communications/reminders':'Internal reminders',
-                '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
-                '/my-classes':'Classes & timetable',
-              } as Record<string,string>)[location.pathname] ?? 'Workspace'}</strong>
-              {activeLearningArea&&<><span className="breadcrumb-divider">/</span>
-                <strong>{activeLearningArea.label}</strong></>}
-            </div>}
+
           </div>
           <div className="dli-topbar-search"><GlobalSearch/></div>
           <nav className="dli-primary-tabs" aria-label="Primary modules">
