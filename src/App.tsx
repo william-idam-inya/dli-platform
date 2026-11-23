@@ -9,8 +9,7 @@ import {
   AccessDeniedPage, AuthChecking, AuthTemporarilyUnavailable, ChangePasswordPage, ConfirmLinkPage,
   ForgotPasswordPage, LoginPage, MissingConfiguration, SetPasswordPage,
 } from './auth/AuthPages';
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
-import { supabase } from './lib/supabase';
+import { lazy, Suspense, type ReactNode } from 'react';
 import PushNotificationNavigation from './components/PushNotificationNavigation';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -57,54 +56,41 @@ function AllowedArea({ path, children }: { path: string; children: ReactNode }) 
   return <>{children}</>;
 }
 
+function WorkspaceSkeleton(){
+  return <section className="module-page dli-workspace-loading" role="status" aria-label="Loading DLI workspace">
+    <div className="dli-skeleton dli-skeleton-title"/>
+    <div className="dli-skeleton dli-skeleton-line"/>
+    <div className="dli-skeleton dli-skeleton-panel"/>
+    <span className="sr-only">Loading your workspace…</span>
+  </section>;
+}
 function ProfileSetupGate({children}:{children:ReactNode}){
-  const {account}=useAuth();
+  const {hasCompletedProfile}=useAuth();
   const location=useLocation();
-  const [checked,setChecked]=useState<'checking'|'ready'|'missing'|'unavailable'>('checking');
-  useEffect(()=>{
-    if(!account||!supabase){setChecked('checking');return;}
-    let active=true;
-    const client=supabase;
-    const verifyProfile=async()=>{
-      setChecked('checking');
-      try{
-        const auth=await client.auth.getUser();
-        if(!active)return;
-        if(auth.error||!auth.data.user){setChecked('unavailable');return;}
-        const result=await client.from('dli_member_profiles')
-          .select('user_id').eq('user_id',auth.data.user.id).maybeSingle();
-        if(!active)return;
-        if(result.error){setChecked('unavailable');return;}
-        setChecked(result.data?'ready':'missing');
-      }catch{if(active)setChecked('unavailable');}
-    };
-    void verifyProfile();
-    // Completing a required profile should unlock the workspace immediately;
-    // never trust the event alone — revalidate the saved row with Supabase.
-    const onProfileChanged=()=>{void verifyProfile();};
-    window.addEventListener('dli-profile-changed',onProfileChanged);
-    return()=>{
-      active=false;
-      window.removeEventListener('dli-profile-changed',onProfileChanged);
-    };
-  },[account?.id]);
-  // The account owner can always complete the profile or recover their password.
+  // A profile is verified only through the authenticated provider's RLS query.
   if(location.pathname==='/profile'||location.pathname==='/change-password')return <>{children}</>;
-  if(checked==='checking')return <p className="module-page" role="status">Verifying your DLI profile…</p>;
-  if(checked==='unavailable')return <section className="module-page" role="alert">
+  if(hasCompletedProfile===null)return <section className="module-page" role="alert">
     <h1>Profile verification unavailable</h1>
-    <p>We could not confirm your account profile. Your workspace remains restricted until the verification service responds.</p>
+    <p>We could not verify your profile. Please refresh or contact DLI support.</p>
     <button className="user-outline-button" type="button" onClick={()=>window.location.reload()}>Retry verification</button>
   </section>;
-  if(checked==='missing')return <Navigate to="/profile" replace/>;
+  if(!hasCompletedProfile)return <Navigate to="/profile" replace/>;
   return <>{children}</>;
 }
+const IMPLEMENTED_PATHS:ReadonlySet<string>=new Set([
+  '/','/enrolment','/payroll','/profile','/feedback','/users','/people',
+  '/conferences','/academics','/cohorts','/assignments','/classes',
+  '/my-classes','/private-classes','/study','/learning','/assessments',
+  '/quizzes','/schedule','/attendance','/finance','/finance/reviews',
+  '/communications','/communications/reminders','/announcements',
+  '/reports/audit','/reports','/settings',
+]);
 
 function Workspace() {
   return <RequireWorkspace>
     <AppShell>
       <ProfileSetupGate>
-      <Suspense fallback={<p role="status" className="module-page">Loading workspace view…</p>}>
+      <Suspense fallback={<WorkspaceSkeleton/>}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
@@ -136,9 +122,7 @@ function Workspace() {
         <Route path="/reports/audit" element={<AllowedArea path="/reports/audit"><AuditLogPage /></AllowedArea>} />
         <Route path="/reports" element={<AllowedArea path="/reports"><OperationalReportsPage /></AllowedArea>} />
         <Route path="/settings" element={<AllowedArea path="/settings"><InstitutionalSettingsPage /></AllowedArea>} />
-        {navigationItems.filter((item) =>
-          item.path !== '/' && item.path !== '/enrolment' && item.path !== '/payroll' && item.path !== '/profile' && item.path !== '/feedback' && item.path !== '/users' && item.path !== '/people' && item.path !== '/conferences' && item.path !== '/academics' && item.path !== '/cohorts' && item.path !== '/assignments' && item.path !== '/classes' && item.path !== '/my-classes' && item.path !== '/private-classes' && item.path !== '/study' && item.path !== '/learning' && item.path !== '/assessments' && item.path !== '/quizzes' && item.path !== '/schedule' && item.path !== '/attendance' && item.path !== '/finance' && item.path !== '/finance/reviews' && item.path !== '/communications' && item.path !== '/communications/reminders' && item.path !== '/announcements' && item.path !== '/reports/audit' && item.path !== '/reports' && item.path !== '/settings'
-        ).map((item) => (
+        {navigationItems.filter(item=>!IMPLEMENTED_PATHS.has(item.path)).map((item) => (
           <Route key={item.path} path={item.path}
             element={<AllowedArea path={item.path}><ModulePage item={item} /></AllowedArea>} />
         ))}
