@@ -43,7 +43,8 @@ finder(menu,"window.addEventListener('resize',reposition)",'Quick Menu viewport 
 finder(menu,"window.addEventListener('scroll',reposition,true)",'Quick Menu scroll refresh');
 finder(menu,'position:\'fixed\'','Quick Menu independent viewport position');
 finder(call,'<audio ref={audio} autoPlay','Audio media must still play');
-finder(focus,"panel.querySelector('label')?.textContent?.trim()", 'Meaningful fallback focus title');
+finder(focus,'const title=workspaceTitle(panel);', 'Meaningful accessible focus title');
+finder(focus,'if(!title)return;', 'Keep unnamed sections accessible inline');
 finder(forward,'forwardTarget&&createPortal(', 'Forward dialog portalled');
 finder(profile,'createPortal(', 'Private profile dialog portalled');
 for(const token of [
