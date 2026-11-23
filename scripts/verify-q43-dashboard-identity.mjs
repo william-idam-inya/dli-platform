@@ -21,8 +21,10 @@ assert.ok(shell.includes('className="dli-utility-account"')
 assert.ok(!shell.includes('className="workspace-switcher"')
  &&shell.includes('dli-flat-sidebar-identity'),
  'Sidebar must have one authorised user identity and no redundant workspace selector');
-assert.ok(shell.includes('<small>Your personalised workspace</small>')
- &&!shell.includes('DLI Platform · {accountRoleLabel(account)} workspace'),
+assert.ok(!shell.includes('ref-desktop-greeting') &&
+ !shell.includes('ref-mobile-identity') &&
+ read('src/components/ReferenceDashboard.tsx').includes('ref-dashboard-greeting') &&
+ !shell.includes('DLI Platform · {accountRoleLabel(account)} workspace'),
  'Welcome header must not repeat the role beside the account identity');
 assert.ok(home.includes("const headline=account?.role==='student'?'Welcome to DLI':'Dashboard';"),
  'Non-student homepage title must be generic across Owner/Admin/Assistant Admin/Tutor');
