@@ -90,6 +90,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
   const [reactions,setReactions]=useState<DirectReaction[]>([]);
   const [composeOpen,setComposeOpen]=useState(initialCompose);
+  const previouslyComposing=useRef(initialCompose);
   // Reopen the contact picker from the top on narrow and floating layouts.
   useEffect(()=>{if(composeOpen)directoryRef.current?.scrollTo({top:0});},[composeOpen]);
   const [menuTarget,setMenuTarget]=useState<string|null>(null);
@@ -231,7 +232,11 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
     const timer=window.setInterval(()=>{void loadActivity();},20000);
     return()=>window.clearInterval(timer);
   },[uid,loadActivity]);
-  useEffect(()=>{if(composeOpen)void load();},[composeOpen]);
+  useEffect(()=>{
+    const justOpened=composeOpen&&!previouslyComposing.current;
+    previouslyComposing.current=composeOpen;
+    if(justOpened)void load();
+  },[composeOpen,load]);
 
   const lastMessage=useMemo(()=>{
     const index=new Map<string,DirectMessage>();
