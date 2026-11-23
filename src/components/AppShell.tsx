@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
+import { Bell, ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, MessageCircle, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
@@ -346,13 +346,23 @@ export default function AppShell({ children }: AppShellProps) {
               })}
           </nav>
           <div className="topbar-actions dli-compact-actions">
+            {/* The live badge/bell remain mounted on all routes; collapse menus
+                never pause realtime message or call subscriptions. */}
+            <div className="dli-topbar-status-icon" aria-label="Unread messages"><DliMessageBadge/></div>
+            <div className="dli-topbar-status-icon" data-dli-tour="notifications"
+              aria-label="In-app notifications"><DliNotificationBell/></div>
             <div className="dli-profile-menu dli-utility-menu" ref={profileMenuRef}>
               <button type="button" className="dli-profile-toggle dli-utility-trigger"
-                aria-label="Open tools, messages, notifications and account"
-                title="More DLI tools"
+                aria-label="Open account and tools"
+                title="Account and tools"
                 aria-controls="dli-account-dropdown" aria-expanded={profileMenuOpen}
                 onClick={()=>setProfileMenuOpen(value=>!value)}>
-                <ChevronDown size={21} aria-hidden="true"/>
+                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
+                  <span className="profile-placeholder">D</span>}
+                <span className="dli-account-pill-copy">
+                  {account?accountRoleLabel(account):'Account'}
+                </span>
+                <ChevronDown size={17} aria-hidden="true"/>
               </button>
               {/* Keep notification components mounted while collapsed: subscriptions,
                   unread polling and alert modals must continue in every dashboard. */}
@@ -367,14 +377,16 @@ export default function AppShell({ children }: AppShellProps) {
                   <div className="dli-utility-tile" aria-label="Quick actions">
                     <QuickMenu/><small>Apps</small>
                   </div>
-                  <div className="dli-utility-tile" aria-label="Messages"
-                    onClick={()=>setProfileMenuOpen(false)}>
-                    <DliMessageBadge/><small>Messages</small>
-                  </div>
-                  <div className="dli-utility-tile" data-dli-tour="notifications" aria-label="Notifications">
-                    <span className="dli-tour-notification-anchor"><DliNotificationBell/></span>
+                  <NavLink className="dli-utility-tile" to="/communications"
+                    aria-label="Open Messages" onClick={()=>setProfileMenuOpen(false)}>
+                    <span className="dli-utility-link-icon"><MessageCircle size={20}/></span>
+                    <small>Messages</small>
+                  </NavLink>
+                  <NavLink className="dli-utility-tile" to="/announcements"
+                    aria-label="Open announcements" onClick={()=>setProfileMenuOpen(false)}>
+                    <span className="dli-utility-link-icon"><Bell size={20}/></span>
                     <small>Notices</small>
-                  </div>
+                  </NavLink>
                   {pushKeyProvided&&<div className="dli-utility-tile" aria-label="Device alerts">
                     <PushNotificationOptIn/><small>Alerts</small>
                   </div>}
