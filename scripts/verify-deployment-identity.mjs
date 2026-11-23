@@ -33,7 +33,7 @@ const supabase=readFileSync(new URL('../src/lib/supabase.ts',import.meta.url),'u
 const appShell=readFileSync(new URL('../src/components/AppShell.tsx',import.meta.url),'utf8');
 const login=readFileSync(new URL('../src/auth/AuthPages.tsx',import.meta.url),'utf8');
 assert.match(supabase,/!deploymentIdentity\.mismatch/);
-assert.match(appShell,/deploymentIdentity\.label/);
+assert.doesNotMatch(appShell,/deploymentIdentity\.label|dli-utility-environment|Production · Restricted/);
 assert.doesNotMatch(appShell,/Development access/);
 assert.match(login,/deploymentIdentity\.kind==='qa'/);
 assert.match(login,/Detailed Learning Institute/);

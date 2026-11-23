@@ -116,7 +116,7 @@ export default function TutorPayrollPage(){
   {report&&<p className="auth-feedback error">One or more engagements need compensation review by an authorised administrator before a payout can be submitted.</p>}
   {!loading&&!filtered.length&&<p className="academic-empty">No live paid teaching engagements have a payout due in this month. A class must be published with enrolled Paid Students and a recorded start date.</p>}
   <TutorPayoutWorkflow cycles={filtered} staff={Boolean(staff)} month={month} onChanged={refresh}/>
-  <section className="payroll-cycles">
+  <section className="payroll-cycles" aria-label="Tutor payout schedule">
    {filtered.map(c=><article key={c.engagement_key} className="payroll-cycle">
      <div className="payroll-cycle-head"><div>
        <strong>{c.tutor_name}</strong><p>{c.engagement_name}</p>

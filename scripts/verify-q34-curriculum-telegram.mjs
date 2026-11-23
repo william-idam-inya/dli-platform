@@ -51,7 +51,7 @@ assert.ok(pacing.includes('Date.UTC')&&pacing.includes('topic')&&pacing.includes
  'Calendar week/date mapping must be timezone-independent');
 for(const token of [
  "setMode('inbox')","setComposeOpen","dli-telegram-new-message",
- 'dli-telegram-mobile-compose','dli-direct-conversations',
+ 'aria-controls="dli-new-contact-picker"','dli-direct-conversations',
  'dli-telegram-contacts-panel','DirectMessageComposer',
  'dli_direct_reactions','dli_set_message_reaction',
  'dli_edit_direct_message','dli_delete_direct_message',
