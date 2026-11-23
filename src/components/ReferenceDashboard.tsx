@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode, type CSSProperties } from 'react';
 import {
   ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2,
-  ClipboardCheck, Coins, FileCheck2, GraduationCap, LayoutDashboard,
+  ClipboardCheck, Coins, FileCheck2, GraduationCap,
   RefreshCw, ShieldCheck, Users, Wallet,
   type LucideIcon,
 } from 'lucide-react';
