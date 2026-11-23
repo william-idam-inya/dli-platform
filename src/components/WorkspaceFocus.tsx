@@ -4,6 +4,27 @@ import {useLocation} from 'react-router-dom';
 import './WorkspaceFocus.css';
 
 type FocusSection={key:string;title:string;rows:number};
+
+/** A focus shortcut must say what it opens. Empty/generated names never
+ * become buttons; the associated panel stays in its normal page flow. */
+function meaningfulWorkspaceTitle(raw:string|null|undefined):string|null{
+ const title=raw?.replace(/\s+/g,' ').trim()??'';
+ if(!title||title.length<3||
+   /^(?:(?:workspace|untitled)\s+)?section\s*#?\s*\d*$/i.test(title)||
+   /^untitled$/i.test(title))return null;
+ return title.slice(0,110);
+}
+function workspaceTitle(panel:HTMLElement):string|null{
+ const explicit=meaningfulWorkspaceTitle(panel.getAttribute('data-dli-workspace-title'));
+ if(explicit)return explicit;
+ const ids=panel.getAttribute('aria-labelledby')?.trim().split(/\s+/).filter(Boolean)??[];
+ const labelled=ids.map(id=>panel.ownerDocument.getElementById(id)?.textContent??'').join(' ');
+ const byId=meaningfulWorkspaceTitle(labelled);
+ if(byId)return byId;
+ const aria=meaningfulWorkspaceTitle(panel.getAttribute('aria-label'));
+ if(aria)return aria;
+ return meaningfulWorkspaceTitle(panel.querySelector('h2,h3,legend')?.textContent);
+}
 function sectionIcon(title:string){
  const value=title.toLowerCase();
  if(/profile|personal|identity|appearance|accessib|assigned/.test(value))return <UserRound size={16}/>;
@@ -41,22 +62,36 @@ export default function WorkspaceFocus({children}:{children:ReactNode}){
   const unique=[...new Set(panelNodes)].filter(p=>
    !p.parentElement?.closest('[role="dialog"],[role="alertdialog"],.dli-telegram-forward-dialog')
    &&!p.parentElement?.closest('.panel'));
-  sectionMap.current.clear();
   const next:FocusSection[]=[];
+  const mapped=new Map<string,HTMLElement>();
   unique.forEach((panel,index)=>{
-   const title=panel.querySelector('h2,h3,legend')?.textContent?.trim()
-     ||panel.getAttribute('aria-label')
-     ||panel.querySelector('label')?.textContent?.trim()
-     ||'Workspace section '+(index+1);
+   const title=workspaceTitle(panel);
+   if(!title)return; // Keep genuinely untitled sections visible and usable inline.
    const key=String(index);
    const rows=panel.querySelectorAll(
     '.academic-record,.classes-card,.user-card,tbody tr,.private-fee-item,.dli-cohort-topic-row'
    ).length;
    panel.setAttribute('data-dli-focus-panel',key);
-   panel.setAttribute('data-dli-focus-title',title.slice(0,110));
-   sectionMap.current.set(key,panel);
-   next.push({key,title:title.slice(0,110),rows});
+   panel.setAttribute('data-dli-focus-title',title);
+   mapped.set(key,panel);
+   next.push({key,title,rows});
   });
+  // A panel may lose its heading after an asynchronous state change. Remove
+  // stale focus metadata so it does not remain hidden by the compressed CSS.
+  host.querySelectorAll<HTMLElement>('[data-dli-focus-panel]').forEach(panel=>{
+   const key=panel.getAttribute('data-dli-focus-panel');
+   if(key===null||mapped.get(key)===panel)return;
+   panel.removeAttribute('data-dli-focus-panel');
+   panel.removeAttribute('data-dli-focus-title');
+   if(panel.hasAttribute('data-dli-focus-active')){
+    panel.removeAttribute('data-dli-focus-active');
+    panel.removeAttribute('role');
+    panel.removeAttribute('aria-modal');
+    panel.removeAttribute('tabindex');
+    panel.removeAttribute('aria-label');
+   }
+  });
+  sectionMap.current=mapped;
   setSections(previous=>previous.length===next.length&&previous.every((item,index)=>
    item.key===next[index].key&&item.title===next[index].title&&item.rows===next[index].rows)
    ?previous:next);
