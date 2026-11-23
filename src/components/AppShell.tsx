@@ -73,7 +73,7 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
-  const { account, clearNotice } = useAuth();
+  const { account, clearNotice, preferredTheme, updatePreferredTheme } = useAuth();
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const signOut = async () => {
     if (!supabase) return;
@@ -175,49 +175,24 @@ export default function AppShell({ children }: AppShellProps) {
   }, [darkMode]);
 
   useEffect(()=>{
-    if(!account||!supabase)return;
-    let active=true;
-    const client=supabase;
-    async function reloadSavedPreference(){
-      try{
-        const auth=await client.auth.getUser();
-        if(!active||auth.error||!auth.data.user)return;
-        const r=await client.from('dli_member_profiles')
-          .select('preferred_theme').eq('user_id',auth.data.user.id).maybeSingle();
-        if(!active||r.error||!r.data)return;
-        const pref=r.data.preferred_theme as 'system'|'light'|'dark';
-        setDarkMode(pref==='dark'||(pref==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches));
-        setThemeSyncWarning(null);
-      }catch{
-        // Keep the local theme when preference retrieval is unavailable.
-      }
-    }
-    void reloadSavedPreference();
-    window.addEventListener('dli-profile-changed',reloadSavedPreference);
-    return()=>{
-      active=false;
-      window.removeEventListener('dli-profile-changed',reloadSavedPreference);
+    const media=window.matchMedia('(prefers-color-scheme: dark)');
+    const sync=()=>{
+      if(preferredTheme==='system')setDarkMode(media.matches);
+      else setDarkMode(preferredTheme==='dark');
     };
-  },[account?.id]);
+    sync();
+    media.addEventListener?.('change',sync);
+    return()=>media.removeEventListener?.('change',sync);
+  },[preferredTheme]);
 
   async function changeTheme(){
     if(themeSyncing)return;
     const next=!darkMode;
     setDarkMode(next);
-    if(!supabase||!account)return;
     setThemeSyncing(true);setThemeSyncWarning(null);
-    try{
-      const auth=await supabase.auth.getUser();
-      if(auth.error||!auth.data.user)throw new Error('no verified user');
-      const result=await supabase.from('dli_member_profiles')
-        .update({preferred_theme:next?'dark':'light'})
-        .eq('user_id',auth.data.user.id)
-        .select('user_id').maybeSingle();
-      if(result.error||!result.data)
-        setThemeSyncWarning('Theme changed locally, but your cloud preference was not saved. Open My profile to finish setup or retry.');
-    }catch{
-      setThemeSyncWarning('Theme changed on this device, but could not be synced to your account. Please try again.');
-    }finally{setThemeSyncing(false);}
+    const result=await updatePreferredTheme(next?'dark':'light');
+    if(!result.ok)setThemeSyncWarning(result.warning??'Theme changed locally, but could not be saved.');
+    setThemeSyncing(false);
   }
 
   useEffect(() => {
@@ -341,9 +316,9 @@ export default function AppShell({ children }: AppShellProps) {
               :<div className="breadcrumb">
               <span>DLI Workspace</span>
               <span className="breadcrumb-divider">/</span>
-              <strong>{activeItem?.label ?? ({
-                '/cohorts':'Advanced curriculum','/assignments':'Legacy course assignments',
-                '/schedule':'Legacy course timetable','/finance/reviews':'Finance policy reviews',
+              <strong>{activeItem?.breadcrumbTitle ?? activeItem?.label ?? ({
+                '/cohorts':'Advanced curriculum','/assignments':'Course assignments',
+                '/schedule':'Course timetable','/finance/reviews':'Finance policy reviews',
                 '/communications/reminders':'Internal reminders',
                 '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
                 '/my-classes':'Classes & timetable',
@@ -451,14 +426,7 @@ export default function AppShell({ children }: AppShellProps) {
           end={item.path==='/'}
           className={({isActive}) => 'mobile-bottom-link'+(isActive?' active':'')}>
           <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>{item.label === 'Free Students & enrolment' ? 'Enrolment' :
-            item.label === 'Classes & timetable' ? 'Classes' :
-            item.label === 'Learning & results' ? 'Learning' :
-            item.label === 'Academic setup' ? 'Academics' :
-            item.label === 'Users & access' ? 'Users' :
-            item.label === 'Feedback & support' ? 'Support' :
-            item.label === 'Reports & audit' ? 'Reports' :
-            item.label === 'My profile' ? 'Profile' : item.label}</span>
+          <span>{item.shortLabel ?? item.label}</span>
         </NavLink>)}
         <button type="button" data-dli-tour="more-navigation" className={'mobile-bottom-link mobile-bottom-more'+(mobileOpen?' active':'')}
           onClick={event=>openNavigation(event.currentTarget)}
