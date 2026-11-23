@@ -251,7 +251,6 @@ export default function UserManagementPage() {
       <div className="module-page-hero">
         <span className="module-page-icon"><Users size={25}/></span>
         <div className="module-page-copy">
-          <div className="eyebrow"><span className="eyebrow-line"/> PEOPLE & ACCESS</div>
           <h1>User management</h1>
           
         </div>
@@ -273,7 +272,6 @@ export default function UserManagementPage() {
       <section className="panel user-registry" id="account-registry">
         <div data-dli-tour="users" className="panel-heading">
           <div>
-            <p className="section-kicker">AUTHORISED DIRECTORY</p>
             <h2>Account registry</h2>
             <p className="user-caption">{error
               ? 'The directory is temporarily unavailable; no account count has been verified.'
@@ -446,7 +444,6 @@ export default function UserManagementPage() {
       <section className="panel user-audit">
         <div className="panel-heading">
           <div>
-            <p className="section-kicker">SECURITY RECORDS</p>
             <h2>Recent audit events</h2>
           </div>
           <button type="button" className="user-outline-button" onClick={()=>{void loadAudit();}}>

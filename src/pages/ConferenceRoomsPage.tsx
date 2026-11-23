@@ -216,7 +216,7 @@ export default function ConferenceRoomsPage(){
  return <div className="module-page dli-conferences">
   <div className="module-page-hero">
    <span className="module-page-icon"><Video size={24}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI LIVE COORDINATION</div>
+   <div className="module-page-copy">
     <h1>Conference rooms</h1>
     
    </div>
@@ -228,7 +228,7 @@ export default function ConferenceRoomsPage(){
    <button className="user-outline-button" type="button" disabled={busy||loading} onClick={()=>void read()}>
     <RefreshCw size={16}/> Refresh</button></div>
   {staff&&<section className="panel dli-conference-create">
-   <div className="panel-heading"><div><p className="section-kicker">ROOM CREATION</p><h2>Host a conference</h2></div></div>
+   <div className="panel-heading"><div><h2>Host a conference</h2></div></div>
    <form onSubmit={e=>void create(e)} className="academic-form dli-conference-form">
     <label>Room name<input required minLength={3} maxLength={140} value={title}
       onChange={e=>setTitle(e.target.value)} placeholder="e.g. Tutors' weekly coordination"/></label>

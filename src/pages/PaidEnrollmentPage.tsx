@@ -286,7 +286,7 @@ export default function PaidEnrollmentPage(){
  return <div className="module-page paid-upgrade">
   <div data-dli-tour="enrolment" className="module-page-hero">
    <span className="module-page-icon"><Wallet size={25}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> AUTHORISED DLI ENROLMENT</div>
+   <div className="module-page-copy">
     <h1>{isManager?'Paid enrolment approvals':'Free Demo & paid enrolment'}</h1>
     
    </div>
@@ -298,7 +298,7 @@ export default function PaidEnrollmentPage(){
    onClick={()=>{void load();void refreshAccess();}}><RefreshCw size={16}/> Refresh status</button>
 
   {isStudent&&<section className="panel">
-   <div className="panel-heading"><div><p className="section-kicker">FREE LEARNING</p><h2>Available Free Demo classes</h2></div></div>
+   <div className="panel-heading"><div><h2>Available Free Demo classes</h2></div></div>
    {!demos.length&&!loading&&<p className="academic-empty">No Free Demo is currently published. Contact DLI administration for the next demonstration timetable.</p>}
    <div className="upgrade-demo-list">{demos.map(d=><article key={d.id}>
     <strong>{d.subject_name}</strong><p>{DAY[d.weekday]} · {d.starts_at.slice(0,5)}–{d.ends_at.slice(0,5)} WAT</p>
@@ -313,7 +313,7 @@ export default function PaidEnrollmentPage(){
   </section>}
 
   {isStudent&&account?.studentTier!=='paid'&&!current&&<section className="panel">
-   <div className="panel-heading"><div><p className="section-kicker">PAID LEARNING</p><h2>Apply for a learning plan</h2>
+   <div className="panel-heading"><div><h2>Apply for a learning plan</h2>
     <p className="user-caption">Select your arrangement and specific subjects. Plan prices come from DLI Paid Learning Plans; extra/changed allocations require Admin review.</p>
    </div></div>
    <form className="upgrade-form" onSubmit={e=>void submit(e)}>
@@ -357,7 +357,7 @@ export default function PaidEnrollmentPage(){
   </section>}
 
   {isStudent&&current&&<section className="panel">
-   <div className="panel-heading"><div><p className="section-kicker">YOUR APPLICATION</p>
+   <div className="panel-heading"><div>
     <h2>{plans.find(p=>p.id===current.plan_code)?.name??current.plan_code}</h2>
     <p className="user-caption">{statusText[current.status]}</p>
    </div></div>
@@ -379,7 +379,7 @@ export default function PaidEnrollmentPage(){
   </section>}
 
   {isManager&&<section className="panel" id="enrolment-bank-settings">
-   <div className="panel-heading"><div><p className="section-kicker">MANUAL BANK TRANSFER</p>
+   <div className="panel-heading"><div>
     <h2>Institutional bank details</h2>
     <p className="user-caption">Owner, Admin and Assistant Admin may add or change the verified recipient account shown to applicants. Do not publish a personal or unconfirmed account.</p>
    </div></div>
@@ -406,7 +406,7 @@ export default function PaidEnrollmentPage(){
   </section>}
 
   {isManager&&<section className="panel">
-   <div className="panel-heading"><div><p className="section-kicker">PAYMENT VERIFICATION</p>
+   <div className="panel-heading"><div>
     <h2>Incoming paid-enrolment applications</h2>
     <p className="user-caption">{pendingCount} receipt{pendingCount===1?'':'s'} awaiting your review. View evidence, independently confirm the credit in the bank account and then approve or reject. Tutor assignment is separate.</p>
    </div></div>

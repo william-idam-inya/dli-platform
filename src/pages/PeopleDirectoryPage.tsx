@@ -47,7 +47,7 @@ export default function PeopleDirectoryPage(){
  return <div className="module-page dli-people">
   <div className="module-page-hero">
    <span className="module-page-icon"><Users size={24}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> USERS &amp; PEOPLE</div>
+   <div className="module-page-copy">
     <h1>People directory</h1>
     </div>
   </div>
