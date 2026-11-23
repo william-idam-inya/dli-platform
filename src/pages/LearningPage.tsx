@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BookOpen, CheckCircle2, CircleOff, ExternalLink, FileText, GraduationCap, Link2, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -220,7 +221,7 @@ export default function LearningPage() {
       setError('Add lesson content before publishing.');
       return;
     }
-    if (!window.confirm(lesson.is_published
+    if (!await confirmAction(lesson.is_published
       ? 'Unpublish this lesson? Students will lose access to it and its resources.'
       : 'Publish this lesson to Students enrolled in this class?')) return;
     setSaving(lesson.id); setError(null); setNotice(null);
@@ -238,7 +239,7 @@ export default function LearningPage() {
 
   async function setResourcePublished(resource: LearningResource) {
     if (!supabase || saving || !canEdit) return;
-    if (!window.confirm(resource.is_published
+    if (!await confirmAction(resource.is_published
       ? 'Unpublish this link for Students?'
       : 'Publish this link for Students when its parent lesson is published?')) return;
     setSaving(resource.id); setError(null); setNotice(null);

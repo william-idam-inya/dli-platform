@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { BookOpen, CalendarClock, CheckCircle2, LockKeyhole, RefreshCw, Save, Settings2, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -110,7 +111,7 @@ export default function InstitutionalSettingsPage(){
     if((current.invite_url??'')===clean){
       setNotice('No changes to save.');setError(null);return;
     }
-    if(!clean&&!window.confirm('Clear the saved group invitation link? This will not revoke invitations already shared outside DLI.'))return;
+    if(!clean&&!await confirmAction('Clear the saved group invitation link? This will not revoke invitations already shared outside DLI.'))return;
     setSaving(key);setError(null);setNotice(null);
     try{
       const {data, error:writeError}=await client.from('institutional_group_links')
@@ -135,7 +136,7 @@ export default function InstitutionalSettingsPage(){
   async function changeEnrolmentStatus(){
     if(!supabase||!canView||enrolmentSaving||enrolmentOpen===null)return;
     const next=!enrolmentOpen;
-    if(!window.confirm(next
+    if(!await confirmAction(next
       ?'Reopen new Paid Student applications? Existing approved payments remain unchanged.'
       :'Pause NEW Paid Student applications? Existing applications remain available for review.'))return;
     setEnrolmentSaving(true);setError(null);setNotice(null);

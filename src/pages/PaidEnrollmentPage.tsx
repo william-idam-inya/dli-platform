@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {createPortal} from 'react-dom';
 import { Banknote, BookOpen, CheckCircle2, Copy, Download, Eye, RefreshCw, Upload, Wallet } from 'lucide-react';
@@ -186,7 +187,7 @@ export default function PaidEnrollmentPage(){
  }
  async function decide(request:Request,decision:'approved'|'rejected'){
   if(!supabase||!isManager||busy)return;
-  if(!window.confirm(decision==='approved'?
+  if(!await confirmAction(decision==='approved'?
     'Have you independently confirmed the actual credit in DLI’s bank account? Uploaded screenshots alone are not proof.':
     'Reject this application evidence? The learner may submit a corrected application.'))return;
   const date=creditDates[request.id]??'';
@@ -221,7 +222,7 @@ export default function PaidEnrollmentPage(){
     setError('Pause new paid applications before hiding the active transfer account.');return;
   }
   if((values.is_active||bank?.is_active)&&
-    !window.confirm('Confirm the bank and account holder independently. Changes affect the transfer instructions students see; verify any transfers already in progress against the account the student used. Save these details?'))return;
+    !await confirmAction('Confirm the bank and account holder independently. Changes affect the transfer instructions students see; verify any transfers already in progress against the account the student used. Save these details?'))return;
   setBusy(true);setError(null);setNotice(null);
   try{
     const result=bank?await supabase.from('private_bank_details').update(values)
@@ -241,7 +242,7 @@ export default function PaidEnrollmentPage(){
   if(enable&&!bank?.is_active){
     setError('Add and activate a verified bank account before opening applications.');return;
   }
-  if(!window.confirm(enable
+  if(!await confirmAction(enable
     ?'Open new Paid Student applications using the verified bank details? No payment is automatically collected or approved.'
     :'Pause NEW Paid Student applications? Existing applications and receipts will remain available for review.'))return;
   setBusy(true);setError(null);setNotice(null);

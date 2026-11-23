@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, Plus, RefreshCw, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -142,7 +143,7 @@ export default function QuizPage(){
   const text=z.is_published
    ?'Unpublish this quiz? Enrolled Students will not be able to start new attempts.'
    :'Publish this quiz to actively enrolled Students? Answer keys are never included in the question API.';
-  if(!window.confirm(text))return;
+  if(!await confirmAction(text))return;
   setSaving(z.id);setError(null);setNotice(null);
   const {data,error:writeError}=await supabase.from('learning_quizzes')
    .update({is_published:!z.is_published}).eq('id',z.id).select('id').maybeSingle();
@@ -167,7 +168,7 @@ export default function QuizPage(){
   if(studentQuestions.length===0||studentQuestions.some(q=>!selectedAnswers[q.question_id??q.id])){
    setError('Answer every question before submitting.');return;
   }
-  if(!window.confirm('Submit this quiz now? You cannot change your answers or retake this quiz.'))return;
+  if(!await confirmAction('Submit this quiz now? You cannot change your answers or retake this quiz.'))return;
   setSaving('submit');setError(null);setNotice(null);
   const {data,error:rpcError}=await supabase.rpc('dli_submit_quiz_attempt',{
    p_quiz_id:activeQuiz,p_answers:selectedAnswers,

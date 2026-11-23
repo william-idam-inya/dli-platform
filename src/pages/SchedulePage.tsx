@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CalendarClock, CheckCircle2, CircleOff, Clock3, ExternalLink, GraduationCap, MapPin, Pencil, Plus, RefreshCw, Video, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -248,7 +249,7 @@ export default function SchedulePage() {
       :(session.is_cancelled
         ?'Reinstate this class session? Enrolled Students will see it as scheduled.'
         :'Mark this session cancelled? Students will still see the cancellation notice.');
-    if(!window.confirm(confirmText))return;
+    if(!await confirmAction(confirmText))return;
     setSaving(session.id);setError(null);setNotice(null);
     const update=kind==='publish'
       ? {is_published:!session.is_published}
