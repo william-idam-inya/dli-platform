@@ -98,7 +98,6 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [editTarget,setEditTarget]=useState<DirectMessage|null>(null);
   const [forwardTarget,setForwardTarget]=useState<DirectMessage|null>(null);
   const longPressTimer=useRef<number|null>(null);
-  const lastTap=useRef<{id:string;at:number}|null>(null);
   const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
   const [mediaReset,setMediaReset]=useState(0);
   const [pins,setPins]=useState<string[]>([]);
@@ -516,13 +515,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       setMenuTarget(m.id);setExpandedReactions(false);longPressTimer.current=null;
     },450);
   }
-  function handleMessagePointerUp(m:DirectMessage,pointerType:string){
-    if(longPressTimer.current!==null){window.clearTimeout(longPressTimer.current);longPressTimer.current=null;}
-    if(pointerType!=='touch'||m.deleted_at||mode!=='inbox')return;
-    const now=Date.now();
-    if(lastTap.current?.id===m.id&&now-lastTap.current.at<320){
-      lastTap.current=null;void reactToMessage(m,'👍');
-    }else lastTap.current={id:m.id,at:now};
+  function handleMessagePointerUp(){
+    // Stop the long-press timer. Never react on a double-tap used for text
+    // selection; reactions remain available through More actions.
+    if(longPressTimer.current!==null){
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current=null;
+    }
   }
   useEffect(()=>{
     if(!menuTarget&&!forwardTarget)return;
@@ -854,11 +853,10 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
             {messages.map(m=><article key={m.id}
               className={m.sender_id===uid&&mode!=='oversight'?'mine':''}
-              onDoubleClick={()=>{if(mode==='inbox'&&!m.deleted_at)void reactToMessage(m,'👍');}}
               onContextMenu={e=>{if(mode==='inbox'&&!m.deleted_at){
                 e.preventDefault();setMenuTarget(m.id);setExpandedReactions(false);}}}
               onPointerDown={e=>handleMessagePointerDown(m,e.pointerType)}
-              onPointerUp={e=>handleMessagePointerUp(m,e.pointerType)}
+              onPointerUp={()=>handleMessagePointerUp()}
               onPointerCancel={()=>{if(longPressTimer.current!==null)window.clearTimeout(longPressTimer.current);}}
               role="group" tabIndex={mode==='inbox'&&!m.deleted_at?0:undefined}
               onKeyDown={e=>{if(e.key==='Enter'&&mode==='inbox'&&!m.deleted_at){
