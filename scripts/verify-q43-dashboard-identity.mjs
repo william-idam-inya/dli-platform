@@ -31,7 +31,7 @@ assert.ok(!home.includes("'Admin Dashboard'")&&!home.includes("'Tutor Workspace'
 assert.ok(!home.includes("accountRoleLabel(account) + ' · '"),
  'Do not prepend the member role to the dashboard summary');
 assert.ok(home.includes('{welcomeSummary}')
- &&home.includes('<ReferenceHeroArtwork role={account?.role ?? \'student\'}/>'),
+ &&home.includes("<ReferenceHeroArtwork role={account?.role??'student'}/>"),
  'Keep personalised dashboard content and role-dependent hero artwork');
 for(const role of ["'owner'","'admin'","'assistant_admin'","'tutor'","'student'"])
  assert.ok(roles.includes(role),'A supported organisational role is missing');

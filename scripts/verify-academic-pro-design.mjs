@@ -44,8 +44,10 @@ assert.ok(dashboard.includes('data-dli-role=')&&dashboard.includes('welcomeSumma
  'Role-aware home headings must remain');
 assert.ok(dashboard.includes('canAccessPath(account.role,heroPath,account.studentTier)'),
  'Do not offer inaccessible hero actions');
-assert.ok(dashboard.includes('published=classes.filter('),
- 'Dashboard must show real RLS-scoped class counts, not mock numbers');
+assert.ok(dashboard.includes('<ReferenceDashboard account={account}')&&
+ !dashboard.includes("from('teaching_classes')")&&
+ read('src/components/ReferenceDashboard.tsx').includes("from('teaching_classes')"),
+ 'Dashboard must render real RLS-scoped classes without duplicate class queries');
 assert.ok(users.includes('id="invite-member"')&&users.includes('id="account-registry"'),
  'Keep invitation and registry discoverable');
 assert.ok(users.includes('<InviteUserPage embedded'),'Keep actual invitation workflow');
@@ -53,7 +55,8 @@ assert.ok(users.includes('canManageRole')&&users.includes('roles.includes(user.r
  'Role-scoped user management must remain enforced and actionable without a redundant disclosure card');
 assert.ok(artwork.includes('mathematics')&&artwork.includes('biology')&&artwork.includes('chemistry'),'Subject graphics must support core science subjects');
 assert.ok(classPage.includes('<SubjectArtwork subject={c.subject_name}/>'),'Decorate only real authorised class subjects');
-assert.ok(dashboard.includes('Personalise appearance'),'Appearance controls must be discoverable from dashboard');
+assert.ok(profile.includes('<AppearancePreferences/>')&&
+ dashboard.includes('secondaryName'),'Appearance remains in Profile; role-specific daily actions replace the redundant CTA');
 assert.ok(shell.includes('OfficialDliLogo'),'Retain original institution logo');
 assert.ok(shell.includes('mobile-bottom-nav'),'Retain existing accessible mobile navigation');
 assert.ok(existingRoles.includes("['owner', 'admin', 'assistant_admin']"),

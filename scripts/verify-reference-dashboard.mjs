@@ -16,9 +16,8 @@ const profile=read('src/pages/MemberProfilePage.tsx');
 const main=read('src/main.tsx');
 for (const token of [
   "<ReferenceDashboard account={account}",'<ReferenceHeroArtwork role={',
-  'priorityItems.map(item=>','secondarySections.map(section=>',
   'learningAreas.map(item=>','<DliDashboardAnnouncements/>',
-  'published=classes.filter(',
+  'secondaryName','canAccessPath(account.role,heroPath,account.studentTier)',
 ]) assert.ok(home.includes(token),'Keep live role-aware home and existing modules: '+token);
 for (const token of [
   'STUDENT_LINKS','TUTOR_LINKS','ADMIN_LINKS','ASSISTANT_LINKS',
