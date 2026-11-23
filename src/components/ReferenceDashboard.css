@@ -220,22 +220,6 @@
  padding:9px 12px;font-size:12px;color:var(--text);font-weight:650;
 }
 .ref-dashboard-tail>button:disabled{opacity:.55;cursor:wait;}
-/* Existing secondary tools stay accessible behind an explicit disclosure,
-   keeping the primary screen as clean as the approved reference. */
-.ref-existing-tools{margin:0;}
-.ref-existing-tools>summary{
- display:flex;align-items:center;justify-content:space-between;
- min-height:48px;cursor:pointer;padding:13px 18px;
- background:var(--surface);border:1px solid var(--border);
- border-radius:13px;color:var(--purple-dark);font-size:13px;font-weight:750;
- list-style:none;
-}
-.ref-existing-tools>summary::-webkit-details-marker{display:none;}
-.ref-existing-tools[open]>summary{border-radius:13px 13px 0 0;}
-.ref-existing-tools>.ref-existing-body{
- padding:18px;border:1px solid var(--border);border-top:0;
- background:var(--surface);border-radius:0 0 13px 13px;
-}
 /* Reference student and tutor hero: dark royal blue with a distinct vector
    illustration on the right. The SVG is decorative and never a fake screenshot. */
 body .unified-overview .welcome-row,
@@ -269,10 +253,6 @@ body .unified-overview .welcome-row::after{display:none;}
  .desktop-sidebar .brand-copy strong{color:#fff;}
  .desktop-sidebar .brand-copy small{color:#b8d6f8;}
  .desktop-sidebar .brand-mark{background:#fff;border:1px solid rgba(226,182,79,.65);}
- .desktop-sidebar .workspace-switcher{background:#0f3667;border-color:#205080;}
- .desktop-sidebar .workspace-copy strong{color:#fff;}
- .desktop-sidebar .workspace-copy small{color:#ccdef2;}
- .desktop-sidebar .workspace-chevron{color:#c7dbf5;}
  .desktop-sidebar .nav-section-label{color:#c0d6ec;}
  .desktop-sidebar .nav-link{color:#d5e4f5;}
  .desktop-sidebar .nav-link:hover{color:#fff;background:#133f75;}
@@ -280,12 +260,6 @@ body .unified-overview .welcome-row::after{display:none;}
    background:#1365d0;color:#fff;box-shadow:inset 3px 0 #f0c354;
  }
  .desktop-sidebar .nav-link.active svg{color:#fff;}
- .desktop-sidebar .nav-section-toggle{color:#c0d6ec;}
- .desktop-sidebar .nav-section-toggle:hover{color:#fff;background:#123c73;}
- .desktop-sidebar .sidebar-footer{background:#0f3667;border-color:#205080;color:#fff;}
- .desktop-sidebar .sidebar-footer p{color:#bdd4ed;}
- .desktop-sidebar .sidebar-help-icon{background:#215b9e;color:#fff;}
- .desktop-sidebar .sidebar-version{color:#bdd4ed;}
  .desktop-sidebar .sidebar-learning-link{color:#d0e1f1;}
 }
 /* Better contrast on dark mode cards while keeping blue/gold accent rhythm. */
@@ -342,7 +316,6 @@ body .unified-overview .welcome-row::after{display:none;}
  .ref-progress-records span,.ref-progress-records strong{font-size:11px;}
  .ref-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
  .ref-quick-actions a{font-size:11px;min-height:50px;}
- .ref-existing-tools>.ref-existing-body{padding:12px;}
  body .unified-overview .welcome-row,
  :root[data-theme='dark'] body .unified-overview .welcome-row{
   min-height:166px;padding:19px 17px;border-radius:16px;

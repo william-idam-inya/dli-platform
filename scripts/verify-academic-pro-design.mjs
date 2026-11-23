@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const css=read('src/academic-pro.css');
+const css=read('src/academic-pro.css')+'\n'+read('src/design-system.css');
 const controls=read('src/components/AppearancePreferences.tsx');
 const logic=read('src/lib/appearancePreferences.ts');
 const profile=read('src/pages/MemberProfilePage.tsx');

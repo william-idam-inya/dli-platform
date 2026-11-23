@@ -1,14 +1,4 @@
-/* Q28 reference-aligned shell, applied across every route, not only Home.
-   It respects original brand, user preference colours and protected navigation. */
-.ref-mobile-identity{display:none;}
-.ref-desktop-greeting{display:grid;gap:4px;min-width:0;}
-.ref-desktop-greeting strong{
- font:750 15px/1.2 Manrope,'DM Sans',sans-serif;
- color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.ref-desktop-greeting small{
- color:var(--muted);font-size:11px;line-height:1.35;
-}
+
 .ref-sidebar-actions{display:grid;gap:6px;margin:12px 0;}
 .ref-sidebar-actions>a,.ref-sidebar-actions>button{
  display:flex;align-items:center;gap:10px;min-height:43px;
@@ -24,21 +14,11 @@
  .desktop-sidebar .brand-copy strong{color:#fff;}
  .desktop-sidebar .brand-copy small{color:#b8d6f8;}
  .desktop-sidebar .brand-mark{background:#fff;border:1px solid rgba(226,182,79,.65);}
- .desktop-sidebar .workspace-switcher{background:#0f3667;border-color:#205080;}
- .desktop-sidebar .workspace-copy strong{color:#fff;}
- .desktop-sidebar .workspace-copy small{color:#ccdef2;}
- .desktop-sidebar .workspace-chevron{color:#c7dbf5;}
  .desktop-sidebar .nav-section-label{color:#c0d6ec;}
  .desktop-sidebar .nav-link{color:#d5e4f5;}
  .desktop-sidebar .nav-link:hover{color:#fff;background:#133f75;}
  .desktop-sidebar .nav-link.active{background:#1365d0;color:#fff;box-shadow:inset 3px 0 #f0c354;}
  .desktop-sidebar .nav-link.active svg{color:#fff;}
- .desktop-sidebar .nav-section-toggle{color:#c0d6ec;}
- .desktop-sidebar .nav-section-toggle:hover{color:#fff;background:#123c73;}
- .desktop-sidebar .sidebar-footer{background:#0f3667;border-color:#205080;color:#fff;}
- .desktop-sidebar .sidebar-footer p{color:#bdd4ed;}
- .desktop-sidebar .sidebar-help-icon{background:#215b9e;color:#fff;}
- .desktop-sidebar .sidebar-version{color:#bdd4ed;}
  .desktop-sidebar .sidebar-learning-link{color:#d0e1f1;}
  .desktop-sidebar .ref-sidebar-actions>a,.desktop-sidebar .ref-sidebar-actions>button{color:#d5e4f5;}
  .desktop-sidebar .ref-sidebar-actions :is(a,button):hover{color:#fff;background:#133f75;}
@@ -51,8 +31,7 @@
  .topbar-left{min-width:0;flex:1;gap:0;}
  .topbar-actions{gap:7px;flex:0 0 auto;}
  .topbar .mobile-menu{display:none;}
- .topbar .breadcrumb,.topbar .ref-desktop-greeting{display:none;}
- .ref-mobile-identity{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+.topbar .breadcrumb{display:none;}
  .ref-mobile-mark{
   display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;
   border-radius:9px;background:#fff;border:1px solid #dae5f0;
@@ -94,21 +73,6 @@
  .topbar-actions{gap:1px;}
  .topbar-actions .icon-button{min-width:35px;min-height:35px;}
 }
-/* A subject-appropriate illustrated banner for each real, authorised class.
-   Never contains invented course content or synthetic engagement figures. */
-.ref-course-banner{
- display:flex;align-items:center;justify-content:space-between;
- gap:15px;min-height:124px;padding:17px 20px;margin:12px 0;
- border-radius:15px;overflow:hidden;position:relative;
- color:#fff;background:
-  radial-gradient(circle at 83% 25%,rgba(38,203,225,.3),transparent 37%),
-  linear-gradient(115deg,#07346c 0%,#0d5ba2 65%,#097e99 100%);
-}
-.ref-course-banner:after{
- content:"";position:absolute;pointer-events:none;right:-25px;top:-82px;
- width:220px;height:220px;border:2px solid rgba(255,255,255,.12);
- border-radius:50%;box-shadow:0 0 0 25px rgba(255,255,255,.045),0 0 0 55px rgba(255,255,255,.03);
-}
 .ref-course-banner-content{display:grid;gap:7px;min-width:0;position:relative;z-index:1;}
 .ref-course-banner-content small{
  font-size:10px;font-weight:780;letter-spacing:.09em;color:#f5d379;text-transform:uppercase;
@@ -136,7 +100,6 @@
 }
 .ref-course-tabs a:hover{border-color:var(--purple);background:var(--purple-soft);}
 @media(max-width:480px){
- .ref-course-banner{min-height:108px;padding:15px;}
  .ref-course-banner-art{flex-basis:57px;width:57px;height:57px;}
  .ref-course-banner-art .dli-subject-art{width:54px;height:54px;border-radius:14px;}
  .ref-course-banner-art .dli-subject-art svg{width:30px;height:30px;}

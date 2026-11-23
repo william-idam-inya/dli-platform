@@ -692,15 +692,6 @@ export default function ClassesWorkspacePage(){
             </div>
             <p><CalendarClock size={15}/>Starts {group.first.class_start_date} · {activeRows.length} weekly subject sessions</p>
             {(staff||account?.role==='tutor')&&<p><GraduationCap size={15}/>Students: {roster.map(m=>m.student_name).join(', ')||'Not assigned yet'}</p>}
-            <div className="ref-course-banner" aria-label="Class overview graphic">
-              <div className="ref-course-banner-content">
-                <small>DLI academic class</small>
-                <span>{activeRows.length} weekly subject session{activeRows.length===1?'':'s'}</span>
-              </div>
-              <span className="ref-course-banner-art" aria-hidden="true">
-                <SubjectArtwork subject={group.first.subject_name}/>
-              </span>
-            </div>
             <div className="ref-course-tabs" aria-label="Related class learning areas">
               {account?.role!=='assistant_admin'&&
                <Link to={'/study?tab=lessons&class='+encodeURIComponent(group.id)}>Learning resources</Link>}

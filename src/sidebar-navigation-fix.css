@@ -28,29 +28,13 @@
   padding: 0 2px 12px;
   overscroll-behavior: auto;
 }
-.desktop-sidebar .sidebar-footer {
-  margin-top: 14px;
-}
 .desktop-sidebar .ref-sidebar-actions {
   margin-top: 8px;
 }
-.sidebar-inner,
-.sidebar-inner .nav-section,
-.sidebar-inner .nav-section-links,
-.sidebar-inner .sidebar-navigation-item,
-.sidebar-inner .nav-link {
+.sidebar-inner, .sidebar-inner .sidebar-navigation-item, .sidebar-inner .nav-link{
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
-}
-.sidebar-inner .nav-section-toggle {
-  min-width: 0;
-  width: 100%;
-}
-.sidebar-inner .nav-section-toggle > span {
-  min-width: 0;
-  flex: 1;
-  overflow-wrap: break-word;
 }
 .sidebar-inner .nav-link {
   width: 100%;
