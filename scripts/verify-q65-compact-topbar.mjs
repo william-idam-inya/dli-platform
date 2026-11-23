@@ -17,11 +17,19 @@ assert.ok(toolbar.includes('className="dli-profile-toggle dli-utility-trigger"')
 assert.ok(toolbar.includes('hidden={!profileMenuOpen}'),'Collapsed utilities must remain mounted for live alerts');
 assert.ok(toolbar.includes('dli-utility-grid')&&toolbar.includes('dli-utility-links'),'Icon grid and extra actions not consolidated');
 assert.ok(toolbar.includes('dli-utility-account')&&toolbar.includes('accountRoleLabel(account)'),'Member name and role lost');
-for(const component of ['<QuickMenu/>','<DliMessageBadge/>','<DliNotificationBell/>','<PushNotificationOptIn/>']){
-  assert.equal(shell.split(component).length-1,1,'Toolbar control duplicated or missing: '+component);
+for(const component of ['<QuickMenu/>','<PushNotificationOptIn/>']){
+  assert.equal(shell.split(component).length-1,1,'Utility control duplicated or missing: '+component);
   assert.ok(toolbar.indexOf(component)>toolbar.indexOf('dli-utility-grid'),
-    'Toolbar control must be inside collapsed menu: '+component);
+    'Secondary utility must stay in the consolidated dropdown: '+component);
 }
+for(const component of ['<DliMessageBadge/>','<DliNotificationBell/>']){
+  assert.equal(shell.split(component).length-1,1,'Live control duplicated or missing: '+component);
+  assert.ok(toolbar.indexOf(component)>0 &&
+    toolbar.indexOf(component)<toolbar.indexOf('dli-profile-menu dli-utility-menu'),
+    'Live message/notification control must be visible without opening the menu: '+component);
+}
+assert.ok(toolbar.includes('dli-account-pill-copy')&&toolbar.includes('<ProfileAvatar'),
+  'Account trigger must identify the signed-in member instead of a plain chevron');
 for(const token of ['theme-toggle','My profile and settings','Replay guided app tour','Sign out']){
   assert.ok(toolbar.includes(token),'Original action missing from utility dropdown: '+token);
 }
