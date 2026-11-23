@@ -698,8 +698,7 @@ export default function ClassesWorkspacePage(){
             <div className="ref-course-banner" aria-label="Class overview graphic">
               <div className="ref-course-banner-content">
                 <small>DLI academic class</small>
-                <strong>{group.rows.length===1?group.first.subject_name:groupName}</strong>
-                <span>{groupName} · {activeRows.length} weekly subject session{activeRows.length===1?'':'s'}</span>
+                <span>{activeRows.length} weekly subject session{activeRows.length===1?'':'s'}</span>
               </div>
               <span className="ref-course-banner-art" aria-hidden="true">
                 <SubjectArtwork subject={group.first.subject_name}/>
