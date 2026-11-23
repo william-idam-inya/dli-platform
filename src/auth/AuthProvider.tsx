@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // One authoritative identity verification drives the profile gate, theme,
     // and Student entitlement. No extra getUser() call in child dashboards.
-    const [profile,entitlement]=await Promise.all([
+    const checks=await Promise.allSettled([
       supabase.from('dli_member_profiles')
         .select('user_id,preferred_theme').eq('user_id',user.id).maybeSingle(),
       record?.role==='student'
@@ -137,6 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         :Promise.resolve({data:null,error:null}),
     ]);
     if(run!==verification.current)return;
+    if(checks[0].status==='rejected'||checks[1].status==='rejected'){
+      setAccount(null);clearIdentity();setState('unavailable');return;
+    }
+    const profile=checks[0].value,entitlement=checks[1].value;
     if(entitlement.error){setAccount(null);clearIdentity();setState('unavailable');return;}
     const studentTier: 'free'|'paid'|undefined=record?.role==='student'
       ?entitlement.data?.tier==='paid'?'paid':'free':undefined;
