@@ -188,8 +188,8 @@
 }
 @media(max-width:390px){
  .app-layout .dli-grid-topbar>.topbar-actions.dli-compact-actions{gap:1px}
- .app-layout .dli-topbar-status-icon{flex-basis:36px;min-width:36px}
- .app-layout .dli-topbar-status-icon :is(button,a){min-width:36px}
- .app-layout .dli-utility-trigger{width:50px;min-width:50px}
- .app-layout .dli-utility-menu{min-width:50px}
+ .app-layout .dli-topbar-status-icon{flex-basis:44px;min-width:44px}
+ .app-layout .dli-topbar-status-icon :is(button,a){min-width:44px;min-height:44px}
+ .app-layout .dli-utility-trigger{width:54px;min-width:54px}
+ .app-layout .dli-utility-menu{min-width:54px}
 }
