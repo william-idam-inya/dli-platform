@@ -63,3 +63,20 @@
 @media (min-width:681px) and (max-width:900px){
   .page-content .module-page-hero>.module-page-copy{flex-basis:65%}
 }
+
+/* Q73 — remove decorative/technical metadata in every authenticated module.
+   These are duplicate context labels, not user records, actions, input labels,
+   real payment states, meeting times, or accessible error messages. */
+.page-content :is(
+  .eyebrow,
+  .section-kicker,
+  .module-footnote,
+  .module-status,
+  .unified-overview-footnote,
+  .scope-count,
+  .academic-available-count
+){display:none!important}
+.app-layout :is(.sidebar-version,.page-footer){display:none!important}
+/* Avoid empty vertical space left by the retired labels. */
+.page-content .module-page-copy:empty{display:none}
+.page-content .panel-heading>div>:first-child:is(h2,h3){margin-top:0}
