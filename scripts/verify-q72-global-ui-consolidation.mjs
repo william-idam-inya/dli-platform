@@ -72,7 +72,7 @@ assert.ok(!q45.includes('images.unsplash.com') &&
  topbar.includes('.dli-topbar-status-icon'), 'Stable local backgrounds and responsive topbar not applied');
 for(const token of ['createPortal','role="dialog"',
  'aria-modal="true"', 'onClose', "event.key==='Escape'",
- 'document.body.style.overflow', "event.key==='Tab'",
+ 'document.body.style.overflow', "event.key!=='Tab'",
  'function ConfirmDialog','minLength','maxLength']){
  assert.ok(modal.includes(token),'Accessible modal contract missing: '+token);
 }
