@@ -138,7 +138,6 @@ export default function FinancePage() {
     <div data-dli-tour="finance" className="module-page-hero">
       <span className="module-page-icon"><Wallet size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance management</h1>
         
       </div>
@@ -168,7 +167,6 @@ export default function FinancePage() {
 
     {canPropose && <section className="panel finance-proposal-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · GOVERNANCE</p>
         <h2>Submit a pending proposal</h2>
       </div></div>
       <form className="academic-form finance-proposal-form"
@@ -212,7 +210,6 @@ export default function FinancePage() {
 
     <section className="panel finance-review-list">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · REVIEW QUEUE</p>
         <h2>Pending finance policies</h2>
         <p className="user-caption">These proposals do not authorise a charge or bank transfer. Review notes are recorded separately in <Link to="/finance/reviews">Finance review</Link>.</p>
       </div></div>

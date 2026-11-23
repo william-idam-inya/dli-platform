@@ -188,7 +188,6 @@ export default function QuizPage(){
   <div className="module-page-hero">
    <span className="module-page-icon"><ClipboardCheck size={25}/></span>
    <div className="module-page-copy">
-    <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
     <h1>Quizzes &amp; results</h1>
     
    </div>
@@ -221,8 +220,7 @@ export default function QuizPage(){
   </section>
   {canEdit&&<div className="academic-columns quiz-authoring">
    <section className="panel academic-panel">
-    <div className="panel-heading"><div>
-     <p className="section-kicker">01 · QUESTION BANK</p><h2>Create draft quiz</h2>
+    <div className="panel-heading"><div><h2>Create draft quiz</h2>
     </div></div>
     <form className="academic-form quiz-form" onSubmit={e=>{void createQuiz(e);}}>
      <label htmlFor="e4-quiz-name">Quiz title</label>
@@ -238,8 +236,7 @@ export default function QuizPage(){
     </form>
    </section>
    <section className="panel academic-panel">
-    <div className="panel-heading"><div>
-     <p className="section-kicker">02 · AUTHOR QUESTIONS</p><h2>Add four-choice question</h2>
+    <div className="panel-heading"><div><h2>Add four-choice question</h2>
     </div></div>
     <form className="academic-form quiz-form" onSubmit={e=>{void addQuestion(e);}}>
      <label htmlFor="e4-select-quiz">Unpublished quiz</label>
@@ -277,7 +274,6 @@ export default function QuizPage(){
   </div>}
   <section className="panel quiz-list">
    <div className="panel-heading"><div>
-    <p className="section-kicker">CLASS QUIZZES</p>
     <h2>{canEdit?'Question banks and attempts':'My quizzes'}</h2>
     <p className="user-caption">{canEdit?'Quiz answer keys are shown only to authorised editors.':
      'Only published quizzes for your enrolments are displayed.'}</p>

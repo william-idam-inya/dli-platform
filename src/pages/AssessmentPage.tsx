@@ -254,7 +254,6 @@ export default function AssessmentPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><ClipboardCheck size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Assignments &amp; feedback</h1>
         
       </div>
@@ -291,8 +290,7 @@ export default function AssessmentPage() {
     </section>
 
     {canEdit&&<section className="panel assessment-create">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">AUTHORING</p><h2>Create draft assignment</h2>
+      <div className="panel-heading"><div><h2>Create draft assignment</h2>
       </div></div>
       <form className="academic-form assessment-form" onSubmit={e=>{void addAssignment(e);}}>
         <label htmlFor="e3-new-title">Assignment title</label>
@@ -320,7 +318,6 @@ export default function AssessmentPage() {
 
     <section className="panel assessment-list">
       <div className="panel-heading"><div>
-        <p className="section-kicker">CLASSWORK</p>
         <h2>{canEdit?'Class assignments':'My assignments'}</h2>
         <p className="user-caption">{canEdit
           ? 'Drafts are visible to current academic editors only.'

@@ -131,7 +131,6 @@ export default function FinanceReviewPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><ClipboardCheck size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> FINANCE GOVERNANCE</div>
         <h1>Finance proposal review</h1>
         
       </div>
@@ -156,7 +155,6 @@ export default function FinanceReviewPage(){
 
     <section className="panel finance-review-select">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · SELECT PROPOSAL</p>
         <h2>Unapproved finance proposals</h2>
       </div></div>
       <label htmlFor="g2-proposal">Proposal to review</label>
@@ -180,7 +178,6 @@ export default function FinanceReviewPage(){
     </section>
     {currentProposal&&<section className="panel finance-review-timeline">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · AUDITED REVIEW HISTORY</p>
         <h2>Recorded discussion</h2>
         <p className="user-caption">Entries are permanent; they cannot be edited or deleted through the browser.</p>
       </div></div>
@@ -202,7 +199,6 @@ export default function FinanceReviewPage(){
     </section>}
     {canReview&&currentProposal&&<section className="panel finance-review-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">03 · REVIEW INPUT</p>
         <h2>Record a review note</h2>
       </div></div>
       <form className="academic-form finance-review-form"

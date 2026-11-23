@@ -151,7 +151,6 @@ export default function AttendancePage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><CalendarCheck size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Attendance &amp; reports</h1>
         
       </div>
@@ -202,7 +201,6 @@ export default function AttendancePage(){
     </section>
     {canEdit&&<section className="panel attendance-register">
       <div className="panel-heading"><div>
-        <p className="section-kicker">ATTENDANCE REGISTER</p>
         <h2>Enrolled Students</h2>
         <p className="user-caption">Present: {presentCount} · Absent: {absentCount}
           {' · '}Not recorded: {unmarkedCount} (active roster)</p>
@@ -253,8 +251,7 @@ export default function AttendancePage(){
       </div>
     </section>}
     {!canEdit&&<section className="panel attendance-register">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">MY ATTENDANCE</p><h2>Recorded status</h2>
+      <div className="panel-heading"><div><h2>Recorded status</h2>
       </div></div>
       {session?<>
         {sessionMarks.length?sessionMarks.map(m=><div key={m.id}

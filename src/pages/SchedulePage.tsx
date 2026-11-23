@@ -270,7 +270,6 @@ export default function SchedulePage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Timetable &amp; class scheduling</h1>
         
       </div>
@@ -305,7 +304,6 @@ export default function SchedulePage() {
 
     {canEdit&&<section className="panel schedule-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · CLASS PLANNING</p>
         <h2>Create draft session</h2>
         <p className="user-caption">Drafts stay private until you choose to publish them.</p>
       </div></div>
@@ -320,7 +318,6 @@ export default function SchedulePage() {
 
     <section className="panel schedule-list">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · CLASS TIMETABLE</p>
         <h2>{canEdit?'Scheduled class sessions':'My class timetable'}</h2>
         <p className="user-caption">{canEdit
           ? 'Session drafts are restricted to class editors.'

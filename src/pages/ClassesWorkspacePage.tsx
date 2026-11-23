@@ -410,7 +410,6 @@ export default function ClassesWorkspacePage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> CONNECTED LEARNING</div>
         <h1>{staff?'Classes & timetable':account?.role==='tutor'?'My teaching classes':'My classes'}</h1>
         
       </div>
@@ -448,7 +447,6 @@ export default function ClassesWorkspacePage(){
       {staff&&(showBuilder||Boolean(editing))&&<section id="dli-create-class-group"
         className="panel classes-builder">
         <div className="panel-heading"><div>
-          <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
           <p className="user-caption">Choose a completed cohort, configure tutors and a delivery pace for every course, then publish the dated schedule.</p>
         </div></div>
@@ -664,7 +662,6 @@ export default function ClassesWorkspacePage(){
 
       <section className="panel classes-directory">
         <div data-dli-tour="classes" className="panel-heading"><div>
-          <p className="section-kicker">CLASS REGISTER</p>
           <h2>{staff?'All individual and group classes':account?.role==='tutor'?'My assigned subject sessions':'My subject timetable'}</h2>
           <p className="user-caption">Each group has one student list and one Meet link. Every course has two tutors and its own timetable.</p>
         </div></div>
