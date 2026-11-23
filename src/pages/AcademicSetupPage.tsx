@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   BookOpen, CheckCircle2, CircleOff,
@@ -181,7 +182,7 @@ export default function AcademicSetupPage() {
 
   async function toggle(table: CatalogueTable, item: BaseRecord, name: string) {
     if (!supabase || saving) return;
-    if (item.is_active && !window.confirm(
+    if (item.is_active && !await confirmAction(
       `Deactivate "${name}"? This hides it from new selections but preserves existing records.`,
     )) return;
     setSaving(item.id);

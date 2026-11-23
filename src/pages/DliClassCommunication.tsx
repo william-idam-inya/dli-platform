@@ -1,3 +1,4 @@
+import {confirmAction,promptAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CheckCircle2, LockKeyhole, MessageCircle, Phone, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -158,7 +159,7 @@ export default function DliClassCommunication(){
   async function approve(card:Contact,field:'student_messaging_approved'|'student_contact_approved'){
     if(!supabase||!moderator||saving||card.member_role!=='student')return;
     const next=!card[field];
-    if(next&&!window.confirm(field==='student_messaging_approved'
+    if(next&&!await confirmAction(field==='student_messaging_approved'
       ?'Have required student/guardian consent and the safeguarding procedure been verified before allowing direct Tutor messages?'
       :'Have required consent and safeguarding requirements been verified before exposing this student’s phone to their assigned Tutor?'))return;
     setSaving(true);setError(null);
@@ -170,7 +171,7 @@ export default function DliClassCommunication(){
   }
   async function reportMessage(message:Message){
     if(!supabase||moderator||saving||!active)return;
-    const reason=window.prompt('Explain briefly why this subject message needs an administrator’s attention. Do not include passwords or unrelated private details.','');
+    const reason=await promptAction('Explain briefly why this subject message needs an administrator’s attention. Do not include passwords or unrelated private details.','');
     if(reason===null)return;
     if(!reason.trim()||reason.trim().length>500){setError('Enter a reason of 1–500 characters.');return;}
     setSaving(true);setError(null);setNotice(null);
@@ -187,7 +188,7 @@ export default function DliClassCommunication(){
   }
   async function markReportReviewed(report:ChatReport){
     if(!supabase||!moderator||saving)return;
-    if(!window.confirm('Mark this message report reviewed? The original message remains on record.'))return;
+    if(!await confirmAction('Mark this message report reviewed? The original message remains on record.'))return;
     setSaving(true);setError(null);setNotice(null);
     try{
       const res=await supabase.from('dli_message_reports').update({status:'reviewed'})

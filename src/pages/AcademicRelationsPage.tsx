@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ArrowLeft, BookOpen, CheckCircle2, CircleOff, GraduationCap, Layers3, Plus, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -129,7 +130,7 @@ export default function AcademicRelationsPage() {
 
   async function toggle(table: AcademicTable, row: RecordStatus, name: string) {
     if (!supabase || busy) return;
-    if (row.is_active && !window.confirm(
+    if (row.is_active && !await confirmAction(
       `Deactivate "${name}"? The record will remain stored and can be reactivated.`,
     )) return;
     setBusy(row.id);

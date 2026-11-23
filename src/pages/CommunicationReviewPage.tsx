@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ArrowLeft, CheckCircle2, ClipboardCheck, ClipboardCopy, FileText, LockKeyhole, MessageSquareText, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -124,7 +125,7 @@ export default function CommunicationReviewPage() {
         setError('Only an independent Owner or Admin reviewer can clear a current draft revision.');
         return;
       }
-      if (!window.confirm(
+      if (!await confirmAction(
         'Clear this exact draft revision for MANUAL copying? This does not send, schedule, publish or deliver the message.'
       )) return;
     }

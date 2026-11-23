@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarCheck, CalendarClock, CheckCircle2, ClipboardList, GraduationCap, RefreshCw, UserCheck, UserX } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -127,7 +128,7 @@ export default function AttendancePage(){
     const status=pending[id]??old?.status;
     if(!status){setError('Choose Present or Absent before saving.');return;}
     if(old&&old.status===status){setNotice('No change: this mark is already recorded.');return;}
-    if(old&&!window.confirm('Correct this recorded attendance status? The change will be audited.'))return;
+    if(old&&!await confirmAction('Correct this recorded attendance status? The change will be audited.'))return;
     setSaving(id);setError(null);setNotice(null);
     const result=old
       ?await supabase.from('class_attendance').update({status})
