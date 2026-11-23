@@ -99,7 +99,7 @@ export default function DliTutorCompensation(){
     finally{setBusy(false);}
   }
   return <section className="panel dli-tutor-compensation">
-    <div className="panel-heading"><div><p className="section-kicker">TUTOR COMPENSATION · PLANNING</p>
+    <div className="panel-heading"><div>
       <h2>Monthly tutor payment register</h2>
 
     </div><button type="button" className="user-outline-button" disabled={loading||busy} onClick={()=>void refresh()}>

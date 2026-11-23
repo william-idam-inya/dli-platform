@@ -105,7 +105,6 @@ export default function CommunicationDraftsPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><MessageSquareText size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Communications drafts</h1>
         
       </div>
@@ -126,7 +125,6 @@ export default function CommunicationDraftsPage() {
     </div>
     {canWrite&&<section className="panel communications-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · INTERNAL WRITING</p>
         <h2>{editingId?'Revise your draft':'Create a private draft'}</h2>
         <p className="user-caption">Message preparation only; no recipient directory or delivery is connected.</p>
       </div></div>
@@ -165,7 +163,6 @@ export default function CommunicationDraftsPage() {
     </section>}
     <section className="panel communications-list">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · PRIVATE DRAFT LIBRARY</p>
         <h2>Messages being prepared</h2>
         <p className="user-caption">Owners, Admins and Assistant Admins may review team drafts.
           Coordinators and Tutors can see only drafts they authored.</p>

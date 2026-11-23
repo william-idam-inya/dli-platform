@@ -254,7 +254,6 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     {!embedded&&<div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> PRIVATE LEARNING</div>
         <h1>{isStaff?'Private-class management':isTutor?'My private teaching':'My private classes'}</h1>
         
       </div>
@@ -270,7 +269,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
       </button>
     </div>
     {isStaff&&<section className="panel private-student-choice">
-      <div className="panel-heading"><div><p className="section-kicker">01 · STUDENT RECORD</p><h2>Select an enrolled student account</h2>
+      <div className="panel-heading"><div><h2>Select an enrolled student account</h2>
         <p className="user-caption">Create and verify student accounts in Users &amp; access before assigning a private fee. No fabricated student records appear.</p>
       </div></div>
       <label htmlFor="l1-student">Student</label>
@@ -289,7 +288,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
         onClick={()=>setAdminStep(step)}>{label}</button>)}
     </nav>}
     {isStaff&&adminStep==='bank'&&<section className="panel">
-      <div className="panel-heading"><div><p className="section-kicker">02 · BANK TRANSFER DETAILS</p><h2>Institutional account for transfers</h2>
+      <div className="panel-heading"><div><h2>Institutional account for transfers</h2>
         <p className="user-caption">The account is hidden from Students until you activate it. Confirm ownership independently before activation.</p>
       </div></div>
       <form className="academic-form private-form" onSubmit={saveBank}>
@@ -309,7 +308,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     </section>}
 
     {isStaff&&adminStep==='fee'&&<section className="panel">
-      <div className="panel-heading"><div><p className="section-kicker">03 · ASSIGN MONTHLY FEE</p><h2>Student's individual billing record</h2>
+      <div className="panel-heading"><div><h2>Student's individual billing record</h2>
         <p className="user-caption">Choose the approved general DLI rate for this student. Individual and group classes share this billing form. A fee is assigned, never automatically collected; one record per Student per billing month.</p>
       </div></div>
       {selectedRenewal&&<div className="private-bank-card">
@@ -353,7 +352,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     </section>}
 
     {(isStudent||(isStaff&&adminStep==='verify'))&&<section className="panel">
-      <div className="panel-heading"><div><p className="section-kicker">{isStaff?'04 · PAYMENT REVIEW':'01 · FEES & PAYMENT'}</p>
+      <div className="panel-heading"><div>
         <h2>{isStaff?'Payment status and uploaded receipts':'My assigned fees'}</h2>
         <p className="user-caption">Fees are private to each student and finance administrators. Proof is evidence for review, not bank confirmation.</p>
       </div></div>
@@ -412,7 +411,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     </section>}
 
     {!billingOnly&&isStaff&&adminStep==='schedule'&&<section className="panel">
-      <div className="panel-heading"><div><p className="section-kicker">05 · PRIVATE SUBJECT TIMETABLE</p>
+      <div className="panel-heading"><div>
         <h2>Assign a subject, day, time, tutor and Google Meet</h2>
         <p className="user-caption">Work in this order for each subject. Use a weekday and recurring class time in West Africa Time (UTC+1), not a date calendar. Schedule assignments require at least one manually verified fee for that student.</p>
       </div></div>
@@ -444,7 +443,7 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     </section>}
 
     {!billingOnly&&(!isStaff||adminStep==='roster')&&<section className="panel">
-      <div className="panel-heading"><div><p className="section-kicker">{isStaff?'06 · LINKED CLASS RECORDS':'02 · PERSONAL TIMETABLE'}</p>
+      <div className="panel-heading"><div>
         <h2>{isStaff?'Individual tutor–student class register':isTutor?'Students and classes assigned to me':'My subject timetable'}</h2>
         <p className="user-caption">One record connects the student, subject, weekly time, assigned tutor and joining link. Only active assignments are shown.</p>
       </div></div>

@@ -216,7 +216,6 @@ export default function LessonFilesPanel({
   return <section className="panel learning-file-panel" aria-label="Private lesson files">
     <div className="panel-heading">
       <div>
-        <p className="section-kicker">PRIVATE LEARNING MATERIALS · STAGE E2</p>
         <h2>Lesson files</h2>
         <p className="user-caption">
           Files are stored in a private Supabase bucket. Downloads require current class access.
