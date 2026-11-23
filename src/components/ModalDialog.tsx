@@ -16,6 +16,8 @@ export function ModalDialog({
  const panel=useRef<HTMLDivElement>(null);
  const closeRef=useRef<HTMLButtonElement>(null);
  const restore=useRef<HTMLElement|null>(null);
+ const closeHandler=useRef(onClose);
+ closeHandler.current=onClose;
  useEffect(()=>{
   if(!open)return;
   restore.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -24,7 +26,7 @@ export function ModalDialog({
   closeRef.current?.focus();
   const keydown=(event:KeyboardEvent)=>{
    if(event.key==='Escape'){
-    event.preventDefault();event.stopPropagation();onClose();return;
+    event.preventDefault();event.stopPropagation();closeHandler.current();return;
    }
    if(event.key!=='Tab'||!panel.current)return;
    const controls=[...panel.current.querySelectorAll<HTMLElement>(
@@ -41,7 +43,7 @@ export function ModalDialog({
    document.body.style.overflow=before;
    restore.current?.focus({preventScroll:true});
   };
- },[open,onClose]);
+ },[open]);
  if(!open)return null;
  return createPortal(<div className="dli-modal-backdrop"
    onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
