@@ -7,12 +7,16 @@ import { sessionPresence } from './sessionPresence';
 import { isDliRole, type Account } from './permissions';
 
 export type AuthState = 'checking' | 'guest' | 'active' | 'unavailable' | 'config-error';
-type AuthContextValue = {
+export type AuthContextValue = {
   state: AuthState;
   account: Account | null;
+  authUserId: string | null;
+  hasCompletedProfile: boolean | null;
+  preferredTheme: 'system' | 'light' | 'dark';
   notice: string | null;
   refresh: () => Promise<void>;
   clearNotice: () => void;
+  updatePreferredTheme: (next: 'light' | 'dark') => Promise<{ok:boolean;warning?:string}>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -21,11 +25,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(supabase ? 'checking' : 'config-error');
   const [account, setAccount] = useState<Account | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [authUserId,setAuthUserId]=useState<string|null>(null);
+  const [hasCompletedProfile,setHasCompletedProfile]=useState<boolean|null>(null);
+  const [preferredTheme,setPreferredTheme]=useState<'system'|'light'|'dark'>('system');
   const verification = useRef(0);
 
   const refresh = useCallback(async () => {
     const run = ++verification.current;
-    if (!supabase) {
+    // A failed or revoked identity may never retain a cached profile gate.
+    const clearIdentity=()=>{
+      setAuthUserId(null);setHasCompletedProfile(null);setPreferredTheme('system');
+    };
+    if (!supabase) {clearIdentity();
       setState('config-error');
       setAccount(null);
       return;
@@ -40,12 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const presence = await sessionPresence(supabase.auth);
     if (run !== verification.current) return;
     if (presence === 'guest') {
-      setAccount(null);
+      setAccount(null);clearIdentity();
       setState('guest');
       return;
     }
     if (presence === 'unavailable') {
-      setAccount(null);
+      setAccount(null);clearIdentity();
       setState('unavailable');
       return;
     }
@@ -60,19 +71,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (run !== verification.current) return;
 
       if (authError) {
-        setAccount(null);
+        setAccount(null);clearIdentity();
         setState('unavailable');
         return;
       }
       user = authData.user;
       if (!user) {
-        setAccount(null);
+        setAccount(null);clearIdentity();
         setState('guest');
         return;
       }
     } catch {
       if (run !== verification.current) return;
-      setAccount(null);
+      setAccount(null);clearIdentity();
       setState('unavailable');
       return;
     }
@@ -87,14 +98,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (run !== verification.current) return;
 
       if (recordError) {
-        setAccount(null);
+        setAccount(null);clearIdentity();
         setState('unavailable');
         return;
       }
       record = data;
     } catch {
       if (run !== verification.current) return;
-      setAccount(null);
+      setAccount(null);clearIdentity();
       setState('unavailable');
       return;
     }
@@ -107,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       record.email === user.email.toLowerCase();
 
     if (!authorised) {
-      setAccount(null);
+      setAccount(null);clearIdentity();
       setState('guest');
       // Sign out locally; an existing Auth account does not constitute DLI authorisation.
       setNotice('This account is not authorised for DLI access. Contact your administrator.');
@@ -115,14 +126,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let studentTier:'free'|'paid'|undefined;
-    if(record?.role==='student'){
-      const entitlement=await supabase.from('dli_student_entitlements')
-        .select('tier').eq('student_id',user.id).maybeSingle();
-      if(run!==verification.current)return;
-      if(entitlement.error){setAccount(null);setState('unavailable');return;}
-      studentTier=entitlement.data?.tier==='paid'?'paid':'free';
-    }
+    // One authoritative identity verification drives the profile gate, theme,
+    // and Student entitlement. No extra getUser() call in child dashboards.
+    const [profile,entitlement]=await Promise.all([
+      supabase.from('dli_member_profiles')
+        .select('user_id,preferred_theme').eq('user_id',user.id).maybeSingle(),
+      record?.role==='student'
+        ?supabase.from('dli_student_entitlements')
+          .select('tier').eq('student_id',user.id).maybeSingle()
+        :Promise.resolve({data:null,error:null}),
+    ]);
+    if(run!==verification.current)return;
+    if(entitlement.error){setAccount(null);clearIdentity();setState('unavailable');return;}
+    const studentTier: 'free'|'paid'|undefined=record?.role==='student'
+      ?entitlement.data?.tier==='paid'?'paid':'free':undefined;
+    setAuthUserId(user.id);
+    // null is deliberately NOT "complete": an unavailable read fails closed.
+    setHasCompletedProfile(profile.error?null:Boolean(profile.data));
+    const theme=profile.data?.preferred_theme;
+    setPreferredTheme(theme==='dark'||theme==='light'?theme:'system');
     setAccount({...record,studentTier} as Account);
     setNotice(null);
     setState('active');
@@ -136,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         ++verification.current;
         setAccount(null);
+        setAuthUserId(null);setHasCompletedProfile(null);setPreferredTheme('system');
         setState('guest');
       } else if (
         event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' ||
@@ -155,6 +178,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, [refresh]);
+
+  useEffect(()=>{
+    // A successful profile edit asks the provider to re-read the verified row;
+    // the event alone never grants profile completion or changes role access.
+    const onChanged=()=>{void refresh();};
+    window.addEventListener('dli-profile-changed',onChanged);
+    return()=>window.removeEventListener('dli-profile-changed',onChanged);
+  },[refresh]);
+
+  const updatePreferredTheme=useCallback(async(next:'light'|'dark')=>{
+    if(!supabase||!authUserId||!account)
+      return {ok:false,warning:'Please sign in to save your theme.'};
+    try{
+      const response=await supabase.from('dli_member_profiles')
+        .update({preferred_theme:next})
+        .eq('user_id',authUserId).select('user_id').maybeSingle();
+      if(response.error||!response.data)
+        return {ok:false,warning:'Theme changed locally, but your cloud preference was not saved.'};
+      setPreferredTheme(next);
+      return {ok:true};
+    }catch{
+      return {ok:false,warning:'Theme changed on this device, but could not be synced to your account.'};
+    }
+  },[authUserId,account?.id]);
 
   useEffect(() => {
     if (!supabase || account?.role !== 'student' || account.studentTier !== 'free') return;
@@ -183,7 +230,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      state, account, notice, refresh, clearNotice: () => setNotice(null),
+      state, account, authUserId, hasCompletedProfile, preferredTheme,
+      notice, refresh, clearNotice: () => setNotice(null), updatePreferredTheme,
     }}>
       {children}
     </AuthContext.Provider>
