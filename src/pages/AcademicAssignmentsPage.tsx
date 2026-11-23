@@ -137,7 +137,6 @@ export default function AcademicAssignmentsPage() {
     const choices=students?availableStudents:availableTutors;
     return <section className="panel academic-panel academic-assign-panel">
       <div className="panel-heading"><div>
-        <p className="section-kicker">{students?'02 · LEARNERS':'01 · EDUCATORS'}</p>
         <h2>{students?'Student enrolments':'Tutor assignments'}</h2>
       </div></div>
       <form className="academic-form academic-members-form" onSubmit={e=>submit(e,table)}>
@@ -183,7 +182,6 @@ export default function AcademicAssignmentsPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><Users size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Class assignments</h1>
         
       </div>

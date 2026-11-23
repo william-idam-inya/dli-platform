@@ -53,7 +53,7 @@ export default function MemberDetailPage(){
  return <div className="module-page dli-member-detail">
   <Link className="back-link" to="/users"><ArrowLeft size={16}/> Users and access</Link>
   <div className="module-page-hero"><span className="module-page-icon"><UserRound size={25}/></span>
-    <div className="module-page-copy"><p className="section-kicker">AUTHORIZED PROFILE VIEW</p>
+    <div className="module-page-copy">
       <h1>Member profile</h1>
     </div></div>
   {loading&&<p role="status">Checking role permissions and loading profile…</p>}

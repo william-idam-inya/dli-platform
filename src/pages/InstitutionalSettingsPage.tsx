@@ -159,7 +159,6 @@ export default function InstitutionalSettingsPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><Settings2 size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL GOVERNANCE</div>
         <h1>Institutional settings</h1>
         
       </div>
@@ -190,7 +189,7 @@ export default function InstitutionalSettingsPage(){
 
     {mayViewGroupLinks&&<section className="panel institutional-settings-links">
       <div className="panel-heading">
-        <div><p className="section-kicker">01 · OWNER-CONTROLLED LINKS</p>
+        <div>
           <h2>DLI–Scholars Club group invitations</h2>
           <p className="user-caption">Approved invitations may be entered by the Founder.
             Blank means no invitation is configured; no previously shared
@@ -232,7 +231,6 @@ export default function InstitutionalSettingsPage(){
 
     <section className="panel institutional-settings-governance">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · LIVE OPERATIONAL CONTROL</p>
         <h2>Paid Student application window</h2>
         <p className="user-caption">Founder, Admin and Assistant Admin may pause or resume NEW paid-enrolment applications.
           Existing submitted applications and previously approved students are not cancelled.</p>

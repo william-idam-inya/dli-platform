@@ -90,7 +90,6 @@ export default function AuditLogPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><ScrollText size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Institutional audit trail</h1>
         
       </div>
@@ -108,7 +107,7 @@ export default function AuditLogPage(){
     </div>
     <section className="panel audit-log-register">
       <div className="panel-heading">
-        <div><p className="section-kicker">01 · AUDIT RECORDS</p>
+        <div>
           <h2>Read-only event register</h2>
           <p className="user-caption">Times shown in West Africa Time (UTC+1).
             Audit history cannot be edited or deleted through this page.</p>

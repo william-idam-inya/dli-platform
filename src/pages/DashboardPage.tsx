@@ -60,7 +60,6 @@ export default function DashboardPage(){
    data-dli-role={account?.role??'guest'}>
    <section className="welcome-row">
     <div>
-     <div className="eyebrow"><span className="eyebrow-line"/> DETAILED LEARNING INSTITUTE</div>
      <h1>{headline}</h1>
      <p className="welcome-copy">{welcomeSummary}</p>
      <div data-dli-tour="dashboard" className="dli-role-actions">
@@ -82,7 +81,6 @@ export default function DashboardPage(){
    {canOpenLearning&&<section className="section-block unified-learning-section"
      aria-label="Academic workspace">
     <div className="section-heading"><div>
-     <p className="section-kicker">ACADEMIC WORKSPACE</p>
      <h2>Lessons, assignments, quizzes &amp; attendance</h2>
      <p className="user-caption">See resources and results available to your DLI account.</p>
     </div>

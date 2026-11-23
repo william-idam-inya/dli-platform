@@ -45,7 +45,6 @@ export default function ModulePage({ item }: ModulePageProps) {
       <section className="panel module-scope-panel">
         <div className="panel-heading">
           <div>
-            <p className="section-kicker">PLANNED FUNCTIONAL SCOPE</p>
             <h2>What this module will cover</h2>
           </div>
           <span className="scope-count">{guidance.length} areas</span>
