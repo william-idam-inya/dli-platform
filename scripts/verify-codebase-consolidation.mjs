@@ -51,4 +51,29 @@ for(const p of ['src/components/ModalDialog.tsx','src/pages/DirectMessagesPage.t
  'src/pages/ClassesWorkspacePage.tsx']){
  assert.ok(!/window\.(?:confirm|prompt)\s*\(/.test(read(p)),'Native modal remains: '+p);
 }
+// Identical selectors must not be reintroduced in the same media context.
+const seen=new Set();
+function inspectCss(source,context='root'){
+ let i=0;
+ while(i<source.length){
+  const open=source.indexOf('{',i);if(open<0)break;
+  let depth=1,end=open+1;
+  while(end<source.length&&depth){
+   if(source[end]==='{')depth++;
+   else if(source[end]==='}')depth--;
+   end++;
+  }
+  const header=source.slice(i,open).replace(/\/\*[\s\S]*?\*\//g,'').trim();
+  const body=source.slice(open+1,end-1);
+  if(/^@(?:media|supports|container)\\b/.test(header)) inspectCss(body,context+'|'+header);
+  else if(header&&!header.startsWith('@')){
+   const key=context+'|'+header.replace(/\\s+/g,' ');
+   assert.ok(!seen.has(key),'Duplicate CSS selector: '+key);
+   seen.add(key);
+  }
+  i=end;
+ }
+}
+inspectCss(shell);
+assert.ok(!shell.includes('Q49 audit correction'),'Old Q49 correction layer is still present');
 console.log('Q74 CSS consolidation, shared auth, simple shell and modal regression passed.');
