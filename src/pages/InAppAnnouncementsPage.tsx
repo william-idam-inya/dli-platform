@@ -147,7 +147,6 @@ export default function InAppAnnouncementsPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><Bell size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> DLI COMMUNICATION</div>
         <h1>Announcements</h1>
 
       </div>
@@ -156,7 +155,7 @@ export default function InAppAnnouncementsPage(){
     {error&&<p className="auth-feedback error" role="alert">{error}</p>}
     {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
     {staff&&<section className="panel dli-broadcast-composer">
-      <div className="panel-heading"><div><p className="section-kicker">NEW IN-APP ANNOUNCEMENT</p>
+      <div className="panel-heading"><div>
         <h2>Choose the audience and posting window</h2>
         <p className="user-caption">Create one announcement at a time. Scheduled notices are not visible before their publication time.</p>
       </div></div>
@@ -222,7 +221,6 @@ export default function InAppAnnouncementsPage(){
     </section>}
     <section className="panel">
       <div className="panel-heading"><div>
-        <p className="section-kicker">{staff?'ANNOUNCEMENT REGISTER':'CURRENT ANNOUNCEMENTS'}</p>
         <h2>{staff?'Published, scheduled and draft notices':'Notices for you'}</h2>
       </div><button type="button" className="user-outline-button" disabled={loading||saving}
         onClick={()=>void refresh()}><RefreshCw size={15}/> Refresh</button></div>

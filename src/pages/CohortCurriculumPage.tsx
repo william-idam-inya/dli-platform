@@ -153,7 +153,7 @@ export default function CohortCurriculumPage(){
   <Link className="back-link" to="/academics"><ArrowLeft size={16}/> Academic Setup</Link>
   <div className="module-page-hero">
    <span className="module-page-icon"><Layers3 size={24}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC CURRICULUM</div>
+   <div className="module-page-copy">
     <h1>Cohorts, courses &amp; topic sequencing</h1>
     
    </div>

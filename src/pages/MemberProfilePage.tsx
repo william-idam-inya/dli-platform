@@ -164,7 +164,7 @@ export default function MemberProfilePage(){
  const themeOptions=[['system','Follow my device'],['light','Light mode'],['dark','Dark mode']] as const;
  return <div className="module-page member-profile-page">
   <div className="module-page-hero"><span className="module-page-icon"><UserRound size={25}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> MY ACCOUNT</div>
+   <div className="module-page-copy">
     <h1>My profile &amp; preferences</h1>
     
    </div></div>
@@ -176,7 +176,7 @@ export default function MemberProfilePage(){
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}
   {notice&&<p><Link className="user-outline-button" to="/">Open my DLI dashboard</Link></p>}
   <section className="panel member-profile-main">
-   <div data-dli-tour="profile" className="panel-heading"><div><p className="section-kicker">PERSONAL DETAILS</p>
+   <div data-dli-tour="profile" className="panel-heading"><div>
     <h2>{profile?'Your saved profile':'Complete your profile'}</h2>
     <p className="user-caption">Choose a picture, adjust the crop, then select Upload photo. The photo is saved to your private DLI cloud storage and remains available across devices. Saving other profile details is a separate action.</p>
    </div><button type="button" className="user-outline-button" onClick={()=>void refresh()} disabled={loading||busy}><RefreshCw size={15}/> Refresh</button></div>
@@ -242,7 +242,7 @@ export default function MemberProfilePage(){
   <AppearancePreferences/>
   <BrowserAlertPermission/>
   <section className="panel member-profile-identity">
-    <div className="panel-heading"><div><p className="section-kicker">VERIFIED INSTITUTIONAL ACCESS</p>
+    <div className="panel-heading"><div>
       <h2>Assigned by DLI administration</h2></div></div>
     <p><LockKeyhole size={15}/> Registered email: <strong>{account?.email}</strong></p>
     <p><CheckCircle2 size={15}/> Authorised role: <strong>{account?roleLabels[account.role]:''}</strong></p>

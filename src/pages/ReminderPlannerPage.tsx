@@ -201,7 +201,6 @@ export default function ReminderPlannerPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><CalendarClock size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Internal reminders</h1>
         
       </div>
@@ -224,7 +223,6 @@ export default function ReminderPlannerPage(){
 
     {canWrite&&<section className="panel reminder-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · INTERNAL PLANNING</p>
         <h2>{editingId?'Revise your reminder':'Record a reminder'}</h2>
         <p className="user-caption">The date is a record for humans to check later;
           it is not a background notification or scheduled message.</p>
@@ -277,7 +275,6 @@ export default function ReminderPlannerPage(){
     </section>}
     <section className="panel reminder-records">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · PLANNED COMMUNICATION TASKS</p>
         <h2>Private reminder register</h2>
         <p className="user-caption">Due/overdue labels are evaluated when
           this page is opened or refreshed. They do not trigger an alarm.</p>

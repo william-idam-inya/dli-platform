@@ -215,7 +215,6 @@ export default function DliClassCommunication(){
 
   return <section className="panel dli-class-chat">
     <div className="panel-heading"><div>
-      <p className="section-kicker">CONTACTS &amp; IN-APP MESSAGES</p>
       <h2>{moderator?'Tutor–student communications oversight':'Contact your assigned tutor or student'}</h2>
       <p className="user-caption">Each conversation belongs to a particular subject class and Student–Tutor pair.
         No group-wide student messaging, photo uploads, third-party chat integration or unsupervised account discovery.</p>

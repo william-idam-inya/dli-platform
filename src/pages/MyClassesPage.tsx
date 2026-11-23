@@ -82,7 +82,6 @@ export default function MyClassesPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><GraduationCap size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> MY LEARNING WORKSPACE</div>
         <h1>My classes</h1>
 
       </div>

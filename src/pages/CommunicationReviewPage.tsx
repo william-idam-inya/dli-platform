@@ -204,7 +204,6 @@ export default function CommunicationReviewPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><ClipboardCheck size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Communications review</h1>
         
       </div>
@@ -226,7 +225,6 @@ export default function CommunicationReviewPage() {
 
     <section className="panel communication-review-select">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · PRIVATE PREVIEW</p>
         <h2>Choose an accessible draft</h2>
       </div></div>
       <label htmlFor="h2-draft">Private communication draft</label>
@@ -278,7 +276,6 @@ export default function CommunicationReviewPage() {
 
     {draft && <section className="panel communication-review-history">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · REVIEW HISTORY</p>
         <h2>Internal comments and decisions</h2>
         <p className="user-caption">Entries are permanent, revision-specific and audited.</p>
       </div></div>
@@ -297,7 +294,6 @@ export default function CommunicationReviewPage() {
     </section>}
     {draft && <section className="panel communication-review-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">03 · INTERNAL ACTION</p>
         <h2>Record a review note</h2>
       </div></div>
       <form className="academic-form communication-review-form"

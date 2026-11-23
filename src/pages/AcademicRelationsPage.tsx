@@ -203,7 +203,6 @@ export default function AcademicRelationsPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><Layers3 size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> ACADEMIC OPERATIONS</div>
         <h1>Cohorts &amp; topics</h1>
         
       </div>
@@ -228,8 +227,7 @@ export default function AcademicRelationsPage() {
     </div>
     <div className="academic-columns">
       <section className="panel academic-panel">
-        <div className="panel-heading"><div>
-          <p className="section-kicker">01 · COURSE CONTENT</p><h2>Topics</h2>
+        <div className="panel-heading"><div><h2>Topics</h2>
         </div></div>
         <form className="academic-form academic-relations-form" onSubmit={submitTopic}>
           <label htmlFor="d2-topic-course">Course</label>
@@ -265,8 +263,7 @@ export default function AcademicRelationsPage() {
       </section>
 
       <section className="panel academic-panel">
-        <div className="panel-heading"><div>
-          <p className="section-kicker">02 · TEACHING GROUPS</p><h2>Cohorts</h2>
+        <div className="panel-heading"><div><h2>Cohorts</h2>
         </div></div>
         <form className="academic-form academic-relations-form" onSubmit={submitCohort}>
           <label htmlFor="d2-cohort-name">Cohort name</label>
@@ -315,8 +312,7 @@ export default function AcademicRelationsPage() {
       </section>
     </div>
     <section className="panel academic-panel academic-offerings-panel">
-      <div className="panel-heading"><div>
-        <p className="section-kicker">03 · TEACHING ALLOCATION</p><h2>Course offerings</h2>
+      <div className="panel-heading"><div><h2>Course offerings</h2>
       </div></div>
       <p className="academic-empty">Attach a course to a cohort in the same programme and academic level.
         No tutor or learner is assigned by creating an offering.</p>

@@ -163,7 +163,6 @@ export default function CommunicationTemplatesPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><BookOpen size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> INSTITUTIONAL OPERATIONS</div>
         <h1>Message templates</h1>
         
       </div>
@@ -191,7 +190,6 @@ export default function CommunicationTemplatesPage() {
 
     {canWrite&&<section className="panel communication-templates-editor">
       <div className="panel-heading"><div>
-        <p className="section-kicker">01 · REUSABLE WRITING</p>
         <h2>{editingId?'Edit your template':'Create a private template'}</h2>
       </div></div>
       <form className="academic-form communication-templates-form"
@@ -240,7 +238,6 @@ export default function CommunicationTemplatesPage() {
 
     <section className="panel communication-templates-library">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · PRIVATE TEMPLATE LIBRARY</p>
         <h2>Reusable message starters</h2>
         <p className="user-caption">
           Staff managers can view team templates. Tutors and Coordinators see only

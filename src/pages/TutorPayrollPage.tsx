@@ -93,7 +93,7 @@ export default function TutorPayrollPage(){
  }
  return <div className="module-page tutor-payroll">
   <div className="module-page-hero"><span className="module-page-icon"><Wallet size={25}/></span>
-   <div className="module-page-copy"><div className="eyebrow"><span className="eyebrow-line"/> DLI FINANCE</div>
+   <div className="module-page-copy">
     <h1>{staff?'Tutor compensation & monthly payroll':'My tutor compensation'}</h1>
     
    </div></div>
@@ -146,7 +146,6 @@ export default function TutorPayrollPage(){
   </section>
   <section className="panel">
     <div className="panel-heading"><div>
-      <p className="section-kicker">CONFIRMED PAYMENT HISTORY</p>
       <h2>Recorded payouts for {month}</h2>
       <p className="user-caption">Confirmed transfers remain visible even if their original teaching class has ended or been archived.
         Payment references and unrelated tutors' information are not shown to Tutors.</p>

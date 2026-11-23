@@ -258,7 +258,6 @@ export default function LearningPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><BookOpen size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> TEACHING &amp; LEARNING</div>
         <h1>Courses &amp; lessons</h1>
         
       </div>
@@ -296,7 +295,6 @@ export default function LearningPage() {
 
     <section className="panel learning-lessons">
       <div className="panel-heading"><div>
-        <p className="section-kicker">LESSON CONTENT</p>
         <h2>Lessons for this class</h2>
         <p className="user-caption">{canEdit ? 'Drafts are visible to class editors only.' : 'Only published lessons appear.'}</p>
       </div></div>
@@ -375,8 +373,7 @@ export default function LearningPage() {
 
     {canEdit && <div className="academic-columns">
       <section className="panel academic-panel">
-        <div className="panel-heading"><div>
-          <p className="section-kicker">AUTHOR CONTENT</p><h2>Create draft lesson</h2>
+        <div className="panel-heading"><div><h2>Create draft lesson</h2>
         </div></div>
         <form className="academic-form learning-editor" onSubmit={e => { void createLesson(e); }}>
           <label htmlFor="new-lesson-title">Title</label>
@@ -397,8 +394,7 @@ export default function LearningPage() {
       </section>
 
       <section className="panel academic-panel">
-        <div className="panel-heading"><div>
-          <p className="section-kicker">EXTERNAL RESOURCES</p><h2>Add resource link</h2>
+        <div className="panel-heading"><div><h2>Add resource link</h2>
         </div></div>
         <form className="academic-form learning-editor" onSubmit={e => { void createResource(e); }}>
           <label htmlFor="resource-lesson">Parent lesson</label>

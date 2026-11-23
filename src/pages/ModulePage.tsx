@@ -33,11 +33,9 @@ export default function ModulePage({ item }: ModulePageProps) {
       <div className="module-page-hero">
         <ModuleIcon icon={Icon} />
         <div className="module-page-copy">
-          <div className="eyebrow"><span className="eyebrow-line" /> {item.group.toUpperCase()}</div>
           <h1>{item.label}</h1>
           
         </div>
-        <span className="module-status"><span /> Planned module</span>
       </div>
 
       <p className="auth-feedback" role="status">This module is not available yet.</p>
@@ -45,15 +43,12 @@ export default function ModulePage({ item }: ModulePageProps) {
       <section className="panel module-scope-panel">
         <div className="panel-heading">
           <div>
-            <p className="section-kicker">PLANNED FUNCTIONAL SCOPE</p>
             <h2>What this module will cover</h2>
           </div>
-          <span className="scope-count">{guidance.length} areas</span>
         </div>
         <div className="scope-list">
-          {guidance.map((point, index) => (
+          {guidance.map((point) => (
             <div className="scope-item" key={point}>
-              <span className="scope-number">0{index + 1}</span>
               <span>{point}</span>
               <ArrowRight size={16} />
             </div>

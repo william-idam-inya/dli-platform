@@ -633,7 +633,6 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
     <div className="module-page-hero dli-direct-hero">
       <span className="module-page-icon" aria-hidden="true"><MessageCircle size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> DLI MESSAGING</div>
         <h1>Messages</h1>
         
       </div>

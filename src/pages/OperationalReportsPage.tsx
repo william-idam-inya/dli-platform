@@ -167,7 +167,6 @@ export default function OperationalReportsPage(){
     if(group.length===0)return null;
     return <section className="panel operational-report-section" key={category}>
       <div className="panel-heading"><div>
-        <p className="section-kicker">{category==='academic'?'01 · ACADEMIC OPERATIONS':'02 · FINANCE GOVERNANCE'}</p>
         <h2>{title}</h2>
         <p className="user-caption">{description}</p>
       </div></div>
@@ -191,7 +190,6 @@ export default function OperationalReportsPage(){
     <div className="module-page-hero">
       <span className="module-page-icon"><BarChart3 size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> REPORTS &amp; GOVERNANCE</div>
         <h1>Operational reports</h1>
         
       </div>

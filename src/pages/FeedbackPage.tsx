@@ -151,7 +151,6 @@ export default function FeedbackPage() {
     <div className="module-page-hero">
       <span className="module-page-icon"><MessageSquareText size={25}/></span>
       <div className="module-page-copy">
-        <div className="eyebrow"><span className="eyebrow-line"/> MEMBER SUPPORT</div>
         <h1>{staff?'Support inbox &amp; reports':'Feedback &amp; support'}</h1>
         
       </div>
@@ -165,7 +164,6 @@ export default function FeedbackPage() {
 
     {!staff&&<section className="panel member-feedback-form">
       <div data-dli-tour="feedback" className="panel-heading"><div>
-        <p className="section-kicker">01 · SEND FEEDBACK</p>
         <h2>Tell us what needs attention</h2>
         <p className="user-caption">A maximum of five submissions per hour helps prevent spam.
           This form is not an emergency support channel.</p>
@@ -198,7 +196,6 @@ export default function FeedbackPage() {
 
     <section className="panel member-feedback-records">
       <div className="panel-heading"><div>
-        <p className="section-kicker">02 · {staff?'ADMINISTRATIVE REVIEW':'MY REPORTS'}</p>
         <h2>{staff?'Recent member submissions':'My feedback history'}</h2>
         <p className="user-caption">{staff
           ?'Up to 100 recent reports, ordered newest first. Open reports requiring action before marking them resolved.'

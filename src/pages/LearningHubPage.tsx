@@ -20,7 +20,7 @@ export default function LearningHubPage(){
  return <div className="learning-hub">
   <div className="learning-hub-header">
     <span className="learning-hub-symbol"><BookOpen size={23}/></span>
-    <div><p className="section-kicker">ONE CONNECTED ACADEMIC WORKSPACE</p>
+    <div>
       <h1>Learning &amp; results</h1>
 
     </div>
