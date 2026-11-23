@@ -16,9 +16,8 @@ const profile=read('src/pages/MemberProfilePage.tsx');
 const main=read('src/main.tsx');
 for (const token of [
   "<ReferenceDashboard account={account}",'<ReferenceHeroArtwork role={',
-  'priorityItems.map(item=>','secondarySections.map(section=>',
   'learningAreas.map(item=>','<DliDashboardAnnouncements/>',
-  'published=classes.filter(',
+  'secondaryName','canAccessPath(account.role,heroPath,account.studentTier)',
 ]) assert.ok(home.includes(token),'Keep live role-aware home and existing modules: '+token);
 for (const token of [
   'STUDENT_LINKS','TUTOR_LINKS','ADMIN_LINKS','ASSISTANT_LINKS',
@@ -43,7 +42,7 @@ for(const token of [
   'max-width:680px','max-width:390px','min-width:681px',
 ]) assert.ok(css.includes(token),'Responsive reference detail absent: '+token);
 for(const token of [
-  'ref-mobile-identity','ref-mobile-greeting',
+  'dli-topbar-status-icon','dli-account-pill-copy',
   'dli-sidebar-quick-actions','onSignOut','OfficialDliLogo',
   'mobilePriorityPaths(account, allowedPaths)','aria-label="Quick mobile navigation"',
 ]) assert.ok(shell.includes(token),'Branding/navigation must not regress: '+token);

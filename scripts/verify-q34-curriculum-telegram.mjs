@@ -56,7 +56,7 @@ for(const token of [
  'dli_direct_reactions','dli_set_message_reaction',
  'dli_edit_direct_message','dli_delete_direct_message',
  'dli_forward_direct_message','reply_to_id','forwarded_from_id',
- 'onDoubleClick','onContextMenu','onPointerDown',
+ 'dli-telegram-message-more','onContextMenu','onPointerDown',
  'dli-telegram-message-actions','dli-telegram-reaction-chips',
 ])assert.ok(chat.includes(token),'Missing Telegram messaging behavior '+token);
 assert.ok(chat.indexOf('dli-direct-conversations')<chat.indexOf('dli-telegram-contacts-panel'),

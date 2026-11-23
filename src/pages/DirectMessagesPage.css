@@ -584,3 +584,22 @@
  .dli-telegram-contacts-count{text-align:left}
  .dli-telegram-contacts-title>button{margin-left:auto}
 }
+
+/* Q72 message actions are explicit; selecting message text never opens them. */
+.dli-direct-message-list>article{position:relative;user-select:text;-webkit-user-select:text}
+.dli-telegram-message-more{position:absolute;top:8px;right:8px;
+ min-width:38px;min-height:38px;display:grid;place-items:center;
+ border-radius:10px;border:1px solid var(--border);
+ color:var(--text);background:var(--surface-soft);cursor:pointer;font-size:23px;
+ opacity:.2;transition:opacity 180ms var(--dli-ease-out,ease-out)}
+.dli-direct-message-list>article:hover .dli-telegram-message-more,
+.dli-direct-message-list>article:focus-within .dli-telegram-message-more,
+.dli-telegram-message-more[aria-expanded="true"]{opacity:1}
+.dli-direct-message-list>article :is(p,small){overflow-wrap:anywhere}
+.dli-direct-messages-end{height:1px;pointer-events:none}
+@media(hover:none){
+ .dli-telegram-message-more{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+ .dli-telegram-message-more{transition:none}
+}

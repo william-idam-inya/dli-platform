@@ -1,6 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {Download,LoaderCircle,Pause,Play,RotateCw,Video} from 'lucide-react';
 import {supabase} from '../lib/supabase';
+import {ModalDialog} from './ModalDialog';
+import './ChatPrivateMedia.css';
 
 type PrivateFile={
   id:string; thread_id:string; object_path:string; original_name:string;
@@ -17,6 +19,7 @@ function clock(n:number){
 /** A private, lazy, inline player. Never exposes a public recording URL. */
 export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;oversight:boolean}){
   const isAudio=file.mime_type.startsWith('audio/');
+  const isImage=/^image\/(jpeg|png|webp)$/.test(file.mime_type);
   const wrap=useRef<HTMLDivElement>(null);
   const audio=useRef<HTMLAudioElement>(null);
   const localUrl=useRef<string|null>(null);
@@ -28,6 +31,7 @@ export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;over
   const [playing,setPlaying]=useState(false);
   const [position,setPosition]=useState(0);
   const [duration,setDuration]=useState(0);
+  const [imageOpen,setImageOpen]=useState(false);
 
   useEffect(()=>{
     alive.current=true;
@@ -72,7 +76,7 @@ export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;over
   useEffect(()=>{
     // Only load media as it becomes visible; do not silently perform audited
     // moderator review or download every recording in a long conversation.
-    if(oversight||!isAudio||!wrap.current)return;
+    if(oversight||(!isAudio&&!isImage)||!wrap.current)return;
     if(typeof IntersectionObserver==='undefined'){void load();return;}
     const observer=new IntersectionObserver(entries=>{
       if(entries.some(entry=>entry.isIntersecting)){
@@ -82,7 +86,7 @@ export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;over
     },{rootMargin:'240px'});
     observer.observe(wrap.current);
     return ()=>observer.disconnect();
-  },[file.id,oversight,isAudio]);
+  },[file.id,oversight,isAudio,isImage]);
 
   async function toggle(){
     if(!url){await load();return;}
@@ -96,6 +100,11 @@ export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;over
     }
   }
 
+  async function openImage(){
+    if(!url)await load();
+    if(localUrl.current)setImageOpen(true);
+  }
+
   function save(){
     if(!url)return;
     const a=document.createElement('a');
@@ -104,7 +113,20 @@ export default function ChatPrivateMedia({file,oversight}:{file:PrivateFile;over
   }
 
   return <div className={'dli-inline-private-media'+(isAudio?' voice':' video')} ref={wrap}>
-    {isAudio?<>
+    {isImage?<div className="dli-private-image">
+      <button type="button" className="dli-private-image-open"
+        aria-label={'Preview '+file.original_name}
+        disabled={loading} onClick={()=>void openImage()}>
+        {url?<img src={url} alt={file.original_name} loading="lazy"/>:
+          <span>{loading?'Loading image…':'Preview image'}</span>}
+      </button>
+      {url&&<button type="button" className="dli-private-media-download"
+        onClick={save}><Download size={16}/> Save image</button>}
+      <ModalDialog title={file.original_name} open={imageOpen}
+        onClose={()=>setImageOpen(false)}>
+        {url&&<img className="dli-private-image-full" src={url} alt={file.original_name}/>}
+      </ModalDialog>
+    </div>:isAudio?<>
       <div className="dli-private-voice">
         <button type="button" className="dli-private-voice-toggle"
           disabled={loading} onClick={()=>{void toggle();}}

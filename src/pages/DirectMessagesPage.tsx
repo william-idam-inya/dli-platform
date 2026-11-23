@@ -10,6 +10,7 @@ import {enableDliDevicePush,pushConfigured} from '../lib/pushNotifications';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
+import {ConfirmDialog,type ConfirmChoice} from '../components/ModalDialog';
 import { Link, useSearchParams } from 'react-router-dom';
 import './DirectMessagesPage.css';
 
@@ -26,7 +27,7 @@ type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;crea
 type DirectReaction={message_id:string;reactor_id:string;emoji:string;created_at:string};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
 type DirectRead={thread_id:string;reader_id:string;seen_at:string};
-const mediaKind=(mime:string):'audio'|'video'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':null;
+const mediaKind=(mime:string):'audio'|'video'|'image'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':/^image\/(jpeg|png|webp)$/.test(mime)?'image':null;
 const fileSuffix:Record<string,string>={
   'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp',
   'text/plain':'txt',
@@ -47,11 +48,23 @@ const isOversight=(role?:string)=>role==='owner'||role==='admin';
 const STAFF_CONTACT_ROLES=new Set(['owner','admin','assistant_admin']);
 
 export default function DirectMessagesPage({initialCompose=false}:{initialCompose?:boolean}={}){
-  const {account}=useAuth();
+  const {account,authUserId}=useAuth();
   const [query,setQuery]=useSearchParams();
   const directTargetHandled=useRef('');
-  const [uid,setUid]=useState('');
+  const uid=authUserId??'';
+  const decisionResolver=useRef<((answer:string|null)=>void)|null>(null);
+  const [pendingDecision,setPendingDecision]=useState<ConfirmChoice|null>(null);
+  const ask=useCallback((request:ConfirmChoice)=>new Promise<string|null>(resolve=>{
+    decisionResolver.current?.(null);decisionResolver.current=resolve;
+    setPendingDecision(request);
+  }),[]);
+  const resolveDecision=(answer:string|null)=>{
+    decisionResolver.current?.(answer);decisionResolver.current=null;
+    setPendingDecision(null);
+  };
+  useEffect(()=>()=>{decisionResolver.current?.(null);},[]);
   const threadRef=useRef<HTMLElement>(null);
+  const messagesEndRef=useRef<HTMLDivElement>(null);
   const directoryRef=useRef<HTMLElement>(null);
   const composeRef=useRef<HTMLTextAreaElement>(null);
   const [contacts,setContacts]=useState<Contact[]>([]);
@@ -77,6 +90,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [recentMessages,setRecentMessages]=useState<DirectMessage[]>([]);
   const [reactions,setReactions]=useState<DirectReaction[]>([]);
   const [composeOpen,setComposeOpen]=useState(initialCompose);
+  const previouslyComposing=useRef(initialCompose);
   // Reopen the contact picker from the top on narrow and floating layouts.
   useEffect(()=>{if(composeOpen)directoryRef.current?.scrollTo({top:0});},[composeOpen]);
   const [menuTarget,setMenuTarget]=useState<string|null>(null);
@@ -85,7 +99,6 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const [editTarget,setEditTarget]=useState<DirectMessage|null>(null);
   const [forwardTarget,setForwardTarget]=useState<DirectMessage|null>(null);
   const longPressTimer=useRef<number|null>(null);
-  const lastTap=useRef<{id:string;at:number}|null>(null);
   const [chatFilter,setChatFilter]=useState<'all'|'unread'>('all');
   const [mediaReset,setMediaReset]=useState(0);
   const [pins,setPins]=useState<string[]>([]);
@@ -161,10 +174,9 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   const closeMemberProfile=useCallback(()=>setProfileTarget(null),[]);
 
   const load=useCallback(async()=>{
-    if(!supabase||!account){setLoading(false);return;}
+    if(!supabase||!account||!uid){setLoading(false);return;}
     try{
-      const [auth,directory,newDirectory,inbox,flags,readRows,headMessages,classDirectory,peopleRows]=await Promise.all([
-        supabase.auth.getUser(),
+      const [directory,newDirectory,inbox,flags,readRows,headMessages,classDirectory,peopleRows]=await Promise.all([
         supabase.rpc('dli_direct_directory'),
        supabase.rpc('dli_new_direct_directory'),
         supabase.from('dli_direct_threads').select('id,participant_a,participant_b,created_at').order('created_at',{ascending:false}).limit(300),
@@ -179,10 +191,9 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           :Promise.resolve({data:[],error:null}),
         supabase.rpc('dli_people_directory'),
       ]);
-      if(auth.error||!auth.data.user||directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
+      if(directory.error||inbox.error||flags.error||readRows.error||headMessages.error){
         setError('The messaging directory could not be verified. Retry while signed in.');return;
       }
-      setUid(auth.data.user.id);
       setContacts((directory.data??[]) as Contact[]);
       setNewContacts(newDirectory.error?[]:(newDirectory.data??[]) as Contact[]);
       setNewDirectoryVerified(!newDirectory.error);
@@ -196,8 +207,36 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       setError(newDirectory.error?'Could not verify the new contact directory. Refresh to retry.':null);
     }catch{setError('Messaging is temporarily unreachable.');}
     finally{setLoading(false);}
-  },[account?.id,moderator]);
-  useEffect(()=>{void load();const timer=window.setInterval(()=>{void load();},20000);return()=>window.clearInterval(timer);},[load]);
+  },[account?.id,moderator,uid]);
+  // Static directories are fetched once on mount, on explicit Refresh, and
+  // whenever New message opens. Background polling retrieves activity only.
+  const loadActivity=useCallback(async()=>{
+    if(!supabase||!uid)return;
+    const [inbox,readRows,headMessages]=await Promise.all([
+      supabase.from('dli_direct_threads')
+        .select('id,participant_a,participant_b,created_at')
+        .order('created_at',{ascending:false}).limit(300),
+      supabase.from('dli_direct_reads').select('thread_id,reader_id,seen_at').limit(500),
+      supabase.from('dli_direct_messages')
+        .select('id,thread_id,sender_id,body,created_at,file_id,reply_to_id,forwarded_from_id,edited_at,deleted_at')
+        .order('created_at',{ascending:false}).limit(700),
+    ]);
+    if(inbox.error||readRows.error||headMessages.error)return;
+    setThreads((inbox.data??[]) as Thread[]);
+    setReads((readRows.data??[]) as DirectRead[]);
+    setRecentMessages((headMessages.data??[]) as DirectMessage[]);
+  },[uid]);
+  useEffect(()=>{void load();},[load]);
+  useEffect(()=>{
+    if(!uid)return;
+    const timer=window.setInterval(()=>{void loadActivity();},20000);
+    return()=>window.clearInterval(timer);
+  },[uid,loadActivity]);
+  useEffect(()=>{
+    const justOpened=composeOpen&&!previouslyComposing.current;
+    previouslyComposing.current=composeOpen;
+    if(justOpened)void load();
+  },[composeOpen,load]);
 
   const lastMessage=useMemo(()=>{
     const index=new Map<string,DirectMessage>();
@@ -291,10 +330,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   useEffect(()=>{if(!activeId||mode==='oversight')return;const timer=window.setInterval(()=>{void loadThread(activeId);},12000);
     return()=>window.clearInterval(timer);},[activeId,loadThread,mode]);
   useEffect(()=>{
-    if(error){
-      threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }
+    if(error)threadRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
   },[error]);
+  useEffect(()=>{
+    if(activeId&&mode==='inbox')messagesEndRef.current?.scrollIntoView({
+      behavior:'smooth',block:'end'
+    });
+  },[activeId,messages.length,mode]);
   useEffect(()=>{
     if(!activeId||mode!=='inbox')return;
     // A confirmed conversation should reveal its composer, even when the
@@ -478,13 +520,13 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       setMenuTarget(m.id);setExpandedReactions(false);longPressTimer.current=null;
     },450);
   }
-  function handleMessagePointerUp(m:DirectMessage,pointerType:string){
-    if(longPressTimer.current!==null){window.clearTimeout(longPressTimer.current);longPressTimer.current=null;}
-    if(pointerType!=='touch'||m.deleted_at||mode!=='inbox')return;
-    const now=Date.now();
-    if(lastTap.current?.id===m.id&&now-lastTap.current.at<320){
-      lastTap.current=null;void reactToMessage(m,'👍');
-    }else lastTap.current={id:m.id,at:now};
+  function handleMessagePointerUp(){
+    // Stop the long-press timer. Never react on a double-tap used for text
+    // selection; reactions remain available through More actions.
+    if(longPressTimer.current!==null){
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current=null;
+    }
   }
   useEffect(()=>{
     if(!menuTarget&&!forwardTarget)return;
@@ -507,7 +549,9 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   }
   async function deleteMessage(m:DirectMessage){
     if(!supabase||busy||m.sender_id!==uid||m.deleted_at)return;
-    if(!window.confirm('Remove your message from this conversation? DLI retains a restricted audit record.'))return;
+    if((await ask({title:'Delete message',message:
+      'Remove your message from this conversation? DLI retains a restricted audit record.',
+      confirmLabel:'Delete message',danger:true}))===null)return;
     setBusy(true);setError(null);
     try{
       const r=await supabase.rpc('dli_delete_direct_message',{p_message:m.id});
@@ -558,7 +602,9 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   }
   async function reportMessage(message:DirectMessage){
     if(!supabase||busy||mode==='oversight')return;
-    const reason=window.prompt('Briefly describe the concern (spam, abuse or safety). Do not include sensitive unrelated information.','');
+    const reason=await ask({title:'Report message',
+      message:'Briefly describe the concern (spam, abuse or safety). Do not include sensitive unrelated information.',
+      mode:'input',initialValue:'',minLength:5,maxLength:500,confirmLabel:'Submit report'});
     if(reason===null)return;
     if(reason.trim().length<5||reason.trim().length>500){setError('Report reason must be 5–500 characters.');return;}
     setBusy(true);setError(null);
@@ -571,7 +617,9 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   }
   async function reviewReport(report:Report){
     if(!supabase||!moderator||busy)return;
-    if(!window.confirm('Mark the report as reviewed? The message remains on record.'))return;
+    if((await ask({title:'Mark report as reviewed',
+      message:'The message remains on record after review.',
+      confirmLabel:'Mark reviewed'}))===null)return;
     setBusy(true);setError(null);
     try{
       const res=await supabase.from('dli_direct_reports').update({status:'reviewed'}).eq('id',report.id).select('id').maybeSingle();
@@ -810,17 +858,22 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
           <div className="dli-direct-message-list" role="log" aria-label="Messages">
             {messages.map(m=><article key={m.id}
               className={m.sender_id===uid&&mode!=='oversight'?'mine':''}
-              onClick={()=>{if(mode==='inbox'&&!m.deleted_at){setMenuTarget(m.id);setExpandedReactions(false);}}}
-              onDoubleClick={()=>{if(mode==='inbox'&&!m.deleted_at)void reactToMessage(m,'👍');}}
               onContextMenu={e=>{if(mode==='inbox'&&!m.deleted_at){
                 e.preventDefault();setMenuTarget(m.id);setExpandedReactions(false);}}}
               onPointerDown={e=>handleMessagePointerDown(m,e.pointerType)}
-              onPointerUp={e=>handleMessagePointerUp(m,e.pointerType)}
+              onPointerUp={()=>handleMessagePointerUp()}
               onPointerCancel={()=>{if(longPressTimer.current!==null)window.clearTimeout(longPressTimer.current);}}
               role="group" tabIndex={mode==='inbox'&&!m.deleted_at?0:undefined}
               onKeyDown={e=>{if(e.key==='Enter'&&mode==='inbox'&&!m.deleted_at){
                 setMenuTarget(m.id);setExpandedReactions(false);}}}
               aria-label={'Message from '+memberName(m.sender_id)}>
+              {mode==='inbox'&&!m.deleted_at&&<button type="button"
+                className="dli-telegram-message-more" aria-label="More message actions"
+                aria-expanded={menuTarget===m.id}
+                onClick={event=>{event.stopPropagation();setMenuTarget(
+                  current=>current===m.id?null:m.id);setExpandedReactions(false);}}>
+                ⋯
+              </button>}
               {menuTarget===m.id&&mode==='inbox'&&!m.deleted_at&&
                 <div className="dli-telegram-message-actions" onClick={e=>e.stopPropagation()}>
                   <div className="dli-telegram-quick-reactions" aria-label="Quick message reactions">
@@ -892,6 +945,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
               {files.map(f=><button key={f.id} type="button" disabled={busy}
                 onClick={()=>void downloadFile(f)}><Download size={15}/> {f.original_name}</button>)}
             </aside>}
+            <div ref={messagesEndRef} className="dli-direct-messages-end" aria-hidden="true"/>
           </div>
           {mode==='inbox'?<DirectMessageComposer
              draft={draft} setDraft={setDraft}
@@ -931,6 +985,8 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
       <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
     </div>}
+    <ConfirmDialog request={pendingDecision}
+      onCancel={()=>resolveDecision(null)} onConfirm={answer=>resolveDecision(answer)}/>
     {profileTarget&&<ChatMemberProfileOverlay key={profileTarget.id}
       userId={profileTarget.id} fallbackName={profileTarget.name}
       onClose={closeMemberProfile}/>}

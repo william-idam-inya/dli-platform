@@ -173,3 +173,23 @@
 .classes-workspace .classes-student-option label{
  border:0;padding:0;border-radius:0;background:transparent;
 }
+
+/* Q72: the class register is the default view. Editors stay reachable without
+   showing six forms ahead of every timetable on all five dashboards. */
+.classes-create-toggle{display:flex;align-items:center;justify-content:flex-start;
+ margin:12px 0 15px;min-width:0}
+.classes-create-toggle .user-outline-button{min-height:44px;display:inline-flex;
+ align-items:center;gap:8px;max-width:100%;white-space:normal}
+.classes-readonly-course{display:grid;gap:7px;min-width:0;align-content:start}
+.classes-readonly-course span{font-size:12px;color:var(--muted);font-weight:700}
+.classes-readonly-course strong{font-size:13px;color:var(--text);
+ padding:11px 12px;border-radius:11px;border:1px solid var(--border);
+ background:var(--surface-soft);overflow-wrap:anywhere}
+.classes-group-sessions details.classes-delivery-list{padding:10px 12px;
+ border:1px solid var(--border);border-radius:11px;background:var(--surface-soft);
+ width:100%;min-width:0}
+.classes-group-sessions details.classes-delivery-list>summary{
+ cursor:pointer;min-height:44px;display:flex;align-items:center;
+ font-size:12px;font-weight:800;color:var(--text)}
+.classes-group-sessions details.classes-delivery-list[open]>summary{margin-bottom:8px}
+.classes-group-sessions .dli-live-pulse{font-size:12px;margin:6px 0}

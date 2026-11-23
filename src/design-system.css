@@ -18,6 +18,14 @@
   --dli-radius-lg: 20px;
   --dli-focus: #8762d4;
   --dli-nav-height: 66px;
+  --dli-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-floating: 200;
+  --z-popover: 300;
+  --z-drawer: 400;
+  --z-modal: 500;
+  --z-call: 600;
 }
 :root[data-theme='dark'] { --dli-focus: #b69afe; }
 html { scroll-padding-top: 82px; }
@@ -150,4 +158,57 @@ button, a, summary, select { touch-action: manipulation; }
 }
 @media print {
   .mobile-bottom-nav { display: none !important; }
+}
+
+/* Q72: platform-wide visual clarity and accessible micro-motion. */
+:where(.section-kicker,.eyebrow){font-size:max(11px,1em);letter-spacing:.08em}
+:where(.panel,.ref-surface,.ref-kpi-card,.classes-card,.module-card){
+ border:1px solid var(--border);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 10px 28px rgba(10,33,71,.065),0 3px 8px rgba(10,33,71,.035);
+ transition:transform 220ms var(--dli-ease-out),box-shadow 220ms var(--dli-ease-out),border-color 200ms var(--dli-ease-out);
+}
+:root[data-theme='dark'] :where(.panel,.ref-surface,.ref-kpi-card,.classes-card,.module-card){
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.18)
+}
+@media(hover:hover) and (pointer:fine){
+ :where(.panel,.ref-surface,.ref-kpi-card,.classes-card,.module-card):hover{
+  transform:translateY(-2px);border-color:color-mix(in srgb,var(--purple) 25%,var(--border))
+ }
+}
+:where(.dli-hero-action,.user-outline-button,.academic-submit,.ref-shortcut,.mobile-bottom-link){
+ transition:transform 180ms var(--dli-ease-out),background-color 200ms var(--dli-ease-out);
+}
+:where(.dli-hero-action,.user-outline-button,.academic-submit,.ref-shortcut,.mobile-bottom-link):active{
+ transform:scale(.985);
+}
+:where(.ref-kpi-card strong,.ref-summary-card strong,.unified-overview-metrics strong,.payroll-summary strong){
+ font-variant-numeric:tabular-nums;
+}
+:where(.ref-kpi-pill,.section-kicker,.ref-session small,.ref-kpi-card small,.academic-code-hint){
+ font-size:max(12px,1em);
+}
+:where(.section-heading h2,.panel-heading h2,.welcome-row h1){
+ font-family:Manrope,system-ui,sans-serif;letter-spacing:-.025em;
+}
+.dli-skeleton{
+ display:block;position:relative;overflow:hidden;
+ border-radius:12px;background:color-mix(in srgb,var(--surface-soft) 75%,var(--border));
+}
+.dli-skeleton::after{content:"";position:absolute;inset:0;
+ background:linear-gradient(100deg,transparent 0%,rgba(154,175,202,.17) 45%,rgba(199,213,235,.4) 53%,transparent 100%);
+ transform:translateX(-100%);animation:dli-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes dli-skeleton-shimmer{to{transform:translateX(100%)}}
+.dli-workspace-loading{display:grid;gap:16px;min-height:320px;padding:26px}
+.dli-workspace-loading .dli-skeleton-title{height:36px;width:min(320px,75%)}
+.dli-workspace-loading .dli-skeleton-line{height:15px;width:min(530px,95%)}
+.dli-workspace-loading .dli-skeleton-panel{height:190px;width:100%}
+.dli-live-pulse{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#0b8864}
+.dli-live-pulse::before{content:"";width:7px;height:7px;border-radius:50%;background:#12a779;
+ box-shadow:0 0 0 4px rgba(18,167,121,.13);animation:dli-live-breathe 1.8s ease-in-out infinite}
+@keyframes dli-live-breathe{50%{box-shadow:0 0 0 8px rgba(18,167,121,.045)}}
+@media(prefers-reduced-motion:reduce){
+ .dli-skeleton::after,.dli-live-pulse::before{animation:none!important}
+ :where(.panel,.ref-surface,.ref-kpi-card,.classes-card,.module-card,.dli-hero-action,
+ .user-outline-button,.academic-submit,.ref-shortcut,.mobile-bottom-link){transition:none!important}
 }

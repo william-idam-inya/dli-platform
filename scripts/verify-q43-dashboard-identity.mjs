@@ -21,8 +21,10 @@ assert.ok(shell.includes('className="dli-utility-account"')
 assert.ok(!shell.includes('className="workspace-switcher"')
  &&shell.includes('dli-flat-sidebar-identity'),
  'Sidebar must have one authorised user identity and no redundant workspace selector');
-assert.ok(shell.includes('<small>Your personalised workspace</small>')
- &&!shell.includes('DLI Platform · {accountRoleLabel(account)} workspace'),
+assert.ok(!shell.includes('ref-desktop-greeting') &&
+ !shell.includes('ref-mobile-identity') &&
+ read('src/components/ReferenceDashboard.tsx').includes('ref-dashboard-greeting') &&
+ !shell.includes('DLI Platform · {accountRoleLabel(account)} workspace'),
  'Welcome header must not repeat the role beside the account identity');
 assert.ok(home.includes("const headline=account?.role==='student'?'Welcome to DLI':'Dashboard';"),
  'Non-student homepage title must be generic across Owner/Admin/Assistant Admin/Tutor');
@@ -31,7 +33,7 @@ assert.ok(!home.includes("'Admin Dashboard'")&&!home.includes("'Tutor Workspace'
 assert.ok(!home.includes("accountRoleLabel(account) + ' · '"),
  'Do not prepend the member role to the dashboard summary');
 assert.ok(home.includes('{welcomeSummary}')
- &&home.includes('<ReferenceHeroArtwork role={account?.role ?? \'student\'}/>'),
+ &&home.includes("<ReferenceHeroArtwork role={account?.role??'student'}/>"),
  'Keep personalised dashboard content and role-dependent hero artwork');
 for(const role of ["'owner'","'admin'","'assistant_admin'","'tutor'","'student'"])
  assert.ok(roles.includes(role),'A supported organisational role is missing');

@@ -13,7 +13,8 @@ const styles=read('src/design-system.css');
 for(const phrase of ['permittedNavigation(', 'mobilePriorityPaths(account, allowedPaths)','aria-label="Quick mobile navigation"','aria-modal="true"',"event.key === 'Escape'","event.key !== 'Tab'",'OfficialDliLogo']){
   assert.ok(shell.includes(phrase),'Q15 missing responsive role-based shell: '+phrase);
 }
-for(const phrase of ['dashboardPriorityPaths(account,','priorityItems.map(item=>','secondarySections.map(section=>','learningAreas.map(item=>','<DliDashboardAnnouncements/>'])
+for(const phrase of ['<ReferenceDashboard account={account}','learningAreas.map(item=>',
+ '<DliDashboardAnnouncements/>','secondaryName','canAccessPath(account.role,secondaryPath.split'])
   assert.ok(dash.includes(phrase),'Q15 dashboard missing: '+phrase);
 for(const phrase of ['id="login-email" name="username"','id="login-password" name="password"',"new FormData(event.currentTarget)",'PasswordInput'])
   assert.ok(auth.includes(phrase),'Q15 login/autofill regression: '+phrase);

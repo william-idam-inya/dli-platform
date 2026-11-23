@@ -14,6 +14,8 @@ import {
 
 export interface NavigationItem {
   label: string;
+  shortLabel?: string;
+  breadcrumbTitle?: string;
   path: string;
   icon: LucideIcon;
   description: string;
@@ -38,6 +40,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'My profile',
+        shortLabel: 'Profile',
         path: '/profile',
         icon: Users,
         description: 'Private account details, verified email and device-independent preferences.',
@@ -45,6 +48,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Free Students & enrolment',
+        shortLabel: 'Enrolment',
         path: '/enrolment',
         icon: BookOpen,
         description: 'Join Free Student lessons, apply for Paid Student access or review incoming upgrade requests.',
@@ -52,6 +56,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Feedback & support',
+        shortLabel: 'Support',
         path: '/feedback',
         icon: MessageSquareText,
         description: 'Send private member feedback and check review status.',
@@ -64,6 +69,7 @@ export const navigationSections: NavigationSection[] = [
     items: [
       {
         label: 'Academic setup',
+        shortLabel: 'Academics',
         path: '/academics',
         icon: School,
         description: 'Programmes, subjects, courses and teaching setup in one location.',
@@ -78,6 +84,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Classes & timetable',
+        shortLabel: 'Classes',
         path: '/classes',
         icon: CalendarClock,
         description: 'Unified course setup: two tutors per subject, student enrolments, timetables, Meet links and academic offerings.',
@@ -85,6 +92,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Learning & results',
+        shortLabel: 'Learning',
         path: '/study',
         icon: BookOpen,
         description: 'One workspace for lessons, assignments, quizzes, attendance and results.',
@@ -104,6 +112,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Users & access',
+        shortLabel: 'Users',
         path: '/users',
         icon: Users,
         description: 'Authorised accounts, staff roles, invitations and access status.',
@@ -158,6 +167,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         label: 'Reports & audit',
+        shortLabel: 'Reports',
         path: '/reports',
         icon: ChartNoAxesCombined,
         description: 'Read-only academic and finance operational counts. Sensitive exports remain disabled.',

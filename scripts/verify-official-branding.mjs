@@ -26,14 +26,14 @@ const home = read('src/pages/DashboardPage.tsx');
 for (const page of [shell, auth, home]) {
   assert.match(page, /OfficialDliLogo/, 'Brand image missing from a major app surface.');
 }
-assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 2,
-  'Keep the official logo in the branded sidebar and mobile header without a duplicate workspace tile.');
+assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 1,
+  'Keep the official logo in the responsive shared header without hidden duplicate identity artwork.');
 assert.doesNotMatch(shell, /className="workspace-switcher"/,
   'Do not reintroduce a duplicate DLI brand/role selector beneath the official header.');
 assert.match(auth, /<div className="auth-mark"><OfficialDliLogo/);
 assert.match(home, /<span className="ref-hero-emblem"><OfficialDliLogo decorative/);
 assert.match(home, /<ReferenceHeroArtwork role=/);
-assert.match(shell, /className="ref-mobile-mark"/);
+assert.match(shell, /className="dli-topbar-brand"/);
 assert.doesNotMatch(shell, /className="brand-mark">DLI</);
 assert.doesNotMatch(auth, /className="auth-mark">DLI</);
 assert.doesNotMatch(home, /className="art-cap"><GraduationCap/);

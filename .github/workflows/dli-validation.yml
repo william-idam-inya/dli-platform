@@ -230,6 +230,9 @@ jobs:
       - name: Verify Q71 meaningful workspace focus titles and accessible finance schedule
         run: node scripts/verify-q71-meaningful-workspace-titles.mjs
 
+      - name: Verify Q72 global UI performance, role access and private modal consolidation
+        run: node scripts/verify-q72-global-ui-consolidation.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 

@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
+import { Bell, ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, MessageCircle, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navigationItems, permittedNavigation } from '../data/navigation';
 import { mobilePriorityPaths } from '../data/roleNavigation';
-import { learningAreas } from '../data/learningAreas';
 import { useAuth } from '../auth/AuthProvider';
 import { canAccessPath, accountRoleLabel } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -73,7 +72,7 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
-  const { account, clearNotice } = useAuth();
+  const { account, clearNotice, preferredTheme, updatePreferredTheme } = useAuth();
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const signOut = async () => {
     if (!supabase) return;
@@ -175,49 +174,24 @@ export default function AppShell({ children }: AppShellProps) {
   }, [darkMode]);
 
   useEffect(()=>{
-    if(!account||!supabase)return;
-    let active=true;
-    const client=supabase;
-    async function reloadSavedPreference(){
-      try{
-        const auth=await client.auth.getUser();
-        if(!active||auth.error||!auth.data.user)return;
-        const r=await client.from('dli_member_profiles')
-          .select('preferred_theme').eq('user_id',auth.data.user.id).maybeSingle();
-        if(!active||r.error||!r.data)return;
-        const pref=r.data.preferred_theme as 'system'|'light'|'dark';
-        setDarkMode(pref==='dark'||(pref==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches));
-        setThemeSyncWarning(null);
-      }catch{
-        // Keep the local theme when preference retrieval is unavailable.
-      }
-    }
-    void reloadSavedPreference();
-    window.addEventListener('dli-profile-changed',reloadSavedPreference);
-    return()=>{
-      active=false;
-      window.removeEventListener('dli-profile-changed',reloadSavedPreference);
+    const media=window.matchMedia('(prefers-color-scheme: dark)');
+    const sync=()=>{
+      if(preferredTheme==='system')setDarkMode(media.matches);
+      else setDarkMode(preferredTheme==='dark');
     };
-  },[account?.id]);
+    sync();
+    media.addEventListener?.('change',sync);
+    return()=>media.removeEventListener?.('change',sync);
+  },[preferredTheme]);
 
   async function changeTheme(){
     if(themeSyncing)return;
     const next=!darkMode;
     setDarkMode(next);
-    if(!supabase||!account)return;
     setThemeSyncing(true);setThemeSyncWarning(null);
-    try{
-      const auth=await supabase.auth.getUser();
-      if(auth.error||!auth.data.user)throw new Error('no verified user');
-      const result=await supabase.from('dli_member_profiles')
-        .update({preferred_theme:next?'dark':'light'})
-        .eq('user_id',auth.data.user.id)
-        .select('user_id').maybeSingle();
-      if(result.error||!result.data)
-        setThemeSyncWarning('Theme changed locally, but your cloud preference was not saved. Open My profile to finish setup or retry.');
-    }catch{
-      setThemeSyncWarning('Theme changed on this device, but could not be synced to your account. Please try again.');
-    }finally{setThemeSyncing(false);}
+    const result=await updatePreferredTheme(next?'dark':'light');
+    if(!result.ok)setThemeSyncWarning(result.warning??'Theme changed locally, but could not be saved.');
+    setThemeSyncing(false);
   }
 
   useEffect(() => {
@@ -262,13 +236,6 @@ export default function AppShell({ children }: AppShellProps) {
     };
   }, [mobileOpen]);
 
-  const hourInLagos=Number(new Intl.DateTimeFormat('en-GB',{
-    timeZone:'Africa/Lagos',hour:'2-digit',hourCycle:'h23'
-  }).format(new Date()));
-  const greeting=hourInLagos<12?'Good morning':hourInLagos<17?'Good afternoon':'Good evening';
-  const firstName=account?.full_name.trim().split(/\s+/)[0]||'Scholar';
-  const shortGreeting=greeting+', '+firstName;
-  const activeItem = navigationItems.find(item=>item.path===location.pathname);
   const allowedPaths = navigationItems.filter(item => Boolean(account &&
     canAccessPath(account.role,item.path,account.studentTier))).map(item=>item.path);
   const mobileItems = account
@@ -276,9 +243,6 @@ export default function AppShell({ children }: AppShellProps) {
       .map(path=>navigationItems.find(item=>item.path===path))
       .filter((item): item is (typeof navigationItems)[number] => Boolean(item))
     : [];
-  const activeLearningArea=location.pathname==='/study'
-    ?learningAreas.find(area=>area.id===(new URLSearchParams(location.search).get('tab')??'lessons'))
-    :undefined;
 
   return (
     <CallProvider><div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
@@ -323,34 +287,7 @@ export default function AppShell({ children }: AppShellProps) {
             <Link to="/" className="dli-topbar-brand" aria-label="DLI Platform home">
               <OfficialDliLogo decorative/><span>DLI Platform</span>
             </Link>
-            <div className="ref-mobile-identity">
-              <Link to="/" className="ref-mobile-mark" aria-label="DLI homepage"><OfficialDliLogo decorative /></Link>
-              <NavLink to="/profile" className="ref-mobile-avatar" aria-label="My profile">
-                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:<span className="profile-placeholder">D</span>}
-              </NavLink>
-              <div className="ref-mobile-greeting">
-                <strong>{shortGreeting}</strong>
-                <small>{account?accountRoleLabel(account):'Detailed Learning Institute'}</small>
-              </div>
-            </div>
-            {location.pathname==='/'&&account
-              ?<div className="ref-desktop-greeting">
-                <strong>{shortGreeting}</strong>
-                <small>Your personalised workspace</small>
-              </div>
-              :<div className="breadcrumb">
-              <span>DLI Workspace</span>
-              <span className="breadcrumb-divider">/</span>
-              <strong>{activeItem?.label ?? ({
-                '/cohorts':'Advanced curriculum','/assignments':'Legacy course assignments',
-                '/schedule':'Legacy course timetable','/finance/reviews':'Finance policy reviews',
-                '/communications/reminders':'Internal reminders',
-                '/reports/audit':'Audit trail','/private-classes':'Classes & payments',
-                '/my-classes':'Classes & timetable',
-              } as Record<string,string>)[location.pathname] ?? 'Workspace'}</strong>
-              {activeLearningArea&&<><span className="breadcrumb-divider">/</span>
-                <strong>{activeLearningArea.label}</strong></>}
-            </div>}
+
           </div>
           <div className="dli-topbar-search"><GlobalSearch/></div>
           <nav className="dli-primary-tabs" aria-label="Primary modules">
@@ -371,13 +308,23 @@ export default function AppShell({ children }: AppShellProps) {
               })}
           </nav>
           <div className="topbar-actions dli-compact-actions">
+            {/* The live badge/bell remain mounted on all routes; collapse menus
+                never pause realtime message or call subscriptions. */}
+            <div className="dli-topbar-status-icon" aria-label="Unread messages"><DliMessageBadge/></div>
+            <div className="dli-topbar-status-icon" data-dli-tour="notifications"
+              aria-label="In-app notifications"><DliNotificationBell/></div>
             <div className="dli-profile-menu dli-utility-menu" ref={profileMenuRef}>
               <button type="button" className="dli-profile-toggle dli-utility-trigger"
-                aria-label="Open tools, messages, notifications and account"
-                title="More DLI tools"
+                aria-label="Open account and tools"
+                title="Account and tools"
                 aria-controls="dli-account-dropdown" aria-expanded={profileMenuOpen}
                 onClick={()=>setProfileMenuOpen(value=>!value)}>
-                <ChevronDown size={21} aria-hidden="true"/>
+                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
+                  <span className="profile-placeholder">D</span>}
+                <span className="dli-account-pill-copy">
+                  {account?accountRoleLabel(account):'Account'}
+                </span>
+                <ChevronDown size={17} aria-hidden="true"/>
               </button>
               {/* Keep notification components mounted while collapsed: subscriptions,
                   unread polling and alert modals must continue in every dashboard. */}
@@ -392,14 +339,16 @@ export default function AppShell({ children }: AppShellProps) {
                   <div className="dli-utility-tile" aria-label="Quick actions">
                     <QuickMenu/><small>Apps</small>
                   </div>
-                  <div className="dli-utility-tile" aria-label="Messages"
-                    onClick={()=>setProfileMenuOpen(false)}>
-                    <DliMessageBadge/><small>Messages</small>
-                  </div>
-                  <div className="dli-utility-tile" data-dli-tour="notifications" aria-label="Notifications">
-                    <span className="dli-tour-notification-anchor"><DliNotificationBell/></span>
+                  <NavLink className="dli-utility-tile" to="/communications"
+                    aria-label="Open Messages" onClick={()=>setProfileMenuOpen(false)}>
+                    <span className="dli-utility-link-icon"><MessageCircle size={20}/></span>
+                    <small>Messages</small>
+                  </NavLink>
+                  <NavLink className="dli-utility-tile" to="/announcements"
+                    aria-label="Open announcements" onClick={()=>setProfileMenuOpen(false)}>
+                    <span className="dli-utility-link-icon"><Bell size={20}/></span>
                     <small>Notices</small>
-                  </div>
+                  </NavLink>
                   {pushKeyProvided&&<div className="dli-utility-tile" aria-label="Device alerts">
                     <PushNotificationOptIn/><small>Alerts</small>
                   </div>}
@@ -451,14 +400,7 @@ export default function AppShell({ children }: AppShellProps) {
           end={item.path==='/'}
           className={({isActive}) => 'mobile-bottom-link'+(isActive?' active':'')}>
           <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>{item.label === 'Free Students & enrolment' ? 'Enrolment' :
-            item.label === 'Classes & timetable' ? 'Classes' :
-            item.label === 'Learning & results' ? 'Learning' :
-            item.label === 'Academic setup' ? 'Academics' :
-            item.label === 'Users & access' ? 'Users' :
-            item.label === 'Feedback & support' ? 'Support' :
-            item.label === 'Reports & audit' ? 'Reports' :
-            item.label === 'My profile' ? 'Profile' : item.label}</span>
+          <span>{item.shortLabel ?? item.label}</span>
         </NavLink>)}
         <button type="button" data-dli-tour="more-navigation" className={'mobile-bottom-link mobile-bottom-more'+(mobileOpen?' active':'')}
           onClick={event=>openNavigation(event.currentTarget)}

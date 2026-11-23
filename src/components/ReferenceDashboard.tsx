@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState, type ReactNode, type CSSProperties } from 'react';
 import {
   ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2,
-  ClipboardCheck, Coins, FileCheck2, GraduationCap, LayoutDashboard,
-  ShieldCheck, Users, Wallet,
+  ClipboardCheck, Coins, FileCheck2, GraduationCap,
+  RefreshCw, ShieldCheck, Users, Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Account, DliRole } from '../auth/permissions';
 import { canAccessPath } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
+import {useAuth} from '../auth/AuthProvider';
 import SubjectArtwork from './SubjectArtwork';
 import './ReferenceDashboard.css';
 
@@ -102,7 +103,8 @@ function nextClassTime(row:ClassRow):number {
   const firstDate=new Date(now.date.getTime());
   let gap=(row.weekday-now.date.getUTCDay()+7)%7;
   const startMinutes=Number(row.starts_at.slice(0,2))*60+Number(row.starts_at.slice(3,5));
-  if(gap===0&&startMinutes<now.minutes)gap=7;
+  const endMinutes=Number(row.ends_at.slice(0,2))*60+Number(row.ends_at.slice(3,5));
+  if(gap===0&&endMinutes<=now.minutes)gap=7;
   firstDate.setUTCDate(firstDate.getUTCDate()+gap);
   const validStart=/^\d{4}-\d{2}-\d{2}$/.test(row.class_start_date)
     ?row.class_start_date:'';
@@ -199,7 +201,9 @@ function ClassPreview({rows,error,loading,tutor}:{rows:ClassRow[];error:boolean;
       action={{to:'/classes',label:tutor?'View all':'View timetable'}}>
       {tutor?'Review and host scheduled teaching sessions':'Your published weekly class schedule'}
     </SectionHead>
-    {loading?<p className="ref-empty">Checking your timetable…</p>:
+    {loading?<div className="ref-session-list" aria-label="Loading classes" role="status">
+      {[1,2,3].map(n=><div key={n} className="dli-skeleton" style={{height:64}}/>)}
+    </div>:
     error?<p className="ref-empty" role="status">Classes are temporarily unavailable. Open the timetable to retry.</p>:
     !next?<div className="ref-empty-state">
       <CalendarClock size={24} aria-hidden="true"/>
@@ -215,10 +219,18 @@ function ClassPreview({rows,error,loading,tutor}:{rows:ClassRow[];error:boolean;
           <small>{DAYS[row.weekday]??'Weekly'} · {formatClock(row.starts_at)}–{formatClock(row.ends_at)} WAT</small>
           {!tutor&&<small>Tutor: {row.tutor_name}</small>}
         </div>
-        {row.meeting_url.startsWith('https://meet.google.com/')
+        {row.meeting_url.startsWith('https://')
           ?<a className="ref-session-join" href={row.meeting_url}
             target="_blank" rel="noopener noreferrer">Join class</a>
-          :<Link className="ref-session-join" to="/classes">Details</Link>}
+          :row.meeting_url.startsWith('/conferences')
+            ?<Link className="ref-session-join" to={row.meeting_url}>Join class</Link>
+            :<Link className="ref-session-join" to="/classes">Details</Link>}
+        {row.weekday===lagosNow().date.getUTCDay()&&
+          Number(row.starts_at.slice(0,2))*60+Number(row.starts_at.slice(3,5))<=lagosNow().minutes&&
+          Number(row.ends_at.slice(0,2))*60+Number(row.ends_at.slice(3,5))>lagosNow().minutes
+          ?<span className="dli-live-pulse">Live now</span>
+          :nextClassTime(row)-Date.now()<=3600000&&nextClassTime(row)>Date.now()
+            ?<span className="dli-live-pulse">Starts soon</span>:null}
       </article>)}
     </div>}
   </section>;
@@ -260,39 +272,67 @@ function LearningProgress({academicCounts,academicLoading,metrics}:{
     
   </section>;
 }
-function TutorChecklist({metrics,learning}:{
-  metrics:DashboardMetrics;
-  learning:Partial<Record<'lessons'|'assignments'|'quizzes'|'attendance',number|null>>|null;
-}) {
-  const [checked, setChecked] = useState<Record<number, boolean>>({});
-  const toggle = (idx: number) => setChecked(prev => ({ ...prev, [idx]: !prev[idx] }));
-  const todos = [
-    'Upload lesson material for next class',
-    'Mark 12 assignment submissions',
-    'Prepare Friday\'s quiz (Chemistry)'
-  ];
-  return <section className="ref-surface ref-checklist-panel">
-    <SectionHead title="To-Do list" action={{to:'/study',label:'Learning workspace'}}>
-      Teaching preparation and scheduled tasks
-    </SectionHead>
-    <div className="ref-todo-list">
-      {todos.map((todo, idx) => (
-        <label key={idx} className={'ref-todo-item' + (checked[idx] ? ' completed' : '')}>
-          <input type="checkbox" checked={Boolean(checked[idx])} onChange={() => toggle(idx)} />
-          <span>{todo}</span>
-        </label>
-      ))}
-    </div>
-    <div className="ref-checklist" style={{marginTop: 14}}>
-      <Link to="/study?tab=lessons"><span className="ref-check-icon"><BookOpen size={18}/></span>
-        <span><strong>Prepare lesson materials</strong><small>{shown(learning?.lessons??null)} visible published lessons</small></span><ArrowRight size={16}/></Link>
-      <Link to="/study?tab=assignments"><span className="ref-check-icon"><ClipboardCheck size={18}/></span>
-        <span><strong>Review class assessments</strong><small>{shown(learning?.assignments??null)} visible published assignments</small></span><ArrowRight size={16}/></Link>
-      <Link to="/payroll"><span className="ref-check-icon"><Wallet size={18}/></span>
-        <span><strong>Review tutor payments</strong><small>{shown(metrics.payouts)} transfer acknowledgements pending</small></span><ArrowRight size={16}/></Link>
-    </div>
-  </section>;
+function TutorChecklist({metrics,learning,account}:{
+ metrics:DashboardMetrics;
+ learning:Partial<Record<'lessons'|'assignments'|'quizzes'|'attendance',number|null>>|null;
+ account:Account;
+}){
+ const key='dli-tutor-tasks:'+account.id;
+ const [tasks,setTasks]=useState<string[]>(()=>{
+  try{
+   const saved=JSON.parse(window.localStorage.getItem(key)??'[]') as unknown;
+   return Array.isArray(saved)?saved.filter((v):v is string=>typeof v==='string').slice(0,20):[];
+  }catch{return [];}
+ });
+ const [draft,setDraft]=useState('');
+ const [checked,setChecked]=useState<Record<string,boolean>>({});
+ useEffect(()=>{
+  try{window.localStorage.setItem(key,JSON.stringify(tasks));}catch{/* Optional local plan. */}
+ },[key,tasks]);
+ const derived=[
+  {id:'lessons',title:'Prepare lessons · '+shown(learning?.lessons??null)+' published'},
+  {id:'assignments',title:'Review assessments · '+shown(learning?.assignments??null)+' available'},
+  {id:'payouts',title:'Check tutor payouts · '+shown(metrics.payouts)+' awaiting confirmation'},
+ ];
+ return <section className="ref-surface ref-checklist-panel">
+  <SectionHead title="Teaching checklist" action={{to:'/study',label:'Learning workspace'}}>
+   Activities from your available DLI records and your own tasks
+  </SectionHead>
+  <div className="ref-todo-list">
+   {[...derived,...tasks.map((title,i)=>({id:'custom-'+i,title}))].map(item=>
+    <label key={item.id} className={'ref-todo-item'+(checked[item.id]?' completed':'')}>
+     <input type="checkbox" checked={Boolean(checked[item.id])}
+       onChange={()=>setChecked(prev=>({...prev,[item.id]:!prev[item.id]}))}/>
+     <span>{item.title}</span>
+     {item.id.startsWith('custom-')&&<button type="button" className="ref-todo-delete"
+       aria-label={'Remove '+item.title} onClick={event=>{event.preventDefault();
+         const index=Number(item.id.slice(7));setTasks(prev=>prev.filter((_,j)=>j!==index));}}>
+       Remove</button>}
+    </label>)}
+  </div>
+  <form className="ref-todo-add" onSubmit={event=>{
+   event.preventDefault();const value=draft.trim();
+   if(!value||value.length>120||tasks.length>=20)return;
+   setTasks(prev=>[...prev,value]);setDraft('');
+  }}>
+   <label htmlFor="dli-tutor-task">Add a personal teaching task</label>
+   <div><input id="dli-tutor-task" value={draft} maxLength={120}
+     onChange={event=>setDraft(event.target.value)}
+     placeholder="e.g., Review next class slides"/>
+    <button type="submit" disabled={!draft.trim()||tasks.length>=20}>Add</button>
+   </div>
+  </form>
+  <div className="ref-checklist" style={{marginTop:14}}>
+   <Link to="/study?tab=lessons"><span className="ref-check-icon"><BookOpen size={18}/></span>
+    <span><strong>Prepare lesson materials</strong><small>{shown(learning?.lessons??null)} available lessons</small></span><ArrowRight size={16}/></Link>
+   <Link to="/study?tab=assignments"><span className="ref-check-icon"><ClipboardCheck size={18}/></span>
+    <span><strong>Review class assessments</strong><small>{shown(learning?.assignments??null)} visible assignments</small></span><ArrowRight size={16}/></Link>
+   <Link to="/payroll"><span className="ref-check-icon"><Wallet size={18}/></span>
+    <span><strong>Review tutor payments</strong><small>{shown(metrics.payouts)} acknowledgements pending</small></span><ArrowRight size={16}/></Link>
+  </div>
+ </section>;
 }
+
 function AdminInsights({account,metrics,audit,loading,auditError}:{
   account:Account;metrics:DashboardMetrics;audit:AuditRow[];
   loading:boolean;auditError:boolean;
@@ -308,10 +348,10 @@ function AdminInsights({account,metrics,audit,loading,auditError}:{
       badge:typeof metrics.proofs==='number'&&metrics.proofs>0?'Pending':undefined,
       badgeTone:'warning' as const,to:'/enrolment',
       detail:'Submitted enrolment and class-fee reviews'},
-    {label:'Reports',value:metrics.payouts,icon:Coins,tone:'violet' as const,
+    {label:'Tutor Payouts',value:metrics.payouts,icon:Coins,tone:'violet' as const,
       badge:typeof metrics.payouts==='number'&&metrics.payouts>0?'Pending':undefined,
-      badgeTone:'warning' as const,to:'/reports',
-      detail:'Tutor transfer acknowledgements; view reports for details'},
+      badgeTone:'warning' as const,to:'/payroll',
+      detail:'Tutor transfer acknowledgements awaiting confirmation'},
   ];
   return <>
     <section className="ref-kpi-grid" aria-label="Operations snapshot">
@@ -371,6 +411,7 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
   academicCounts:Partial<Record<'lessons'|'assignments'|'quizzes'|'attendance',number|null>>|null;
   academicLoading:boolean;
 }) {
+  const {authUserId}=useAuth();
   const [classes,setClasses]=useState<ClassRow[]>([]);
   const [classLoading,setClassLoading]=useState(true);
   const [classError,setClassError]=useState(false);
@@ -428,11 +469,10 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
         const payouts=await countRecords('dli_tutor_payout_proofs','status','awaiting_tutor');
         if(active)setMetrics({...EMPTY_METRICS,payouts});
       }else if(isStudent){
-        const auth=await client.auth.getUser();
-        if(active&&auth.data.user&&!auth.error){
+        if(active&&authUserId){
           const [attempts,submissions]=await Promise.all([
-            countRecords('learning_quiz_attempts','student_id',auth.data.user.id),
-            countRecords('learning_submissions','student_id',auth.data.user.id),
+            countRecords('learning_quiz_attempts','student_id',authUserId),
+            countRecords('learning_submissions','student_id',authUserId),
           ]);
           if(active)setMetrics({...EMPTY_METRICS,attempts,submissions});
         }
@@ -443,10 +483,34 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
       if(active){setClassLoading(false);setClassError(true);setStatsLoading(false);setAuditError(true);}
     });
     return()=>{active=false;};
-  },[account.id,account.role,account.studentTier,isAdmin,isTutor,isStudent,refreshKey]);
+  },[account.id,account.role,account.studentTier,isAdmin,isTutor,isStudent,authUserId,refreshKey]);
 
   const upcoming=useMemo(()=>[...classes].sort((a,b)=>nextClassTime(a)-nextClassTime(b)),[classes]);
+  const hour=lagosNow().minutes/60;
+  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  const displayDate=new Intl.DateTimeFormat('en-NG',{
+    timeZone:'Africa/Lagos',dateStyle:'full'
+  }).format(new Date());
+  const firstName=account.full_name.trim().split(/s+/)[0]??'Scholar';
   return <div className={'ref-dashboard-layout ref-dashboard-'+account.role}>
+    <header className="ref-dashboard-greeting">
+     <div><span>{displayDate}</span>
+      <h2>{greeting}, {firstName}</h2>
+      <small>{account.role==='student'
+        ?account.studentTier==='paid'?'Paid Student':'Free Student'
+        :account.role==='assistant_admin'?'Assistant Admin':
+         account.role.charAt(0).toUpperCase()+account.role.slice(1)}</small>
+     </div>
+     <button type="button" disabled={classLoading||statsLoading}
+      onClick={()=>setRefreshKey(v=>v+1)}>
+      <RefreshCw size={16} aria-hidden="true"/> Refresh
+     </button>
+    </header>
+    {account.role==='student'&&account.studentTier!=='paid'&&
+      <div className="ref-free-student-status">
+       Free Student · Assigned lessons, assignments and quizzes remain available.
+       <Link to="/enrolment">Explore paid classes <ArrowRight size={14}/></Link>
+      </div>}
     {!isAdmin&&<QuickLinks account={account}/>}
     {isAdmin
       ?<AdminInsights account={account} metrics={metrics}
@@ -454,16 +518,9 @@ export default function ReferenceDashboard({account,academicCounts,academicLoadi
       :<div className="ref-learning-grid">
         <ClassPreview rows={upcoming} error={classError} loading={classLoading}
             tutor={isTutor}/>
-        {isTutor?<TutorChecklist metrics={metrics} learning={academicCounts}/>:
+        {isTutor?<TutorChecklist metrics={metrics} learning={academicCounts} account={account}/>:
           <LearningProgress account={account} academicCounts={academicCounts}
             academicLoading={academicLoading} metrics={metrics}/>}
       </div>}
-    <div className="ref-dashboard-tail">
-
-      <button type="button" onClick={()=>setRefreshKey(v=>v+1)}
-        disabled={classLoading||statsLoading}>
-        <LayoutDashboard size={15} aria-hidden="true"/> Refresh dashboard
-      </button>
-    </div>
   </div>;
 }
