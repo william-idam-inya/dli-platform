@@ -54,7 +54,7 @@ inc(css,'prefers-reduced-motion','Accessibility');
 inc(css,'max-width:950px','Responsive laptop');
 inc(main,"import './q45-shell.css'","Q45 stylesheet applied");
 for(const t of ['function KpiCard','return <Link className="ref-kpi-card"',
- 'label:\'Classes\'','label:\'Payments\'','label:\'Reports\'',
+ 'label:\'Classes\'','label:\'Payments\'','label:\'Tutor Payouts\'',
  'No recent audited activity is available.',
  'studentTier','LearningProgress'])
  inc(dashboard,t,'Real KPI merge');
