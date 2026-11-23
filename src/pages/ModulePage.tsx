@@ -33,7 +33,6 @@ export default function ModulePage({ item }: ModulePageProps) {
       <div className="module-page-hero">
         <ModuleIcon icon={Icon} />
         <div className="module-page-copy">
-          <div className="eyebrow"><span className="eyebrow-line" /> {item.group.toUpperCase()}</div>
           <h1>{item.label}</h1>
           
         </div>
