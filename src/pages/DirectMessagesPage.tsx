@@ -27,7 +27,7 @@ type DirectMessage={id:string;thread_id:string;sender_id:string;body:string;crea
 type DirectReaction={message_id:string;reactor_id:string;emoji:string;created_at:string};
 type DirectFile={id:string;thread_id:string;original_name:string;object_path:string;mime_type:string;size_bytes:number;is_ready:boolean};
 type DirectRead={thread_id:string;reader_id:string;seen_at:string};
-const mediaKind=(mime:string):'audio'|'video'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':null;
+const mediaKind=(mime:string):'audio'|'video'|'image'|null=>mime.startsWith('audio/')?'audio':mime.startsWith('video/')?'video':/^image\/(jpeg|png|webp)$/.test(mime)?'image':null;
 const fileSuffix:Record<string,string>={
   'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp',
   'text/plain':'txt',
