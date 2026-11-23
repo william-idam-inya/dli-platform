@@ -7,6 +7,7 @@ import PrivateClassesPage from './PrivateClassesPage';
 import SubjectArtwork from '../components/SubjectArtwork';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
 import ChatMemberProfileOverlay from '../components/ChatMemberProfileOverlay';
+import {ConfirmDialog,type ConfirmChoice} from '../components/ModalDialog';
 import {makeTopicPacingPreview} from '../lib/topicPacing';
 import './AcademicSetupPage.css';
 import './ClassesWorkspacePage.css';
@@ -99,6 +100,8 @@ export default function ClassesWorkspacePage(){
   const [form,setForm]=useState<GroupDetails>(EMPTY);
   const [lessons,setLessons]=useState<LessonRow[]>([newLesson()]);
   const [editing,setEditing]=useState<string|null>(null);
+  const [showBuilder,setShowBuilder]=useState(Boolean(params.get('cohort')));
+  const [pendingChange,setPendingChange]=useState<{group:ClassGroup;state:'published'|'archived'}|null>(null);
   const [search,setSearch]=useState('');
   const [profileTarget,setProfileTarget]=useState<Person|null>(null);
   const [tutorFilter,setTutorFilter]=useState('');
@@ -125,12 +128,12 @@ export default function ClassesWorkspacePage(){
         staff?supabase.from('dli_class_curricula').select('class_group_id,cohort_id').limit(500):Promise.resolve({data:[],error:null}),
         staff?supabase.from('cohorts').select('id,name,programme_id,academic_level_id,is_active').eq('is_active',true).order('name'):Promise.resolve({data:[],error:null}),
         staff?supabase.from('course_offerings').select('id,cohort_id,course_id,is_active').eq('is_active',true).limit(500):Promise.resolve({data:[],error:null}),
-        staff?supabase.from('topics').select('id,course_id,title,is_active').eq('is_active',true).limit(1000):Promise.resolve({data:[],error:null}),
+        supabase.from('topics').select('id,course_id,title,is_active').eq('is_active',true).limit(1000),
         staff?supabase.from('dli_cohort_topic_plan').select('cohort_id,course_id,topic_id,position').order('position').limit(2000):Promise.resolve({data:[],error:null}),
         supabase.from('dli_class_topic_pacing').select('class_id,topics_per_meeting').limit(1000),
         supabase.from('dli_class_topic_delivery').select('class_id,course_id,topic_id,topic_order,meeting_number,meeting_date').order('meeting_date').limit(3000),
       ]);
-      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,t,sequence,pacing,delivery].some(x=>x.error)){
+      if([c,m,p,s,l,co,pr,paid,coRows,curriculumRows,h,o,sequence,pacing,delivery].some(x=>x.error)||(staff&&t.error)){
         setError('Could not load the class register or approved academic subjects. Check permissions and refresh.');
       }else{
         setClasses((c.data??[]) as ClassRow[]);
@@ -173,6 +176,34 @@ export default function ClassesWorkspacePage(){
   const eligibleStudents=students.filter(p=>form.class_type==='free_demo'||paidStudents.includes(p.auth_user_id));
   const studentOptions=eligibleStudents.filter(p=>p.full_name.toLowerCase().includes(search.trim().toLowerCase()));
   const chosenSet=useMemo(()=>new Set(chosen),[chosen]);
+  const topicsById=useMemo(()=>new Map(topics.map(topic=>[topic.id,topic.title])),[topics]);
+  const coTutorByClass=useMemo(()=>{
+    const byClass=new Map<string,CoTutor>();
+    for(const tutor of coTutors)if(tutor.is_active&&!byClass.has(tutor.class_id))
+      byClass.set(tutor.class_id,tutor);
+    return byClass;
+  },[coTutors]);
+  const pacingByClass=useMemo(()=>new Map(pacingRows.map(row=>[row.class_id,row.topics_per_meeting])),[pacingRows]);
+  const deliveryByClass=useMemo(()=>{
+    const byClass=new Map<string,TopicDelivery[]>();
+    for(const item of deliveryRows){
+      const group=byClass.get(item.class_id)??[];
+      group.push(item);byClass.set(item.class_id,group);
+    }
+    for(const rows of byClass.values())rows.sort((a,b)=>a.meeting_date.localeCompare(b.meeting_date));
+    return byClass;
+  },[deliveryRows]);
+  const membersByClass=useMemo(()=>{
+    const index=new Map<string,Member[]>();
+    for(const m of members){
+      if(!m.is_active)continue;
+      const items=index.get(m.class_id)??[];
+      items.push(m);index.set(m.class_id,items);
+    }
+    return index;
+  },[members]);
+  // Lagos is UTC+01:00 year-round. Compare ISO calendar dates, not device timezone.
+  const todayWAT=new Date(Date.now()+3600000).toISOString().slice(0,10);
   // Only actual active enrolment rows count as CURRENT classes.
   // The class being edited/created is a proposed destination, not enrolment.
   const studentClassNames=useMemo(()=>{
@@ -250,11 +281,11 @@ export default function ClassesWorkspacePage(){
       weekday:c.weekday,starts_at:c.starts_at.slice(0,5),ends_at:c.ends_at.slice(0,5),
     })));
     setChosen(members.filter(m=>m.class_id===first.id&&m.is_active).map(m=>m.student_id));
-    setError(null);setNotice(null);setParams({tab:'classes'});
+    setError(null);setNotice(null);setParams({tab:'classes'});setShowBuilder(true);
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function cancelEdit(){
-    setEditing(null);
+    setEditing(null);setShowBuilder(false);
     if(selectedCohortId)chooseCohort(selectedCohortId);
     else {setForm(EMPTY);setLessons([newLesson()]);setChosen([]);setError(null);}
   }
@@ -356,9 +387,6 @@ export default function ClassesWorkspacePage(){
 
   async function changeState(group:ClassGroup,state:'published'|'archived'){
     if(!supabase||!staff||busy)return;
-    if(!window.confirm(state==='published'
-      ?'Publish all '+group.rows.length+' subjects in this group to the assigned tutors and students?'
-      :'Archive the entire group and revoke its joining links?'))return;
     setBusy(true);setError(null);setNotice(null);
     try{
       const integrated=classCurricula.some(row=>row.class_group_id===group.id);
@@ -409,7 +437,16 @@ export default function ClassesWorkspacePage(){
           <RefreshCw size={15}/> Refresh
         </button>
       </div>
-      {staff&&<section className="panel classes-builder">
+      {staff&&<div className="classes-create-toggle">
+        <button type="button" className="user-outline-button"
+          aria-expanded={showBuilder||Boolean(editing)}
+          aria-controls="dli-create-class-group"
+          onClick={()=>{if(editing)cancelEdit();else setShowBuilder(v=>!v);}}>
+          <Plus size={17}/> {showBuilder||editing?'Close class builder':'Create New Class Group'}
+        </button>
+      </div>}
+      {staff&&(showBuilder||Boolean(editing))&&<section id="dli-create-class-group"
+        className="panel classes-builder">
         <div className="panel-heading"><div>
           <p className="section-kicker">SET UP A CLASS</p>
           <h2>{editing?'Edit draft class group':'Create a multi-subject class'}</h2>
@@ -529,14 +566,12 @@ export default function ClassesWorkspacePage(){
             {lessons.map((lesson,index)=><fieldset className="classes-lesson-card" key={lesson.key}>
               <legend>Subject {index+1}</legend>
               <div className="classes-field-pair">
-                <label htmlFor={'classes-subject-'+lesson.key}>Course / subject
-                  <select id={'classes-subject-'+lesson.key} required disabled value={lesson.subject_id}
-                    aria-label={'Course imported from cohort '+(index+1)}>
-                    <option value="">Choose subject</option>
-                    {availableSubjects.map(s=><option key={s.id} value={s.id}
-                      disabled={lessons.some(l=>l.key!==lesson.key&&l.subject_id===s.id)}>{courses.find(c=>c.programme_id===programmeId&&c.academic_level_id===levelId&&c.subject_id===s.id)?.title??s.name}</option>)}
-                  </select>
-                </label>
+                <div className="classes-readonly-course" aria-label={'Course imported from cohort '+(index+1)}>
+                  <span>Course / subject</span>
+                  <strong>{courses.find(c=>c.programme_id===programmeId&&
+                    c.academic_level_id===levelId&&c.subject_id===lesson.subject_id)?.title??
+                    availableSubjects.find(s=>s.id===lesson.subject_id)?.name??'Choose a cohort first'}</strong>
+                </div>
                 <label htmlFor={'classes-tutor-'+lesson.key}>Primary tutor
                   <select id={'classes-tutor-'+lesson.key} required value={lesson.tutor_id}
                     onChange={e=>setLesson(lesson.key,{tutor_id:e.target.value})}>
@@ -642,13 +677,13 @@ export default function ClassesWorkspacePage(){
             onChange={e=>setShowArchived(e.target.checked)}/> Include archived</label>
         </div>}
         {!loading&&!groups.length&&<p className="academic-empty">
-          {staff?'No classes yet. Create a group draft above and add its subjects.':
+          {staff?'No classes yet. Select Create New Class Group to add the first draft.':
             account?.role==='student'?'No classes are available to you yet. Check back for published sessions or contact DLI administration.':
             'Your DLI administrator will assign your teaching classes.'}
         </p>}
         <div className="classes-cards">{groups.map(group=>{
           const activeRows=group.rows.filter(c=>c.state!=='archived');
-          const roster=members.filter(m=>m.class_id===group.first.id&&m.is_active);
+          const roster=membersByClass.get(group.first.id)??[];
           const groupName=group.first.class_group_name||'Class '+group.id.slice(0,8);
           const canEdit=staff&&draftGroups.some(g=>g.id===group.id);
           return <article className="classes-card" key={group.id}>
@@ -671,32 +706,37 @@ export default function ClassesWorkspacePage(){
               </span>
             </div>
             <div className="ref-course-tabs" aria-label="Related class learning areas">
-              <Link to="/classes">Overview</Link>
               {account?.role!=='assistant_admin'&&
-               <Link to="/study?tab=lessons">Learning resources</Link>}
+               <Link to={'/study?tab=lessons&class='+encodeURIComponent(group.id)}>Learning resources</Link>}
               {account?.role!=='assistant_admin'&&
-               <Link to="/study?tab=assignments">Assignments</Link>}
+               <Link to={'/study?tab=assignments&class='+encodeURIComponent(group.id)}>Assignments</Link>}
               {account?.role!=='assistant_admin'&&
-               <Link to="/study?tab=quizzes">Quizzes</Link>}
+               <Link to={'/study?tab=quizzes&class='+encodeURIComponent(group.id)}>Quizzes</Link>}
             </div>
             <div className="classes-group-sessions">
               {group.rows.map(c=><div className="classes-group-session" key={c.id}>
                 <div><strong><SubjectArtwork subject={c.subject_name}/>{c.subject_name}</strong>
                   <small>{dayTime(c)}</small>
                   <small>Primary tutor: {c.tutor_name}</small>
-                  {coTutors.find(co=>co.class_id===c.id&&co.is_active)&&<small>Second tutor: {coTutors.find(co=>co.class_id===c.id&&co.is_active)?.tutor_name}</small>}
+                  {coTutorByClass.get(c.id)&&<small>Second tutor: {coTutorByClass.get(c.id)?.tutor_name}</small>}
                   {staff&&c.offering_id&&<small>Linked academic offering · tutor assignments verified</small>}
-                  {pacingRows.some(p=>p.class_id===c.id)&&<small>
-                    Delivery rate: {pacingRows.find(p=>p.class_id===c.id)?.topics_per_meeting} topic(s) per weekly meeting
+                  {pacingByClass.has(c.id)&&<small>
+                    Delivery rate: {pacingByClass.get(c.id)} topic(s) per weekly meeting
                   </small>}
-                  {deliveryRows.some(p=>p.class_id===c.id)&&<div className="classes-delivery-list">
-                    <strong>Topic teaching dates</strong>
-                    {deliveryRows.filter(p=>p.class_id===c.id).map(p=>
-                      <span key={p.topic_id}>
-                        <time dateTime={p.meeting_date}>{p.meeting_date}</time>
-                        <span>Meeting {p.meeting_number} · {topics.find(t=>t.id===p.topic_id)?.title??c.subject_name+' topic '+p.topic_order}</span>
-                      </span>)}
-                  </div>}
+                  {(deliveryByClass.get(c.id)?.length??0)>0&&<>
+                    {deliveryByClass.get(c.id)?.find(p=>p.meeting_date>=todayWAT)&&
+                      <small className="dli-live-pulse">
+                        Next topic: {topicsById.get(deliveryByClass.get(c.id)!.find(p=>p.meeting_date>=todayWAT)!.topic_id)??'Course topic'}
+                      </small>}
+                    <details className="classes-delivery-list">
+                      <summary>View all {deliveryByClass.get(c.id)?.length} scheduled meetings</summary>
+                      {deliveryByClass.get(c.id)?.map(p=>
+                        <span key={p.topic_id}>
+                          <time dateTime={p.meeting_date}>{p.meeting_date}</time>
+                          <span>Meeting {p.meeting_number} · {topicsById.get(p.topic_id)??'Topic details unavailable'}</span>
+                        </span>)}
+                    </details>
+                  </>}
                 </div>
                 {c.state==='archived'&&<span className="classes-state archived">Archived</span>}
                 {communicating&&c.state==='published'&&
@@ -710,19 +750,31 @@ export default function ClassesWorkspacePage(){
                 rel="noopener noreferrer"><Video size={15}/> Shared Google Meet</a>}
               {(account?.role==='student'||account?.role==='tutor')&&group.state==='published'&&
                 <Link to={'/feedback?class='+encodeURIComponent(group.first.id)}>Report an issue</Link>}
-              {canEdit&&<button type="button" disabled={busy} onClick={()=>editGroup(group.id)}><Pencil size={14}/> Edit group</button>}
+              {canEdit&&<button type="button" disabled={busy} onClick={()=>{editGroup(group.id);setShowBuilder(true);}}><Pencil size={14}/> Edit group</button>}
               {staff&&group.state==='draft'&&
-                <button type="button" disabled={busy} onClick={()=>void changeState(group,'published')}>
+                <button type="button" disabled={busy} onClick={()=>setPendingChange({group,state:'published'})}>
                   <CheckCircle2 size={14}/> Publish entire group
                 </button>}
               {staff&&group.state!=='archived'&&<button type="button" disabled={busy}
-                onClick={()=>void changeState(group,'archived')}>Archive group</button>}
+                onClick={()=>setPendingChange({group,state:'archived'})}>Archive group</button>}
             </div>
           </article>;
         })}</div>
       </section>
       
     </>}
+    <ConfirmDialog
+      request={pendingChange?({
+        title:pendingChange.state==='published'?'Publish class group':'Archive class group',
+        message:pendingChange.state==='published'
+          ?'Publish all '+pendingChange.group.rows.length+' subjects to the assigned tutors and students?'
+          :'Archive this class group and revoke its joining links?',
+        confirmLabel:pendingChange.state==='published'?'Publish':'Archive',
+        danger:pendingChange.state==='archived',
+      } satisfies ConfirmChoice):null}
+      onCancel={()=>setPendingChange(null)}
+      onConfirm={()=>{const next=pendingChange;setPendingChange(null);
+        if(next)void changeState(next.group,next.state);}}/>
     {profileTarget&&<ChatMemberProfileOverlay
       userId={profileTarget.auth_user_id} fallbackName={profileTarget.full_name}
       contextItems={[
