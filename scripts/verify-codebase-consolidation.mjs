@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Q74 read-only consolidation validation. Never accesses real user data.
 import assert from 'node:assert/strict';
-import {readFileSync,existsSync} from 'node:fs';
+import {readFileSync,existsSync,readdirSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 for(const p of ['src/q45-shell.css','src/q36-workspace-theme.css',
  'src/mobile-overlay-resilience.css','src/components/ModalDialog.css']){
@@ -76,4 +76,20 @@ function inspectCss(source,context='root'){
 }
 inspectCss(shell);
 assert.ok(!shell.includes('Q49 audit correction'),'Old Q49 correction layer is still present');
+assert.ok(nav.includes('<ConfirmationDialogHost/>'),
+ 'Accessible confirmation service must mount once in the authorised shell');
+assert.ok(read('src/components/ConfirmationDialogService.tsx').includes('<ConfirmDialog'),
+ 'Confirmations must use the shared accessible modal primitive');
+// Every live TSX module must avoid blocking native browser confirmation UIs.
+function auditModules(dir){
+ for(const entry of readdirSync(new URL('../'+dir,import.meta.url),{withFileTypes:true})){
+  const path=dir+entry.name;
+  if(entry.isDirectory())auditModules(path+'/');
+  else if(entry.name.endsWith('.tsx')){
+   assert.doesNotMatch(read(path),/window\.(?:confirm|prompt)\s*\(/,
+    'Legacy browser-native modal in '+path);
+  }
+ }
+}
+auditModules('src/');
 console.log('Q74 CSS consolidation, shared auth, simple shell and modal regression passed.');
