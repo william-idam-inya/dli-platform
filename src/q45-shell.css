@@ -101,15 +101,15 @@
    is decorative and never holds required text. Each role keeps the same
    accessible card hierarchy and approved dark blue/gold palette. */
 .app-layout[data-dli-role='student']{
- --dli-role-scene:url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=75');
+ --dli-role-scene:url('/dli-mark.svg');
 }
 .app-layout[data-dli-role='tutor']{
- --dli-role-scene:url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=75');
+ --dli-role-scene:url('/dli-mark.svg');
 }
 .app-layout[data-dli-role='owner'],
 .app-layout[data-dli-role='admin'],
 .app-layout[data-dli-role='assistant_admin']{
- --dli-role-scene:url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1800&q=75');
+ --dli-role-scene:url('/dli-mark.svg');
 }
 .app-layout[data-dli-role]{
  background-color:#09264b;
@@ -120,7 +120,7 @@
  background-size:cover,cover,cover;
  background-position:center,center,center;
  background-repeat:no-repeat;
- background-attachment:fixed;
+ background-attachment:scroll;
 }
 :root[data-theme='dark'] .app-layout[data-dli-role]{
  background-image:
@@ -129,10 +129,10 @@
   linear-gradient(145deg,#061a38,#09264b);
 }
 .app-layout[data-dli-role] .page-content{
- background:linear-gradient(140deg,rgba(244,249,255,.91),rgba(242,247,255,.89));
+ background:linear-gradient(140deg,rgba(244,249,255,.98),rgba(242,247,255,.97));
 }
 :root[data-theme='dark'] .app-layout[data-dli-role] .page-content{
- background:linear-gradient(140deg,rgba(14,26,48,.93),rgba(19,41,66,.91));
+ background:linear-gradient(140deg,rgba(14,26,48,.98),rgba(19,41,66,.98));
 }
 @media(max-width:680px){
  .app-layout[data-dli-role]{background-attachment:scroll;}
@@ -187,8 +187,8 @@
  .app-layout .dli-global-search{width:0;min-width:0;max-width:none;flex:1 1 42px;
   padding-inline:8px}
  .app-layout .topbar-actions{flex:0 0 auto;gap:2px;min-width:0}
- .app-layout .topbar-actions .icon-button{min-width:34px;min-height:36px}
- .app-layout .dli-profile-toggle{min-width:34px;min-height:36px}
+ .app-layout .topbar-actions .icon-button{min-width:44px;min-height:44px}
+ .app-layout .dli-profile-toggle{min-width:44px;min-height:44px}
  .app-layout .dli-global-search-results{width:min(320px,calc(100vw - 18px))}
 }
 
@@ -302,5 +302,20 @@
  .app-layout .dli-grid-topbar .dli-global-search-results{
   position:fixed;top:65px;left:8px;right:8px;
   width:auto;max-width:none;max-height:calc(100dvh - 150px);
+ }
+}
+
+/* Q72 desktop ergonomics: navigation remains in the existing role-aware shell.
+   At smaller widths the sidebar replaces centre tabs without collisions. */
+@media(min-width:1280px){
+ .app-layout .dli-grid-topbar{min-height:60px;grid-template-columns:auto minmax(190px,320px) minmax(0,1fr) auto}
+ .app-layout .dli-primary-tabs{min-width:0}
+}
+@media(min-width:681px) and (max-width:1279px){
+ .app-layout .dli-primary-tabs{display:none}
+}
+@media(max-width:414px){
+ .app-layout .topbar-actions .icon-button,.app-layout .dli-profile-toggle{
+  min-width:44px;min-height:44px;
  }
 }
