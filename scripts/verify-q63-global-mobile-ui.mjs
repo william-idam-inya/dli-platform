@@ -30,7 +30,9 @@ for(const name of pages){
 const dashboard=read('src/components/ReferenceDashboard.tsx');
 assert.ok(!dashboard.includes('Numbers reflect accessible DLI records'),
  'Design reference disclaimer still mounted in Overview');
-assert.ok(dashboard.includes('Refresh dashboard'),'Keep real dashboard refresh action');
+assert.ok(dashboard.includes('onClick={()=>setRefreshKey(v=>v+1)}') &&
+ dashboard.includes('disabled={classLoading||statsLoading}'),
+ 'Keep real dashboard refresh action and disable during live fetch');
 assert.ok(!read('src/pages/FinancePage.tsx').includes('Manage the internal learning-plan reference and prepare finance-policy proposals'),
  'Finance header still has long reference copy');
 assert.ok(!read('src/pages/ClassesWorkspacePage.tsx').includes('One class · approved courses · two tutors per subject'),
