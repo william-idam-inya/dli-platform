@@ -68,7 +68,8 @@
     "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs",
     "check:q49-mobile-overlays": "node scripts/verify-q49-mobile-overlays.mjs",
     "check:q50-prod-realtimekit": "node scripts/verify-q50-prod-realtimekit.mjs",
-    "check:q52-pwa-push": "node scripts/verify-q52-pwa-web-push.mjs"
+    "check:q52-pwa-push": "node scripts/verify-q52-pwa-web-push.mjs",
+    "check:q74-codebase-consolidation": "node scripts/verify-codebase-consolidation.mjs"
   },
   "dependencies": {
     "@cloudflare/realtimekit": "2.0.2",

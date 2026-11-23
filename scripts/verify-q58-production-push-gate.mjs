@@ -19,5 +19,5 @@ assert.match(conference,/if\(pushConfigured&&room.data\?\.length\)/);
 assert.match(conference,/if\(pushConfigured&&scheduledAt\)/);
 assert.match(conference,/\{pushConfigured&&<label>Scheduled start/);
 assert.ok(sw.includes("self.addEventListener('push'")&&!sw.includes("addEventListener('fetch'"));
-assert.ok(!read('src/q45-shell.css').includes('Q57: phone header accessibility'));
+assert.ok(!read('src/app-shell.css').includes('Q57: phone header accessibility'));
 console.log('Q58 production VAPID gate, legacy database compatibility, restored header and call isolation verified.');

@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CheckCircle2, CircleOff, Download, FilePlus2, LockKeyhole, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -167,7 +168,7 @@ export default function LessonFilesPanel({
   async function setPublished(file: LessonFile) {
     const client = supabase;
     if (!client || !canEdit || !file.is_ready || uploadStage || busyId) return;
-    if (!window.confirm(file.is_published
+    if (!await confirmAction(file.is_published
       ? 'Unpublish this private file from Students?'
       : 'Publish this file to Students only when its parent lesson is published?')) return;
     setBusyId(file.id);

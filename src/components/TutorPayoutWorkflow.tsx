@@ -1,3 +1,4 @@
+import {confirmAction} from './ConfirmationDialogService';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {createPortal} from 'react-dom';
 import {Banknote,CheckCircle2,Download,Eye,ShieldCheck,Upload,Wallet} from 'lucide-react';
@@ -95,7 +96,7 @@ export default function TutorPayoutWorkflow({
       values.account_name.length>140||!/^[0-9]{10}$/.test(values.account_number)){
       setError('Enter a valid bank name, account holder name, and 10-digit Nigerian account number.');return;
     }
-    if(!window.confirm('Have you checked that these bank details belong to you? All future payout instructions will use this account unless you update it.'))return;
+    if(!await confirmAction('Have you checked that these bank details belong to you? All future payout instructions will use this account unless you update it.'))return;
     setBusy(true);setError('');setNotice('');
     try{
       const {data:user,error:authError}=await supabase.auth.getUser();
@@ -125,7 +126,7 @@ export default function TutorPayoutWorkflow({
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>new Date().toISOString().slice(0,10)||reference.length<6){
       setError('Enter the actual transfer date and bank reference.');return;
     }
-    if(!window.confirm('Confirm that you made this bank transfer to the Tutor account displayed here. The receipt will be shared privately with the Tutor and will NOT mark payroll as Paid until the Tutor confirms receiving it.'))return;
+    if(!await confirmAction('Confirm that you made this bank transfer to the Tutor account displayed here. The receipt will be shared privately with the Tutor and will NOT mark payroll as Paid until the Tutor confirms receiving it.'))return;
     setBusy(true);setError('');setNotice('');
     try{
       const {data:auth,error:authError}=await supabase.auth.getUser();
@@ -159,7 +160,7 @@ export default function TutorPayoutWorkflow({
     if(!supabase||!isTutor||busy||p.status!=='awaiting_tutor')return;
     const note=(notes[p.id]??'').trim();
     if(!accept&&note.length<5){setError('Explain why you did not receive the payment (at least five characters).');return;}
-    if(!window.confirm(accept?
+    if(!await confirmAction(accept?
       'Confirm that this transfer has actually arrived in your bank account? This records your acknowledgement and marks this monthly payroll cycle Paid.':
       'Dispute this transfer as NOT received? Administration will see your note and must investigate.'))return;
     setBusy(true);setError('');setNotice('');

@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-const css=read('src/mobile-overlay-resilience.css');
+const css=read('src/app-shell.css');
 const main=read('src/main.tsx');
 const shell=read('src/components/AppShell.tsx');
 const menu=read('src/components/QuickMenu.tsx');
@@ -12,7 +12,7 @@ const focus=read('src/components/WorkspaceFocus.tsx');
 const forward=read('src/pages/DirectMessagesPage.tsx');
 const profile=read('src/components/ChatMemberProfileOverlay.tsx');
 const finder=(source,token,label)=>assert.ok(source.includes(token),label+': '+token);
-finder(main,"import './mobile-overlay-resilience.css'",'Q49 stylesheet not loaded');
+finder(main,"import './app-shell.css'",'Q49 stylesheet not loaded');
 for(const token of [
  '.dli-call-media.audio>audio{display:none!important;}',
  'grid-template-columns:minmax(0,1fr)',

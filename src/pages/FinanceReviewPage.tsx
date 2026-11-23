@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ClipboardCheck, FileText, LockKeyhole, MessageSquareText, RefreshCw, ThumbsUp } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -107,7 +108,7 @@ export default function FinanceReviewPage(){
       if(!canSetFinanceOutcome||thisOutcome){
         setError('Only one authorised Owner, Admin or Assistant Admin can record a planning outcome per proposal.');return;
       }
-      if(!window.confirm(
+      if(!await confirmAction(
         'Record this non-binding administrative planning outcome? This is not a payment approval. Only one outcome is allowed per proposal.'
       ))return;
     }

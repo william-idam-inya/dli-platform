@@ -38,7 +38,7 @@ for (const token of [
 ]) assert.ok(artwork.includes(token),'Hero artwork should be actual original vector art: '+token);
 for(const token of [
   '.ref-shortcuts','.ref-shortcut','.ref-session','.ref-kpi-card',
-  '.ref-chart','.ref-progress-ring','.ref-existing-tools',
+  '.ref-chart','.ref-progress-ring',
   'max-width:680px','max-width:390px','min-width:681px',
 ]) assert.ok(css.includes(token),'Responsive reference detail absent: '+token);
 for(const token of [
@@ -46,11 +46,11 @@ for(const token of [
   'dli-sidebar-quick-actions','onSignOut','OfficialDliLogo',
   'mobilePriorityPaths(account, allowedPaths)','aria-label="Quick mobile navigation"',
 ]) assert.ok(shell.includes(token),'Branding/navigation must not regress: '+token);
-for(const token of ['.desktop-sidebar','.ref-mobile-avatar','.ref-course-banner','.ref-course-tabs',
+for(const token of ['.desktop-sidebar','.ref-mobile-avatar','.ref-course-tabs',
   'max-width:365px']) assert.ok(shellCss.includes(token),'Global shell fidelity missing: '+token);
 assert.ok(main.includes("import './reference-shell.css'"),'Global shell design must apply to all routes');
-assert.ok(classes.includes('ref-course-banner')&&classes.includes('<SubjectArtwork subject={group.first.subject_name}/>'),
- 'Class header must use actual subject names and vector illustrations');
+assert.ok(!classes.includes('ref-course-banner')&&classes.includes('<SubjectArtwork subject={c.subject_name}/>'),
+ 'Class cards retain real session illustrations without a duplicated group banner');
 assert.ok(classes.includes('ref-course-tabs')&&classes.includes('classes-group-sessions'),
  'Illustrated class overview must retain real subject session UI');
 assert.ok(roles.includes("student: ['/', '/classes', '/communications', '/profile']"),

@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarClock, CheckCircle2, Clock3, RefreshCw, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -80,7 +81,7 @@ export default function TutorPayrollPage(){
   if(!/^\d+(?:\.\d{1,2})?$/.test(value)||Number(value)>100000000||note.length<12){
    setError('Provide a valid NGN amount and a justification of at least 12 characters.');return;
   }
-  if(!window.confirm('Approve a manual monthly rate for this exact tutor engagement? This will be audited.'))return;
+  if(!await confirmAction('Approve a manual monthly rate for this exact tutor engagement? This will be audited.'))return;
   setBusy(true);setError(null);setNotice(null);
   try{
    const result=await supabase.rpc('dli_payroll_override',{

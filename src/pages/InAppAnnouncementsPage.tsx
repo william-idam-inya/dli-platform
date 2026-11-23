@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Bell, CalendarClock, CheckCircle2, Clock3, RefreshCw, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -93,7 +94,7 @@ export default function InAppAnnouncementsPage(){
       (expiry&&expiry.getTime()<=published.getTime())){
       setError('Enter a valid future publication time and an optional expiry after that time (WAT).');return;
     }
-    if(!window.confirm(mode==='all'
+    if(!await confirmAction(mode==='all'
       ?'Create this in-app announcement for all active '+target+' accounts?'
       :'Create this in-app announcement for '+selectable.length+' selected '+target+' account(s)?'))return;
     setSaving(true);setError(null);setNotice(null);
@@ -131,7 +132,7 @@ export default function InAppAnnouncementsPage(){
   }
   async function changeStatus(n:DliNotice,status:'live'|'withdrawn'){
     if(!supabase||!staff||saving)return;
-    if(!window.confirm(status==='withdrawn'?'Withdraw this notice from the audience?':
+    if(!await confirmAction(status==='withdrawn'?'Withdraw this notice from the audience?':
       'Activate this saved draft using its original audience and schedule?'))return;
     setSaving(true);setError(null);setNotice(null);
     try{

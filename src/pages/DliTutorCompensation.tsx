@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Calculator, CheckCircle2, RefreshCw, Users, Wallet } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -71,7 +72,7 @@ export default function DliTutorCompensation(){
       !/^\d{4}-\d{2}$/.test(month)){
       setError('Select an active tutor, valid month, engagement name and non-negative amounts.');return;
     }
-    if(!window.confirm('Create one PROPOSED monthly tutoring agreement for this engagement? No payout or bank transfer will occur.'))return;
+    if(!await confirmAction('Create one PROPOSED monthly tutoring agreement for this engagement? No payout or bank transfer will occur.'))return;
     setBusy(true);setError(null);setNotice(null);
     try{
       const result=await supabase.from('dli_tutor_pay_terms').insert({
@@ -86,7 +87,7 @@ export default function DliTutorCompensation(){
   }
   async function review(term:Term,status:'approved'|'cancelled'){
     if(!supabase||!manager||busy)return;
-    if(!window.confirm(status==='approved'?'Approve the exact base and allowance amounts for internal planning? This does NOT pay the tutor.':
+    if(!await confirmAction(status==='approved'?'Approve the exact base and allowance amounts for internal planning? This does NOT pay the tutor.':
       'Cancel this proposed tutor agreement?'))return;
     setBusy(true);setError(null);setNotice(null);
     try{

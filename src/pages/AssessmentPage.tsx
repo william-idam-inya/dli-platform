@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, MessageSquare, PenLine, Plus, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -141,7 +142,7 @@ export default function AssessmentPage() {
       setError('Enter assignment instructions before publishing.');
       return;
     }
-    if(!window.confirm(a.is_published
+    if(!await confirmAction(a.is_published
       ? 'Unpublish this assignment? Students will lose access to it.'
       : 'Publish this assignment to enrolled students in this class?'))return;
     setSaving(a.id);setError(null);setNotice(null);

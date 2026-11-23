@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Banknote, CalendarClock, CheckCircle2, Download, LockKeyhole, Plus, RefreshCw, Upload, Users, Video } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -188,9 +189,9 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     });
   }
 
-  function reviewReceipt(receipt:Receipt,status:'verified'|'rejected'){
+  async function reviewReceipt(receipt:Receipt,status:'verified'|'rejected'){
     if(!supabase||!isStaff)return;
-    if(!window.confirm(status==='verified'
+    if(!await confirmAction(status==='verified'
       ?'Confirm that the actual bank credit was independently checked? Uploading proof alone is not evidence of receipt.'
       :'Reject this receipt and allow the student to submit another?'))return;
     void execute('review-'+receipt.id,async()=>{
@@ -239,9 +240,9 @@ export default function PrivateClassesPage({billingOnly=false,embedded=false}:{b
     setAdminStep('schedule');setError(null);setNotice(null);
   }
 
-  function toggleSlot(slot:Slot){
+  async function toggleSlot(slot:Slot){
     if(!supabase||!isStaff)return;
-    if(!window.confirm(slot.is_active?'Deactivate this class? It will disappear from the student and tutor active timetables.':'Reactivate this individual class?'))return;
+    if(!await confirmAction(slot.is_active?'Deactivate this class? It will disappear from the student and tutor active timetables.':'Reactivate this individual class?'))return;
     void execute('slot-'+slot.id,async()=>{
       const {data,error:e}=await supabase!.from('private_class_slots').update({is_active:!slot.is_active})
         .eq('id',slot.id).select('id').maybeSingle();

@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, Plus, RefreshCw, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -115,7 +116,7 @@ export default function AcademicAssignmentsPage() {
   async function toggle(table: Table, row: MemberLink) {
     if (!supabase || busy) return;
     const label=table==='tutor_assignments'?'tutor assignment':'student enrolment';
-    if (row.is_active && !window.confirm(
+    if (row.is_active && !await confirmAction(
       `Deactivate this ${label}? The account remains registered and the audit history is retained.`,
     )) return;
     setBusy(row.id);setNotice(null);setError(null);

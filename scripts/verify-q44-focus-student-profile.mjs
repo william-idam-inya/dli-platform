@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const focus=read('src/components/WorkspaceFocus.tsx');
 const focusStyle=read('src/components/WorkspaceFocus.css');
-const theme=read('src/q36-workspace-theme.css');
+const theme=read('src/app-shell.css');
 const classes=read('src/pages/ClassesWorkspacePage.tsx');
 const classesStyle=read('src/pages/ClassesWorkspacePage.css');
 const member=read('src/components/ChatMemberProfileOverlay.tsx');

@@ -1,3 +1,4 @@
+import {confirmAction} from '../components/ConfirmationDialogService';
 import {lazy,Suspense,useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import { CalendarDays, CameraOff, Hand, Lock, LockOpen, MessageSquareText, MicOff, Plus, RefreshCw, Users, Video, X } from 'lucide-react';
 import {useAuth} from '../auth/AuthProvider';
@@ -161,7 +162,7 @@ export default function ConferenceRoomsPage(){
  }
  async function action(name:string,target:string|null=null){
   if(!supabase||!active||busy)return;
-  if(name==='end'&&!window.confirm('End this conference for everyone?'))return;
+  if(name==='end'&&!await confirmAction('End this conference for everyone?'))return;
   setBusy(true);setError(null);
   try{
    const res=await supabase.rpc('dli_conference_action',{

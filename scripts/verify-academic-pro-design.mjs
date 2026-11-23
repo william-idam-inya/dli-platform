@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const css=read('src/academic-pro.css');
+const css=read('src/academic-pro.css')+'\n'+read('src/design-system.css');
+const componentCss=read('src/academic-pro.css');
 const controls=read('src/components/AppearancePreferences.tsx');
 const logic=read('src/lib/appearancePreferences.ts');
 const profile=read('src/pages/MemberProfilePage.tsx');
@@ -61,5 +62,5 @@ assert.ok(shell.includes('OfficialDliLogo'),'Retain original institution logo');
 assert.ok(shell.includes('mobile-bottom-nav'),'Retain existing accessible mobile navigation');
 assert.ok(existingRoles.includes("['owner', 'admin', 'assistant_admin']"),
  'Finance/role scope source must not be edited for design changes');
-assert.doesNotMatch(css,/display:\s*none\s*!important\s*;\s*\}/i,'Do not globally hide live features');
+assert.doesNotMatch(componentCss,/display:\s*none\s*!important\s*;\s*\}/i,'Do not globally hide live features');
 console.log('Q27 Academic Pro visual tokens, interactive preferences, accessible controls, mobile and role boundaries verified offline.');

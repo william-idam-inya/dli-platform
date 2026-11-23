@@ -7,7 +7,7 @@ const page=read('src/pages/DirectMessagesPage.tsx');
 const pageCss=read('src/pages/DirectMessagesPage.css');
 const dock=read('src/components/FloatingMessenger.tsx');
 const dockCss=read('src/components/FloatingMessenger.css');
-const resilience=read('src/mobile-overlay-resilience.css');
+const resilience=read('src/app-shell.css');
 const main=read('src/main.tsx');
 for(const t of ['ref={directoryRef}',"composeOpen?'New message contacts':'Conversation directory'",
  "((activeId||error)&&!composeOpen?' has-active-chat':'')",
@@ -49,7 +49,7 @@ for(const t of [
 assert.ok(resilience.includes('body .dli-floating-chat')&&
  resilience.includes('bottom:calc(91px + env(safe-area-inset-bottom))'),
  'Existing bottom navigation/safe-area separation changed');
-assert.ok(main.includes("import './mobile-overlay-resilience.css'") &&
+assert.ok(main.includes("import './app-shell.css'") &&
  main.includes("import './components/TopbarUtilityDropdown.css'"),
  'Existing responsive overlays and topbar must stay loaded');
 console.log('Q69: mobile contact picker shows above the fold, exclusive scroll area, one compose button per surface, safe-area and role filters preserved.');
