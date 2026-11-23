@@ -227,6 +227,9 @@ jobs:
       - name: Verify Q69 compact mobile Messenger, one compose action and visible contact picker
         run: node scripts/verify-q69-mobile-messenger-compose.mjs
 
+      - name: Verify Q71 meaningful workspace focus titles and accessible finance schedule
+        run: node scripts/verify-q71-meaningful-workspace-titles.mjs
+
       - name: Verify TypeScript
         run: npm run typecheck
 
