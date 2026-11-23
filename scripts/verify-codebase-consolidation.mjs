@@ -65,9 +65,9 @@ function inspectCss(source,context='root'){
   }
   const header=source.slice(i,open).replace(/\/\*[\s\S]*?\*\//g,'').trim();
   const body=source.slice(open+1,end-1);
-  if(/^@(?:media|supports|container)\\b/.test(header)) inspectCss(body,context+'|'+header);
+  if(/^@(?:media|supports|container)\b/.test(header)) inspectCss(body,context+'|'+header);
   else if(header&&!header.startsWith('@')){
-   const key=context+'|'+header.replace(/\\s+/g,' ');
+   const key=context+'|'+header.replace(/\s+/g,' ');
    assert.ok(!seen.has(key),'Duplicate CSS selector: '+key);
    seen.add(key);
   }
