@@ -13,6 +13,7 @@ import GuidedTour from './GuidedTour';
 import GlobalSearch from './GlobalSearch';
 import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
+import {ConfirmationDialogHost} from './ConfirmationDialogService';
 import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
 import CallMessageAlertsBanner from './CallMessageAlertsBanner';
@@ -407,6 +408,7 @@ export default function AppShell({ children }: AppShellProps) {
       </nav>}
     <GuidedTour/>
     <FloatingMessenger/>
+    <ConfirmationDialogHost/>
     </div></CallProvider>
   );
 }
