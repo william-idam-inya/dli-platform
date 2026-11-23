@@ -1,3 +1,4 @@
+import {confirmAction} from './ConfirmationDialogService';
 import { useState } from 'react';
 import { Mail, MessageCircle, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -37,7 +38,7 @@ export default function ManualShareControls({
   async function prepare() {
     if (preparing || disabled || !clearedForCopy || !supabase) return;
     const destination = channel === 'email' ? 'your installed email app' : 'WhatsApp';
-    if (!window.confirm(
+    if (!await confirmAction(
       'This will open the approved message in ' + destination +
       '. It will not be sent automatically. Choose a recipient, review it and press Send yourself. Continue?'
     )) return;
