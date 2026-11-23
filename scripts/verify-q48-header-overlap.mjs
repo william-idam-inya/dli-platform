@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const shell=read('src/components/AppShell.tsx');
-const css=read('src/q45-shell.css');
+const css=read('src/app-shell.css');
 const nav=read('src/data/navigation.ts');
 const between=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b));
 assert.equal((shell.match(/<GlobalSearch\/>/g)||[]).length,1,'Global search mounted more than once');

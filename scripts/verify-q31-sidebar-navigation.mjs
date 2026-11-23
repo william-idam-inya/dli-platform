@@ -18,9 +18,9 @@ for(const area of ['lessons','assignments','quizzes','attendance'])
   assert.ok(areas.includes("id:'"+area+"'"),'Missing '+area);
 assert.ok(fix.includes('.desktop-sidebar .primary-nav') && fix.includes('overflow: visible'));
 assert.match(fix,/\.desktop-sidebar\s*\{[^}]*overflow-y:\s*auto;[^}]*overflow-x:\s*hidden;/);
-assert.ok(read('src/q45-shell.css').includes('.dli-flat-nav'),'Flat sidebar styling missing');
+assert.ok(read('src/app-shell.css').includes('.dli-flat-nav'),'Flat sidebar styling missing');
 assert.ok(fix.includes('grid-template-columns: minmax(0, 1fr)'));
-assert.ok(read('src/q45-shell.css').includes('.dli-flat-nav .nav-link'),'Flat navigation active row styling missing');
+assert.ok(read('src/app-shell.css').includes('.dli-flat-nav .nav-link'),'Flat navigation active row styling missing');
 assert.ok(fix.includes('focus-visible') && fix.includes('overflow-wrap: break-word'));
 assert.ok(fix.includes('.mobile-sidebar .primary-nav'));
 const reference=main.indexOf("import './reference-shell.css'");

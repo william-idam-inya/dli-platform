@@ -9,7 +9,7 @@ const mediaSearch=read('src/components/SearchBarWithMediaScope.tsx');
 const menu=read('src/components/QuickMenu.tsx');
 const nav=read('src/data/navigation.ts');
 const app=read('src/App.tsx');
-const css=read('src/q45-shell.css');
+const css=read('src/app-shell.css');
 const main=read('src/main.tsx');
 const dashboard=read('src/components/ReferenceDashboard.tsx');
 const overview=read('src/pages/DashboardPage.tsx');
@@ -52,7 +52,7 @@ inc(css,'--dli-role-scene:url(','Photographic role backgrounds');
 inc(css,'linear-gradient(135deg,rgba(4,22,49,.78)','Readable tinted background');
 inc(css,'prefers-reduced-motion','Accessibility');
 inc(css,'max-width:950px','Responsive laptop');
-inc(main,"import './q45-shell.css'","Q45 stylesheet applied");
+inc(main,"import './app-shell.css'","Q45 stylesheet applied");
 for(const t of ['function KpiCard','return <Link className="ref-kpi-card"',
  'label:\'Classes\'','label:\'Payments\'','label:\'Tutor Payouts\'',
  'No recent audited activity is available.',

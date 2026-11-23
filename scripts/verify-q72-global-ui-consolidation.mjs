@@ -11,18 +11,18 @@ const nav=read('src/data/navigation.ts');
 const home=read('src/pages/DashboardPage.tsx');
 const ref=read('src/components/ReferenceDashboard.tsx');
 const css=read('src/design-system.css');
-const q45=read('src/q45-shell.css');
-const q36=read('src/q36-workspace-theme.css');
+const q45=read('src/app-shell.css');
+const q36=read('src/app-shell.css');
 const classes=read('src/pages/ClassesWorkspacePage.tsx');
 const direct=read('src/pages/DirectMessagesPage.tsx');
 const media=read('src/components/ChatPrivateMedia.tsx');
 const modal=read('src/components/ModalDialog.tsx');
-const modalCss=read('src/components/ModalDialog.css');
+const modalCss=read('src/design-system.css');
 const float=read('src/components/FloatingMessenger.tsx');
 const policies=read('src/auth/permissions.ts');
 const notices=read('src/components/DliNoticeCenter.tsx');
 const topbar=read('src/components/TopbarUtilityDropdown.css');
-const styles=read('src/styles.css');
+const styles=read('src/design-system.css');
 for(const token of ['authUserId: string | null',
  'hasCompletedProfile: boolean | null',"preferredTheme: 'system' | 'light' | 'dark'",
  'updatePreferredTheme:',"supabase.auth.getUser()","from('authorised_users')",
@@ -76,7 +76,7 @@ for(const token of ['createPortal','role="dialog"',
  'function ConfirmDialog','minLength','maxLength']){
  assert.ok(modal.includes(token),'Accessible modal contract missing: '+token);
 }
-assert.ok(modalCss.includes('z-index:1450')&&modalCss.includes('safe-area-inset-bottom'),
+assert.ok(modalCss.includes('z-index:var(--z-modal)')&&modalCss.includes('safe-area-inset-bottom'),
  'Modal should appear above floating messenger while respecting mobile insets');
 assert.ok(classes.includes('classes-create-toggle')&&
  classes.includes('classes-readonly-course')&&

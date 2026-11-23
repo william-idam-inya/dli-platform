@@ -6,7 +6,7 @@ const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const chat=read('src/pages/DirectMessagesPage.tsx');
 const css=read('src/components/WorkspaceFocus.css');
 const focus=read('src/components/WorkspaceFocus.tsx');
-const theme=read('src/q36-workspace-theme.css');
+const theme=read('src/app-shell.css');
 const main=read('src/main.tsx');
 const sql=read('supabase/migrations/20261115230000_stage_q36_new_direct_contact_directory.sql');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
@@ -35,7 +35,7 @@ for(const part of [
  ".app-layout", "url('/dli-mark.svg')", ".desktop-sidebar", ".topbar",
  ".page-content", "data-theme='dark'", "prefers-reduced-transparency"
 ])assert.ok(theme.includes(part),'Shared visual system missing: '+part);
-assert.ok(main.includes("import './q36-workspace-theme.css'"),'Global layout theme not loaded');
+assert.ok(main.includes("import './app-shell.css'"),'Global layout theme not loaded');
 for(const part of [
  'CREATE FUNCTION public.dli_new_direct_directory()',
  'public.dli_direct_directory()',

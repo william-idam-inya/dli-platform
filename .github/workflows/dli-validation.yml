@@ -236,6 +236,9 @@ jobs:
       - name: Verify Q72 global UI performance, role access and private modal consolidation
         run: node scripts/verify-q72-global-ui-consolidation.mjs
 
+      - name: Verify Q74 CSS and component consolidation
+        run: npm run check:q74-codebase-consolidation
+
       - name: Verify TypeScript
         run: npm run typecheck
 
