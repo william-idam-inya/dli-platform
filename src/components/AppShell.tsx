@@ -62,7 +62,6 @@ function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>voi
      <LogOut size={18} aria-hidden="true"/><span>Sign out</span>
    </button>
   </div>
-  <div className="sidebar-version">Detailed Learning Institute · Learn • Improve • Excel</div>
  </div>;
 }
 
@@ -389,10 +388,7 @@ export default function AppShell({ children }: AppShellProps) {
           {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
           {themeSyncWarning && <p role="alert" className="auth-feedback error">{themeSyncWarning}</p>}
           <WorkspaceFocus>{children}</WorkspaceFocus>
-          <footer className="page-footer">
-            <span>© {new Date().getFullYear()} Detailed Learning Institute</span>
 
-          </footer>
         </div>
       </main>
       {account && <nav className="mobile-bottom-nav" aria-label="Quick mobile navigation">
