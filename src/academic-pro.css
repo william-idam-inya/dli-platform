@@ -5,93 +5,8 @@
  *
  * Brand: legible royal blue, academic navy, restrained DLI gold, soft surfaces.
  */
-:root {
-  --bg: #f5f8fc;
-  --surface: #ffffff;
-  --surface-soft: #f0f5fb;
-  --text: #152743;
-  --muted: #50627a;
-  --faint: #718096;
-  --border: #dce5f0;
-  --purple: #184b91;
-  --purple-dark: #153e78;
-  --purple-soft: #e8f0fc;
-  --shadow: 0 8px 28px rgba(15,47,85,.065);
-  --dli-gold: #e2b64f;
-  --dli-navy: #112744;
-  --dli-text-scale: 1;
-  --dli-card-pad: 22px;
-  --dli-card-gap: 16px;
-  --dli-focus: #184b91;
-  color: var(--text);
-  background: var(--bg);
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #101b2c;
-  --surface: #19283d;
-  --surface-soft: #22334b;
-  --text: #eff5fc;
-  --muted: #bdcce0;
-  --faint: #a5b8cf;
-  --border: #334a65;
-  --purple: #80b7ff;
-  --purple-dark: #c0dcff;
-  --purple-soft: #264669;
-  --shadow: 0 12px 30px rgba(0,0,0,.16);
-  --dli-focus: #9ac7ff;
-}
-:root[data-dli-accent='gold'] {
-  --purple: #97650d;
-  --purple-dark: #805108;
-  --purple-soft: #fff1d3;
-  --dli-focus: #97650d;
-}
-:root[data-theme='dark'][data-dli-accent='gold'] {
-  --purple: #f0c56b;
-  --purple-dark: #f8db9a;
-  --purple-soft: #54401e;
-  --dli-focus: #f0c56b;
-}
-:root[data-dli-accent='teal'] {
-  --purple: #087d78;
-  --purple-dark: #076863;
-  --purple-soft: #dcf5f1;
-  --dli-focus: #087d78;
-}
-:root[data-theme='dark'][data-dli-accent='teal'] {
-  --purple: #62d5c7;
-  --purple-dark: #b1f3e9;
-  --purple-soft: #164943;
-  --dli-focus: #62d5c7;
-}
-:root[data-dli-accent='purple'] {
-  --purple: #7c3aed;
-  --purple-dark: #6d28d9;
-  --purple-soft: #f5f3ff;
-  --dli-focus: #7c3aed;
-}
-:root[data-theme='dark'][data-dli-accent='purple'] {
-  --purple: #a78bfa;
-  --purple-dark: #c4b5fd;
-  --purple-soft: #3b2d6a;
-  --dli-focus: #a78bfa;
-}
-:root[data-dli-accent='emerald'] {
-  --purple: #0d9278;
-  --purple-dark: #0f766e;
-  --purple-soft: #ecfdf5;
-  --dli-focus: #0d9278;
-}
-:root[data-theme='dark'][data-dli-accent='emerald'] {
-  --purple: #34d399;
-  --purple-dark: #6ee7b7;
-  --purple-soft: #064e3b;
-  --dli-focus: #34d399;
-}
-:root[data-dli-text='smaller'] { --dli-text-scale: 0.9; }
-:root[data-dli-text='large'] { --dli-text-scale: 1.15; }
-:root[data-dli-density='compact'] { --dli-card-pad: 15px;--dli-card-gap: 11px; }
+
+
 html { scroll-behavior: smooth; }
 body { letter-spacing: -.006em; }
 button, a, select, input, textarea { -webkit-tap-highlight-color: transparent; }
@@ -119,21 +34,10 @@ button, a, select, input, textarea { -webkit-tap-highlight-color: transparent; }
 }
 .brand-copy strong { font-size: 15px; font-weight: 800; color: var(--text); }
 .brand-copy small { font-size: 11px; }
-.workspace-switcher {
-  background: var(--surface-soft);border-color:var(--border);
-  border-radius: 14px; margin-bottom: 17px;
-}
-.workspace-avatar { background: #fff;color:#153e78; }
-.workspace-copy strong { font-size: 13px; }
-.workspace-copy small { font-size: 11px; }
 .nav-section-label { color:var(--muted);font-size:11px;letter-spacing:.07em; }
 .nav-link { font-size: calc(13px * var(--dli-text-scale));font-weight:600; }
 .nav-link.active { background:var(--purple-soft);color:var(--purple-dark); }
 .nav-link.active svg { color:var(--purple); }
-.sidebar-footer { background:var(--surface-soft); }
-.sidebar-footer strong { font-size:12px; }
-.sidebar-footer p { font-size:11px;line-height:1.55; }
-.sidebar-version { font-size:11px; }
 .topbar {
   border-color: var(--border);
   background: color-mix(in srgb,var(--surface) 93%,transparent);
@@ -259,7 +163,6 @@ body .unified-overview .unified-overview-metrics>div {
 }
 body .unified-overview .unified-overview-metrics strong {color:var(--text);}
 body .unified-overview .unified-overview-metrics span {color:var(--muted);}
-body .unified-overview .dashboard-extra-tools {border-radius:16px;}
 body .unified-overview .status-banner {margin-bottom:26px;}
 
 /* Learning hub: subject-like visual anchors without decorative photo overload. */
@@ -312,7 +215,7 @@ body .unified-overview .status-banner {margin-bottom:26px;}
 :root[data-dli-text='large'] .panel,
 :root[data-dli-text='large'] .module-card,
 :root[data-dli-text='large'] .mobile-sidebar {line-height:1.65;}
-:root[data-dli-text='large'] :is(.user-outline-button,.auth-feedback,.status-chip,.nav-section-toggle,.mobile-bottom-link) {
+:root[data-dli-text='large'] :is(.user-outline-button, .auth-feedback, .status-chip, .mobile-bottom-link){
   font-size:14px;
 }
 :root[data-dli-density='compact'] .module-card {min-height:123px;}

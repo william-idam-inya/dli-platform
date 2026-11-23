@@ -3,7 +3,6 @@ import {
 } from 'react';
 import {createPortal} from 'react-dom';
 import {AlertCircle,X} from 'lucide-react';
-import './ModalDialog.css';
 
 type ModalDialogProps={
  open:boolean;title:string;children:ReactNode;onClose:()=>void;

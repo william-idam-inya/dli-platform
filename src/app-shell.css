@@ -1,0 +1,898 @@
+/* Canonical DLI app shell, responsive navigation, header and mobile overlays. */
+
+/* Reuse the existing academic and operations routes, rather than replacing
+   them with a second, competing navigation or permission matrix. */
+.sidebar-inner { gap: 0; }
+.primary-nav { overscroll-behavior: contain; padding-bottom: var(--dli-space-4); }
+.nav-link { min-height: var(--dli-tap-size); font-size: 13px; line-height: 1.35; border-radius: var(--dli-radius-sm); }
+.nav-link svg { flex: 0 0 auto; }
+.nav-link.active { box-shadow: inset 3px 0 var(--purple); }
+.brand-copy strong { font-size: 15px; }
+.brand-copy small { font-size: 11px; }
+
+.page-content { max-width: 1440px; }
+.section-heading h2, .panel-heading h2 { font-size: clamp(18px, 2vw, 21px); line-height: 1.35; }
+.section-note { font-size: 12px; line-height: 1.45; }
+.section-kicker { font-size: 10px; }
+.welcome-copy { font-size: 13px; line-height: 1.6; }
+.status-banner-copy strong { font-size: 13px; }
+.status-banner-copy span { font-size: 12px; }
+.module-grid { gap: var(--dli-space-4); }
+.module-card { min-height: 164px; padding: var(--dli-space-5); border-radius: var(--dli-radius-md); }
+.module-card h3 { font-size: 14px; line-height: 1.35; }
+.module-card p { font-size: 12px; line-height: 1.5; }
+.module-card:focus-visible { outline-offset: 3px; }
+
+.mobile-bottom-nav { display: none; }
+@media (max-width: 680px) {
+  /* Keep the full permitted site available in More, with 4 role priorities. */
+  .mobile-bottom-nav {
+    position: fixed; inset: auto 0 0; z-index: 40;
+    display: grid; grid-template-columns: repeat(5,minmax(0,1fr));
+    align-items: stretch; gap: 1px;
+    min-height: calc(var(--dli-nav-height) + env(safe-area-inset-bottom));
+    padding: 4px 8px calc(5px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 -8px 24px rgba(26,22,52,.07);
+  }
+  .mobile-bottom-link {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; min-width: 0; min-height: 52px; border: 0;
+    border-radius: var(--dli-radius-sm); background: transparent;
+    color: var(--muted); font: inherit; font-size: 10px; font-weight: 650;
+    text-align: center; line-height: 1.15;
+  }
+  .mobile-bottom-link span { width: 100%; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-bottom-link.active { background: var(--purple-soft); color: var(--purple-dark); }
+  .mobile-bottom-link:focus-visible { outline-offset: -2px; }
+  .page-content {
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+    padding-left: var(--dli-space-4); padding-right: var(--dli-space-4);
+  }
+  .mobile-menu, .topbar-actions .icon-button { min-width: var(--dli-tap-size); min-height: var(--dli-tap-size); }
+  .topbar { padding: 0 12px; }
+  .topbar-left, .topbar-actions { gap: 6px; }
+  .topbar-actions .account-mini, .topbar-actions .preview-label { display: none; }
+  .breadcrumb > span:first-child, .breadcrumb-divider { display: none; }
+  .breadcrumb strong { display: block; max-width: 115px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .mobile-sidebar { width: min(340px, 90vw); overflow-y: auto; }
+  .mobile-sidebar .sidebar-inner { min-height: 100%; height: auto; }
+  .mobile-sidebar .primary-nav { overflow: visible; }
+  .mobile-close { min-width: var(--dli-tap-size); min-height: var(--dli-tap-size); }
+  .module-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--dli-space-3); }
+  .module-card { min-height: 144px; padding: var(--dli-space-4); }
+  .module-card h3 { font-size: 13px; }
+  .module-card p { font-size: 11.5px; }
+  .welcome-copy, .status-banner-copy span { font-size: 12px; }
+  .section-note { max-width: 145px; font-size: 11px; }
+  .user-outline-button, .primary-button, .auth-submit,
+  .user-load-more, .user-filter select, .user-actions select {
+    min-height: var(--dli-tap-size);
+  }
+  input:not([type='checkbox']):not([type='radio']), select, textarea { font-size: 16px; }
+}
+@media (max-width: 390px) {
+  .module-grid { grid-template-columns: 1fr; }
+  .module-card { min-height: 116px; }
+  .breadcrumb strong { max-width: 75px; }
+  .mobile-bottom-nav { padding-left: 4px; padding-right: 4px; }
+  .mobile-bottom-link { font-size: 9.5px; }
+}
+@media (hover: none) {
+  .module-card:hover { transform: none; }
+}
+@media print {
+  .mobile-bottom-nav { display: none !important; }
+}
+
+
+
+/* DLI blue-gold branded canvas */
+/* DLI Academic Pro Q36 — approved blue, gold and open-book background.
+   Shared shell styling across Owner/Admin/Assistant Admin/Tutor/Student. */
+.app-layout{
+ position:relative;isolation:isolate;
+ background-color:#09264b;
+ background-image:
+  radial-gradient(ellipse 470px 300px at 92% 9%,rgba(235,185,70,.20),transparent 75%),
+  radial-gradient(ellipse 520px 400px at 80% 70%,rgba(43,129,185,.17),transparent 78%),
+  linear-gradient(145deg,rgba(5,26,57,.87),rgba(12,55,101,.83)),
+  url('/dli-mark.svg');
+ background-position:center,center,center,right 5vw top 90px;
+ background-size:auto,auto,auto,min(440px,42vw);
+ background-repeat:no-repeat;
+ background-attachment:scroll;
+ min-height:100dvh;
+}
+.app-layout .main-area{background:transparent;}
+.app-layout .page-content{
+ min-width:0;
+ background:linear-gradient(140deg,rgba(244,249,255,.98),rgba(242,247,255,.97));
+ border-radius:0 0 18px 18px;
+}
+.app-layout .topbar{
+ background:rgba(249,252,255,.9);
+ -webkit-backdrop-filter:blur(17px);backdrop-filter:blur(17px);
+ border-bottom-color:rgba(185,203,226,.65);
+}
+@media(min-width:681px){
+ .app-layout .desktop-sidebar{
+  background-color:rgba(8,37,78,.94);
+  background-image:linear-gradient(165deg,rgba(8,35,72,.97),rgba(14,57,103,.88)),url('/dli-mark.svg');
+  background-repeat:no-repeat;background-size:cover,210px;
+  background-position:center,right -60px bottom 22%;
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  border-right-color:rgba(225,183,78,.27);
+ }
+}
+.app-layout .page-content :is(.panel,.ref-surface,.module-card){
+ border-color:color-mix(in srgb,var(--border) 88%,transparent);
+ box-shadow:0 8px 28px rgba(12,40,81,.045);
+}
+.app-layout .dli-workspace-trigger-row{position:relative;z-index:1;}
+:root[data-theme='dark'] .app-layout .page-content{
+ background:linear-gradient(140deg,rgba(14,26,48,.98),rgba(19,41,66,.98));
+}
+:root[data-theme='dark'] .app-layout .topbar{
+ background:rgba(15,29,52,.91);
+ border-bottom-color:rgba(119,153,187,.22);
+}
+@media(max-width:680px){
+ .app-layout{background-attachment:scroll;background-position:center,center,center,right -60px top 74px;background-size:auto,auto,auto,240px;}
+ .app-layout .page-content{border-radius:0;}
+ .app-layout .mobile-sidebar{
+  background-image:linear-gradient(165deg,rgba(247,251,255,.94),rgba(236,244,255,.97)),url('/dli-mark.svg');
+  background-size:cover,180px;background-repeat:no-repeat;background-position:center,right -50px bottom 25%;
+ }
+}
+@media(prefers-reduced-transparency:reduce){
+ .app-layout .page-content{background:var(--bg);}
+ .app-layout .topbar{background:var(--surface);}
+}
+
+/* Q44: backdrop-filter establishes an unintended fixed-position containing
+   block. Disable it only while a focus overlay is active so viewport scroll
+   geometry is correct; retain the normal frosted shell when the panel closes. */
+.app-layout:has(.dli-workspace-backdrop) .page-content{
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ transform:none!important;filter:none!important;contain:initial!important;
+ overflow:visible!important;
+}
+.app-layout:has(.dli-workspace-backdrop) .module-page{
+ transform:none!important;filter:none!important;contain:initial!important;
+ overflow:visible!important;
+}
+
+
+/* Header, search, navigation and role shell */
+/* Q45: Facebook-inspired global shell with role-scoped search, primary tabs,
+   quick actions, flat navigation and accessible floating menus. */
+.dli-global-search{position:relative;display:flex;align-items:center;gap:7px;
+ width:clamp(190px,20vw,325px);min-width:0;height:40px;border-radius:999px;
+ background:var(--surface-soft);border:1px solid var(--border);padding:0 12px}
+.dli-global-search>label{display:flex;align-items:center;color:var(--muted)}
+.dli-global-search>input{min-width:0;flex:1;border:0;outline:0;background:transparent;
+ color:var(--text);font:inherit;font-size:12px}
+.dli-global-search>button{background:transparent;border:0;color:var(--text);padding:4px}
+.dli-global-search:focus-within{outline:2px solid var(--purple);outline-offset:2px}
+.dli-global-search-results,.dli-quick-menu-items,.dli-profile-dropdown{
+ position:absolute;top:calc(100% + 9px);z-index:90;
+ width:min(370px,calc(100vw - 26px));max-height:min(65dvh,510px);
+ overflow-y:auto;padding:11px;border:1px solid var(--border);
+ border-radius:15px;background:var(--surface);color:var(--text);
+ box-shadow:0 18px 46px rgba(6,23,48,.26);
+}
+.dli-global-search-results{left:0;display:grid;gap:3px}
+.dli-global-search-results>strong,.dli-quick-menu-items>strong{
+ padding:8px;font-size:13px;color:var(--text)}
+.dli-global-search-results>p,.dli-global-search-results>small{
+ padding:6px 8px;color:var(--muted);font-size:12px;line-height:1.5}
+.dli-global-hit,.dli-quick-menu-items>a{display:flex;align-items:center;gap:12px;
+ padding:10px 11px;border-radius:11px;text-decoration:none;min-height:44px;
+ font-size:12px;color:var(--text)}
+.dli-global-hit>span{display:grid;gap:4px;min-width:0}
+.dli-global-hit strong{font-size:12px;overflow-wrap:anywhere}
+.dli-global-hit small{font-size:11px;color:var(--muted)}
+.dli-global-hit:hover,.dli-quick-menu-items>a:hover,.dli-profile-dropdown>a:hover,
+.dli-profile-dropdown>button:hover{background:var(--surface-soft)}
+.dli-topbar-brand{display:inline-flex;align-items:center;gap:7px;
+ flex:0 0 auto;font-size:13px;font-weight:850;color:var(--text)}
+.dli-topbar-brand .official-dli-logo{width:34px;height:34px;object-fit:contain}
+.dli-primary-tabs{display:flex;justify-content:center;align-items:stretch;
+ flex:1;min-width:0;gap:clamp(3px,.55vw,12px);height:100%}
+.dli-primary-tabs>a{display:grid;place-items:center;align-content:center;gap:2px;
+ min-width:44px;max-width:96px;flex:1;position:relative;
+ color:var(--muted);font-size:10px;font-weight:750}
+.dli-primary-tabs>a:hover{color:var(--purple)}
+.dli-primary-tabs>a.active{color:var(--purple);background:var(--purple-soft)}
+.dli-primary-tabs>a.active:after{content:"";height:3px;position:absolute;bottom:0;left:12%;right:12%;
+ background:var(--purple);border-radius:3px}
+.dli-quick-menu,.dli-profile-menu{position:relative;display:inline-flex;align-items:center}
+.dli-quick-menu-items{right:0;display:grid;gap:3px}
+.dli-profile-toggle{display:grid;place-items:center;min-width:36px;min-height:36px;
+ border:1px solid var(--border);border-radius:10px;background:var(--surface);
+ color:var(--text);cursor:pointer}
+.dli-profile-dropdown{right:0;display:grid;gap:4px;max-width:min(290px,calc(100vw - 28px))}
+.dli-profile-dropdown>a,.dli-profile-dropdown>button{display:flex;align-items:center;gap:9px;
+ border:0;background:transparent;min-height:44px;padding:9px 11px;font:inherit;
+ font-size:12px;color:var(--text);text-decoration:none;border-radius:9px;text-align:left}
+.dli-profile-dropdown>strong{padding:9px;font-size:12px;overflow-wrap:anywhere}
+.dli-flat-sidebar-identity{display:flex;align-items:center;gap:11px;padding:9px;
+ border:1px solid var(--border);border-radius:12px;color:var(--text);background:var(--surface-soft);
+ margin-bottom:13px;min-width:0}
+.dli-flat-sidebar-identity>span:last-child{display:grid;gap:4px;min-width:0}
+.dli-flat-sidebar-identity strong{font-size:12px;overflow-wrap:anywhere}
+.dli-flat-sidebar-identity small{font-size:11px;color:var(--muted)}
+.dli-flat-nav{display:grid;align-content:start;gap:4px;padding:6px 2px;overflow-y:auto;min-height:0;flex:1}
+.dli-flat-nav .nav-link{min-height:46px;display:flex;align-items:center;gap:11px;
+ margin:0;padding:10px 11px}
+.dli-flat-nav .nav-link svg{flex:0 0 18px}
+.dli-flat-nav .nav-link span{font-size:12px}
+.dli-flat-more{display:flex;align-items:center;justify-content:center;gap:8px;
+ min-height:44px;margin-top:7px;background:var(--surface-soft);color:var(--text);
+ border:1px solid var(--border);border-radius:11px;font:inherit;font-size:12px;font-weight:750}
+.dli-flat-nav::-webkit-scrollbar{width:6px}
+.dli-flat-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.app-layout .topbar{z-index:75;gap:13px}
+.app-layout .topbar-left{gap:9px;min-width:0}
+.app-layout .topbar-actions{gap:8px}
+@media(min-width:1100px){
+ .dli-topbar-brand{font-size:12px}
+ .dli-primary-tabs>a span{display:block}
+}
+@media(max-width:1250px){
+ .dli-primary-tabs>a span{display:none}
+ .dli-primary-tabs>a{flex:0 1 52px}
+ .dli-global-search{width:clamp(150px,18vw,230px)}
+}
+@media(max-width:930px){
+ .dli-topbar-brand span{display:none}
+ .dli-global-search{width:clamp(130px,19vw,200px)}
+ .dli-primary-tabs>a{flex:0 1 43px}
+}
+@media(max-width:680px){
+ .app-layout .topbar{gap:5px}
+ .dli-topbar-brand,.dli-primary-tabs{display:none}
+ .dli-global-search{flex:1;max-width:220px;width:auto}
+ .dli-global-search>input{font-size:11px}
+ .dli-quick-menu-items{right:-25px}
+ .dli-profile-dropdown{right:0}
+ .dli-flat-sidebar-identity{margin-top:7px}
+}
+@media(max-width:390px){
+ .dli-global-search{max-width:145px;min-width:0}
+ .dli-global-search>input::placeholder{font-size:0}
+}
+
+/* Q45 role-oriented photographic canvas with gradient fallback. The imagery
+   is decorative and never holds required text. Each role keeps the same
+   accessible card hierarchy and approved dark blue/gold palette. */
+.app-layout[data-dli-role='student']{
+ --dli-role-scene:url('/dli-mark.svg');
+}
+.app-layout[data-dli-role='tutor']{
+ --dli-role-scene:url('/dli-mark.svg');
+}
+.app-layout[data-dli-role='owner'],
+.app-layout[data-dli-role='admin'],
+.app-layout[data-dli-role='assistant_admin']{
+ --dli-role-scene:url('/dli-mark.svg');
+}
+.app-layout[data-dli-role]{
+ background-color:#09264b;
+ background-image:
+  linear-gradient(135deg,rgba(4,22,49,.78),rgba(6,30,63,.73)),
+  var(--dli-role-scene),
+  linear-gradient(145deg,#082b58,#0c4678);
+ background-size:cover,cover,cover;
+ background-position:center,center,center;
+ background-repeat:no-repeat;
+ background-attachment:scroll;
+}
+:root[data-theme='dark'] .app-layout[data-dli-role]{
+ background-image:
+  linear-gradient(145deg,rgba(3,16,36,.84),rgba(6,28,57,.8)),
+  var(--dli-role-scene),
+  linear-gradient(145deg,#061a38,#09264b);
+}
+.app-layout[data-dli-role] .page-content{
+ background:linear-gradient(140deg,rgba(244,249,255,.98),rgba(242,247,255,.97));
+}
+:root[data-theme='dark'] .app-layout[data-dli-role] .page-content{
+ background:linear-gradient(140deg,rgba(14,26,48,.98),rgba(19,41,66,.98));
+}
+@media(max-width:680px){
+ .app-layout[data-dli-role]{background-attachment:scroll;}
+ .app-layout .dli-topbar-brand{display:inline-flex;}
+ .app-layout .dli-topbar-brand span{display:none;}
+.app-layout .breadcrumb{display:none;}
+}
+@media(min-width:681px){
+.app-layout .breadcrumb{display:none;}
+}
+@media(prefers-reduced-data:reduce){
+ .app-layout[data-dli-role]{background-image:linear-gradient(145deg,#082b58,#0c4678)}
+}
+
+/* Q45: preserve a usable top bar at narrow laptop widths without horizontal
+   scrolling. Primary navigation remains in the flat sidebar at those widths. */
+@media(min-width:681px) and (max-width:1180px){
+ .app-layout .topbar{padding-inline:13px;gap:7px}
+ .app-layout .dli-primary-tabs{display:none}
+ .app-layout .topbar-left{flex:1}
+ .app-layout .dli-global-search{width:min(270px,42vw)}
+ .app-layout .preview-label{display:none}
+}
+@media(min-width:681px) and (max-width:950px){
+ .app-layout .dli-topbar-brand span{display:none}
+ .app-layout .account-mini-copy{display:none}
+ .app-layout .topbar-actions{gap:5px}
+ .app-layout .dli-global-search{width:min(235px,39vw)}
+}
+@media(max-width:680px){
+ .app-layout .preview-label{display:none}
+ .app-layout .account-mini{display:none}
+ .app-layout .dli-global-search{flex:1;max-width:none}
+ .app-layout .topbar{padding-inline:9px}
+ .app-layout .topbar-actions{gap:4px}
+}
+
+@media(prefers-reduced-motion:reduce){
+ .dli-primary-tabs>a,.dli-flat-nav .nav-link,
+ .dli-global-hit,.dli-floating-chat-bubble{transition:none!important}
+}
+
+/* Q46: reserve room for search and utilities at 360-414px.
+   The narrow header must shrink its search field, not push action buttons
+   past the visible viewport; its result panel stays viewport-bound. */
+@media(max-width:414px){
+ .app-layout .topbar{min-width:0;padding-inline:8px;gap:5px}
+ .app-layout .topbar-left{min-width:0;flex:1 1 0;gap:5px}
+ .app-layout .dli-topbar-brand{flex:0 0 30px;min-width:30px}
+ .app-layout .dli-topbar-brand .official-dli-logo{width:30px;height:30px}
+ .app-layout .dli-global-search{width:0;min-width:0;max-width:none;flex:1 1 42px;
+  padding-inline:8px}
+ .app-layout .topbar-actions{flex:0 0 auto;gap:2px;min-width:0}
+ .app-layout .topbar-actions .icon-button{min-width:44px;min-height:44px}
+ .app-layout .dli-profile-toggle{min-width:44px;min-height:44px}
+ .app-layout .dli-global-search-results{width:min(320px,calc(100vw - 18px))}
+}
+
+/* Q48: four explicit header slots prevent the search, primary tabs and
+   utility actions from competing for the same pixels. Responsive rows are
+   selected BEFORE content can collide. The desktop sidebar remains available
+   at all widths, including where the centre tabs are intentionally omitted. */
+.app-layout .dli-grid-topbar{
+ display:grid;
+ grid-template-columns:auto minmax(170px,260px) minmax(0,1fr) auto;
+ grid-template-areas:"brand search tabs actions";
+ align-items:center;
+ column-gap:12px;
+ min-width:0;
+}
+.app-layout .dli-grid-topbar>.topbar-left{
+ grid-area:brand;min-width:0;flex:0 1 auto;
+}
+.app-layout .dli-grid-topbar>.dli-topbar-search{
+ grid-area:search;display:flex;align-items:center;
+ width:100%;min-width:0;max-width:100%;
+}
+.app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+ flex:1 1 auto;width:100%;max-width:none;min-width:0;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs{
+ grid-area:tabs;min-width:0;width:100%;overflow:hidden;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs>a{
+ min-width:0;overflow:hidden;
+}
+.app-layout .dli-grid-topbar>.dli-primary-tabs>a span{
+ max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;text-align:center;
+}
+.app-layout .dli-grid-topbar>.topbar-actions{
+ grid-area:actions;min-width:0;flex:0 0 auto;
+}
+.app-layout .dli-grid-topbar .dli-topbar-search .dli-global-search-results{
+ max-width:calc(100vw - 24px);
+}
+
+/* On the desktop range shown in the reported screenshot the real sidebar
+   leaves less space than the outer browser viewport suggests. Place all
+   primary destinations on their own accessible row, without hiding links. */
+@media(min-width:1251px) and (max-width:1900px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"brand search actions" "tabs tabs tabs";
+  grid-template-rows:58px 52px;
+  height:110px;min-height:110px;gap:0 15px;
+  padding-block:0;
+ }
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  max-width:460px;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{
+  display:flex;align-self:stretch;height:52px;justify-content:center;
+  border-top:1px solid var(--border);
+  gap:clamp(6px,1.2vw,20px);
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs>a{
+  flex:0 1 170px;max-width:190px;min-width:48px;
+  font-size:11px;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs>a span{display:block;}
+}
+
+/* Compact laptops: protect utilities and preserve a full-width usable
+   search on the second row. All destinations remain in the desktop sidebar. */
+@media(min-width:681px) and (max-width:1250px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"brand actions" "search search";
+  grid-template-rows:58px 52px;
+  height:110px;min-height:110px;
+  gap:0 10px;padding-block:0;
+ }
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{display:none;}
+ .app-layout .dli-grid-topbar>.dli-topbar-search{
+  justify-content:center;align-self:start;
+  border-top:1px solid var(--border);padding-top:5px;
+ }
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  max-width:min(100%,560px);
+ }
+ .app-layout .dli-grid-topbar>.topbar-actions{gap:5px;}
+}
+@media(min-width:681px) and (max-width:950px){
+ .app-layout .dli-grid-topbar .account-mini{display:none;}
+ .app-layout .dli-grid-topbar .preview-label{display:none;}
+ .app-layout .dli-grid-topbar .dli-topbar-brand span{display:none;}
+}
+@media(max-width:680px){
+ .app-layout .dli-grid-topbar{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"brand search actions";
+  grid-template-rows:70px;
+  height:70px;min-height:70px;gap:0 6px;
+  padding:0 9px;
+ }
+ .app-layout .dli-grid-topbar>.topbar-left{gap:0;min-width:0;}
+ .app-layout .dli-grid-topbar>.dli-primary-tabs{display:none;}
+ .app-layout .dli-grid-topbar>.dli-topbar-search{width:100%;min-width:0;}
+ .app-layout .dli-grid-topbar .dli-topbar-search>.dli-global-search{
+  flex:1 1 auto;width:100%;max-width:none;min-width:0;
+ }
+ .app-layout .dli-grid-topbar>.topbar-actions{gap:3px;}
+ /* A search results popover must fit the actual phone viewport, not the
+    width of its small header input. */
+ .app-layout .dli-grid-topbar .dli-global-search-results{
+  position:fixed;top:65px;left:8px;right:8px;
+  width:auto;max-width:none;max-height:calc(100dvh - 150px);
+ }
+}
+
+/* Q72 desktop ergonomics: navigation remains in the existing role-aware shell.
+   At smaller widths the sidebar replaces centre tabs without collisions. */
+@media(min-width:1280px){
+ .app-layout .dli-grid-topbar{min-height:60px;grid-template-columns:auto minmax(190px,320px) minmax(0,1fr) auto}
+ .app-layout .dli-primary-tabs{min-width:0}
+}
+@media(min-width:681px) and (max-width:1279px){
+ .app-layout .dli-primary-tabs{display:none}
+}
+@media(max-width:414px){
+ .app-layout .topbar-actions .icon-button,.app-layout .dli-profile-toggle{
+  min-width:44px;min-height:44px;
+ }
+}
+
+
+/* Overlay, drawer and mobile containment */
+/* Q49: mobile overlay resilience — normalize fixed layers, surface contrast,
+   narrow-layout containment and reachable actions across DLI roles.
+   These are display rules only; no authorization checks are modified. */
+
+/* The navigation drawer must cover the header (which is sticky at z=75),
+   not appear translucently underneath it, and must remain legible regardless
+   of the signed-in user's light/dark appearance preference. */
+@media(max-width:680px){
+ .app-layout .mobile-backdrop{
+  z-index:var(--z-drawer);background:rgba(3,13,29,.77);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+ }
+ .app-layout .mobile-sidebar{
+  box-sizing:border-box;width:min(350px,90vw);height:100dvh;max-height:100dvh;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  padding:0;scrollbar-gutter:stable;color:#f2f7ff;
+  background-color:#081e3e;
+  background-image:linear-gradient(155deg,#091e3d,#103766)!important;
+  box-shadow:16px 0 55px rgba(0,0,0,.45);
+  border-right:1px solid rgba(185,208,242,.25);
+ }
+ .mobile-sidebar .dli-mobile-drawer-heading{
+  position:sticky;top:0;z-index:5;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;min-height:65px;
+  padding:10px 13px;background:#092346;border-bottom:1px solid #315779;
+  color:#fff;font-size:14px;font-weight:800;
+ }
+ .mobile-sidebar .mobile-close{
+  position:static;display:grid;place-items:center;flex:0 0 44px;
+  width:44px;height:44px;border:1px solid #47688a;border-radius:11px;
+  background:#173d69;color:#fff;margin:0;
+ }
+ .mobile-sidebar .sidebar-inner{height:auto;min-height:0;padding:14px 14px 22px;}
+ .mobile-sidebar .dli-flat-sidebar-identity{
+  border-color:#45638a;background:#153d6b;color:#fff;
+ }
+ .mobile-sidebar .dli-flat-sidebar-identity strong{color:#fff;}
+ .mobile-sidebar .dli-flat-sidebar-identity small{color:#cde0f7;}
+ .mobile-sidebar .dli-flat-nav .nav-link{color:#dbe9ff;background:transparent;}
+ .mobile-sidebar .dli-flat-nav .nav-link:hover,
+ .mobile-sidebar .dli-flat-nav .nav-link:focus-visible{
+  background:#173d6d;color:#fff;
+ }
+ .mobile-sidebar .dli-flat-nav .nav-link.active{
+  background:#165bc1;color:#fff;border-left:3px solid #f3c968;
+  font-weight:800;
+ }
+ .mobile-sidebar .dli-flat-nav .nav-link.active svg{color:#fff;}
+ .mobile-sidebar .dli-flat-more{
+  border-color:#4a6a8f;background:#173a66;color:#fff;
+ }
+ .mobile-sidebar .ref-sidebar-actions>button,
+ .mobile-sidebar .dli-tour-launch{
+  color:#e4f0ff;border-color:transparent;background:transparent;
+ }
+ .mobile-sidebar .ref-sidebar-actions>button:hover,
+ .mobile-sidebar .dli-tour-launch:hover{
+  color:#fff;background:#173d6d;
+ }
+ .mobile-sidebar a:focus-visible,.mobile-sidebar button:focus-visible{
+  outline:3px solid #f5cc6c;outline-offset:2px;
+ }
+}
+
+/* The Quick Menu is portalled to document.body and anchored from its real
+   trigger rectangle, so an ancestor's backdrop-filter/transform can no longer
+   treat a viewport-fixed menu as a header-sized child. */
+.dli-quick-menu-portal{
+ z-index:1330;box-sizing:border-box;max-width:calc(100vw - 16px);
+ max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;
+ background:var(--surface);color:var(--text);
+}
+.dli-quick-menu-portal>a{max-width:100%;min-width:0;overflow-wrap:anywhere;}
+.dli-quick-menu-portal>a svg{flex:0 0 18px;}
+@media(max-width:680px){
+ .dli-quick-menu-portal{
+  left:8px!important;right:8px!important;width:calc(100vw - 16px)!important;
+  max-height:calc(100dvh - 95px);
+  border-radius:14px;
+ }
+}
+
+/* Root cause of the screenshot's audio caller text clipping:
+   an invisible native <audio> element was an auto-placed grid column.
+   Keep the audio playing but remove it from layout and enforce a single
+   minmax(0,1fr) track for the entire caller card. */
+.dli-call-media.audio{grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%;}
+.dli-call-media.audio>audio{display:none!important;}
+.dli-call-audio-avatar{
+ box-sizing:border-box;min-width:0;width:100%;max-width:100%;
+ padding:12px;overflow-wrap:anywhere;word-break:normal;
+}
+.dli-call-audio-avatar strong,.dli-call-audio-avatar small{
+ display:block;max-width:100%;white-space:normal;text-align:center;
+ overflow-wrap:anywhere;
+}
+.dli-call-panel>header>div:first-child{min-width:0;}
+.dli-call-header-buttons{flex-shrink:0;}
+.dli-call-media{min-width:0;max-width:100%;}
+.dli-call-panel{min-width:0;box-sizing:border-box;}
+@media(max-width:680px){
+ .dli-call-backdrop:not(.minimized){
+  box-sizing:border-box;display:flex;align-items:stretch;justify-content:stretch;
+  padding:0;overflow:hidden;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-panel{
+  display:flex;flex-direction:column;gap:10px;
+  box-sizing:border-box;width:100%;max-width:100%;
+  height:100dvh;min-height:0;max-height:100dvh;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  border:0;border-radius:0;
+  padding:calc(12px + env(safe-area-inset-top)) 12px
+          calc(12px + env(safe-area-inset-bottom));
+  background:var(--surface);
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-panel>header{
+  position:sticky;top:0;z-index:3;
+  display:flex;align-items:flex-start;gap:8px;flex:0 0 auto;
+  padding:5px 0 9px;background:var(--surface);
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-panel>header h2{
+  font-size:clamp(17px,5vw,23px);overflow-wrap:anywhere;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-header-buttons>button{
+  min-width:44px;min-height:44px;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-media{
+  flex:1 1 auto;min-height:135px;max-height:min(43dvh,370px);
+  width:100%;aspect-ratio:auto;overflow:hidden;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-media.audio{
+  flex:1 1 auto;min-height:135px;max-height:min(40dvh,300px);
+  aspect-ratio:auto;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-controls{
+  position:sticky;bottom:0;z-index:3;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;width:100%;max-width:100%;
+  padding:8px 0 calc(6px + env(safe-area-inset-bottom));
+  margin-top:auto;background:var(--surface);
+  flex:0 0 auto;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-controls button{
+  box-sizing:border-box;width:100%;min-width:0;min-height:58px;
+  padding:9px 5px;font-size:12px;line-height:1.3;
+ }
+ .dli-call-backdrop:not(.minimized) .dli-call-panel footer{
+  flex:0 0 auto;font-size:10px;line-height:1.5;
+  overflow-wrap:anywhere;
+ }
+ .dli-call-backdrop.minimized .dli-call-media.audio{
+  grid-template-columns:minmax(0,1fr);
+ }
+}
+
+/* Focus sheets should be short when content is short, independently scroll
+   when long, and avoid enormous white close buttons or clipped mobile edges. */
+@media(max-width:680px){
+ .dli-workspace-backdrop{
+  background:rgba(4,15,34,.69);
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+ }
+ .dli-workspace-focus-caption{
+  box-sizing:border-box;top:13px;left:12px;right:112px;
+  min-height:44px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:11px;
+ }
+ .dli-workspace-focus-close{
+  top:10px;right:10px;z-index:1200;
+  min-width:96px;min-height:44px;padding:9px 12px;
+  border:1px solid #55759a;border-radius:12px;
+  background:#193c67;color:#fff;font-size:12px;
+ }
+ .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]{
+  box-sizing:border-box!important;top:74px!important;left:8px!important;
+  right:8px!important;bottom:auto!important;transform:none!important;
+  width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+  min-width:0!important;min-height:0!important;height:auto!important;
+  max-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  border-radius:16px!important;padding:16px!important;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+  scrollbar-gutter:stable;
+ }
+ .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]
+ :is(input,select,textarea,button){
+  max-width:100%;min-width:0;
+ }
+ .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active] label{
+  min-width:0;max-width:100%;overflow-wrap:anywhere;
+ }
+ .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active] :is(table,pre){
+  max-width:100%;overflow-x:auto;
+ }
+}
+
+/* Normalize other known overlay families, which were not pictured. Header
+   and footer actions remain reachable while each dialog scrolls internally.
+   Forwarding now uses a body portal to escape focus/frosted ancestors. */
+@media(max-width:680px){
+ .dli-chat-profile-backdrop{box-sizing:border-box;padding:8px;align-items:center;}
+ .dli-chat-profile-dialog{
+  box-sizing:border-box;width:100%;max-width:100%;
+  max-height:calc(100dvh - 16px);min-width:0;overflow-x:hidden;
+ }
+ .dli-chat-profile-titlebar{position:sticky;top:0;z-index:2;
+  background:var(--surface);padding:10px 12px;}
+ .dli-chat-profile-person{padding:14px 12px;min-width:0;}
+ .dli-chat-profile-person>div{min-width:0;overflow-wrap:anywhere;}
+ .dli-chat-profile-actions{position:sticky;bottom:0;z-index:2;
+  background:var(--surface);padding:9px 12px calc(10px + env(safe-area-inset-bottom));}
+ .dli-telegram-forward-backdrop{
+  box-sizing:border-box;z-index:1430;padding:8px;
+ }
+ .dli-telegram-forward-dialog{
+  box-sizing:border-box;width:100%;max-width:100%;
+  max-height:calc(100dvh - 16px);overflow-x:hidden;
+ }
+ .dli-telegram-forward-dialog header{position:sticky;top:0;z-index:2;
+  background:var(--surface);padding:4px 0 9px;}
+ .dli-announcement-shade{z-index:1390;box-sizing:border-box;padding:8px;}
+ .dli-announcement-popup{
+  box-sizing:border-box;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;overflow-y:auto;
+ }
+ .user-modal-backdrop{box-sizing:border-box;padding:8px;}
+ .user-modal-panel{
+  box-sizing:border-box;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;scrollbar-gutter:stable;
+ }
+ .user-modal-header{position:sticky;top:0;z-index:2;
+  background:var(--surface);padding-bottom:6px;}
+ .user-modal-actions{position:sticky;bottom:0;z-index:2;
+  background:var(--surface);padding:10px 0 calc(7px + env(safe-area-inset-bottom));}
+ .dli-conference-backdrop{z-index:1390;box-sizing:border-box;}
+ .dli-conference-overlay{
+  box-sizing:border-box;width:100%;max-width:100%;
+  max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain;
+ }
+ .dli-conference-overlay>header{position:sticky;top:0;z-index:2;
+  background:var(--surface);padding-bottom:8px;}
+ .dli-notification-panel{
+  box-sizing:border-box;left:8px;right:8px;width:auto;
+  max-width:calc(100vw - 16px);max-height:calc(100dvh - 94px);
+  overflow-x:hidden;
+ }
+ .dli-profile-dropdown{
+  box-sizing:border-box;max-width:calc(100vw - 16px);
+  overflow-x:hidden;
+ }
+ .dli-floating-chat-root{right:8px;bottom:calc(91px + env(safe-area-inset-bottom));}
+ .dli-floating-chat{
+  width:calc(100vw - 16px);max-width:calc(100vw - 16px);
+  height:min(70dvh,calc(100dvh - 164px));
+  max-height:calc(100dvh - 164px);
+ }
+}
+
+/* Floating Messenger must not sit on top of a blocking overlay. */
+body:has(.dli-workspace-backdrop) .dli-floating-chat-root,
+body:has(.mobile-backdrop) .dli-floating-chat-root,
+body:has(.dli-call-backdrop:not(.minimized)) .dli-floating-chat-root,
+body:has(.dli-chat-profile-backdrop) .dli-floating-chat-root,
+body:has(.dli-telegram-forward-backdrop) .dli-floating-chat-root,
+body:has(.dli-conference-backdrop) .dli-floating-chat-root,
+body:has(.user-modal-backdrop) .dli-floating-chat-root{
+ visibility:hidden;pointer-events:none;
+}
+
+/* Fixed dialogs rendered inside the frosted page must not be constrained by
+   the page-content backdrop filter while visible. */
+.app-layout:has(.dli-conference-backdrop) .page-content,
+.app-layout:has(.dli-announcement-shade) .page-content{
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ transform:none!important;filter:none!important;overflow:visible!important;
+}
+body:has(.dli-conference-backdrop),
+body:has(.dli-telegram-forward-backdrop),
+body:has(.dli-announcement-shade){overflow:hidden;}
+@media(prefers-reduced-motion:reduce){
+ .mobile-sidebar,.dli-quick-menu-portal,
+ .dli-call-panel,.dli-workspace-backdrop{transition:none!important;}
+}
+
+/* Canonical mobile focus and overlay safeguards. */
+@media(max-width:680px){
+ .app-layout .dli-workspace-backdrop{
+  background:rgba(4,15,34,.69);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+ }
+ .app-layout .dli-workspace-focus-caption{
+  top:13px;left:12px;right:112px;
+  min-height:44px;max-width:calc(100vw - 128px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11px;color:#f5f8ff;
+ }
+ .app-layout .dli-workspace-focus-close{
+  top:10px;right:10px;min-width:96px;min-height:44px;
+  padding:9px 12px;background:#193c67;color:#fff;
+  border:1px solid #55759a;border-radius:12px;
+  font-size:12px;
+ }
+ .app-layout .dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]{
+  top:74px!important;left:8px!important;right:8px!important;
+  bottom:auto!important;transform:none!important;
+  width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+  min-width:0!important;min-height:0!important;height:auto!important;
+  max-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  border-radius:16px!important;padding:16px!important;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+ }
+ body .dli-chat-profile-backdrop{
+  padding:8px;align-items:center;
+ }
+ body .dli-chat-profile-dialog{
+  width:100%;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .dli-chat-profile-titlebar{
+  position:sticky;top:0;z-index:2;background:var(--surface);
+  padding:10px 12px;
+ }
+ body .dli-chat-profile-actions{
+  position:sticky;bottom:0;z-index:2;
+  padding:9px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--surface);
+ }
+ body .dli-telegram-forward-backdrop{padding:8px;z-index:1430;}
+ body .dli-telegram-forward-dialog{
+  width:100%;max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .dli-announcement-shade{z-index:1390;padding:8px;}
+ body .dli-announcement-popup{
+  max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;overflow-y:auto;
+ }
+ body .user-modal-backdrop{padding:8px;}
+ body .user-modal-panel{
+  max-width:100%;max-height:calc(100dvh - 16px);
+  overflow-x:hidden;
+ }
+ body .user-modal-actions{
+  position:sticky;bottom:0;z-index:2;
+  background:var(--surface);
+  padding:10px 0 calc(7px + env(safe-area-inset-bottom));
+ }
+ body .dli-conference-backdrop{z-index:1390;}
+ body .dli-conference-overlay{
+  max-width:100%;max-height:100dvh;overflow-x:hidden;
+ }
+ body .dli-notification-panel{
+  left:8px;right:8px;width:auto;
+  max-width:calc(100vw - 16px);
+  max-height:calc(100dvh - 94px);overflow-x:hidden;
+ }
+ body .dli-profile-dropdown{
+  max-width:calc(100vw - 16px);overflow-x:hidden;
+ }
+ body .dli-floating-chat-root{
+  right:8px;bottom:calc(91px + env(safe-area-inset-bottom));
+ }
+ body .dli-floating-chat{
+  width:calc(100vw - 16px);max-width:calc(100vw - 16px);
+  height:min(70dvh,calc(100dvh - 164px));
+  max-height:calc(100dvh - 164px);
+ }
+}
+
+/* Private bank receipts are also document previews. Portal them to body and
+   keep Close/Save plus the file viewer independently reachable on a phone. */
+@media(max-width:680px){
+ body .dli-payout-preview-overlay,body .upgrade-receipt-overlay{
+  box-sizing:border-box;padding:8px;overscroll-behavior:contain;
+ }
+ body .dli-payout-preview,body .upgrade-receipt-modal{
+  box-sizing:border-box;width:100%;max-width:100%;
+  max-height:calc(100dvh - 16px);min-width:0;
+  overflow-x:hidden;overflow-y:auto;
+  border-radius:14px;
+ }
+ body .dli-payout-preview-head,body .upgrade-receipt-heading{
+  position:sticky;top:0;z-index:3;
+  background:var(--surface);padding:5px 0 10px;
+  min-width:0;
+ }
+ body .dli-payout-preview-head>strong,body .upgrade-receipt-heading>strong{
+  min-width:0;overflow-wrap:anywhere;
+ }
+ body .dli-payout-preview :is(img,iframe),
+ body .upgrade-receipt-modal :is(img,iframe){
+  box-sizing:border-box;display:block;width:100%;max-width:100%;
+  height:min(54dvh,500px);max-height:54dvh;
+  object-fit:contain;
+ }
+ body .dli-payout-preview>a,body .upgrade-receipt-modal>a{
+  min-width:0;max-width:100%;min-height:44px;overflow-wrap:anywhere;
+ }
+}
+body:has(.dli-payout-preview-overlay) .dli-floating-chat-root,
+body:has(.upgrade-receipt-overlay) .dli-floating-chat-root{
+ visibility:hidden;pointer-events:none;
+}
+body:has(.dli-payout-preview-overlay),
+body:has(.upgrade-receipt-overlay){overflow:hidden;}
