@@ -286,6 +286,7 @@ export default function PaidPlanSettings(){
     <div className="panel-heading"><div>
       
       <h2 id="source-plan-title">DLI Paid Learning Plans</h2>
+      <p>These earlier plan records are retained for historical reference. New DLI-ONLINE tutorial applications use the current comprehensive programme directive below.</p>
 
     </div><button type="button" className="user-outline-button"
       disabled={loading||saving||Boolean(editing)} onClick={()=>{void refresh();}}>

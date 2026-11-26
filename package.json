@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:ai-compliance": "node scripts/verify-ai-compliance.mjs",
-    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs && node scripts/verify-paid-learning-plans.mjs",
+    "prebuild": "node scripts/verify-ai-compliance.mjs && node scripts/verify-migration-integrity.mjs && node scripts/verify-paid-learning-plans.mjs && node scripts/verify-q75-tutorial-directives.mjs",
     "check:bundle-scanner": "node scripts/verify-browser-bundle.mjs --self-test",
     "check:browser-bundle": "node scripts/verify-browser-bundle.mjs",
     "postbuild": "node scripts/verify-browser-bundle.mjs",
@@ -68,7 +68,8 @@
     "check:q48-header-overlap": "node scripts/verify-q48-header-overlap.mjs",
     "check:q49-mobile-overlays": "node scripts/verify-q49-mobile-overlays.mjs",
     "check:q50-prod-realtimekit": "node scripts/verify-q50-prod-realtimekit.mjs",
-    "check:q52-pwa-push": "node scripts/verify-q52-pwa-web-push.mjs"
+    "check:q52-pwa-push": "node scripts/verify-q52-pwa-web-push.mjs",
+    "check:q75-tutorial-directives": "node scripts/verify-q75-tutorial-directives.mjs"
   },
   "dependencies": {
     "@cloudflare/realtimekit": "2.0.2",
