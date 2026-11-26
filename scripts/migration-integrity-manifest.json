@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "purpose": "Reviewed Git migration file hashes for the Q19 unified candidate. Contains production baseline plus staged additive Q10/Q12/Q13/Q17/Q18 SQL. Manifest verification does NOT mean these new migrations have been applied in production; production DB migration and permission tests must precede public deployment.",
-  "verifiedDate": "2026-11-19",
+  "verifiedDate": "2026-11-26",
   "verifiedDevelopmentProject": "pbepbcdkrdqnepvcwtyw",
   "entries": [
     {
@@ -499,6 +499,10 @@
     {
       "file": "20261119074406_stage_q68b_qualified_call_nonce_generator.sql",
       "gitBlobSha1": "58fafe7d859ab898046b35d0c62564c08b87a71b"
+    },
+    {
+      "file": "20261126110000_stage_q75_dli_online_comprehensive_tutorial.sql",
+      "gitBlobSha1": "185af5470c5aa44802bb050047145de7e84fff8f"
     }
   ]
 }

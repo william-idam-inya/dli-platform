@@ -17,9 +17,7 @@ type Bank={bank_name:string;account_name:string;account_number:string;is_active:
 type Demo={id:string;subject_name:string;weekday:number;starts_at:string;ends_at:string;meeting_url:string};
 const DAY=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const plans=[
- {id:'group_5_science',name:'Group of 5',cost:25000},
- {id:'group_10',name:'Group of 10',cost:15000},
- {id:'private_1_to_1',name:'Completely Private · 1-to-1',cost:35000},
+ {id:'dli_online_comprehensive',name:'DLI-ONLINE Comprehensive JAMB / WAEC / NECO Tutorial',cost:7000},
 ];
 const statusText:Record<Request['status'],string>={
  awaiting_payment:'Awaiting bank transfer and evidence',
@@ -39,7 +37,7 @@ export default function PaidEnrollmentPage(){
  const [programme,setProgramme]=useState('');
  const [level,setLevel]=useState('');
  const [selected,setSelected]=useState<string[]>([]);
- const [plan,setPlan]=useState('group_5_science');
+ const [plan,setPlan]=useState('dli_online_comprehensive');
  const [requests,setRequests]=useState<Request[]>([]);
  const [studentNames,setStudentNames]=useState<Record<string,string>>({});
  const [proofs,setProofs]=useState<Proof[]>([]);
@@ -314,7 +312,7 @@ export default function PaidEnrollmentPage(){
 
   {isStudent&&account?.studentTier!=='paid'&&!current&&<section className="panel">
    <div className="panel-heading"><div><h2>Apply for a learning plan</h2>
-    <p className="user-caption">Select your arrangement and specific subjects. Plan prices come from DLI Paid Learning Plans; extra/changed allocations require Admin review.</p>
+    <p className="user-caption">One monthly plan covers the DLI-ONLINE JAMB, WAEC and NECO tutorial programme. Choose your programme, level and subjects; DLI administration will assign your approved classes.</p>
    </div></div>
    <form className="upgrade-form" onSubmit={e=>void submit(e)}>
     {studentProfileReady!==true&&<p className="auth-feedback error" role="status">
@@ -330,6 +328,13 @@ export default function PaidEnrollmentPage(){
       {plans.map(p=><option key={p.id} value={p.id}>{p.name} · {money(p.cost)}/month</option>)}
     </select>
     <strong>Monthly learner fee: {money(picked.cost)}</strong>
+    <div className="upgrade-programme-details">
+     <h3>Programme timetable</h3>
+     <p>Classes begin 1 December 2026. The programme window is Tuesday, Wednesday and Friday, 7–10 PM WAT. Friday includes a one-hour assessment. Saturday classes are free.</p>
+     <p>English Language, Physics and Chemistry use shared classes. Mathematics and Biology are proposed simultaneous breakout tracks with separate class links. The working timetable gives each subject two hours weekly; administrators can configure it after timetable review.</p>
+     <p>Daily learning is planned around one past-question video and a five-question quiz, with subject rotation. Tutor selection includes theory and practical LIVEBOARD assessment. Class attendance, submissions and academic progress use the existing learning workspaces.</p>
+     <p className="academic-code-hint">The 2-hour subject allocation is a proposed, configurable timetable and remains subject to DLI administration review.</p>
+    </div>
     <label htmlFor="upgrade-programme">Programme</label>
     <select id="upgrade-programme" required value={programme} onChange={e=>{
       setProgramme(e.target.value);setLevel('');setSelected([]);

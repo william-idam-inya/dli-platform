@@ -165,6 +165,17 @@ export default function FinancePage() {
 
     <PaidPlanSettings/>
 
+    <section className="panel" aria-labelledby="dli-online-current-programme">
+      <div className="panel-heading"><div>
+        <h2 id="dli-online-current-programme">DLI-ONLINE comprehensive tutorial programme</h2>
+        <p>Current programme directive for new applications</p>
+      </div></div>
+      <p>Student access: ₦7,000 monthly for comprehensive JAMB, WAEC and NECO tutorials. Student payment remains manual bank transfer with administrator review; paid enrolment stays closed until administration enables it.</p>
+      <p>Tutor reference: ₦5,000 per class taught plus ₦2,000 monthly data allowance. The meaning of “class taught” and payout timing are not defined here. Existing manual finance controls remain in place; no automatic payout is enabled.</p>
+      <p>Classes start 1 December 2026: Tuesday, Wednesday and Friday, 7–10 PM WAT; one Friday hour is reserved for assessment; Saturday classes are free. Equal two hours weekly per subject is a configurable timetable proposal. English Language, Physics and Chemistry are shared; Mathematics and Biology are simultaneous breakout tracks with distinct links. Assign one tutor per subject; a tutor may cover two subjects only when schedules do not conflict.</p>
+      <p>Learning operations: one rotating past-question video and a five-question quiz each day; tutor selection includes theory and practical LIVEBOARD assessment. Existing submission, attendance and progress workspaces remain the operational records.</p>
+    </section>
+
     {canPropose && <section className="panel finance-proposal-editor">
       <div className="panel-heading"><div>
         <h2>Submit a pending proposal</h2>
