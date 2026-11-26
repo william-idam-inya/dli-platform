@@ -9,6 +9,7 @@ import {canAccessPath} from '../auth/permissions';
 import {learningAreas,type LearningTab,learningAreaUrl} from '../data/learningAreas';
 import {supabase} from '../lib/supabase';
 import {DliDashboardAnnouncements} from '../components/DliNoticeCenter';
+import {DliUpcomingMeetings} from './MeetingsPage';
 import './UnifiedDashboard.css';
 
 export default function DashboardPage(){
@@ -78,6 +79,7 @@ export default function DashboardPage(){
    {account&&<ReferenceDashboard account={account}
      academicCounts={academicCounts} academicLoading={academicLoading}/>}
    <DliDashboardAnnouncements/>
+   <DliUpcomingMeetings/>
    {canOpenLearning&&<section className="section-block unified-learning-section"
      aria-label="Academic workspace">
     <div className="section-heading"><div>

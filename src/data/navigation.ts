@@ -152,10 +152,18 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
+        label: 'Google Meet sessions',
+        shortLabel: 'Meetings',
+        path: '/meetings',
+        icon: CalendarClock,
+        description: 'Schedule external Google Meet sessions and manage targeted announcements and reminders.',
+        group: 'Operations',
+      },
+      {
         label: 'In-app announcements',
         path: '/announcements',
         icon: Bell,
-        description: 'Published role-scoped notices and restricted internal drafting; Founder-only publication.',
+        description: 'Create and review announcements delivered to selected DLI members.',
         group: 'Operations',
       },
       {

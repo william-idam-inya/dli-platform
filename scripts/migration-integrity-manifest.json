@@ -515,6 +515,22 @@
     {
       "gitBlobSha1": "a56d28a5a02e6a127a2bb5dd96bad02de1334d60",
       "file": "20261126093000_disable_unmonitored_calling.sql"
+    },
+    {
+      "file": "20261126132029_stage_q78_external_meetings_reminders.sql",
+      "gitBlobSha1": "1149356398791d878569318d1f8b76dc60d1ee6b"
+    },
+    {
+      "file": "20261126132034_stage_q79_email_outbox_recovery.sql",
+      "gitBlobSha1": "db949c3e5f9184f5d89014425775646b201cfd45"
+    },
+    {
+      "file": "20261126132830_stage_q80_scheduled_notification_dispatch.sql",
+      "gitBlobSha1": "5b97022307f482c0b2199f7dc3d0ca860c5400ca"
+    },
+    {
+      "file": "20261126132838_stage_q81_dispatch_api_key.sql",
+      "gitBlobSha1": "ad0383d2c6e891dafbeb9bd70b158ed4f74c667d"
     }
   ]
 }

@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.118.0";
 import webpush from "npm:web-push@3.6.7";
 
-type Kind='call'|'message'|'urgent_notice'|'conference_reminder';
+type Kind='call'|'message'|'urgent_notice'|'conference_reminder'|'meeting_reminder';
 type EventRow={id:string;kind:Kind;source_id:string;sender_id:string|null;recipient_id:string;
  title:string;body:string;destination:string;metadata:Record<string,unknown>;
  deliver_after:string;expires_at:string;attempts:number;status:string};
@@ -13,6 +13,8 @@ const anon=Deno.env.get('SUPABASE_ANON_KEY')??'';
 const publicVapid=Deno.env.get('DLI_WEB_PUSH_VAPID_PUBLIC_KEY')??'';
 const privateVapid=Deno.env.get('DLI_WEB_PUSH_VAPID_PRIVATE_KEY')??'';
 const contact=Deno.env.get('DLI_WEB_PUSH_CONTACT')??'mailto:admin@dli.invalid';
+const emailApiKey=Deno.env.get('RESEND_API_KEY')??'';
+const emailFrom=Deno.env.get('DLI_EMAIL_FROM')??'';
 const allowedOrigins=new Set([
  'https://dli-platform-prod.pages.dev','https://dli-platform-qa.pages.dev'
 ]);
@@ -46,6 +48,65 @@ function safeEndpoint(endpoint:string){
  }catch{return false;}
 }
 type Admin=ReturnType<typeof createClient>;
+const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]??c));
+async function dispatchNoticeEmails(admin:Admin){
+ if(!emailApiKey||!emailFrom)return {configured:false,attempted:0,sent:0,failed:0};
+ const now=new Date().toISOString();
+ const stale=new Date(Date.now()-10*60*1000).toISOString();
+ await admin.from('dli_notice_email_outbox').update({status:'pending',claimed_at:null,last_error:'Recovered interrupted email attempt'})
+  .eq('status','sending').lt('claimed_at',stale).lt('attempts',4);
+ await admin.from('dli_notice_email_outbox').update({status:'failed',claimed_at:null,last_error:'Email delivery stopped after interrupted retry limit'})
+  .eq('status','sending').lt('claimed_at',stale).gte('attempts',4);
+ const {data:rows,error}=await admin.from('dli_notice_email_outbox').select('id,notice_id,user_id,delivery_kind,attempts')
+  .eq('status','pending').lte('deliver_at',now).order('deliver_at').limit(40);
+ if(error)throw Error('Email queue unavailable');
+ const summary={configured:true,attempted:0,sent:0,failed:0};
+ for(const row of rows??[]){
+  const claim=await admin.from('dli_notice_email_outbox').update({status:'sending',attempts:row.attempts+1,claimed_at:new Date().toISOString()})
+   .eq('id',row.id).eq('status','pending').select('id').maybeSingle();
+  if(claim.error||!claim.data)continue;
+  summary.attempted++;
+  const [noticeResult,userResult]=await Promise.all([
+   admin.from('dli_notices').select('title,body,status,publish_at,expires_at,meeting_id').eq('id',row.notice_id).maybeSingle(),
+   admin.from('authorised_users').select('email,status').eq('auth_user_id',row.user_id).maybeSingle()
+  ]);
+  const notice=noticeResult.data,user=userResult.data;
+  if(noticeResult.error||userResult.error||!notice||notice.status!=='live'||
+    new Date(notice.publish_at).getTime()>Date.now()||
+    (notice.expires_at&&new Date(notice.expires_at).getTime()<=Date.now())||
+    !user||user.status!=='active'||!user.email){
+   await admin.from('dli_notice_email_outbox').update({status:'cancelled',last_error:'Recipient or notice is no longer eligible'}).eq('id',row.id);
+   summary.failed++;continue;
+  }
+  let meetingLine='';
+  if(notice.meeting_id){
+   const {data:meeting}=await admin.from('dli_external_meetings').select('meet_url,status,ends_at')
+    .eq('id',notice.meeting_id).maybeSingle();
+   const {data:attendee}=await admin.from('dli_external_meeting_attendees').select('user_id')
+    .eq('meeting_id',notice.meeting_id).eq('user_id',row.user_id).maybeSingle();
+   if(!meeting||meeting.status!=='scheduled'||!attendee||new Date(meeting.ends_at).getTime()<=Date.now()){
+    await admin.from('dli_notice_email_outbox').update({status:'cancelled',last_error:'Meeting is no longer active for this recipient'}).eq('id',row.id);
+    summary.failed++;continue;
+   }
+   meetingLine=`<p><a href="${escapeHtml(meeting.meet_url)}">Join Google Meet</a></p>`;
+  }
+  const reminder=row.delivery_kind==='reminder';
+  const subject=(reminder?'Reminder: ':'')+notice.title;
+  const text=(reminder?'Reminder: ':'')+notice.title+'\n\n'+notice.body;
+  const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+emailApiKey,'Content-Type':'application/json'},body:JSON.stringify({from:emailFrom,to:[user.email],subject,text,html:`<main><h1>${escapeHtml(subject)}</h1><p>${escapeHtml(notice.body).replace(/\n/g,'<br>')}</p>${meetingLine}<p>DLI Scholars Club</p></main>`})});
+  if(response.ok){
+   const ack=await admin.from('dli_notice_email_outbox').update({status:'sent',delivered_at:new Date().toISOString(),last_error:null}).eq('id',row.id);
+   if(ack.error)throw Error('Email queue acknowledgement failed');summary.sent++;
+  }else if(row.attempts<4){
+   await admin.from('dli_notice_email_outbox').update({status:'pending',deliver_at:new Date(Date.now()+Math.min(3600000,60000*2**row.attempts)).toISOString(),last_error:'Email provider returned HTTP '+response.status}).eq('id',row.id);
+   summary.failed++;
+  }else{
+   await admin.from('dli_notice_email_outbox').update({status:'failed',last_error:'Email provider delivery failed after retry limit'}).eq('id',row.id);
+   summary.failed++;
+  }
+ }
+ return summary;
+}
 async function recipientEligible(admin:Admin,row:EventRow){
  if(row.kind==='call')return false;
  const {data:recipient,error}=await admin.from('authorised_users')
@@ -74,6 +135,23 @@ async function recipientEligible(admin:Admin,row:EventRow){
   ]);
   return !!schedule&&room?.state!=='ended'
    && new Date(schedule.starts_at).getTime()>Date.now();
+ }
+ if(row.kind==='meeting_reminder'){
+  const {data:reminder}=await admin.from('dli_meeting_reminders')
+   .select('meeting_id,deliver_at,offset_minutes').eq('id',row.source_id).maybeSingle();
+  if(!reminder||new Date(reminder.deliver_at).getTime()>Date.now())return false;
+  const [{data:meeting},{data:attendee}]=await Promise.all([
+   admin.from('dli_external_meetings').select('notice_id,status,ends_at')
+    .eq('id',reminder.meeting_id).maybeSingle(),
+   admin.from('dli_external_meeting_attendees').select('user_id')
+    .eq('meeting_id',reminder.meeting_id).eq('user_id',row.recipient_id).maybeSingle()
+  ]);
+  if(!meeting||meeting.status!=='scheduled'||!attendee||
+    new Date(meeting.ends_at).getTime()<=Date.now())return false;
+  const {data:notice}=await admin.from('dli_notices').select('status,publish_at,expires_at')
+   .eq('id',meeting.notice_id).maybeSingle();
+  return !!notice&&notice.status==='live'&&new Date(notice.publish_at).getTime()<=Date.now()
+   &&(!notice.expires_at||new Date(notice.expires_at).getTime()>Date.now());
  }
  // Message was recorded by a server-side trigger after RLS-authorised insert.
  const {data:message}=await admin.from('dli_direct_messages')
@@ -163,21 +241,31 @@ Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin')??'';
  const token=(req.headers.get('authorization')??'').replace(/^Bearer\s+/i,'');
  const internal=!!service&&token===service;
- if(!internal&&!originPermitted(origin))
-  return reply(403,{error:'Unrecognised DLI application origin'},origin);
+ const dispatchToken=req.headers.get('x-dli-dispatch-token')??'';
  if(req.method==='OPTIONS')return reply(200,{ok:true},origin);
  if(req.method!=='POST')return reply(405,{error:'Method not allowed'},origin);
  let body:{kind?:unknown;sourceId?:unknown;dispatch?:unknown};
  try{body=await req.json();}catch{return reply(400,{error:'Invalid request'},origin);}
  if(body?.kind==='call')return reply(410,{error:'DLI calling is disabled'},origin);
- if(!service||!anon||!project||!publicVapid||!privateVapid||
-   contact==='mailto:admin@dli.invalid')
-  return reply(503,{error:'Production Web Push credentials are not configured'},origin);
- try{webpush.setVapidDetails(contact,publicVapid,privateVapid);}
- catch{return reply(503,{error:'Invalid Web Push configuration'},origin);}
+ if(!service||!anon||!project)
+  return reply(503,{error:'Secure notification service is not configured'},origin);
+ let scheduledDispatch=false;
+ if(!internal&&body?.dispatch===true&&dispatchToken){
+  const authAdmin=createClient(project,service,{auth:{persistSession:false,autoRefreshToken:false}});
+  const check=await authAdmin.rpc('dli_authorize_notification_dispatch',{p_token:dispatchToken});
+  scheduledDispatch=!check.error&&check.data===true;
+ }
+ if(!internal&&!originPermitted(origin)&&!scheduledDispatch)
+  return reply(403,{error:'Unrecognised DLI application origin'},origin);
+ const webPushReady=!!publicVapid&&!!privateVapid&&contact!=='mailto:admin@dli.invalid';
+ if(!internal&&!webPushReady)return reply(503,{error:'Production Web Push credentials are not configured'},origin);
+ if(webPushReady){try{webpush.setVapidDetails(contact,publicVapid,privateVapid);}
+  catch{return reply(503,{error:'Invalid Web Push configuration'},origin);}}
  try{
  const admin=createClient(project,service,{auth:{persistSession:false,autoRefreshToken:false}});
- if(internal&&body?.dispatch===true){
+ if((internal||scheduledDispatch)&&body?.dispatch===true){
+  const emailSummary=await dispatchNoticeEmails(admin);
+  if(!webPushReady)return reply(200,{ok:true,email:emailSummary,pushConfigured:false},origin);
   // Bounded retention and recovery of interrupted outbox claims.
   const house=await admin.rpc('dli_push_dispatch_housekeeping');
   if(house.error)return reply(503,{error:'Push housekeeping unavailable'},origin);
@@ -194,7 +282,7 @@ Deno.serve(async(req:Request)=>{
    if(outcome==='sent')summary.sent++;
    if(outcome==='failed'||outcome==='error')summary.failed++;
   }
-  return reply(200,{ok:true,...summary},origin);
+  return reply(200,{ok:true,...summary,email:emailSummary},origin);
  }
  if(!UUID.test(String(body?.sourceId??''))||
     !['message','urgent_notice'].includes(String(body?.kind??'')))
