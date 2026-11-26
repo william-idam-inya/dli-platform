@@ -2,16 +2,10 @@ import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-type PushClick={type?:unknown;kind?:unknown;path?:unknown;callId?:unknown;action?:unknown};
+type PushClick={type?:unknown;kind?:unknown;path?:unknown};
 
 function destinationFor(data:PushClick):string|null{
  if(data.type!=='dli-push-open')return null;
- if(data.kind==='call'){
-  if(typeof data.callId!=='string'||!UUID.test(data.callId))return '/communications';
-  const action=['accept','decline','view'].includes(String(data.action))
-   ?String(data.action):'view';
-  return '/?dli_call='+encodeURIComponent(data.callId)+'&dli_action='+action;
- }
  if(data.kind==='message'){
   const path=typeof data.path==='string'?data.path:'';
   if(path.startsWith('/')&&!path.startsWith('//')&&!path.includes('\\')){

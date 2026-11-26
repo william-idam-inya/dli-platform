@@ -18,10 +18,8 @@ for(const item of [
  'Students, tutors and other staff may message DLI Founder, Admin and Assistant Admin.',
  'Founder/Admin oversight is separately audited',
  'Subject-group chats are paused',
- "account?.role==='student'||account?.role==='tutor'",
  '<ShieldCheck size={18}',
  'dli-direct-layout',
- 'dli-live-call-actions'
 ])assert.ok(view.includes(item),'Mobile Messaging safety/header feature missing: '+item);
 assert.ok(!view.includes('className="module-notice"'),
  'The full open safeguarding banner must not block the chat list by default');
@@ -41,6 +39,6 @@ assert.ok(globalStyles.includes('.module-page-hero'),
  'Shared module styling must remain intact for other dashboard pages');
 assert.ok(view.includes("supabase.rpc('dli_new_direct_directory')"),
  'Role-safe new chat filtering must remain unaffected');
-assert.ok(view.includes("calling.start('video',current.id,callPeer"),
- 'Q37 in-app calling controls must remain intact');
-console.log('Q39 Messaging mobile heading and collapsed safeguarding checks passed.');
+assert.ok(!view.includes('dli-live-call-actions')&&!view.includes('calling.start('),
+ 'Private messaging must not expose unmonitored phone or video calling');
+console.log('Q39 Messaging mobile heading, collapsed safeguarding, and no-call UI checks passed.');

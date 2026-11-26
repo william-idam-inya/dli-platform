@@ -67,7 +67,7 @@ assert.ok(!overview.includes("account.role==='student'&&account.studentTier!=='p
  'Free Student class-assigned lesson counters remain eligible');
 for(const t of ['DliAnnouncementTicker','dli-notice-filter-row',
  'noticeFilter','filteredNotices','dli-sound-alerts','dli-notification-chime',
- "meeting?'/conferences':'/announcements'"])
+ "meeting?'/classes':'/announcements'"])
  inc(broadcast,t,'Notifications and ticker');
 for(const t of ["useState<'day'|'manual'|'date'>('day')",
  "published.getTime()+24*60*60*1000",
@@ -84,22 +84,6 @@ inc(inbox,'Not active in this chat','No misleading global offline label');
 for(const t of ['window.dispatchEvent(new Event(\'dli-chat-launch\'))',
  "location.pathname==='/communications'"])
  inc(broadcast,t,'Header chat quick action');
-for(const t of ['private.dli_direct_allowed(t.participant_a,t.participant_b)',
- 'dli_call_offer_throttle','SECURITY DEFINER','senderRoleLabel',
- 'v_sender_role_label','v_recipient_role',
- "v_recipient_role IN ('tutor','student')",
- 'v_sender_name:=v_sender_role_label',
- "p_kind NOT IN ('offer','answer','candidate','decline','hangup')",
-])inc(sql,t,'Server-side call identity privacy');
-for(const t of ['senderRoleLabel?:string','senderRole?:string'])inc(signal,t,'Role signal type');
-inc(rtc,"signal.kind==='offer'","Ring only on incoming call offer");
-inc(rtc,'roleLabel={peer.role}','Display validated sender role');
-for(const t of ['roleLabel&&','minimized','onPointerDown={beginDrag}',
- 'Minimize call to floating window','if(minimized)return'])inc(callOverlay,t,'Call PiP');
-inc(callCss,'.dli-call-backdrop.minimized','Call PiP responsive styles');
-assert.ok(conference.includes('productionMediaBuildEnabled')&&conference.includes('mediaProdEnabled'),
- 'Media access must remain gated by actual production configuration');
-assert.ok(manifest.entries.some(e=>
- e.file==='20261116101500_stage_q45_call_role_masking.sql'&&/^[0-9a-f]{40}$/.test(e.gitBlobSha1)),
- 'Privacy migration must appear in content-integrity manifest');
-console.log('Q45 shell, KPI consolidation, search, Messenger, announcements, protected caller identity and PiP checks passed.');
+assert.ok(!inbox.includes('dli-live-call-actions')&&!shell.includes('CallProvider'),
+ 'Unmonitored calling must stay out of the application UI.');
+console.log('Q45 shell, KPI consolidation, search, Messenger, and announcements checks passed.');

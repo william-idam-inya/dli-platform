@@ -44,7 +44,7 @@ assert.ok(!shell.includes("supabase.auth.getUser()") &&
  shell.includes('dli-grid-topbar'), 'Shared responsive shell cannot duplicate identity query or lose approved routing');
 for(const token of ['<DliMessageBadge/>','<DliNotificationBell/>',
  'dli-topbar-status-icon','dli-account-pill-copy','<ProfileAvatar',
- '<GlobalSearch/>','<CallProvider>','<GuidedTour/>',
+ '<GlobalSearch/>','<GuidedTour/>',
  'disableDliDevicePush','accountRoleLabel(account)']){
  assert.ok(shell.includes(token),'Live controls/RBAC/identity missing: '+token);
 }
@@ -88,8 +88,8 @@ assert.ok(classes.includes('classes-create-toggle')&&
  classes.includes('<ConfirmDialog')&&
  !classes.includes('window.confirm('),
  'Classes workspace must keep signed-in course schedules and accessible edits');
-for(const token of ['callerLabel','dli_new_direct_directory',
-  'useDirectRealtime','useDliCalls','loadActivity','messagesEndRef',
+for(const token of ['dli_new_direct_directory',
+  'useDirectRealtime','loadActivity','messagesEndRef',
   'dli-telegram-message-more','onContextMenu','onPointerDown',
   'onPointerUp','<ConfirmDialog','dli_direct_reports']){
  assert.ok(direct.includes(token),'Private chat or accessible messaging behavior missing: '+token);

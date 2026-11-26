@@ -140,8 +140,8 @@ jobs:
       - name: Verify Q34 cohort-pacing and Telegram message controls
         run: npm run check:q34-curriculum-telegram
 
-      - name: Verify Q35 global compact workspaces, five roles, Free Student learning and protected Realtime
-        run: npm run check:q35-global-focus-realtime
+      - name: Verify calling removal and Google Meet path
+        run: npm run check:calling-disabled
 
       - name: Verify Q36 new-chat filtering, single-row workspaces and shared background
         run: npm run check:q36-chat-focus-theme
@@ -185,14 +185,14 @@ jobs:
       - name: Verify Q49 mobile call and overlay containment across viewports
         run: npm run check:q49-mobile-overlays
 
-      - name: Verify Q50 production media authorizations and secure launch gating
+      - name: Verify retired in-app media paths stay disabled
         run: npm run check:q50-prod-realtimekit
 
-      - name: Verify Q53 call ringtone, ringback and privacy lifecycle
-        run: node scripts/verify-q53-foreground-ringtone.mjs
+      - name: Verify disabled call notification paths
+        run: npm run check:calling-disabled
 
-      - name: Verify Q54 recipient-confirmed ringing and private durable signal fallback
-        run: node scripts/verify-q54-call-delivery.mjs
+      - name: Verify disabled call signaling access
+        run: npm run check:calling-disabled
 
       - name: Verify Q52 Web Push source and privacy safety
         run: npm run check:q52-pwa-push
@@ -221,8 +221,8 @@ jobs:
       - name: Verify Q67 customer-facing UI copy and workflow preservation
         run: node scripts/verify-q67-customer-facing-copy.mjs
 
-      - name: Verify Q68 native call actions, 35s timeout and private background rejection
-        run: node scripts/verify-q68-native-call-actions.mjs
+      - name: Verify call and media endpoints stay disabled
+        run: npm run check:calling-disabled
 
       - name: Verify Q69 compact mobile Messenger, one compose action and visible contact picker
         run: node scripts/verify-q69-mobile-messenger-compose.mjs

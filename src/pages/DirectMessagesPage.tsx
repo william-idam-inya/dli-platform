@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, Phone, Video, RefreshCw, Reply, Search, ShieldCheck, Trash2, X } from 'lucide-react';
+import { BellRing, Check, CheckCheck, ChevronLeft, Copy, Download, Flag, Forward, LockKeyhole, MessageCircle, Pencil, Pin, Plus, RefreshCw, Reply, Search, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import DirectMessageComposer from '../components/DirectMessageComposer';
 import {useDirectRealtime} from '../lib/useDirectRealtime';
-import {useDliCalls} from '../components/CallProvider';
 import {enableDliDevicePush,pushConfigured} from '../lib/pushNotifications';
 import ChatPrivateMedia from '../components/ChatPrivateMedia';
 import ChatMemberAvatar from '../components/ChatMemberAvatar';
@@ -144,26 +143,11 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
   return newContacts.filter(contact=>contact.user_id!==uid&&allowed.has(contact.user_id)&&!existingPeerIds.has(contact.user_id));
  },[newContacts,permittedContacts,existingPeerIds,uid]);
  const current=threads.find(t=>t.id===activeId)??null;
-  const callPeer=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
-  const realtime=useDirectRealtime(activeId,uid,callPeer,mode==='inbox',()=>{});
-  const calling=useDliCalls();
+  const peerId=current?(current.participant_a===uid?current.participant_b:current.participant_a):'';
+  const realtime=useDirectRealtime(activeId,uid,peerId,mode==='inbox');
   const participant=(t:Thread)=>t.participant_a===uid?t.participant_b:t.participant_a;
   const memberName=(id:string)=>id===uid?'You':contacts.find(x=>x.user_id===id)?.full_name??'DLI member';
   const memberRole=(id:string)=>contacts.find(x=>x.user_id===id)?.member_role??'Member';
-  const callerLabel=(id:string)=>{
-    const role=memberRole(id);
-    const hide=(account?.role==='student'||account?.role==='tutor')&&
-      ['owner','admin','assistant_admin'].includes(role);
-    return hide?(role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':'DLI Assistant Admin')
-      :memberName(id);
-  };
-  const callerRoleLabel=(id:string)=>{
-    const role=memberRole(id);
-    return role==='owner'?'DLI Owner':role==='admin'?'DLI Admin':
-      role==='assistant_admin'?'DLI Assistant Admin':
-      role==='student'?(memberGroup(id)==='paid'?'Paid Student':'Free Student'):
-      role==='tutor'?'Tutor':'DLI member';
-  };
   const memberGroup=(id:string)=>{
     const person=rolePeople.find(x=>x.user_id===id);
     const role=person?.member_role??memberRole(id);
@@ -839,16 +823,6 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
                 realtime.activity==='recording_audio'?'Recording audio...':
                 realtime.activity==='recording_video'?'Recording video...':
                 realtime.peerOnline?'Online in this chat':'Not active in this chat'}</small></div>
-            {mode==='inbox'&&<div className="dli-live-call-actions" aria-label="Direct call controls">
-              <button type="button" aria-label={'Audio call '+memberName(participant(current))}
-                title="Ring this DLI member on any open DLI workspace"
-                disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('audio',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Phone size={19}/></button>
-              <button type="button" aria-label={'Video call '+memberName(participant(current))}
-                title="Ring this DLI member on any open DLI workspace"
-                disabled={!calling.ready||Boolean(calling.session)}
-                onClick={()=>calling.start('video',current.id,callPeer,callerLabel(callPeer),callerRoleLabel(callPeer))}><Video size={19}/></button>
-            </div>}
             {mode==='oversight'&&<button type="button" className="dli-chat-oversight-profile"
               onClick={()=>openMemberProfile(current.participant_b,memberName(current.participant_b))}>
               <LockKeyhole size={16}/> Second member profile
@@ -981,7 +955,7 @@ export default function DirectMessagesPage({initialCompose=false}:{initialCompos
       </div>
     </div>,document.body)}
     {realtime.onlineToast&&current&&<div className="dli-live-online-toast" role="status">
-      <span className="dli-live-online-dot"/> {memberName(callPeer)} ({roleName(callPeer)}) is now online.
+      <span className="dli-live-online-dot"/> {memberName(peerId)} ({roleName(peerId)}) is now online.
       <button type="button" onClick={()=>realtime.setOnlineToast(false)} aria-label="Dismiss online notification">×</button>
     </div>}
     <ConfirmDialog request={pendingDecision}
