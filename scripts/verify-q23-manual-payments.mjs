@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const paid=read('src/pages/PaidEnrollmentPage.tsx');
 const settings=read('src/pages/InstitutionalSettingsPage.tsx');
-const bell=read('src/components/DliNoticeCenter.tsx');
+const bell=read('src/components/WorkspaceNotificationBell.tsx');
 const migration=read('supabase/migrations/20261114094000_stage_q23_bank_verified_manual_enrolment.sql');
 for(const marker of [
   "const managerRoles=['owner','admin','assistant_admin']",
@@ -28,9 +28,9 @@ assert.ok(paid.includes('setBankDraft')&&paid.includes('bank_name')&&paid.includ
 assert.ok(paid.includes("await supabase.rpc('dli_apply_paid_v2'"),'Payment applications still use versioned role guard');
 assert.ok(!paid.includes("from('dli_student_entitlements').upsert("),'Client must not grant paid entitlement itself');
 assert.ok(settings.includes('Manage bank details and review uploaded receipts'));
-assert.ok(bell.includes('pendingPayments')&&bell.includes("eq('status','submitted')"));
-assert.ok(bell.includes('dli-payment-review-alert')&&bell.includes('to="/enrolment"'));
-assert.ok(bell.includes("role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'"),
+assert.ok(bell.includes("from('dli_enrollment_requests')")&&bell.includes("eq('status','submitted')"));
+assert.ok(bell.includes('student payment')&&bell.includes('to="/finance?tab=approvals"'));
+assert.ok(bell.includes("['owner','admin','assistant_admin'].includes(account.role)"),
   'Payment alerts must be role-restricted');
 for(const marker of [
   'dli_require_bank_for_new_enrolment',

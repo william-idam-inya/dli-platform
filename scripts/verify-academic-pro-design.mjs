@@ -40,14 +40,15 @@ for(const token of ["aria-pressed=", "change('accent'", "change('textSize'",
 }
 assert.ok(profile.includes('<AppearancePreferences/>'),'All roles must reach appearance controls from profile');
 assert.ok(profile.includes('preferred_theme'),'Preserve existing cloud-synced light/dark theme');
-assert.ok(dashboard.includes('data-dli-role=')&&dashboard.includes('welcomeSummary'),
- 'Role-aware home headings must remain');
-assert.ok(dashboard.includes('canAccessPath(account.role,heroPath,account.studentTier)'),
- 'Do not offer inaccessible hero actions');
-assert.ok(dashboard.includes('<ReferenceDashboard account={account}')&&
- !dashboard.includes("from('teaching_classes')")&&
- read('src/components/ReferenceDashboard.tsx').includes("from('teaching_classes')"),
- 'Dashboard must render real RLS-scoped classes without duplicate class queries');
+assert.ok(dashboard.includes("account?.role==='student'?'Welcome to DLI'")&&
+ dashboard.includes('Your classes, study resources and messages')&&
+ dashboard.includes('Your teaching schedule, learning resources'),
+ 'Role-aware welcome and descriptions must remain');
+assert.ok(dashboard.includes("canAccessPath(account.role,'/study',account.studentTier)"),
+ 'Dashboard learning summaries must respect role and student-tier access');
+assert.ok(dashboard.includes('metrics.map(item=>')&&dashboard.includes("select('id',{head:true,count:'exact'})")&&
+ !dashboard.includes('ReferenceDashboard'),
+ 'Compact dashboard metrics must use scoped live counts without the retired reference dashboard');
 assert.ok(users.includes('id="invite-member"')&&users.includes('id="account-registry"'),
  'Keep invitation and registry discoverable');
 assert.ok(users.includes('<InviteUserPage embedded'),'Keep actual invitation workflow');
@@ -56,9 +57,9 @@ assert.ok(users.includes('canManageRole')&&users.includes('roles.includes(user.r
 assert.ok(artwork.includes('mathematics')&&artwork.includes('biology')&&artwork.includes('chemistry'),'Subject graphics must support core science subjects');
 assert.ok(classPage.includes('<SubjectArtwork subject={c.subject_name}/>'),'Decorate only real authorised class subjects');
 assert.ok(profile.includes('<AppearancePreferences/>')&&
- dashboard.includes('secondaryName'),'Appearance remains in Profile; role-specific daily actions replace the redundant CTA');
+ dashboard.includes("account?.role==='tutor'?'Your teaching schedule"),'Appearance remains in Profile with role-specific dashboard guidance');
 assert.ok(shell.includes('OfficialDliLogo'),'Retain original institution logo');
-assert.ok(shell.includes('mobile-bottom-nav'),'Retain existing accessible mobile navigation');
+assert.ok(shell.includes('redesign-mobile-menu')&&shell.includes('redesign-mobile-drawer'),'Retain accessible responsive navigation');
 assert.ok(existingRoles.includes("['owner', 'admin', 'assistant_admin']"),
  'Finance/role scope source must not be edited for design changes');
 assert.doesNotMatch(css,/display:\s*none\s*!important\s*;\s*\}/i,'Do not globally hide live features');

@@ -96,8 +96,9 @@ for(const token of [
 assert.ok(chatSQL.includes('only accessible text messages')||
  chatSQL.includes('Only accessible text messages'),
  'Forwarding may not leak protected private media');
-assert.ok(nav.includes("<CohortCurriculumPage />"),
- 'Advanced Curriculum must use the new cohort-first screen');
+assert.ok(nav.includes("id:'classes',label:'Classes & Subjects'")&&
+ nav.includes('content:<CohortCurriculumPage/>'),
+ 'Academics workspace must use the cohort-first curriculum screen');
 const manifest=JSON.parse(read('scripts/migration-integrity-manifest.json'));
 for(const name of [
  '20261115193000_stage_q34_cohort_topic_schedule.sql',

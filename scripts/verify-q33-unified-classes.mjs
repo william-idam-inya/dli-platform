@@ -23,9 +23,12 @@ for(const token of [
 ]) assert.ok(cls.includes(token),'Missing unified class contract: '+token);
 assert.ok(!nav.includes("path: '/assignments'"),
  'No duplicate Academic Assignments menu should remain');
-assert.ok(nav.includes("path: '/classes'"),'Consolidated class route required');
-assert.ok(app.includes('<Route path="/assignments" element={<Navigate to="/classes" replace />} />'),
- 'Legacy bookmark should redirect safely');
+assert.ok(nav.includes("path:'/academics'"),'Consolidated Academics workspace route required');
+assert.ok(app.includes("to:'/academics?tab=classes',sourcePath:'/cohorts',content:<CohortCurriculumPage/>")&&
+ app.includes('<Route path="/academics"'),
+ 'Class catalog must remain available as the Classes & Subjects workspace tab');
+assert.ok(app.includes('<Route path="/assignments" element={<Navigate to="/academics?tab=results" replace/>}/>'),
+ 'Legacy assignment bookmark should redirect into Results safely');
 assert.ok(!app.includes("import('./pages/AcademicAssignmentsPage')"),
  'Retire the redundant academic assignment screen but retain its source history');
 assert.ok(acad.includes("toggle('courses'"),'Existing programme subject mappings must remain manageable');

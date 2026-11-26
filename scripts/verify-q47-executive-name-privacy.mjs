@@ -25,6 +25,6 @@ assert.ok(direct.includes("rpc('dli_people_directory')")||
  'Chat directory must use server-authorised records');
 assert.ok(profile.includes("rpc('dli_chat_profile_preview'"),
  'Private preview must not read an unmasked public profile table');
-assert.equal((nav.match(/label:\s*'Messages'/g)||[]).length,1,
- 'No duplicate Messages destination');
+assert.equal((nav.match(/label:'Messages & Support'/g)||[]).length,1,
+ 'Keep one consolidated Messages & Support destination');
 console.log('Q47 source check passed: three baseline-guarded server-side executive display-name masks. This does not prove production role-E2E.');

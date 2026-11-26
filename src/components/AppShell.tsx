@@ -11,6 +11,7 @@ import GlobalSearch from './GlobalSearch';
 import {disableDliDevicePush} from '../lib/pushNotifications';
 import DliMessageBadge from './DliMessageBadge';
 import WorkspaceNotificationBell from './WorkspaceNotificationBell';
+import WorkspaceFocus from './WorkspaceFocus';
 
 function Sidebar({onNavigate}:{onNavigate?:()=>void}){
  const {account}=useAuth();
@@ -106,7 +107,7 @@ export default function AppShell({children}:{children:ReactNode}){
    </header>
    <section className="page-content redesign-content">
     {logoutError&&<p role="alert" className="auth-feedback error">{logoutError}</p>}{themeWarning&&<p role="status" className="auth-feedback">{themeWarning}</p>}
-    {children}
+    <WorkspaceFocus>{children}</WorkspaceFocus>
    </section>
   </main>
  </div>;
