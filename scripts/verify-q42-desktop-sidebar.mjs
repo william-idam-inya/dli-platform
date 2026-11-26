@@ -21,7 +21,7 @@ for(const part of [
  "window.addEventListener('dli-tour-end',restore)",
  'className="mobile-menu icon-button"',
  '<Sidebar onNavigate={closeNavigation}',
- '<GuidedTour/>','<CallProvider>'
+ '<GuidedTour/>'
 ]) assert.ok(app.includes(part),'Sidebar UI or integration missing: '+part);
 for(const part of [
  '@media(min-width:681px)',

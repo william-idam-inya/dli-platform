@@ -511,6 +511,10 @@
     {
       "file": "20261126120754_stage_q77_paid_only_external_quizzes.sql",
       "gitBlobSha1": "6f7ecd1f51df8afd38db67519474c3d62804de4e"
+    },
+    {
+      "gitBlobSha1": "a56d28a5a02e6a127a2bb5dd96bad02de1334d60",
+      "file": "20261126093000_disable_unmonitored_calling.sql"
     }
   ]
 }

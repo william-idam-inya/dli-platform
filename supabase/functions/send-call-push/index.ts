@@ -47,25 +47,11 @@ function safeEndpoint(endpoint:string){
 }
 type Admin=ReturnType<typeof createClient>;
 async function recipientEligible(admin:Admin,row:EventRow){
+ if(row.kind==='call')return false;
  const {data:recipient,error}=await admin.from('authorised_users')
   .select('role,status').eq('auth_user_id',row.recipient_id).maybeSingle();
  if(error||!recipient||recipient.status!=='active')return false;
  if(new Date(row.expires_at).getTime()<=Date.now())return false;
- if(row.kind==='call'){
-  const {data}=await admin.from('dli_call_pending_offers')
-    .select('state,expires_at,recipient_id,sender_id,thread_id')
-    .eq('call_id',row.source_id).maybeSingle();
-  if(data?.state!=='ringing'||data.recipient_id!==row.recipient_id||
-    data.sender_id!==row.sender_id||
-    new Date(data.expires_at).getTime()<=Date.now())return false;
-  const [{data:caller},{data:thread}]=await Promise.all([
-   admin.from('authorised_users').select('status').eq('auth_user_id',data.sender_id).maybeSingle(),
-   admin.from('dli_direct_threads').select('participant_a,participant_b').eq('id',data.thread_id).maybeSingle()
-  ]);
-  return caller?.status==='active'&&!!thread&&
-   [thread.participant_a,thread.participant_b].includes(row.recipient_id)&&
-   [thread.participant_a,thread.participant_b].includes(data.sender_id);
- }
  if(row.kind==='urgent_notice'){
   const {data}=await admin.from('dli_notices')
    .select('status,is_urgent,publish_at,expires_at,target_role,audience_mode')
@@ -104,6 +90,13 @@ async function recipientEligible(admin:Admin,row:EventRow){
    [thread.participant_a,thread.participant_b].includes(row.recipient_id);
 }
 async function handleEvent(admin:Admin,row:EventRow){
+ if(row.kind==='call'){
+  const result=await admin.from('dli_push_outbox').update({
+   status:'failed',last_error:'DLI calling has been disabled'
+  }).eq('id',row.id).eq('status','pending');
+  if(result.error)throw Error('Disabled call alert could not be closed');
+  return 'ineligible';
+ }
  const claimed=await admin.from('dli_push_outbox')
   .update({status:'sending',attempts:row.attempts+1,claimed_at:new Date().toISOString()})
   .eq('id',row.id).eq('status','pending')
@@ -122,26 +115,9 @@ async function handleEvent(admin:Admin,row:EventRow){
  const payload:Record<string,unknown>={
   kind:row.kind,title:row.title,body:row.body,path:row.destination,
   sourceId:row.source_id,
-  callId:row.kind==='call'?row.source_id:undefined,
   expiresAt:new Date(row.expires_at).getTime()
  };
- if(row.kind==='call'){
-  const {data:offer,error:offerError}=await admin.from('dli_call_pending_offers')
-   .select('mode,decline_token,state,expires_at')
-   .eq('call_id',row.source_id).maybeSingle();
-  if(offerError||!offer||offer.state!=='ringing'||
-    new Date(offer.expires_at).getTime()<=Date.now()||
-    !/^[0-9a-f]{64}$/.test(offer.decline_token??'')){
-   await complete('failed','Call offer unavailable or expired');
-   return 'ineligible';
-  }
-  // One-time per-call capability; encrypted by Web Push, never saved in
-  // outbox metadata, server logs, a browser URL, or readable page content.
-  payload.declineToken=offer.decline_token;
-  payload.callType=offer.mode;
-  payload.callerDisplay=row.title.replace(/^Incoming Call from /,'');
- }
- const urgency=row.kind==='call'?'high':'normal';
+ const urgency='normal';
  let delivered=0, transient=0;
  // Store only sanitized transport diagnostics. Never log private VAPID keys,
  // subscription endpoints, recipient IDs or notification payloads.
@@ -152,7 +128,7 @@ async function handleEvent(admin:Admin,row:EventRow){
    await webpush.sendNotification({endpoint:sub.endpoint,
     keys:{p256dh:sub.p256dh,auth:sub.auth}},
     JSON.stringify(payload),{
-     TTL:row.kind==='call'?Math.max(1,Math.min(35,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))):Math.max(60,Math.min(86400,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))),
+     TTL:Math.max(60,Math.min(86400,Math.ceil((new Date(row.expires_at).getTime()-Date.now())/1000))),
      urgency,
     });
    delivered++;
@@ -191,13 +167,14 @@ Deno.serve(async(req:Request)=>{
   return reply(403,{error:'Unrecognised DLI application origin'},origin);
  if(req.method==='OPTIONS')return reply(200,{ok:true},origin);
  if(req.method!=='POST')return reply(405,{error:'Method not allowed'},origin);
+ let body:{kind?:unknown;sourceId?:unknown;dispatch?:unknown};
+ try{body=await req.json();}catch{return reply(400,{error:'Invalid request'},origin);}
+ if(body?.kind==='call')return reply(410,{error:'DLI calling is disabled'},origin);
  if(!service||!anon||!project||!publicVapid||!privateVapid||
    contact==='mailto:admin@dli.invalid')
   return reply(503,{error:'Production Web Push credentials are not configured'},origin);
  try{webpush.setVapidDetails(contact,publicVapid,privateVapid);}
  catch{return reply(503,{error:'Invalid Web Push configuration'},origin);}
- let body:{kind?:unknown;sourceId?:unknown;dispatch?:unknown};
- try{body=await req.json();}catch{return reply(400,{error:'Invalid request'},origin);}
  try{
  const admin=createClient(project,service,{auth:{persistSession:false,autoRefreshToken:false}});
  if(internal&&body?.dispatch===true){
@@ -220,7 +197,7 @@ Deno.serve(async(req:Request)=>{
   return reply(200,{ok:true,...summary},origin);
  }
  if(!UUID.test(String(body?.sourceId??''))||
-    !['call','message','urgent_notice'].includes(String(body?.kind??'')))
+    !['message','urgent_notice'].includes(String(body?.kind??'')))
   return reply(400,{error:'Invalid DLI notification event'},origin);
  const client=createClient(project,anon,{
   auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:'Bearer '+token}}

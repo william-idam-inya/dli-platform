@@ -1,7 +1,6 @@
-/* DLI Q52: push notifications only. No credentials, user identities or media
- * streams are stored here. System actions always reopen the signed-in app. */
+/* DLI Q52: message and programme alerts only. No call actions or media. */
 const ICON='/dli-mark.svg?v=20261113';
-const UUID=/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i;
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 
@@ -17,107 +16,51 @@ self.addEventListener('push',event=>{
  event.waitUntil((async()=>{
   let data;
   try{data=event.data?.json();}catch{return;}
-  if(!data||!['call','message','urgent_notice','conference_reminder'].includes(data.kind))return;
+  if(!data||!['message','urgent_notice','conference_reminder'].includes(data.kind))return;
   if(typeof data.expiresAt==='number'&&data.expiresAt<Date.now())return;
   const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-  // The visible DLI app already renders and rings. Avoid duplicate alerts.
   if(windows.some(client=>client.focused))return;
-  const call=data.kind==='call';
-  const options={
-   body:String(data.body||'Open DLI to view this alert').slice(0,220),
-   icon:ICON,badge:ICON,
-   tag:call?'dli-incoming-call':'dli-'+data.kind+'-'+String(data.sourceId||'').slice(0,45),
-   renotify:true,requireInteraction:call,
-   vibrate:call?[500,250,500,250,500]:[130],
-   data:{
-    kind:data.kind,path:safePath(data.path),
-    callId:UUID.test(String(data.callId||''))?data.callId:null,
-    sourceId:UUID.test(String(data.sourceId||''))?data.sourceId:null,
-    declineToken:call&&/^[0-9a-f]{64}$/.test(String(data.declineToken||''))?data.declineToken:null,
-    expiresAt:typeof data.expiresAt==='number'?data.expiresAt:null
-   },
-   ...(call?{actions:[
-    {action:'accept',title:'Answer'},
-    {action:'decline',title:'Reject'}
-   ]}:{})
-  };
-  await self.registration.showNotification(String(data.title||'DLI notification').slice(0,180),options);
-  // Best-effort expiry for a delivered notification. The database independently
-  // expires the call; an OS may stop the worker and manage its own alert UI.
-  if(call&&typeof data.expiresAt==='number'&&options.data.callId){
-   const ms=Math.max(0,Math.min(35000,data.expiresAt-Date.now()));
-   if(ms>0)await new Promise(resolve=>setTimeout(resolve,ms));
-   const outstanding=await self.registration.getNotifications({tag:'call-'+options.data.callId});
-   outstanding.forEach(item=>item.close());
-  }
+  await self.registration.showNotification(String(data.title||'DLI notification').slice(0,180),{
+   body:String(data.body||'Open DLI to view this alert').slice(0,220),icon:ICON,badge:ICON,
+   tag:'dli-'+data.kind+'-'+String(data.sourceId||'').slice(0,45),
+   renotify:true,requireInteraction:false,vibrate:[130],
+   data:{kind:data.kind,path:safePath(data.path),
+    sourceId:UUID.test(String(data.sourceId||''))?data.sourceId:null}
+  });
  })());
 });
 self.addEventListener('notificationclick',event=>{
  event.notification.close();
  event.waitUntil((async()=>{
   const data=event.notification.data||{};
-  const action=data.kind==='call'&&['accept','decline'].includes(event.action)?event.action:'view';
-  if(action==='decline'&&UUID.test(String(data.callId||''))&&
-     /^[0-9a-f]{64}$/.test(String(data.declineToken||''))&&
-     typeof data.expiresAt==='number'&&data.expiresAt>Date.now()){
-    try{
-     const response=await fetch(
-      'https://thoinmwqxmqxrnywjuxq.supabase.co/functions/v1/call-push-action',{
-       method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
-       headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({callId:data.callId,token:data.declineToken})
-      });
-     if(response.ok||response.status===410)return; // Rejected or already expired; no tab.
-    }catch{/* Offline or provider unsupported: open authenticated DLI fallback. */}
-  }
-  // Use one same-origin, role-protected route for each notification type.
-  // For messages, go to the real Messages workspace; the page revalidates
-  // the requested conversation against the current user's private threads.
+  if(!['message','urgent_notice','conference_reminder'].includes(data.kind))return;
   let path=data.kind==='message'?'/communications':
-    data.kind==='urgent_notice'?'/announcements':
-    data.kind==='conference_reminder'?'/conferences':'/';
+    data.kind==='urgent_notice'?'/announcements':'/classes';
   if(data.kind==='message'){
    const sourcePath=safePath(data.path);
    const requested=new URL(sourcePath,self.location.origin).searchParams.get('dli_thread');
-   if(UUID.test(String(requested||'')))
-    path='/communications?dli_thread='+encodeURIComponent(requested);
+   if(UUID.test(String(requested||'')))path='/communications?dli_thread='+encodeURIComponent(requested);
   }
-  if(data.kind==='call'&&UUID.test(String(data.callId||'')))
-   path='/?dli_call='+encodeURIComponent(data.callId)+'&dli_action='+action;
   const url=new URL(path,self.location.origin).href;
-  const payload={type:'dli-push-open',kind:data.kind,
-   action,callId:data.callId,sourceId:data.sourceId,path};
+  const payload={type:'dli-push-open',kind:data.kind,sourceId:data.sourceId,path};
   const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
   const sameOrigin=windows.filter(client=>{
-   try{return new URL(client.url).origin===self.location.origin;}
-   catch{return false;}
+   try{return new URL(client.url).origin===self.location.origin;}catch{return false;}
   });
-  // Existing DLI tabs need React Router navigation, not a silent focus.
-  // Wait briefly for an acknowledgement. Older tabs fall back to full
-  // navigation, so service-worker updates do not strand notifications.
   for(const client of sameOrigin){
    try{
     await client.focus();
     const acknowledged=await new Promise(resolve=>{
-     const channel=new MessageChannel();
-     let finished=false;
-     const done=value=>{
-      if(finished)return;
-      finished=true;clearTimeout(timeout);
-      channel.port1.close();resolve(value);
-     };
+     const channel=new MessageChannel();let finished=false;
+     const done=value=>{if(finished)return;finished=true;clearTimeout(timeout);channel.port1.close();resolve(value);};
      const timeout=setTimeout(()=>done(false),750);
-     channel.port1.onmessage=event=>{
-      if(event.data?.type==='dli-push-nav-ack')done(true);
-     };
-     try{client.postMessage(payload,[channel.port2]);}
-     catch{done(false);}
+     channel.port1.onmessage=event=>{if(event.data?.type==='dli-push-nav-ack')done(true);};
+     try{client.postMessage(payload,[channel.port2]);}catch{done(false);}
     });
     if(acknowledged)return;
-    // An old app instance without a message handler still needs to route.
     const navigated=await client.navigate(url);
     if(navigated){await navigated.focus();return;}
-   }catch{/* Try another window, then the OS launch path. */}
+   }catch{/* Try another same-origin DLI tab. */}
   }
   await self.clients.openWindow(url);
  })());

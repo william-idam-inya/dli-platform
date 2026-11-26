@@ -17,5 +17,13 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "src/components/CallProvider.tsx",
+    "src/components/DirectCallOverlay.tsx",
+    "src/components/CallHistoryPanel.tsx",
+    "src/components/CallMessageAlertsBanner.tsx",
+    "src/lib/useDirectPeerCall.ts",
+    "src/lib/callRingtone.ts"
+  ]
 }

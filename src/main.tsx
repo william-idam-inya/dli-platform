@@ -17,12 +17,10 @@ import './components/TopbarUtilityDropdown.css';
 import './compact-sidebar-welcome.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 import {registerDliServiceWorker} from './lib/pushNotifications';
-import {initializeCallRingtone} from './lib/callRingtone';
 
 // Apply saved visual preferences before React paints the authorised workspace.
 initializeAppearance();
 registerDliServiceWorker();
-initializeCallRingtone();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

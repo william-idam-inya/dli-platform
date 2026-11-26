@@ -3,16 +3,10 @@ import type {RealtimeChannel} from '@supabase/supabase-js';
 import {supabase} from './supabase';
 
 export type DliActivity='typing'|'recording_audio'|'recording_video'|null;
-export type DliCallSignal={
- callId:string;from:string;to:string;kind:'ring'|'offer'|'answer'|'candidate'|'hangup'|'decline'|'receipt';
- mode:'audio'|'video';sdp?:string;candidate?:RTCIceCandidateInit;
- threadId?:string;senderName?:string;senderRole?:string;senderRoleLabel?:string;
-};
 type Status='connecting'|'ready'|'unavailable';
 /** Private per-thread Broadcast + Presence. No public channel or broad user roster. */
 export function useDirectRealtime(
- threadId:string,uid:string,peerId:string,enabled:boolean,
- onCallSignal:(signal:DliCallSignal)=>void
+ threadId:string,uid:string,peerId:string,enabled:boolean
 ){
  const [status,setStatus]=useState<Status>('connecting');
  const [activity,setActivity]=useState<DliActivity>(null);
@@ -22,8 +16,6 @@ export function useDirectRealtime(
  const activityClear=useRef<number|null>(null);
  const toastClear=useRef<number|null>(null);
  const lastTyping=useRef(0);
- const handlerRef=useRef(onCallSignal);
- handlerRef.current=onCallSignal;
 
  const clearActivity=()=>{
   if(activityClear.current!==null){window.clearTimeout(activityClear.current);activityClear.current=null;}
@@ -48,13 +40,6 @@ export function useDirectRealtime(
     if(activityClear.current!==null)window.clearTimeout(activityClear.current);
     setActivity(value as DliActivity);
     if(value!==null)activityClear.current=window.setTimeout(()=>setActivity(null),3000);
-   })
-   .on('broadcast',{event:'dli_call'},({payload})=>{
-    if(disposed||payload?.from!==peerId||payload?.to!==uid)return;
-    if(typeof payload.callId!=='string'||payload.callId.length>90)return;
-    if(!['ring','offer','answer','candidate','hangup','decline'].includes(payload.kind))return;
-    if(payload.mode!=='audio'&&payload.mode!=='video')return;
-    handlerRef.current(payload as DliCallSignal);
    })
    .on('presence',{event:'sync'},()=>{
     if(disposed)return;
@@ -99,11 +84,5 @@ export function useDirectRealtime(
   void channelRef.current.send({type:'broadcast',event:'dli_activity',
    payload:{kind,from:uid,to:peerId}});
  },[status,uid,peerId]);
- const sendCallSignal=useCallback((signal:Omit<DliCallSignal,'from'|'to'>)=>{
-  if(!channelRef.current||status!=='ready'||!uid||!peerId)return false;
-  void channelRef.current.send({type:'broadcast',event:'dli_call',
-   payload:{...signal,from:uid,to:peerId}});
-  return true;
- },[status,uid,peerId]);
- return {status,activity,peerOnline,onlineToast,setOnlineToast,sendActivity,sendCallSignal};
+ return {status,activity,peerOnline,onlineToast,setOnlineToast,sendActivity};
 }

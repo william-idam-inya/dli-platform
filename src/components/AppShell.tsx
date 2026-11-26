@@ -13,9 +13,7 @@ import GuidedTour from './GuidedTour';
 import GlobalSearch from './GlobalSearch';
 import QuickMenu from './QuickMenu';
 import FloatingMessenger from './FloatingMessenger';
-import {CallProvider} from './CallProvider';
 import PushNotificationOptIn from './PushNotificationOptIn';
-import CallMessageAlertsBanner from './CallMessageAlertsBanner';
 import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
 import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
 
@@ -244,7 +242,7 @@ export default function AppShell({ children }: AppShellProps) {
     : [];
 
   return (
-    <CallProvider><div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
+    <div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
       <aside ref={desktopSidebarRef} id="dli-desktop-sidebar" className="desktop-sidebar"
         aria-hidden={desktopSidebarCollapsed}>
         <Sidebar onSignOut={()=>{void signOut();}}/>
@@ -308,7 +306,7 @@ export default function AppShell({ children }: AppShellProps) {
           </nav>
           <div className="topbar-actions dli-compact-actions">
             {/* The live badge/bell remain mounted on all routes; collapse menus
-                never pause realtime message or call subscriptions. */}
+                never pause realtime message subscriptions. */}
             <div className="dli-topbar-status-icon" aria-label="Unread messages"><DliMessageBadge/></div>
             <div className="dli-topbar-status-icon" data-dli-tour="notifications"
               aria-label="In-app notifications"><DliNotificationBell/></div>
@@ -381,7 +379,6 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
         </header>
-        <CallMessageAlertsBanner/>
         <DliAnnouncementTicker/>
 
         <div className="page-content">
@@ -407,6 +404,6 @@ export default function AppShell({ children }: AppShellProps) {
       </nav>}
     <GuidedTour/>
     <FloatingMessenger/>
-    </div></CallProvider>
+    </div>
   );
 }
