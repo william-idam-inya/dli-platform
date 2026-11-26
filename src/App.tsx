@@ -33,6 +33,7 @@ const FinanceReviewPage = lazy(() => import('./pages/FinanceReviewPage'));
 const DirectMessagesPage = lazy(() => import('./pages/DirectMessagesPage'));
 const ReminderPlannerPage = lazy(() => import('./pages/ReminderPlannerPage'));
 const InAppAnnouncementsPage = lazy(() => import('./pages/InAppAnnouncementsPage'));
+const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
 const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
 const OperationalReportsPage = lazy(() => import('./pages/OperationalReportsPage'));
 const InstitutionalSettingsPage = lazy(() => import('./pages/InstitutionalSettingsPage'));
@@ -78,7 +79,7 @@ function ProfileSetupGate({children}:{children:ReactNode}){
 }
 const IMPLEMENTED_PATHS:ReadonlySet<string>=new Set([
   '/','/enrolment','/payroll','/profile','/feedback','/users','/people',
-  '/conferences','/academics','/cohorts','/assignments','/classes',
+  '/conferences','/meetings','/academics','/cohorts','/assignments','/classes',
   '/my-classes','/private-classes','/study','/learning','/assessments',
   '/quizzes','/schedule','/attendance','/finance','/finance/reviews',
   '/communications','/communications/reminders','/announcements',
@@ -100,7 +101,8 @@ function Workspace() {
         <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         <Route path="/people" element={<AllowedArea path="/people"><PeopleDirectoryPage /></AllowedArea>} />
-        <Route path="/conferences" element={<Navigate to="/classes" replace />} />
+        <Route path="/conferences" element={<Navigate to="/meetings" replace />} />
+        <Route path="/meetings" element={<AllowedArea path="/meetings"><MeetingsPage /></AllowedArea>} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
         <Route path="/cohorts" element={<AllowedArea path="/cohorts"><CohortCurriculumPage /></AllowedArea>} />
         <Route path="/assignments" element={<Navigate to="/classes" replace />} />

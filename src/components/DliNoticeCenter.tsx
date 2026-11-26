@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import './DliNoticeCenter.css';
 
 export type DliNotice = {
-  id:string;title:string;body:string;target_role:'student'|'tutor';
+  id:string;title:string;body:string;target_role:'student'|'tutor'|null;meeting_id?:string|null;
   audience_mode:'all'|'selected';status:'draft'|'live'|'withdrawn';
   publish_at:string;expires_at:string|null;author_id:string;created_at:string;
 };
