@@ -18,13 +18,16 @@ for(const token of ['academic-overview-stats','academic-available-count',
  '<small>{item.code}</small>','academic-manage-label']){
  assert.ok(!academics.includes(token),'Academics metadata still present: '+token);
 }
-for(const token of ['submitProgramme','submitLevel','submitSubject','submitCourse',
+for(const token of ['submitProgramme','submitLevel','submitSubject',
  'codeFor(', 'aria-pressed','<Badge active={item.is_active}/>',
  '<ActionButton active={item.is_active}',"toggle('courses'",
+ 'These links are created automatically when you add a subject to a class',
  'Choose a programme','Choose an academic level','Catalogue subjects',
  'academic-admin-drawer']){
  assert.ok(academics.includes(token),'Functional academic catalogue controls missing: '+token);
 }
+assert.ok(!academics.includes('function submitCourse'),
+ 'Class setup must not require a separate manual programme course record');
 const shell=read('src/components/AppShell.tsx');
 assert.ok(!shell.includes('className="sidebar-version"')&&!shell.includes('className="page-footer"'),
  'Duplicate global metadata footer still mounted');
