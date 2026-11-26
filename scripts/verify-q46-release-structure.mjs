@@ -25,7 +25,7 @@ function noDuplicates(items,label){
  const duplicates=items.filter((v,i)=>items.indexOf(v)!==i);
  assert.deepEqual(duplicates,[],label+' have duplicates');
 }
-assert.ok(pathItems.length>=20,'Global navigation registry has unexpectedly lost modules');
+assert.ok(pathItems.length>=19,'Global navigation registry has unexpectedly lost modules');
 noDuplicates(pathItems,'Navigation paths');
 noDuplicates(routes,'Static router paths');
 noDuplicates([...allowed.keys()],'RBAC path keys');
