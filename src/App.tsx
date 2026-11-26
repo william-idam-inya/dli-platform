@@ -100,7 +100,7 @@ function Workspace() {
         <Route path="/feedback" element={<AllowedArea path="/feedback"><FeedbackPage /></AllowedArea>} />
         <Route path="/users" element={<AllowedArea path="/users"><UserManagementPage /></AllowedArea>} />
         <Route path="/people" element={<AllowedArea path="/people"><PeopleDirectoryPage /></AllowedArea>} />
-        <Route path="/conferences" element={<Navigate to="/schedule" replace />} />
+        <Route path="/conferences" element={<Navigate to="/classes" replace />} />
         <Route path="/academics" element={<AllowedArea path="/academics"><AcademicSetupPage /></AllowedArea>} />
         <Route path="/cohorts" element={<AllowedArea path="/cohorts"><CohortCurriculumPage /></AllowedArea>} />
         <Route path="/assignments" element={<Navigate to="/classes" replace />} />

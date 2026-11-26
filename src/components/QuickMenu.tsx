@@ -8,7 +8,7 @@ import {canAccessPath} from '../auth/permissions';
 const ITEMS=[
  {label:'Set up a cohort',path:'/cohorts',icon:BookOpen},
  {label:'Schedule a class',path:'/classes',icon:CalendarDays},
- {label:'View tutorial timetable',path:'/schedule',icon:CalendarDays},
+ {label:'Open tutorial classes',path:'/classes',icon:CalendarDays},
  {label:'Review payments',path:'/enrolment',icon:Wallet},
  {label:'Publish an announcement',path:'/announcements',icon:MessageSquareText},
 ];
