@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {BookOpen,CalendarDays,Grid3X3,MessageSquareText,Plus,Wallet,X} from 'lucide-react';
+import {BookOpen,CalendarDays,Grid3X3,MessageSquareText,Wallet,X} from 'lucide-react';
 import {Link,useLocation} from 'react-router-dom';
 import {useAuth} from '../auth/AuthProvider';
 import {canAccessPath} from '../auth/permissions';
@@ -8,7 +8,7 @@ import {canAccessPath} from '../auth/permissions';
 const ITEMS=[
  {label:'Set up a cohort',path:'/cohorts',icon:BookOpen},
  {label:'Schedule a class',path:'/classes',icon:CalendarDays},
- {label:'Open conference rooms',path:'/conferences',icon:Plus},
+ {label:'View tutorial timetable',path:'/schedule',icon:CalendarDays},
  {label:'Review payments',path:'/enrolment',icon:Wallet},
  {label:'Publish an announcement',path:'/announcements',icon:MessageSquareText},
 ];

@@ -138,13 +138,6 @@ export const navigationSections: NavigationSection[] = [
         group: 'Operations',
       },
       {
-        label: 'Conference rooms',
-        path: '/conferences',
-        icon: Users,
-        description: 'Role-restricted rooms, chat and host moderation; SFU media pending Cloudflare provisioning.',
-        group: 'Operations',
-      },
-      {
         label: 'Messages',
         path: '/communications',
         icon: MessageSquareText,
