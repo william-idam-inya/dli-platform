@@ -15,7 +15,7 @@ const groups=[
  {key:'free',title:'Free Students'},
  {key:'paid',title:'Paid Students'},
 ] as const;
-export default function PeopleDirectoryPage(){
+export default function PeopleDirectoryPage({studentsOnly=false}:{studentsOnly?:boolean}){
  const {account}=useAuth();
  const [people,setPeople]=useState<Person[]>([]);
  const [authUserId,setAuthUserId]=useState('');
@@ -59,11 +59,10 @@ export default function PeopleDirectoryPage(){
       placeholder="Search people or roles…" type="search"/></label>
    <button type="button" className="user-outline-button" disabled={loading}
      onClick={()=>void load()}><RefreshCw size={16}/> Refresh</button>
-   {account&&(account.role==='owner'||account.role==='admin')&&
-    <Link className="user-outline-button" to="/users">User access management</Link>}
   </div>
   <div className="dli-people-grid">
    {groups.map(group=>{
+    if(studentsOnly&&group.key!=='free'&&group.key!=='paid')return null;
     const members=visible.filter(p=>inGroup(p,group.key));
     if(!staff&&group.key!=='owner'&&group.key!=='admin'&&group.key!=='assistant_admin')return null;
     return <section className="dli-people-group" key={group.key}

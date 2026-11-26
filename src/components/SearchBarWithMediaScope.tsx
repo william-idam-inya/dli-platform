@@ -272,7 +272,7 @@ export default function SearchBarWithMediaScope({
   const iconForItem=(record:MediaRecord)=>iconFor(record.media_type);
 
   return <div className="dli-global-search dli-media-search" ref={root} role="search"
-    aria-label="Search DLI media and workspaces">
+    aria-label="Search students, tutors, classes and DLI workspaces">
     <div className={'dli-media-scope-trigger'+(scoped?' is-active':'')}>
       <button type="button" className="dli-media-scope-button"
         aria-label={'Media type: '+(scope??'All Media')+'. Choose media type'}
@@ -290,7 +290,7 @@ export default function SearchBarWithMediaScope({
     <label htmlFor="dli-global-query" className="sr-only">Search media and DLI workspaces</label>
     <input id="dli-global-query" className="dli-media-query"
       ref={input} type="search" autoComplete="off"
-      placeholder={scope?'Search '+scope+' in DLI-Online…':'Search DLI-Online…'}
+      placeholder={scope?'Search '+scope+'…':'Search students, tutors, classes…'}
       value={term} onChange={event=>{setTerm(event.target.value);setResultsOpen(true);}}
       onFocus={()=>{setResultsOpen(true);setMenuOpen(false);}}
       onKeyDown={event=>{

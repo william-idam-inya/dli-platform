@@ -15,6 +15,7 @@ import './mobile-overlay-resilience.css';
 import './global-page-header-cleanup.css';
 import './components/TopbarUtilityDropdown.css';
 import './compact-sidebar-welcome.css';
+import './redesign.css';
 import { initializeAppearance } from './lib/appearancePreferences';
 import {registerDliServiceWorker} from './lib/pushNotifications';
 

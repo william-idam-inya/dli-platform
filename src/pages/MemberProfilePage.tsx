@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Camera, CheckCircle2, LockKeyhole, RefreshCw, Save, ShieldCheck, UserRound, HelpCircle } from 'lucide-react';
+import { Camera, CheckCircle2, LockKeyhole, RefreshCw, Save, ShieldCheck, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { roleLabels } from '../auth/permissions';
@@ -168,9 +168,6 @@ export default function MemberProfilePage(){
     <h1>My profile &amp; preferences</h1>
     
    </div></div>
-  <button type="button" className="dli-tour-launch" onClick={()=>window.dispatchEvent(new Event('dli-tour-replay'))}>
-    <HelpCircle size={17} aria-hidden="true"/> Replay guided app tour
-  </button>
   
   {error&&<p className="auth-feedback error" role="alert">{error}</p>}
   {notice&&<p className="auth-feedback success" role="status">{notice}</p>}

@@ -4,7 +4,7 @@ import {
   ShieldAlert, ShieldCheck, Users, Save, RotateCcw,
 } from 'lucide-react';
 import InviteUserPage from '../auth/InviteUserPage';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { isDliRole, roleLabels, type DliRole } from '../auth/permissions';
 import { supabase } from '../lib/supabase';
@@ -53,6 +53,8 @@ const statusLabels: Record<UserStatus, string> = {
 
 export default function UserManagementPage() {
   const { account } = useAuth();
+  const [params] = useSearchParams();
+  const activeSection = params.get('tab') === 'invites' ? 'invites' : 'staff';
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [registryAuthIds,setRegistryAuthIds]=useState<Record<string,string>>({});
   const [roles, setRoles] = useState<DliRole[]>([]);
@@ -161,10 +163,11 @@ export default function UserManagementPage() {
     return()=>{active=false;};
   },[users,account?.role]);
   const visible = useMemo(() => users.filter(item => {
+    if(activeSection==='staff'&&item.role==='student')return false;
     const q = search.trim().toLowerCase();
     return !q || item.email.toLowerCase().includes(q) ||
         item.full_name.toLowerCase().includes(q) || (roleLabels[item.role]??'Retired role').toLowerCase().includes(q);
-  }), [users, search]);
+  }), [users, search, activeSection]);
   const groupFor=(user:UserRecord)=>{
     if(!isDliRole(user.role))return 'legacy';
     if(user.role!=='student')return user.role;
@@ -269,7 +272,7 @@ export default function UserManagementPage() {
         <button type="button" onClick={()=>setNotice(null)} aria-label="Dismiss confirmation">Dismiss</button>
       </div>}
 
-      <section className="panel user-registry" id="account-registry">
+      {activeSection === 'staff' && <section className="panel user-registry" id="account-registry">
         <div data-dli-tour="users" className="panel-heading">
           <div>
             <h2>Account registry</h2>
@@ -435,11 +438,11 @@ export default function UserManagementPage() {
           type="button" onClick={() => { void loadUsers(false); }}>
           {loadingMore ? 'Loading next page…' : 'Load more accounts'}
         </button>}
-      </section>
+      </section>}
 
-      <div id="invite-member">
+      {activeSection === 'invites' && <div id="invite-member">
         <InviteUserPage embedded allowedRoles={roles} onCreated={() => { void loadUsers(true); void loadAudit(); }}/>
-      </div>
+      </div>}
 
       <section className="panel user-audit">
         <div className="panel-heading">

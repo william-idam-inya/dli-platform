@@ -535,6 +535,10 @@
     {
       "gitBlobSha1": "8f9488de2ae3e3e6ef61ae05b317a18455a5a91b",
       "file": "20261126135631_stage_q82_class_course_outline_files.sql"
+    },
+    {
+      "file": "20261126145050_stage_q83_external_meeting_manual_distribution.sql",
+      "gitBlobSha1": "04621de8664d8ed460f8a5b7f89aab2bb98ca26e"
     }
   ]
 }

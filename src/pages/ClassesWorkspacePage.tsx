@@ -76,7 +76,7 @@ export default function ClassesWorkspacePage(){
   const paying=account?.role==='owner'||account?.role==='admin'||account?.role==='assistant_admin'||(account?.role==='student'&&account.studentTier==='paid');
   const communicating=account?.role==='owner'||account?.role==='admin'||
     (account?.role==='student'&&account.studentTier==='paid')||account?.role==='tutor';
-  const tab=params.get('tab')==='payments'&&paying?'payments':
+  const tab=(params.get('tab')==='payments'||params.get('classTab')==='payments')&&paying?'payments':
     params.get('tab')==='messages'&&communicating?'messages':'classes';
 
   const [people,setPeople]=useState<Person[]>([]);

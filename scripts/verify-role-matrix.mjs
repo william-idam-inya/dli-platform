@@ -30,7 +30,7 @@ const matrix = [
   ['assistant_admin','/finance/reviews',true], ['assistant_admin','/enrolment',true],
   ['assistant_admin','/private-classes',true],
   ['tutor','/payroll',true], ['tutor','/my-classes',true],
-  ['tutor','/users',false], ['tutor','/settings',false], ['tutor','/finance',false],
+  ['tutor','/users',false], ['tutor','/settings',false], ['tutor','/finance',true],
   ['finance_officer','/finance',false], ['finance_officer','/finance/reviews',false],
   ['finance_officer','/users',false],
   ['academic_coordinator','/academics',false], ['academic_coordinator','/users',false],
@@ -39,7 +39,7 @@ for (const [role,path,expected] of matrix) {
   assert.equal(canAccessPath(role,path),expected,role + ' ' + path);
 }
 
-const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/my-classes','/study','/learning','/assessments','/quizzes','/schedule','/attendance','/communications','/announcements','/meetings','/people']);
+const freeAllow = new Set(['/','/profile','/change-password','/feedback','/enrolment','/classes','/my-classes','/private-classes','/study','/learning','/assessments','/quizzes','/schedule','/attendance','/communications','/announcements','/meetings','/people','/finance','/timetable','/academics']);
 const appSource = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const guardedRoutes = [...appSource.matchAll(/<AllowedArea path="([^"]+)"/g)].map(m=>m[1]);
 assert.ok(guardedRoutes.length > 20, 'the app must still guard its business routes');
@@ -55,7 +55,7 @@ for (const path of ['/my-classes','/learning','/assessments','/quizzes','/schedu
   assert.equal(canAccessPath('student',path,'paid'),true,'Paid Student: '+path);
   assert.equal(canAccessPath('student',path,'free'),true,'Free Student enrolled learning route: '+path);
 }
-for (const path of ['/users','/finance','/payroll','/settings','/reports/audit']) {
+for (const path of ['/users','/finance/reviews','/payroll','/settings','/reports/audit']) {
   assert.equal(canAccessPath('student',path,'paid'),false,'Paid Student privileged route denied: '+path);
 }
 assert.equal(canAccessPath('student','/study','free'),true,'Free learner can see authorised class content');
