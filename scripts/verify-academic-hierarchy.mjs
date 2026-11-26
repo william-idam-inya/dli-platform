@@ -15,10 +15,10 @@ for(const text of [
   "item.id === selectedProgramme?.id","level.id === selectedLevel?.id",
   'aria-pressed','aria-label','academic-next-steps',
   'academic-admin-drawer','<details','<summary>',
-  'submitProgramme','submitLevel','submitSubject','submitCourse',
+  'submitProgramme','submitLevel','submitSubject','These links are created automatically when you add a subject to a class',
   "toggle('programmes'","toggle('academic_levels'",
   "toggle('subjects'","toggle('courses'",
-  "courses.some(item => item.programme_id === courseProgrammeId",
+  "to=\"/cohorts\" className=\"academic-next-link\"",
   'onClick={() => { void refresh(); }}',
 ]) assert.ok(src.includes(text),'Q10 academic UI missing: '+text);
 
@@ -27,7 +27,9 @@ assert.ok(!src.includes('academic-overview-stats')&&!src.includes('academic-defi
  !src.includes('academic-available-count')&&!src.includes('generated-from-name') &&
  !src.includes('<small>{item.code}</small>'),
  'Academic catalogue must not show redundant totals, generated codes or governance metadata');
-assert.ok(src.includes('courses.filter(item => item.programme_id === courseProgrammeId'),'Advanced course list must stay scoped');
+assert.ok(src.includes('courses.filter(item => item.programme_id === courseProgrammeId'),'Programme subject links must stay scoped');
+assert.ok(!src.includes('function submitCourse')&&!src.includes('Create course'),
+ 'Classes should connect approved subjects without a separate manual course creation step');
 assert.ok(src.includes('course.is_active &&'),'Inactive courses must never be advertised');
 assert.ok(src.includes('item.id === course.programme_id && item.is_active'),'Inactive programmes must be omitted');
 assert.ok(src.includes('item.id === course.academic_level_id && item.is_active'),'Inactive levels must be omitted');

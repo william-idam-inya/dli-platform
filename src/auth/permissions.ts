@@ -30,7 +30,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/enrolment': ['student','owner','admin','assistant_admin'],
   '/payroll': ['owner','admin','assistant_admin','tutor'],
   '/academics': ['owner', 'admin'],
-  '/cohorts': ['owner', 'admin'],
+  '/cohorts': ['owner', 'admin', 'assistant_admin'],
   '/assignments': ['owner', 'admin'], // legacy route redirects to unified classes.
   '/classes': ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
   '/my-classes': ['tutor', 'student'],

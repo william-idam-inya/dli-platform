@@ -47,3 +47,8 @@
  .dli-cohort-topic-row>strong{min-width:50%}
  .dli-cohort-topic-buttons{margin-left:auto}
 }
+.dli-cohort-assigned-subjects{display:grid;gap:.85rem;margin-top:1.25rem}
+.dli-cohort-assigned-subjects>h3{margin:0}
+.dli-cohort-assigned-subject{padding:.8rem;border:1px solid var(--border-color,#dbe3ef);border-radius:12px}
+.dli-cohort-assigned-subject>h4{margin:.1rem 0 .5rem}
+.dli-cohort-assigned-subject .course-outline-panel{margin:.5rem 0 0}
