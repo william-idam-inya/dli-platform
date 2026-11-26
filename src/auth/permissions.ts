@@ -29,7 +29,7 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/profile': DLI_ROLES,
   '/enrolment': ['student','owner','admin','assistant_admin'],
   '/payroll': ['owner','admin','assistant_admin','tutor'],
-  '/academics': ['owner', 'admin'],
+  '/academics': DLI_ROLES, // Unified workspace; each academic tab retains its own source permission.
   '/cohorts': ['owner', 'admin', 'assistant_admin'],
   '/assignments': ['owner', 'admin'], // legacy route redirects to unified classes.
   '/classes': ['owner', 'admin', 'assistant_admin', 'tutor', 'student'],
@@ -44,12 +44,14 @@ const routeRoles: Record<string, readonly DliRole[]> = {
   '/users': ['owner', 'admin'],
   '/people': DLI_ROLES,
   '/tutors': ['owner', 'admin', 'assistant_admin', 'tutor'],
-  '/finance': ['owner', 'admin', 'assistant_admin'],
+  '/finance': DLI_ROLES, // Student plan view is shared; staff-only tabs keep their source permission.
   '/finance/reviews': ['owner', 'admin', 'assistant_admin'],
   '/communications': DLI_ROLES, // Per-contact RLS restricts non-admin roles to three administrators.
   '/communications/reminders': ['owner', 'admin', 'assistant_admin', 'tutor'],
   '/announcements': DLI_ROLES,
   '/meetings': DLI_ROLES,
+  '/timetable': DLI_ROLES,
+  '/activity': ['owner','admin','assistant_admin'],
   '/reports': ['owner', 'admin', 'assistant_admin'],
   '/reports/audit': ['owner', 'admin'],
   '/settings': ['owner', 'admin', 'assistant_admin'],

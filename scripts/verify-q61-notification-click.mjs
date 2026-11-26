@@ -12,9 +12,11 @@ const UUID='19c40f0e-591f-4849-8394-423e2e170012';
 assert.ok(bridge.includes("navigate(destination,{replace:true})")&&
  bridge.includes("navigator.serviceWorker.addEventListener('message',onMessage)")&&
  bridge.includes("dli-push-nav-ack"),'Mounted app must consume and acknowledge pushes');
-assert.ok(bridge.includes("/communications?dli_thread=")&&
- bridge.includes("/classes")&&bridge.includes("/announcements"));
-assert.ok(app.includes('<PushNotificationNavigation />'));
+assert.ok(bridge.includes("/communications?dli_thread=")&&bridge.includes("/classes"));
+assert.ok(app.includes('path="/announcements"')&&
+ app.includes('to="/communications?tab=messages"'),
+ 'Old urgent-notice notifications should land safely in the remaining messages workspace');
+assert.ok(app.includes('<PushNotificationNavigation/>'));
 assert.ok(auth.includes('to={afterLogin}')&&app.includes('state={{from:location.pathname+location.search}}'),
  'Signed-out notification links must return to the protected destination');
 assert.ok(!bridge.includes('dli_call=')&&!push.includes('closeDliIncomingCallNotification'),
@@ -53,7 +55,8 @@ assert.equal(opened.pop(),'https://dli-platform-prod.pages.dev/communications?dl
 await click({kind:'call',callId:UUID,path:'/'},'accept');
 assert.deepEqual(opened,[],'Stale incoming-call notifications must not open or accept a call');
 await click({kind:'urgent_notice',path:'/announcements'});
-assert.equal(opened.pop(),'https://dli-platform-prod.pages.dev/announcements');
+assert.equal(opened.pop(),'https://dli-platform-prod.pages.dev/announcements',
+ 'Old notification links should remain openable and will use the in-app legacy redirect');
 await click({kind:'conference_reminder',path:'/classes'});
 assert.equal(opened.pop(),'https://dli-platform-prod.pages.dev/classes');
 clientMode='ack';

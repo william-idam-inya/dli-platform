@@ -22,21 +22,17 @@ assert.match(brand, /aria-hidden=\{decorative \? true : undefined\}/);
 
 const shell = read('src/components/AppShell.tsx');
 const auth = read('src/auth/AuthPages.tsx');
-const home = read('src/pages/DashboardPage.tsx');
-for (const page of [shell, auth, home]) {
+for (const page of [shell, auth]) {
   assert.match(page, /OfficialDliLogo/, 'Brand image missing from a major app surface.');
 }
-assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 1,
-  'Keep the official logo in the responsive shared header without hidden duplicate identity artwork.');
+assert.equal((shell.match(/<OfficialDliLogo decorative/g) || []).length, 3,
+  'Keep the official logo in the desktop sidebar, compact header and mobile drawer.');
 assert.doesNotMatch(shell, /className="workspace-switcher"/,
   'Do not reintroduce a duplicate DLI brand/role selector beneath the official header.');
 assert.match(auth, /<div className="auth-mark"><OfficialDliLogo/);
-assert.match(home, /<span className="ref-hero-emblem"><OfficialDliLogo decorative/);
-assert.match(home, /<ReferenceHeroArtwork role=/);
-assert.match(shell, /className="dli-topbar-brand"/);
+assert.match(shell, /className="redesign-sidebar-brand"/);
 assert.doesNotMatch(shell, /className="brand-mark">DLI</);
 assert.doesNotMatch(auth, /className="auth-mark">DLI</);
-assert.doesNotMatch(home, /className="art-cap"><GraduationCap/);
 
 const css = read('src/styles.css');
 assert.match(css, /\.official-dli-logo/);

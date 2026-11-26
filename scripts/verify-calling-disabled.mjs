@@ -31,7 +31,7 @@ for(const token of ['REVOKE SELECT ON TABLE public.dli_call_inbox_events',
  'REVOKE SELECT ON TABLE public.dli_call_history','dli_call_signal_durable',
  'dli_prod_realtimekit_access','DROP POLICY IF EXISTS dli_q37_call_inbox_receive'])
  assert.ok(migration.includes(token),'Database call access shutdown missing: '+token);
-assert.ok(app.includes('<Navigate to="/classes" replace />')&&
+assert.ok(app.includes('path="/classes"')&&app.includes("'/timetable?tab=weekly&view=classes'")&&
  classes.includes('Google Meet link for the entire group')&&classes.includes('Shared Google Meet'),
  'Scheduled meetings must continue through their Google Meet links.');
 assert.ok(realtime.includes("event:'dli_activity'")&&realtime.includes('presence:{key:uid}'),

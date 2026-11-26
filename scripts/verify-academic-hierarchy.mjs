@@ -7,6 +7,7 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const src=read('src/pages/AcademicSetupPage.tsx');
 const styles=read('src/pages/AcademicSetupPage.css');
 const nav=read('src/data/navigation.ts');
+const app=read('src/App.tsx');
 
 for(const text of [
   'Choose a programme','Choose an academic level','Catalogue subjects',
@@ -36,7 +37,10 @@ assert.ok(src.includes('item.id === course.academic_level_id && item.is_active')
 assert.ok(src.includes('item.academic_level_id === course.academic_level_id && item.is_active'),'Inactive subjects must be omitted');
 assert.doesNotMatch(src,/Showing live DLI development records|Stage D1/);
 assert.doesNotMatch(src,/https?:\/\/localhost|http:\/\/127\.0\.0\.1/);
-assert.ok(nav.includes("path: '/academics'"),'Keep academic route intact');
+assert.ok(nav.includes("path:'/academics'"),'Keep Academics workspace in canonical navigation');
+assert.ok(app.includes("<Route path=\"/academics\""),'Keep canonical Academics route intact');
+assert.ok(app.includes("to=\"/academics?tab=classes\""),'Keep class and subject catalog reachable in Academics workspace');
+assert.ok(app.includes("<Navigate to=\"/academics?tab=classes\" replace/>"),'Keep legacy cohort URLs redirected to class catalog');
 
 for(const text of [
   '.academic-choice-grid','.academic-choice-grid button:focus-visible',

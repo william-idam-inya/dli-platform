@@ -10,11 +10,11 @@ const profile=read('src/pages/MemberProfilePage.tsx');
 const enrollment=read('src/pages/PaidEnrollmentPage.tsx');
 const nav=read('src/data/navigation.ts');
 const styles=read('src/design-system.css');
-for(const phrase of ['permittedNavigation(', 'mobilePriorityPaths(account, allowedPaths)','aria-label="Quick mobile navigation"','aria-modal="true"',"event.key === 'Escape'","event.key !== 'Tab'",'OfficialDliLogo']){
+for(const phrase of ['navigationItems.filter','aria-label="Main navigation"','aria-modal="true"',"event.key==='Escape'",'OfficialDliLogo','WorkspaceFocus']){
   assert.ok(shell.includes(phrase),'Q15 missing responsive role-based shell: '+phrase);
 }
-for(const phrase of ['<ReferenceDashboard account={account}','learningAreas.map(item=>',
- '<DliDashboardAnnouncements/>','secondaryName','canAccessPath(account.role,secondaryPath.split'])
+for(const phrase of ['metrics.map(item=>','redesign-kpis','Your classes, study resources and messages',
+ 'Your teaching schedule, learning resources',"canAccessPath(account.role,'/study',account.studentTier)"])
   assert.ok(dash.includes(phrase),'Q15 dashboard missing: '+phrase);
 for(const phrase of ['id="login-email" name="username"','id="login-password" name="password"',"new FormData(event.currentTarget)",'PasswordInput'])
   assert.ok(auth.includes(phrase),'Q15 login/autofill regression: '+phrase);
@@ -27,7 +27,7 @@ for(const phrase of ["dli_member_profiles","dli-profile-changed",'preferred_them
   assert.ok(profile.includes(phrase),'Saved profile contract missing: '+phrase);
 for(const phrase of ["programmeChoices(catalogue)","levelChoices(catalogue,programme)","subjectChoices(catalogue,programme,level)","validSubjectSelection(catalogue,programme,level,selected)","dli_enrolment_catalogue","dli_apply_paid_v2"])
   assert.ok(enrollment.includes(phrase),'Q15 enrolment hierarchy missing: '+phrase);
-assert.ok(nav.includes('permittedNavigation'));
+assert.ok(nav.includes('navigationItems')&&nav.includes("path:'/academics'"));
 const classSource=read('src/pages/ClassesWorkspacePage.tsx');
 assert.ok(classSource.includes("label:'Group of 5 Students'"),
   'Q15 class tier must display the approved Group of 5 Students label');

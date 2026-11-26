@@ -1,409 +1,114 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Bell, ChevronDown, Grid2X2, HelpCircle, LogOut, Menu, MessageCircle, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { navigationItems, permittedNavigation } from '../data/navigation';
-import { mobilePriorityPaths } from '../data/roleNavigation';
-import { useAuth } from '../auth/AuthProvider';
-import { canAccessPath, accountRoleLabel } from '../auth/permissions';
-import { supabase } from '../lib/supabase';
+import {useEffect,useRef,useState,type ReactNode} from 'react';
+import {ChevronDown,LogOut,Menu,Moon,PanelLeftClose,PanelLeftOpen,Sun,X} from 'lucide-react';
+import {Link,NavLink,useLocation} from 'react-router-dom';
+import {navigationItems} from '../data/navigation';
+import {useAuth} from '../auth/AuthProvider';
+import {canAccessPath,accountRoleLabel} from '../auth/permissions';
+import {supabase} from '../lib/supabase';
 import OfficialDliLogo from './OfficialDliLogo';
 import ProfileAvatar from './ProfileAvatar';
-import WorkspaceFocus from './WorkspaceFocus';
-import GuidedTour from './GuidedTour';
 import GlobalSearch from './GlobalSearch';
-import QuickMenu from './QuickMenu';
-import FloatingMessenger from './FloatingMessenger';
-import PushNotificationOptIn from './PushNotificationOptIn';
-import {disableDliDevicePush,pushKeyProvided} from '../lib/pushNotifications';
-import { DliMessageBadge, DliNotificationBell, DliAnnouncementTicker } from './DliNoticeCenter';
+import {disableDliDevicePush} from '../lib/pushNotifications';
+import DliMessageBadge from './DliMessageBadge';
+import WorkspaceNotificationBell from './WorkspaceNotificationBell';
+import WorkspaceFocus from './WorkspaceFocus';
 
-function Sidebar({onNavigate,onSignOut}:{onNavigate?:()=>void;onSignOut?:()=>void}){
+function Sidebar({onNavigate}:{onNavigate?:()=>void}){
  const {account}=useAuth();
- const [showMore,setShowMore]=useState(false);
- const allowed=permittedNavigation(path=>Boolean(
-  account&&canAccessPath(account.role,path,account.studentTier)))
-  .flatMap(section=>section.items);
- const preferred=['/','/profile','/classes','/study','/communications','/announcements','/enrolment'];
- const primary=preferred.flatMap(path=>allowed.filter(item=>item.path===path));
- const other=allowed.filter(item=>!preferred.includes(item.path));
- const destinations=[...primary,...other];
- const visible=showMore?destinations:destinations.slice(0,9);
- return <div className="sidebar-inner">
-  <NavLink to="/profile" onClick={onNavigate} className="dli-flat-sidebar-identity" aria-label="My DLI account">
-   {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
-     <span className="profile-placeholder">D</span>}
-   <span><strong>{account?.full_name??'DLI member'}</strong>
-    <small>{account?accountRoleLabel(account):'Verified member'}</small></span>
-  </NavLink>
-  <nav className="primary-nav dli-flat-nav" aria-label="Main navigation">
-   {visible.map(item=>{
-    const Icon=item.icon;
-    return <NavLink key={item.path} to={item.path} end
-      onClick={onNavigate} className={({isActive})=>'nav-link'+(isActive?' active':'')}>
-      <Icon size={19} strokeWidth={1.9}/><span>{item.label}</span>
-    </NavLink>;
-   })}
+ const allowed=navigationItems.filter(item=>account&&canAccessPath(account.role,item.path,account.studentTier));
+ return <div className="redesign-sidebar-content">
+  <nav className="redesign-nav" aria-label="Main navigation">
+   {allowed.map(item=><NavLink key={item.path} to={item.path} end={item.path==='/'}
+    onClick={onNavigate} className={({isActive})=>'redesign-nav-link'+(isActive?' active':'')}>
+    <item.icon size={18} strokeWidth={1.8}/><span>{item.label}</span>
+   </NavLink>)}
   </nav>
-  <div className="dli-sidebar-quick-actions" role="group" aria-label="Navigation shortcuts">
-   {destinations.length>9&&<button type="button" className="dli-sidebar-quick-action dli-flat-more"
-     onClick={()=>setShowMore(v=>!v)} aria-expanded={showMore}
-     aria-label={showMore?'Show fewer navigation sections':'Show all navigation sections'}
-     title={showMore?'See less':'See more'}>
-     <Grid2X2 size={18} aria-hidden="true"/><span>{showMore?'See less':'See more'}</span>
-   </button>}
-   <button type="button" className="dli-sidebar-quick-action dli-tour-launch"
-     title="Replay guided app tour" aria-label="Replay guided app tour" onClick={()=>{
-     onNavigate?.();window.dispatchEvent(new Event('dli-tour-replay'));
-   }}><HelpCircle size={18} aria-hidden="true"/><span>Replay guide</span></button>
-   <button type="button" className="dli-sidebar-quick-action"
-     title="Sign out" aria-label="Sign out" onClick={()=>{onSignOut?.();onNavigate?.();}}>
-     <LogOut size={18} aria-hidden="true"/><span>Sign out</span>
-   </button>
-  </div>
+  <div className="redesign-sidebar-foot"><span>{account?accountRoleLabel(account):'DLI member'}</span></div>
  </div>;
 }
 
-interface AppShellProps {
-  children: ReactNode;
-}
+export default function AppShell({children}:{children:ReactNode}){
+ const location=useLocation();
+ const {account,clearNotice,preferredTheme,updatePreferredTheme}=useAuth();
+ const [logoutError,setLogoutError]=useState<string|null>(null);
+ const [collapsed,setCollapsed]=useState(()=>{try{return localStorage.getItem('dli-redesign-sidebar')==='collapsed';}catch{return false;}});
+ const [mobileOpen,setMobileOpen]=useState(false);
+ const [menuOpen,setMenuOpen]=useState(false);
+ const [dark,setDark]=useState(false);
+ const [themeBusy,setThemeBusy]=useState(false);
+ const [themeWarning,setThemeWarning]=useState<string|null>(null);
+ const menuRef=useRef<HTMLDivElement>(null);
+ const drawerRef=useRef<HTMLElement>(null);
+ const closeRef=useRef<HTMLButtonElement>(null);
+ const triggerRef=useRef<HTMLButtonElement|null>(null);
 
-export default function AppShell({ children }: AppShellProps) {
-  const location = useLocation();
-  const { account, clearNotice, preferredTheme, updatePreferredTheme } = useAuth();
-  const [logoutError, setLogoutError] = useState<string | null>(null);
-  const signOut = async () => {
-    if (!supabase) return;
-    setLogoutError(null);
-    clearNotice();
-    // Remove this browser's push endpoint BEFORE removing its JWT.
-    // A failed server revocation must not silently leave the previous
-    // member's private notifications active on a shared device.
-    try{await disableDliDevicePush();}
-    catch(error){
-      setLogoutError(error instanceof Error?error.message:
-        'Could not disable device alerts. Please retry before signing out.');
-      return;
-    }
-    const { error } = await supabase.auth.signOut();
-    if (error) setLogoutError('Could not sign out. Please retry.');
-  };
-  // Sidebar visibility belongs to this device; no RBAC or route changes.
-  const [desktopSidebarCollapsed,setDesktopSidebarCollapsed]=useState(()=>{
-    try{return window.localStorage.getItem('dli-desktop-sidebar-v1')==='collapsed';}
-    catch{return false;}
+ useEffect(()=>{document.documentElement.dataset.theme=dark?'dark':'light';try{localStorage.setItem('dli-theme',dark?'dark':'light');}catch{/* Theme stays active for this session. */}},[dark]);
+ useEffect(()=>{setDark(preferredTheme==='dark');},[preferredTheme]);
+ useEffect(()=>{try{localStorage.setItem('dli-redesign-sidebar',collapsed?'collapsed':'expanded');}catch{/* Optional local preference. */}},[collapsed]);
+ useEffect(()=>{setMobileOpen(false);setMenuOpen(false);},[location.pathname,location.search]);
+ useEffect(()=>{
+  const content=document.querySelector('.dli-redesign .page-content');
+  if(!content)return;
+  const labelTables=()=>content.querySelectorAll<HTMLTableElement>('table').forEach(table=>{
+   const headers=Array.from(table.querySelectorAll('thead tr:first-child th')).map(cell=>cell.textContent?.trim()??'');
+   if(!headers.length)return;
+  table.querySelectorAll<HTMLTableRowElement>('tbody tr').forEach(row=>Array.from(row.cells).forEach((cell,index)=>{
+    if(headers[index]&&!cell.hasAttribute('data-label'))cell.setAttribute('data-label',headers[index]);
+   }));
   });
-  const desktopSidebarRef=useRef<HTMLElement>(null);
-  const collapsedRef=useRef(desktopSidebarCollapsed);
-  const beforeTourRef=useRef<boolean|null>(null);
-  useEffect(()=>{
-    collapsedRef.current=desktopSidebarCollapsed;
-    if(desktopSidebarRef.current)desktopSidebarRef.current.inert=desktopSidebarCollapsed;
-    if(beforeTourRef.current!==null)return;
-    try{window.localStorage.setItem('dli-desktop-sidebar-v1',
-      desktopSidebarCollapsed?'collapsed':'expanded');}
-    catch{/* Browser preferences unavailable; manual toggle still works. */}
-  },[desktopSidebarCollapsed]);
-  // The contextual red-rim guide temporarily reveals the sidebar for its
-  // navigation step, then restores the user's previous visibility setting.
-  useEffect(()=>{
-    const reveal=()=>{
-      if(beforeTourRef.current===null)beforeTourRef.current=collapsedRef.current;
-      setDesktopSidebarCollapsed(false);
-    };
-    const restore=()=>{
-      if(beforeTourRef.current===null)return;
-      setDesktopSidebarCollapsed(beforeTourRef.current);
-      beforeTourRef.current=null;
-    };
-    window.addEventListener('dli-tour-begin',reveal);
-    window.addEventListener('dli-tour-end',restore);
-    return()=>{
-      window.removeEventListener('dli-tour-begin',reveal);
-      window.removeEventListener('dli-tour-end',restore);
-    };
-  },[]);
-  const [profileMenuOpen,setProfileMenuOpen] = useState(false);
-  const profileMenuRef=useRef<HTMLDivElement>(null);
-  useEffect(()=>{
-    if(!profileMenuOpen)return;
-    const outside=(event:PointerEvent)=>{
-      if(!profileMenuRef.current?.contains(event.target as Node))setProfileMenuOpen(false);
-    };
-    const esc=(event:KeyboardEvent)=>{
-      if(event.key==='Escape'){
-        setProfileMenuOpen(false);
-        profileMenuRef.current?.querySelector<HTMLButtonElement>('.dli-utility-trigger')?.focus();
-      }
-    };
-    document.addEventListener('pointerdown',outside);
-    document.addEventListener('keydown',esc);
-    return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);};
-  },[profileMenuOpen]);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const drawerRef = useRef<HTMLElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const openNavigation = (trigger: HTMLButtonElement) => {
-    triggerRef.current = trigger;
-    setMobileOpen(true);
-  };
-  const closeNavigation = () => {
-    setMobileOpen(false);
-    triggerRef.current?.focus();
-  };
-  const [themeSyncing,setThemeSyncing]=useState(false);
-  const [themeSyncWarning,setThemeSyncWarning]=useState<string|null>(null);
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      return window.localStorage.getItem('dli-theme') === 'dark';
-    } catch {
-      return false;
-    }
-  });
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
-    try {
-      window.localStorage.setItem('dli-theme', darkMode ? 'dark' : 'light');
-    } catch {
-      // Theme still works for this session when browser storage is unavailable.
-    }
-  }, [darkMode]);
-
-  useEffect(()=>{
-    const media=window.matchMedia('(prefers-color-scheme: dark)');
-    const sync=()=>{
-      if(preferredTheme==='system')setDarkMode(media.matches);
-      else setDarkMode(preferredTheme==='dark');
-    };
-    sync();
-    media.addEventListener?.('change',sync);
-    return()=>media.removeEventListener?.('change',sync);
-  },[preferredTheme]);
-
-  async function changeTheme(){
-    if(themeSyncing)return;
-    const next=!darkMode;
-    setDarkMode(next);
-    setThemeSyncing(true);setThemeSyncWarning(null);
-    const result=await updatePreferredTheme(next?'dark':'light');
-    if(!result.ok)setThemeSyncWarning(result.warning??'Theme changed locally, but could not be saved.');
-    setThemeSyncing(false);
-  }
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname, location.search]);
-
-  // Only the mobile drawer traps focus; the desktop sidebar remains ordinary
-  // navigation. Hide background scrolling while the drawer is expanded.
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeNavigation();
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = Array.from(drawerRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
-      ) ?? []).filter(element => element.getClientRects().length > 0);
-      if (!focusable.length) return;
-      const first = focusable[0], last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    const onResize = () => {
-      if (window.innerWidth > 680) setMobileOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('resize', onResize);
-    };
-  }, [mobileOpen]);
-
-  const allowedPaths = navigationItems.filter(item => Boolean(account &&
-    canAccessPath(account.role,item.path,account.studentTier))).map(item=>item.path);
-  const mobileItems = account
-    ? mobilePriorityPaths(account, allowedPaths)
-      .map(path=>navigationItems.find(item=>item.path===path))
-      .filter((item): item is (typeof navigationItems)[number] => Boolean(item))
-    : [];
-
-  return (
-    <div data-dli-role={account?.role??'guest'} className={'app-layout'+(desktopSidebarCollapsed?' dli-sidebar-collapsed':'')}>
-      <aside ref={desktopSidebarRef} id="dli-desktop-sidebar" className="desktop-sidebar"
-        aria-hidden={desktopSidebarCollapsed}>
-        <Sidebar onSignOut={()=>{void signOut();}}/>
-      </aside>
-
-      {mobileOpen && (
-        <div className="mobile-backdrop" role="presentation" onClick={closeNavigation}>
-          <aside id="dli-mobile-navigation" className="mobile-sidebar" role="dialog"
-            aria-modal="true" aria-label="All DLI navigation" ref={drawerRef}
-            onClick={(event) => event.stopPropagation()}>
-            <div className="dli-mobile-drawer-heading">
-              <strong>DLI navigation</strong>
-              <button ref={closeRef} type="button" className="mobile-close icon-button"
-                onClick={closeNavigation} aria-label="Close navigation">
-                <X size={20} />
-              </button>
-            </div>
-            <Sidebar onNavigate={closeNavigation} onSignOut={()=>{void signOut();}} />
-          </aside>
-        </div>
-      )}
-
-      <main className="main-area">
-        <header className="topbar dli-grid-topbar">
-          <div className="topbar-left">
-            <button type="button" className="mobile-menu icon-button"
-              onClick={(event) => openNavigation(event.currentTarget)}
-              aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation"
-              aria-label="Open all navigation">
-              <Menu size={21} />
-            </button>
-            <button type="button" className="dli-desktop-sidebar-toggle icon-button"
-              onClick={()=>setDesktopSidebarCollapsed(value=>!value)}
-              aria-controls="dli-desktop-sidebar" aria-expanded={!desktopSidebarCollapsed}
-              aria-label={desktopSidebarCollapsed?'Show sidebar':'Hide sidebar'}
-              title={desktopSidebarCollapsed?'Show sidebar':'Hide sidebar'}>
-              {desktopSidebarCollapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}
-            </button>
-            <Link to="/" className="dli-topbar-brand" aria-label="DLI Platform home">
-              <OfficialDliLogo decorative/><span>DLI Platform</span>
-            </Link>
-
-          </div>
-          <div className="dli-topbar-search"><GlobalSearch/></div>
-          <nav className="dli-primary-tabs" aria-label="Primary modules">
-            {([
-              {path:'/',label:'Overview'},{path:'/academics',label:'Academics'},
-              {path:'/classes',label:'Classes & timetable'},
-              {path:'/people',label:'People'},{path:'/finance',label:'Financials'},
-            ] as const).filter(t=>account&&canAccessPath(account.role,t.path,account.studentTier))
-              .map(t=>{
-                const item=navigationItems.find(i=>i.path===t.path);
-                if(!item)return null;
-                const Icon=item.icon;
-                return <NavLink key={t.path} to={t.path} end={t.path==='/'}
-                  className={({isActive})=>'dli-primary-tab'+(isActive?' active':'')}
-                  aria-label={t.label} title={t.label}>
-                  <Icon size={21} aria-hidden="true"/><span>{t.label}</span>
-                </NavLink>;
-              })}
-          </nav>
-          <div className="topbar-actions dli-compact-actions">
-            {/* The live badge/bell remain mounted on all routes; collapse menus
-                never pause realtime message subscriptions. */}
-            <div className="dli-topbar-status-icon" aria-label="Unread messages"><DliMessageBadge/></div>
-            <div className="dli-topbar-status-icon" data-dli-tour="notifications"
-              aria-label="In-app notifications"><DliNotificationBell/></div>
-            <div className="dli-profile-menu dli-utility-menu" ref={profileMenuRef}>
-              <button type="button" className="dli-profile-toggle dli-utility-trigger"
-                aria-label="Open account and tools"
-                title="Account and tools"
-                aria-controls="dli-account-dropdown" aria-expanded={profileMenuOpen}
-                onClick={()=>setProfileMenuOpen(value=>!value)}>
-                {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
-                  <span className="profile-placeholder">D</span>}
-                <span className="dli-account-pill-copy">
-                  {account?accountRoleLabel(account):'Account'}
-                </span>
-                <ChevronDown size={17} aria-hidden="true"/>
-              </button>
-              {/* Keep notification components mounted while collapsed: subscriptions,
-                  unread polling and alert modals must continue in every dashboard. */}
-              <div id="dli-account-dropdown" className="dli-profile-dropdown dli-utility-dropdown"
-                role="region" aria-label="DLI tools and account" hidden={!profileMenuOpen}>
-                <div className="dli-utility-account">
-                  <strong>{account?.full_name}</strong>
-                  <small>{account?accountRoleLabel(account):'Verified member'}</small>
-                </div>
-                <strong className="dli-utility-heading">Quick access</strong>
-                <div className="dli-utility-grid" aria-label="Workspace utilities">
-                  <div className="dli-utility-tile" aria-label="Quick actions">
-                    <QuickMenu/><small>Apps</small>
-                  </div>
-                  <NavLink className="dli-utility-tile" to="/communications"
-                    aria-label="Open Messages" onClick={()=>setProfileMenuOpen(false)}>
-                    <span className="dli-utility-link-icon"><MessageCircle size={20}/></span>
-                    <small>Messages</small>
-                  </NavLink>
-                  <NavLink className="dli-utility-tile" to="/announcements"
-                    aria-label="Open announcements" onClick={()=>setProfileMenuOpen(false)}>
-                    <span className="dli-utility-link-icon"><Bell size={20}/></span>
-                    <small>Notices</small>
-                  </NavLink>
-                  {pushKeyProvided&&<div className="dli-utility-tile" aria-label="Device alerts">
-                    <PushNotificationOptIn/><small>Alerts</small>
-                  </div>}
-                  <div className="dli-utility-tile" aria-label="Theme setting">
-                    <button type="button" className="icon-button theme-toggle"
-                      onClick={()=>{void changeTheme();}} disabled={themeSyncing}
-                      aria-label={darkMode?'Switch to light mode':'Switch to dark mode'}
-                      title={darkMode?'Switch to light mode':'Switch to dark mode'}>
-                      {darkMode?<Sun size={19}/>:<Moon size={19}/>}
-                    </button><small>Theme</small>
-                  </div>
-                  <NavLink to="/profile" className="dli-utility-tile dli-utility-profile"
-                    aria-label="My profile" onClick={()=>setProfileMenuOpen(false)}>
-                    {account?<ProfileAvatar key={account.id} name={account.full_name}/>:
-                      <span className="profile-placeholder">D</span>}
-                    <small>Profile</small>
-                  </NavLink>
-                </div>
-                <div className="dli-utility-links">
-                  <Link to="/profile" onClick={()=>setProfileMenuOpen(false)}>
-                    My profile and settings
-                  </Link>
-                  <button type="button" onClick={()=>{
-                    setProfileMenuOpen(false);window.dispatchEvent(new Event('dli-tour-replay'));
-                  }}><HelpCircle size={17}/> Replay guided app tour</button>
-                  <button type="button" onClick={()=>{
-                    setProfileMenuOpen(false);void signOut();
-                  }}><LogOut size={17}/> Sign out</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-        <DliAnnouncementTicker/>
-
-        <div className="page-content">
-          {logoutError && <p role="alert" className="auth-feedback error">{logoutError}</p>}
-          {themeSyncWarning && <p role="alert" className="auth-feedback error">{themeSyncWarning}</p>}
-          <WorkspaceFocus>{children}</WorkspaceFocus>
-
-        </div>
-      </main>
-      {account && <nav className="mobile-bottom-nav" aria-label="Quick mobile navigation">
-        {mobileItems.map(item => <NavLink key={item.path} to={item.path}
-          end={item.path==='/'}
-          className={({isActive}) => 'mobile-bottom-link'+(isActive?' active':'')}>
-          <item.icon size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>{item.shortLabel ?? item.label}</span>
-        </NavLink>)}
-        <button type="button" data-dli-tour="more-navigation" className={'mobile-bottom-link mobile-bottom-more'+(mobileOpen?' active':'')}
-          onClick={event=>openNavigation(event.currentTarget)}
-          aria-expanded={mobileOpen} aria-controls="dli-mobile-navigation">
-          <Grid2X2 size={21} strokeWidth={1.9} aria-hidden="true" />
-          <span>More</span>
-        </button>
-      </nav>}
-    <GuidedTour/>
-    <FloatingMessenger/>
+  labelTables();
+  const observer=new MutationObserver(labelTables);
+  observer.observe(content,{childList:true,subtree:true});
+  return()=>observer.disconnect();
+ },[location.pathname,location.search]);
+ useEffect(()=>{if(!menuOpen)return;const close=(event:PointerEvent)=>{if(!menuRef.current?.contains(event.target as Node))setMenuOpen(false);};const esc=(event:KeyboardEvent)=>{if(event.key==='Escape')setMenuOpen(false);};document.addEventListener('pointerdown',close);document.addEventListener('keydown',esc);return()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',esc);};},[menuOpen]);
+ useEffect(()=>{if(!mobileOpen)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';closeRef.current?.focus();const key=(event:KeyboardEvent)=>{if(event.key==='Escape'){setMobileOpen(false);triggerRef.current?.focus();return;}if(event.key!=='Tab')return;const nodes=Array.from(drawerRef.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled])')??[]).filter(node=>node.getClientRects().length);if(!nodes.length)return;const first=nodes[0],last=nodes.at(-1)!;if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}};window.addEventListener('keydown',key);return()=>{document.body.style.overflow=previous;window.removeEventListener('keydown',key);};},[mobileOpen]);
+ async function signOut(){if(!supabase)return;setLogoutError(null);clearNotice();try{await disableDliDevicePush();}catch(error){setLogoutError(error instanceof Error?error.message:'Could not disable device alerts. Please retry before signing out.');return;}const {error}=await supabase.auth.signOut();if(error)setLogoutError('Could not sign out. Please retry.');}
+ async function toggleTheme(){if(themeBusy)return;const next=!dark;setDark(next);setThemeBusy(true);setThemeWarning(null);const result=await updatePreferredTheme(next?'dark':'light');if(!result.ok)setThemeWarning(result.warning??'Theme changed on this device but could not be saved.');setThemeBusy(false);}
+ const activeItem=navigationItems.find(item=>item.path===location.pathname)||navigationItems.find(item=>item.path!=='/'&&location.pathname.startsWith(item.path));
+ const tabName=new URLSearchParams(location.search).get('tab');
+ const tabLabels:Record<string,string>={students:'Students',staff:'Tutors & Staff',invites:'Invites',classes:'Classes & Subjects',results:'Results',setup:'Academic Setup',weekly:'Weekly Schedule',meet:'Live Meet Links',overview:'Overview',plans:'Student Plans',payroll:'Tutor Payroll',approvals:'Approvals',messages:'Messages',support:'Feedback & Support',reports:'Reports',changes:'Change History'};
+ const breadcrumb=[activeItem?.label,tabName?tabLabels[tabName]:null].filter(Boolean).join(' / ');
+ const openDrawer=(button:HTMLButtonElement)=>{triggerRef.current=button;setMobileOpen(true);};
+ const closeDrawer=()=>{setMobileOpen(false);triggerRef.current?.focus();};
+ return <div className={'app-layout dli-redesign'+(collapsed?' dli-sidebar-collapsed':'')} data-dli-role={account?.role??'guest'}>
+  <aside id="dli-desktop-sidebar" className="desktop-sidebar" aria-hidden={collapsed}>
+   <div className="redesign-sidebar-brand"><Link to="/" aria-label="DLI Platform home"><OfficialDliLogo decorative/><span>DLI Platform</span></Link></div>
+   <Sidebar/>
+  </aside>
+  {mobileOpen&&<div className="mobile-backdrop" role="presentation" onClick={closeDrawer}><aside className="mobile-sidebar redesign-mobile-drawer" ref={drawerRef} role="dialog" aria-modal="true" aria-label="DLI navigation" onClick={event=>event.stopPropagation()}>
+   <div className="redesign-mobile-heading"><Link to="/"><OfficialDliLogo decorative/><strong>DLI Platform</strong></Link><button ref={closeRef} type="button" className="icon-button" aria-label="Close navigation" onClick={closeDrawer}><X size={20}/></button></div><Sidebar onNavigate={closeDrawer}/>
+  </aside></div>}
+  <main className="main-area">
+   <header className="redesign-topbar">
+    <div className="redesign-topbar-left">
+     <button type="button" className="redesign-mobile-menu icon-button" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={event=>openDrawer(event.currentTarget)}><Menu size={20}/></button>
+     <button type="button" className="redesign-collapse icon-button" aria-label={collapsed?'Show navigation':'Hide navigation'} aria-expanded={!collapsed} onClick={()=>setCollapsed(value=>!value)}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button>
+     <Link to="/" className="redesign-compact-brand" aria-label="DLI Platform home"><OfficialDliLogo decorative/><span>DLI</span></Link>
+     <span className="redesign-breadcrumb" aria-label="Current page">{breadcrumb||'Overview'}</span>
     </div>
-  );
+    <div className="redesign-search"><GlobalSearch/></div>
+    <div className="redesign-topbar-actions">
+     <Link className="redesign-icon-link" to="/communications" aria-label="Messages"><DliMessageBadge/></Link>
+     <WorkspaceNotificationBell/>
+     <div ref={menuRef} className="redesign-account-menu">
+      <button type="button" className="redesign-avatar-trigger" aria-label="Open profile menu" aria-expanded={menuOpen} aria-controls="redesign-account-dropdown" onClick={()=>setMenuOpen(value=>!value)}>
+       {account?<ProfileAvatar key={account.id} name={account.full_name}/>:<span className="profile-placeholder">D</span>}<ChevronDown size={15}/>
+      </button>
+      {menuOpen&&<div id="redesign-account-dropdown" className="redesign-account-dropdown" role="menu">
+       <div className="redesign-account-summary"><strong>{account?.full_name||'DLI member'}</strong><span>{account?accountRoleLabel(account):'Account'}</span></div>
+       <Link role="menuitem" to="/profile" onClick={()=>setMenuOpen(false)}>My Profile</Link>
+       <Link role="menuitem" to="/settings" onClick={()=>setMenuOpen(false)}>Settings</Link>
+       <button role="menuitem" type="button" disabled={themeBusy} onClick={()=>void toggleTheme()}>{dark?<Sun size={16}/>:<Moon size={16}/>} {dark?'Light theme':'Dark theme'}</button>
+       <button role="menuitem" type="button" onClick={()=>{setMenuOpen(false);void signOut();}}><LogOut size={16}/> Sign out</button>
+      </div>}
+     </div>
+    </div>
+   </header>
+   <section className="page-content redesign-content">
+    {logoutError&&<p role="alert" className="auth-feedback error">{logoutError}</p>}{themeWarning&&<p role="status" className="auth-feedback">{themeWarning}</p>}
+    <WorkspaceFocus>{children}</WorkspaceFocus>
+   </section>
+  </main>
+ </div>;
 }

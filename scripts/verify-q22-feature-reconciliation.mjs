@@ -5,7 +5,6 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const user=read('src/pages/UserManagementPage.tsx');
 const operational=read('src/pages/OperationalReportsPage.tsx');
-const reminders=read('src/pages/ReminderPlannerPage.tsx');
 const settings=read('src/pages/InstitutionalSettingsPage.tsx');
 const finance=read('src/pages/FinancePage.tsx');
 const comm=read('src/pages/CommunicationDraftsPage.tsx');
@@ -13,6 +12,8 @@ const templates=read('src/pages/CommunicationTemplatesPage.tsx');
 const academic=read('src/pages/AcademicSetupPage.tsx');
 const lesson=read('src/pages/LearningPage.tsx');
 const shell=read('src/components/AppShell.tsx');
+const alerts=read('src/components/WorkspaceNotificationBell.tsx');
+const app=read('src/App.tsx');
 const chat=read('src/pages/DirectMessagesPage.tsx');
 const hub=read('src/pages/LearningHubPage.tsx');
 const headers=read('public/_headers');
@@ -20,8 +21,12 @@ const sql=read('supabase/migrations/20261113222000_stage_q15_reversible_registry
 for(const item of ['View full profile','<UserActionDialog','archived_at','restore_revoked','registryFailureMessage'])
  assert.ok(user.includes(item),'User registry reconciliation missing '+item);
 assert.ok(operational.includes('createAggregateCsv'),'Role-scoped CSV missing');
-assert.ok(reminders.includes('createPersonalReminderIcs'),'Personal .ics export missing');
-assert.ok(settings.includes("from('dli_notices')"),'Actual notice centre must be queried');
+assert.ok(!settings.includes("from('dli_notices')")&&!shell.includes('DliNoticeCenter'),
+ 'Announcements and reminders are handled externally, not surfaced by the app');
+assert.ok(app.includes('to="/communications?tab=messages"')&&app.includes('to="/timetable?tab=meet"'),
+ 'Keep private messages and external Google Meet destinations');
+assert.ok(alerts.includes("from('dli_enrollment_requests')")&&alerts.includes("from('dli_tutor_payout_proofs')"),
+ 'Operational payment and tutor alerts remain available');
 assert.ok(!settings.includes("from('communication_feature_flags')"),'Legacy flag cannot represent active notices');
 assert.ok(finance.includes('<PaidPlanSettings/>')&&finance.includes('<TutorPayrollPage/>')&&finance.includes('Proposals cannot collect funds'), 'Manual payment workflows and transaction warnings must stay available');
 assert.ok(comm.includes('manual preparation'),'Manual communication drafts unavailable');

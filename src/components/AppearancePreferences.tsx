@@ -45,7 +45,7 @@ export default function AppearancePreferences() {
   }
 
   return (
-    <section className="panel dli-appearance-panel" aria-labelledby="dli-appearance-title">
+    <section id="appearance" className="panel dli-appearance-panel" aria-labelledby="dli-appearance-title">
       <header className="dli-appearance-header">
         <span className="dli-appearance-symbol" aria-hidden="true">
           <SlidersHorizontal size={21} />

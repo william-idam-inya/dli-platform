@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { BookOpen, CalendarClock, CheckCircle2, LockKeyhole, RefreshCw, Save, Settings2, Users } from 'lucide-react';
+import { BookOpen, CheckCircle2, LockKeyhole, RefreshCw, Save, Settings2, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -45,7 +45,6 @@ export default function InstitutionalSettingsPage(){
   const canView=mayViewGroupLinks||account?.role==='assistant_admin';
   const [links,setLinks]=useState<GroupSetting[]>([]);
   const [inputs,setInputs]=useState<Record<SettingKey,string>>(EMPTY);
-  const [noticesAvailable,setNoticesAvailable]=useState<boolean|null>(null);
   const [enrolmentOpen,setEnrolmentOpen]=useState<boolean|null>(null);
   const [enrolmentSaving,setEnrolmentSaving]=useState(false);
   const [loading,setLoading]=useState(true);
@@ -56,7 +55,7 @@ export default function InstitutionalSettingsPage(){
   const refresh=useCallback(async()=>{
     const client=supabase;
     if(!client||!canView){
-      setLinks([]);setNoticesAvailable(null);
+      setLinks([]);
       setError('Institutional settings are unavailable for this account.');
       setLoading(false);
       return;
@@ -64,14 +63,10 @@ export default function InstitutionalSettingsPage(){
     setLoading(true);
     setNotice(null);
     try{
-      const [groupResult,noticeResult,enrolmentResult]=await Promise.all([
+      const [groupResult,enrolmentResult]=await Promise.all([
         mayViewGroupLinks?client.from('institutional_group_links')
           .select('setting_key,display_label,invite_url,updated_at')
           .order('setting_key'):Promise.resolve({data:[] as GroupSetting[],error:null}),
-        // M1's active DLI broadcasts use dli_notices. The earlier H5
-        // communication_feature_flags switch belongs to a different legacy
-        // announcement table and MUST NOT mislabel this feature as disabled.
-        client.from('dli_notices').select('id',{count:'exact',head:true}),
         client.from('dli_operational_controls').select('is_enabled').eq('setting_key','paid_enrolment_open').maybeSingle(),
       ]);
       if(groupResult.error){
@@ -85,10 +80,9 @@ export default function InstitutionalSettingsPage(){
         }
         setInputs(values);setError(null);
       }
-      setNoticesAvailable(noticeResult.error?null:true);
       setEnrolmentOpen(enrolmentResult.error||!enrolmentResult.data?null:Boolean(enrolmentResult.data.is_enabled));
     }catch{
-      setLinks([]);setNoticesAvailable(null);setEnrolmentOpen(null);
+      setLinks([]);setEnrolmentOpen(null);
       setError('Unable to reach Supabase. Governance status cannot be verified.');
     }finally{setLoading(false);}
   },[canView,mayViewGroupLinks]);
@@ -153,7 +147,6 @@ export default function InstitutionalSettingsPage(){
   }
 
   const configuredCount=links.filter(item=>item.invite_url!==null).length;
-  const publicationStatus=noticesAvailable===null?'Verification unavailable':'Available';
 
   return <div className="module-page institutional-settings-page">
     <div className="module-page-hero">
@@ -175,9 +168,6 @@ export default function InstitutionalSettingsPage(){
       <div><LockKeyhole size={20}/>
         <strong>{account?.role==='owner'?'Founder':account?.role==='assistant_admin'?'Assistant Admin':'Admin'}</strong>
         <span>Your setting access</span></div>
-      <div><CalendarClock size={20}/>
-        <strong>{publicationStatus}</strong>
-        <span>Current DLI notice centre</span></div>
     </div>
 
     <div className="institutional-settings-actions">

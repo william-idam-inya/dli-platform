@@ -20,5 +20,6 @@ assert.ok(page.includes("groups.map(group=>"),
  'Real class records, access rules and timetable renderer must remain mounted');
 assert.ok(styles.includes(".classes-cards")&&styles.includes("@media(max-width:640px)"),
  'Existing responsive class grid and mobile rules must be retained');
-assert.ok(app.includes("<ClassesWorkspacePage />"),'Authenticated Classes route must remain mounted');
+assert.ok(app.includes("view==='classes'?<ClassesWorkspacePage/>:<SchedulePage/>")&&app.includes("id:'weekly',label:'Weekly Schedule'"),
+ 'Authenticated class timetable must remain mounted within Timetable workspace');
 console.log('Q38 classes mobile layout and learner-only copy checks passed.');

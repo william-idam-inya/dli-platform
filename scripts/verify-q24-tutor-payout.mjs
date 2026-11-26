@@ -11,7 +11,7 @@ const workflow=get('src/components/TutorPayoutWorkflow.tsx');
 const roles=get('src/auth/permissions.ts');
 const paid=get('src/pages/PaidEnrollmentPage.tsx');
 const privateClasses=get('src/pages/PrivateClassesPage.tsx');
-const bell=get('src/components/DliNoticeCenter.tsx');
+const bell=get('src/components/WorkspaceNotificationBell.tsx');
 const edge=get('supabase/functions/admin-manage-users/index.ts');
 const checks=[
  ['Tutor bank details', "CREATE TABLE public.dli_tutor_bank_accounts"],
@@ -62,8 +62,8 @@ assert.ok(payroll.includes("account?.role==='assistant_admin'"));
 assert.ok(finance.includes("'assistant_admin'")&&review.includes("'assistant_admin'"));
 assert.ok(paid.includes("const managerRoles=['owner','admin','assistant_admin']"));
 assert.ok(privateClasses.includes("'assistant_admin'"));
-assert.ok(bell.includes("tutorHasPending")&&bell.includes("pendingTutorPayouts"));
-assert.ok(bell.includes("to=\"/payroll\""));
+assert.ok(bell.includes("from('dli_tutor_payout_proofs')")&&bell.includes("'awaiting_tutor'"));
+assert.ok(bell.includes("to=\"/finance?tab=payroll\""));
 assert.ok(!roles.match(/^\s*'finance_officer',\s*'tutor'/m),'Retired role in sign-in/role list');
 assert.ok(roles.includes("export function isDliRole("));
 assert.ok(!edge.match(/^\s*'finance_officer',\s*'tutor'/m),'Retired role in admin API');

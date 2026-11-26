@@ -1,65 +1,25 @@
 #!/usr/bin/env node
-// Q49: source-level mobile overlay regression contracts; not role E2E.
+// Source-level mobile and overlay contract; not a browser viewport test.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-const css=read('src/mobile-overlay-resilience.css');
-const main=read('src/main.tsx');
 const shell=read('src/components/AppShell.tsx');
-const menu=read('src/components/QuickMenu.tsx');
-const call=read('src/components/DirectCallOverlay.tsx');
-const focus=read('src/components/WorkspaceFocus.tsx');
+const css=read('src/redesign.css');
+const main=read('src/main.tsx');
 const forward=read('src/pages/DirectMessagesPage.tsx');
 const profile=read('src/components/ChatMemberProfileOverlay.tsx');
-const finder=(source,token,label)=>assert.ok(source.includes(token),label+': '+token);
-finder(main,"import './mobile-overlay-resilience.css'",'Q49 stylesheet not loaded');
-for(const token of [
- '.dli-call-media.audio>audio{display:none!important;}',
- 'grid-template-columns:minmax(0,1fr)',
- '.dli-call-backdrop:not(.minimized) .dli-call-panel',
- 'height:100dvh','min-height:0','overflow-y:auto',
- '.dli-call-backdrop:not(.minimized) .dli-call-controls',
- 'position:sticky;bottom:0',
- '.mobile-sidebar .dli-flat-nav .nav-link.active',
- 'background-image:linear-gradient(155deg,#091e3d,#103766)!important',
- '.dli-quick-menu-portal',
- '.dli-workspace-compressed [data-dli-focus-panel][data-dli-focus-active]',
- 'max-height:calc(100dvh - 88px - env(safe-area-inset-bottom))!important',
- 'body:has(.dli-workspace-backdrop) .dli-floating-chat-root',
- '.dli-chat-profile-titlebar',
- '.dli-announcement-popup',
- '.user-modal-actions',
- '.dli-conference-overlay',
- '.dli-telegram-forward-dialog',
- '.dli-notification-panel',
- '.dli-profile-dropdown'
-])finder(css,token,'Overlay safeguard missing');
-finder(shell,'dli-mobile-drawer-heading','Mobile drawer heading required');
-finder(shell,'closeRef','Mobile drawer requires accessible close control');
-finder(menu,"import {createPortal} from 'react-dom'",'Quick Menu portal');
-finder(menu,'root.current?.contains','Quick Menu outside trigger');
-finder(menu,'popup.current?.contains','Quick Menu outside portal');
-finder(menu,"window.addEventListener('resize',reposition)",'Quick Menu viewport refresh');
-finder(menu,"window.addEventListener('scroll',reposition,true)",'Quick Menu scroll refresh');
-finder(menu,'position:\'fixed\'','Quick Menu independent viewport position');
-finder(call,'<audio ref={audio} autoPlay','Audio media must still play');
-finder(focus,'const title=workspaceTitle(panel);', 'Meaningful accessible focus title');
-finder(focus,'if(!title)return;', 'Keep unnamed sections accessible inline');
-finder(forward,'forwardTarget&&createPortal(', 'Forward dialog portalled');
-finder(profile,'createPortal(', 'Private profile dialog portalled');
-for(const token of [
- 'body .dli-payout-preview-overlay','body .upgrade-receipt-overlay',
- 'body .dli-payout-preview','body .upgrade-receipt-modal',
- 'body .dli-payout-preview-head','body .upgrade-receipt-heading',
- 'body:has(.dli-payout-preview-overlay)',
- 'body:has(.upgrade-receipt-overlay)'
-])finder(css,token,'Private payment preview safeguard missing');
-for(const p of ['src/pages/PaidEnrollmentPage.tsx','src/components/TutorPayoutWorkflow.tsx']){
- const source=read(p);
- finder(source,"import {createPortal} from 'react-dom'", 'Receipt preview portal');
- finder(source,'{preview&&createPortal(<div', 'Receipt not rendered as portal');
- finder(source,'</div>,document.body)}','Receipt portal must close in the body layer');
-}
-
-console.log('Q49 static overlay guards passed: audio layout, accessible mobile drawer, Quick Menu portal, focus scrolling, nested dialogs and Messenger occlusion.');
-console.log('Q49 source validation alone does not establish authenticated or keyboard viewport E2E.');
+const paid=read('src/pages/PaidEnrollmentPage.tsx');
+const payout=read('src/components/TutorPayoutWorkflow.tsx');
+assert.ok(main.includes("import './redesign.css'"),'Redesign stylesheet must load');
+for(const token of ['role="dialog"','aria-modal="true"','closeRef.current?.focus()',
+ 'event.key===\'Escape\'','event.key!==\'Tab\'','document.body.style.overflow=\'hidden\'',
+ 'triggerRef.current?.focus()'])assert.ok(shell.includes(token),'Accessible mobile drawer missing '+token);
+for(const token of ['@media(max-width:767px)','grid-template-columns:auto minmax(80px,1fr) auto',
+ '.mobile-backdrop','.redesign-mobile-drawer','overflow:visible',
+ 'table tbody tr{','flex-wrap:wrap'])assert.ok(css.includes(token),'Mobile layout safeguard missing '+token);
+assert.ok(!shell.includes('CallProvider')&&!shell.includes('dli-primary-tabs'),'Retired call and duplicate nav shells');
+assert.ok(forward.includes('forwardTarget&&createPortal('),'Message forward dialog is safely portalled');
+assert.ok(profile.includes('createPortal('),'Member profile dialog remains portalled');
+for(const source of [paid,payout])assert.ok(source.includes("import {createPortal} from 'react-dom'")&&source.includes('{preview&&createPortal(<div'),
+ 'Payment evidence preview remains in a viewport layer');
+console.log('Q49 mobile drawer focus handling, responsive tables and private evidence dialogs verified at source level.');
