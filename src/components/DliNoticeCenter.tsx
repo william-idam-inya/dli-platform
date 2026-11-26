@@ -378,7 +378,7 @@ export function DliAnnouncementTicker(){
     <div className="dli-ticker-mask"><div className="dli-ticker-track">
       {visible.slice(0,8).map(n=>{
         const meeting=/^\[(?:meeting|conference|seminar)\]/i.test(n.title);
-        return <Link key={n.id} to={meeting?'/conferences':'/announcements'}
+        return <Link key={n.id} to={meeting?'/schedule':'/announcements'}
           className="dli-ticker-item" title={n.title}>
           <span aria-hidden="true">●</span>
           <strong>{meeting?'UPCOMING MEETING':'DLI UPDATE'}</strong>

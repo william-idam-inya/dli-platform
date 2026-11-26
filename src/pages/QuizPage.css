@@ -1,4 +1,4 @@
-/* DLI Stage E4: question-bank authoring and student quiz attempts */
+/* DLI Stage Q76: external quiz links and private student result review */
 .quiz-page{width:100%}
 .quiz-class-select{margin-bottom:16px}
 .quiz-class-select>label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}
@@ -37,6 +37,17 @@
 .quiz-completed strong{display:block;font-size:15px;margin:9px 0}
 .quiz-completed small{display:block;color:var(--muted);font-size:11px}
 .quiz-taking{margin-top:16px;border-top:1px solid var(--border);padding-top:16px}
+.quiz-taking>label,.quiz-result-review>label{display:block;color:var(--text);font-size:12px;font-weight:700;margin:12px 0 7px}
+.quiz-taking>input,.quiz-taking>textarea,.quiz-result-review>textarea{display:block;width:100%;min-height:42px;padding:10px 12px;
+ background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:9px;font:inherit;font-size:12px}
+.quiz-taking>textarea,.quiz-result-review>textarea{resize:vertical}
+.quiz-card>a.user-outline-button{display:inline-flex;align-items:center;gap:7px;margin:5px 8px 8px 0;padding:9px 12px;
+ color:var(--purple);font-size:12px;font-weight:700;text-decoration:none;border:1px solid var(--border);border-radius:8px}
+.quiz-proof{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:9px 0}
+.quiz-proof>a,.quiz-result-review>p>a{color:var(--purple);font-size:12px;font-weight:700;text-decoration:underline;overflow-wrap:anywhere}
+.quiz-result-review{border-top:1px solid var(--border);padding:12px 0}
+.quiz-result-review:first-of-type{border-top:0}
+.quiz-results-editor>.quiz-result-review>p{white-space:pre-wrap;overflow-wrap:anywhere}
 .quiz-taking h4{color:var(--text);font-size:13px}
 .quiz-answer-group{border:1px solid var(--border);border-radius:10px;padding:12px;margin:15px 0;min-width:0}
 .quiz-answer-group legend{font-size:12px;font-weight:700;color:var(--text);padding:0 5px;line-height:1.55}
@@ -45,7 +56,7 @@
 .quiz-answer-group input{margin:3px 0 0;accent-color:var(--purple)}
 .quiz-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .quiz-actions .academic-submit{width:auto}
-.quiz-page button:focus-visible,.quiz-page select:focus-visible,.quiz-page input:focus-visible{
+.quiz-page button:focus-visible,.quiz-page select:focus-visible,.quiz-page input:focus-visible,.quiz-page textarea:focus-visible,.quiz-page a:focus-visible{
  outline:2px solid var(--purple);outline-offset:2px}
 @media(max-width:680px){
  .quiz-form-pair,.quiz-option-preview{grid-template-columns:1fr}

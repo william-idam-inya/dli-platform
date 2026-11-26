@@ -503,6 +503,10 @@
     {
       "file": "20261126110000_stage_q75_dli_online_comprehensive_tutorial.sql",
       "gitBlobSha1": "185af5470c5aa44802bb050047145de7e84fff8f"
+    },
+    {
+      "file": "20261126113314_stage_q76_gemini_quiz_links_and_private_results.sql",
+      "gitBlobSha1": "06e85b7257bdbde257f0d55df7edc37cff80fe50"
     }
   ]
 }

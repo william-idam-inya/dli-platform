@@ -27,7 +27,7 @@ function destinationFor(data:PushClick):string|null{
   return '/communications';
  }
  if(data.kind==='urgent_notice')return '/announcements';
- if(data.kind==='conference_reminder')return '/conferences';
+ if(data.kind==='conference_reminder')return '/schedule';
  return null;
 }
 

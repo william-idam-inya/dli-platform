@@ -1,357 +1,176 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { BookOpen, CheckCircle2, CircleOff, ClipboardCheck, GraduationCap, Plus, RefreshCw, Send } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../auth/AuthProvider';
-import { supabase } from '../lib/supabase';
+import {useCallback,useEffect,useMemo,useState,type ChangeEvent,type FormEvent} from 'react';
+import {BookOpen,CheckCircle2,ExternalLink,Eye,FileImage,Plus,RefreshCw,Send} from 'lucide-react';
+import {useAuth} from '../auth/AuthProvider';
+import {supabase} from '../lib/supabase';
 import './AcademicSetupPage.css';
 import './QuizPage.css';
 
 type Offering={id:string;course_id:string;cohort_id:string;is_active:boolean};
 type Course={id:string;title:string};
 type Cohort={id:string;name:string};
-type Quiz={id:string;offering_id:string;title:string;instructions:string;is_published:boolean};
-type Question={id:string;quiz_id?:string;question_id?:string;prompt:string;
- option_a:string;option_b:string;option_c:string;option_d:string;
- correct_option?:string;sort_order:number};
-type Attempt={id:string;quiz_id:string;student_id:string;correct_count:number;
- total_count:number;submitted_at:string};
-type Answer={id:string;attempt_id:string;question_id:string;selected_option:string;is_correct:boolean};
-type Option='A'|'B'|'C'|'D';
-const EDIT_ROLES=new Set(['owner','admin','assistant_admin','tutor']);
-const OPTIONS:Option[]=['A','B','C','D'];
-function safeTime(value:string){const d=new Date(value);return Number.isNaN(d.getTime())?'Time unavailable':d.toLocaleString();}
+type Quiz={id:string;offering_id:string;title:string;quiz_url:string;instructions:string;is_published:boolean;created_at:string};
+type Submission={id:string;quiz_id:string;student_id:string;screenshot_path:string|null;result_url:string|null;student_note:string;review_status:'pending'|'reviewed';review_note:string;reviewed_by:string|null;reviewed_at:string|null;submitted_at:string;updated_at:string};
+const EDIT_ROLES=new Set(['owner','admin','tutor']);
+const REVIEW_ROLES=new Set(['owner','admin','tutor']);
+const MAX_SCREENSHOT_BYTES=5*1024*1024;
+const ACCEPTED_IMAGE_TYPES=new Set(['image/jpeg','image/png','image/webp']);
+const readable=(value:string)=>{const d=new Date(value);return Number.isNaN(d.getTime())?'Date unavailable':d.toLocaleString();};
+const secureQuizUrl=(value:string)=>{try{const url=new URL(value);return url.protocol==='https:'&&Boolean(url.hostname)&&!url.username&&!url.password;}catch{return false;}};
 
 export default function QuizPage(){
  const {account}=useAuth();
  const canEdit=Boolean(account&&EDIT_ROLES.has(account.role));
+ const canReview=Boolean(account&&REVIEW_ROLES.has(account.role));
  const isStudent=account?.role==='student';
+ const [uid,setUid]=useState('');
  const [offerings,setOfferings]=useState<Offering[]>([]);
  const [courses,setCourses]=useState<Course[]>([]);
  const [cohorts,setCohorts]=useState<Cohort[]>([]);
  const [quizzes,setQuizzes]=useState<Quiz[]>([]);
- const [questions,setQuestions]=useState<Question[]>([]);
- const [attempts,setAttempts]=useState<Attempt[]>([]);
- const [answers,setAnswers]=useState<Answer[]>([]);
+ const [submissions,setSubmissions]=useState<Submission[]>([]);
  const [selectedOffering,setSelectedOffering]=useState('');
- const [quizTitle,setQuizTitle]=useState('');
- const [quizInstructions,setQuizInstructions]=useState('');
- const [questionQuiz,setQuestionQuiz]=useState('');
- const [prompt,setPrompt]=useState('');
- const [options,setOptions]=useState<Record<Option,string>>({A:'',B:'',C:'',D:''});
- const [correct,setCorrect]=useState<Option>('A');
- const [sortOrder,setSortOrder]=useState('100');
- const [activeQuiz,setActiveQuiz]=useState<string|null>(null);
- const [studentQuestions,setStudentQuestions]=useState<Question[]>([]);
- const [selectedAnswers,setSelectedAnswers]=useState<Record<string,Option>>({});
- const [loading,setLoading]=useState(true);
+ const [title,setTitle]=useState('');
+ const [quizUrl,setQuizUrl]=useState('');
+ const [instructions,setInstructions]=useState('');
+ const [proofs,setProofs]=useState<Record<string,File|null>>({});
+ const [resultUrls,setResultUrls]=useState<Record<string,string>>({});
+ const [studentNotes,setStudentNotes]=useState<Record<string,string>>({});
+ const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
+ const [proofLinks,setProofLinks]=useState<Record<string,string>>({});
  const [saving,setSaving]=useState<string|null>(null);
+ const [loading,setLoading]=useState(true);
  const [error,setError]=useState<string|null>(null);
  const [notice,setNotice]=useState<string|null>(null);
 
  const refresh=useCallback(async()=>{
-  if(!supabase){setError('DLI is temporarily unavailable. Please try again.');setLoading(false);return;}
-  setLoading(true);
-  const [o,c,h,z,a,b]=await Promise.all([
-   supabase.from('course_offerings').select('id,course_id,cohort_id,is_active').eq('is_active',true),
-   supabase.from('courses').select('id,title'),
-   supabase.from('cohorts').select('id,name'),
-   supabase.from('learning_quizzes').select('id,offering_id,title,instructions,is_published').order('created_at',{ascending:false}),
-   supabase.from('learning_quiz_attempts').select('id,quiz_id,student_id,correct_count,total_count,submitted_at')
-    .order('submitted_at',{ascending:false}),
-   supabase.from('learning_quiz_answers').select('id,attempt_id,question_id,selected_option,is_correct'),
-  ]);
-  // Question records include answer keys: request only in the editor mode.
-  const q=canEdit?await supabase.from('learning_quiz_questions').select(
-   'id,quiz_id,prompt,option_a,option_b,option_c,option_d,correct_option,sort_order',
-  ).order('sort_order'):null;
-  if(o.error||c.error||h.error||z.error||a.error||b.error||(q&&q.error)){
-   setError('Quiz records could not be loaded. Check current class access and refresh.');
-  } else {
-   setOfferings((o.data??[]) as Offering[]);
-   setCourses((c.data??[]) as Course[]);
-   setCohorts((h.data??[]) as Cohort[]);
-   setQuizzes((z.data??[]) as Quiz[]);
-   setAttempts((a.data??[]) as Attempt[]);
-   setAnswers((b.data??[]) as Answer[]);
-   setQuestions((q?.data??[]) as Question[]);
+  if(!supabase){setError('DLI services are temporarily unavailable.');setLoading(false);return;}
+  setLoading(true);setError(null);
+  try{
+   const [auth,o,c,h,z,s]=await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('course_offerings').select('id,course_id,cohort_id,is_active').eq('is_active',true),
+    supabase.from('courses').select('id,title'),
+    supabase.from('cohorts').select('id,name'),
+    supabase.from('dli_external_quizzes').select('id,offering_id,title,quiz_url,instructions,is_published,created_at').order('created_at',{ascending:false}),
+    supabase.from('dli_external_quiz_submissions').select('id,quiz_id,student_id,screenshot_path,result_url,student_note,review_status,review_note,reviewed_by,reviewed_at,submitted_at,updated_at').order('submitted_at',{ascending:false}),
+   ]);
+   if(auth.error||o.error||c.error||h.error||z.error||s.error)throw new Error('Quiz records could not be loaded. Check your class access and refresh.');
+   setUid(auth.data.user?.id??'');setOfferings((o.data??[]) as Offering[]);setCourses((c.data??[]) as Course[]);
+   setCohorts((h.data??[]) as Cohort[]);setQuizzes((z.data??[]) as Quiz[]);setSubmissions((s.data??[]) as Submission[]);
    setError(null);
-  }
-  setLoading(false);
- },[canEdit]);
+  }catch(e){setError(e instanceof Error?e.message:'Quiz records could not be loaded.');}
+  finally{setLoading(false);}
+ },[]);
  useEffect(()=>{void refresh();},[refresh]);
 
- const activeOfferings=offerings.filter(o=>o.is_active);
- const pickedOffering=activeOfferings.some(o=>o.id===selectedOffering)
-  ?selectedOffering:activeOfferings[0]?.id??'';
- const currentQuizzes=useMemo(()=>quizzes.filter(z=>z.offering_id===pickedOffering),
-  [quizzes,pickedOffering]);
- const draftQuizzes=currentQuizzes.filter(z=>!z.is_published);
- const pickedQuiz=draftQuizzes.some(z=>z.id===questionQuiz)
-  ?questionQuiz:draftQuizzes[0]?.id??'';
- const courseLabel=(o:Offering)=>{
-  const course=courses.find(c=>c.id===o.course_id)?.title??'Course unavailable';
-  const cohort=cohorts.find(h=>h.id===o.cohort_id)?.name??'Cohort unavailable';
-  return course+' · '+cohort;
- };
- const quizAttempt=(quizId:string)=>attempts.find(a=>a.quiz_id===quizId);
- const questionCount=(quizId:string)=>questions.filter(q=>q.quiz_id===quizId).length;
+ const currentOfferings=offerings.filter(o=>o.is_active);
+ const pickedOffering=currentOfferings.some(o=>o.id===selectedOffering)?selectedOffering:currentOfferings[0]?.id??'';
+ const currentQuizzes=useMemo(()=>quizzes.filter(q=>q.offering_id===pickedOffering),[quizzes,pickedOffering]);
+ const classLabel=(o:Offering)=>`${courses.find(c=>c.id===o.course_id)?.title??'Course unavailable'} · ${cohorts.find(c=>c.id===o.cohort_id)?.name??'Class unavailable'}`;
+ const mySubmission=(quizId:string)=>submissions.find(s=>s.quiz_id===quizId&&s.student_id===uid);
 
  async function createQuiz(e:FormEvent<HTMLFormElement>){
-  e.preventDefault();
+  e.preventDefault();if(!supabase||saving||!canEdit)return;
+  const name=title.trim(),url=quizUrl.trim(),body=instructions.trim();
+  if(!pickedOffering||name.length<2||name.length>180||!secureQuizUrl(url)||body.length>10000){setError('Choose a class, enter a title, and add a valid secure (https) quiz link.');return;}
+  setSaving('create');setError(null);setNotice(null);
+  const {error:writeError}=await supabase.from('dli_external_quizzes').insert({offering_id:pickedOffering,title:name,quiz_url:url,instructions:body,is_published:false});
+  if(writeError)setError(writeError.code==='23505'?'A quiz with that title already exists in this class.':'The quiz draft could not be saved. Check the class access and link.');
+  else{setTitle('');setQuizUrl('');setInstructions('');setNotice('Draft quiz link saved. Publish it when students can begin.');await refresh();}
+  setSaving(null);
+ }
+
+ async function publish(q:Quiz){
   if(!supabase||saving||!canEdit)return;
-  const title=quizTitle.trim(),instructions=quizInstructions.trim();
-  if(!pickedOffering||title.length<2||title.length>180||instructions.length>10000){
-   setError('Select an active class and enter a quiz title and valid instructions.');return;
-  }
-  setSaving('quiz');setError(null);setNotice(null);
-  const {error:writeError}=await supabase.from('learning_quizzes').insert({
-   offering_id:pickedOffering,title,instructions,is_published:false,
-  });
-  if(writeError)setError(writeError.code==='23505'?'That quiz title already exists in this class.':
-   'The draft quiz could not be saved. Check your account and title.');
-  else{setQuizTitle('');setQuizInstructions('');setNotice('Draft quiz created. Add questions before publishing.');await refresh();}
+  if(!window.confirm(q.is_published?'Unpublish this quiz? Students will no longer be able to open it.':'Publish this external quiz link to enrolled students?'))return;
+  setSaving(q.id);setError(null);setNotice(null);
+  const {data,error:writeError}=await supabase.from('dli_external_quizzes').update({is_published:!q.is_published}).eq('id',q.id).select('id').maybeSingle();
+  if(writeError||!data)setError('Could not update the quiz link.');else{setNotice(q.is_published?'Quiz link unpublished.':'Quiz link published to enrolled students.');await refresh();}
   setSaving(null);
  }
 
- async function addQuestion(e:FormEvent<HTMLFormElement>){
-  e.preventDefault();
-  if(!supabase||saving||!canEdit)return;
-  const question=prompt.trim(),order=Number(sortOrder);
-  const values=Object.fromEntries(OPTIONS.map(key=>[key,options[key].trim()])) as Record<Option,string>;
-  if(!pickedQuiz||question.length<3||question.length>2000||
-     OPTIONS.some(key=>values[key].length<1||values[key].length>1000)||
-     !Number.isInteger(order)||order<0||order>10000){
-   setError('Choose a draft quiz and enter the question, four options and display order.');return;
+ function pickProof(quizId:string,e:ChangeEvent<HTMLInputElement>){
+  const file=e.target.files?.[0]??null;
+  if(file&&(!ACCEPTED_IMAGE_TYPES.has(file.type)||file.size>MAX_SCREENSHOT_BYTES)){
+   setError('Choose a JPG, PNG, or WebP screenshot up to 5 MB.');e.target.value='';return;
   }
-  setSaving('question');setError(null);setNotice(null);
-  const {error:writeError}=await supabase.from('learning_quiz_questions').insert({
-   quiz_id:pickedQuiz,prompt:question,
-   option_a:values.A,option_b:values.B,option_c:values.C,option_d:values.D,
-   correct_option:correct,sort_order:order,
-  });
-  if(writeError)setError('The question could not be saved. Only unpublished, unattempted quizzes can accept questions.');
-  else{
-   setPrompt('');setOptions({A:'',B:'',C:'',D:''});setCorrect('A');setSortOrder('100');
-   setNotice('Question added. The correct answer stays hidden from Students.');await refresh();
-  }
-  setSaving(null);
+  setError(null);setProofs(prev=>({...prev,[quizId]:file}));
  }
 
- async function toggleQuiz(z:Quiz){
-  if(!supabase||saving||!canEdit)return;
-  const text=z.is_published
-   ?'Unpublish this quiz? Enrolled Students will not be able to start new attempts.'
-   :'Publish this quiz to actively enrolled Students? Answer keys are never included in the question API.';
-  if(!window.confirm(text))return;
-  setSaving(z.id);setError(null);setNotice(null);
-  const {data,error:writeError}=await supabase.from('learning_quizzes')
-   .update({is_published:!z.is_published}).eq('id',z.id).select('id').maybeSingle();
-  if(writeError||!data)setError('Could not change quiz publication status. A published quiz requires at least one question.');
-  else{setNotice(z.is_published?'Quiz unpublished.':'Quiz published to enrolled Students.');await refresh();}
-  setSaving(null);
- }
-
- async function startQuiz(z:Quiz){
-  if(!supabase||saving||!isStudent)return;
-  setSaving('open');setError(null);setNotice(null);
-  const {data,error:rpcError}=await supabase.rpc('dli_get_quiz_questions',{p_quiz_id:z.id});
-  if(rpcError)setError('This quiz could not be opened. Check your enrolment or previous submission.');
-  else if(!data?.length)setError('This quiz has no available questions.');
-  else {
-   setActiveQuiz(z.id);setStudentQuestions(data as Question[]);setSelectedAnswers({});
+ async function submitResult(q:Quiz){
+  if(!supabase||saving||!isStudent||!uid)return;
+  const old=mySubmission(q.id),file=proofs[q.id]??null,url=(resultUrls[q.id]??old?.result_url??'').trim(),note=(studentNotes[q.id]??old?.student_note??'').trim();
+  if(old?.review_status==='reviewed'){setError('This submission has already been reviewed. Contact your tutor if it needs correction.');return;}
+  if(file&&(!ACCEPTED_IMAGE_TYPES.has(file.type)||file.size>MAX_SCREENSHOT_BYTES)){setError('Choose a JPG, PNG, or WebP screenshot up to 5 MB.');return;}
+  if(url&&!secureQuizUrl(url)){setError('Enter a valid secure (https) result link.');return;}
+  if(!file&&!url){setError('Add a screenshot or secure result link before submitting.');return;}
+  setSaving(q.id);setError(null);setNotice(null);
+  let path:string|null=old?.screenshot_path??null;
+  if(file){
+   const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+   path=`${uid}/${q.id}/${crypto.randomUUID()}.${extension}`;
+   const {error:uploadError}=await supabase.storage.from('dli-quiz-results').upload(path,file,{contentType:file.type,upsert:false});
+   if(uploadError){setError('Screenshot upload failed. Your quiz link is still available; try again with a smaller image.');setSaving(null);return;}
   }
-  setSaving(null);
- }
- async function submitQuiz(){
-  if(!supabase||saving||!isStudent||!activeQuiz)return;
-  if(studentQuestions.length===0||studentQuestions.some(q=>!selectedAnswers[q.question_id??q.id])){
-   setError('Answer every question before submitting.');return;
-  }
-  if(!window.confirm('Submit this quiz now? You cannot change your answers or retake this quiz.'))return;
-  setSaving('submit');setError(null);setNotice(null);
-  const {data,error:rpcError}=await supabase.rpc('dli_submit_quiz_attempt',{
-   p_quiz_id:activeQuiz,p_answers:selectedAnswers,
-  });
-  if(rpcError)setError('Quiz not submitted. Check your enrolment, answer completeness and previous attempts.');
-  else {
-   const result=data?.[0];
-   setActiveQuiz(null);setStudentQuestions([]);setSelectedAnswers({});
-   setNotice(result
-    ?`Submitted successfully: ${result.correct_count} correct out of ${result.total_count}. No pass threshold is defined.`
-    :'Quiz submitted.');
-   await refresh();
+  const values={quiz_id:q.id,screenshot_path:path,result_url:url||null,student_note:note};
+  const operation=old
+   ?await supabase.from('dli_external_quiz_submissions').update(values).eq('id',old.id).eq('review_status','pending').select('id').maybeSingle()
+   :await supabase.from('dli_external_quiz_submissions').insert(values).select('id').maybeSingle();
+  if(operation.error||!operation.data){
+   if(file&&path)await supabase.storage.from('dli-quiz-results').remove([path]);
+   setError('Your result was not saved. Confirm that the quiz is published and that you are enrolled.');
+  }else{
+   if(file&&old?.screenshot_path&&old.screenshot_path!==path)await supabase.storage.from('dli-quiz-results').remove([old.screenshot_path]);
+   setProofs(prev=>({...prev,[q.id]:null}));setNotice(old?'Your result has been updated for tutor review.':'Your result has been sent to your tutor for review.');await refresh();
   }
   setSaving(null);
  }
 
+ async function markReviewed(s:Submission){
+  if(!supabase||saving||!canReview)return;
+  if(s.review_status==='reviewed'){setError('This result has already been reviewed.');return;}
+  setSaving(s.id);setError(null);setNotice(null);
+  const {data,error:writeError}=await supabase.from('dli_external_quiz_submissions').update({review_status:'reviewed',review_note:(reviewNotes[s.id]??'').trim(),reviewed_by:uid,reviewed_at:new Date().toISOString()}).eq('id',s.id).eq('review_status','pending').select('id').maybeSingle();
+  if(writeError||!data)setError('The review could not be saved.');else{setReviewNotes(prev=>({...prev,[s.id]:''}));setNotice('Quiz result marked reviewed.');await refresh();}
+  setSaving(null);
+ }
+
+ async function revealProof(path:string,key:string){
+  if(!supabase)return;
+  const {data,error:signError}=await supabase.storage.from('dli-quiz-results').createSignedUrl(path,120);
+  if(signError||!data?.signedUrl){setError('The screenshot could not be opened with your current access.');return;}
+  setProofLinks(prev=>({...prev,[key]:data.signedUrl}));
+ }
+
+ const visibleSubmissions=submissions.filter(s=>currentQuizzes.some(q=>q.id===s.quiz_id));
  return <div className="module-page quiz-page">
-  <div className="module-page-hero">
-   <span className="module-page-icon"><ClipboardCheck size={25}/></span>
-   <div className="module-page-copy">
-    <h1>Quizzes &amp; results</h1>
-    
-   </div>
-
-  </div>
-  
-  {error&&<p role="alert" className="auth-feedback error">{error}</p>}
-  {notice&&<p role="status" className="auth-feedback success">{notice}</p>}
-  <div className="academic-summary">
-   <div><GraduationCap size={18}/><strong>{activeOfferings.length}</strong><span>Accessible classes</span></div>
-   <div><BookOpen size={18}/><strong>{quizzes.length}</strong><span>Visible quizzes</span></div>
-   <div><CheckCircle2 size={18}/><strong>{attempts.length}</strong><span>Visible attempts</span></div>
-  </div>
-  <div className="academic-top-actions">
-   {loading&&<p role="status">Loading authorised quiz records…</p>}
-   <button className="user-outline-button" type="button" disabled={loading||Boolean(saving)}
-    onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button>
-  </div>
-  <section className="panel quiz-class-select">
-   <label htmlFor="e4-class">Choose an accessible course offering</label>
-   <select id="e4-class" value={pickedOffering} onChange={e=>{
-     setSelectedOffering(e.target.value);setActiveQuiz(null);setStudentQuestions([]);
-   }}>
-    {activeOfferings.map(o=><option key={o.id} value={o.id}>{courseLabel(o)}</option>)}
-   </select>
-   {!activeOfferings.length&&<p className="academic-empty">
-    {canEdit?<>Create an approved offering under <Link to="/cohorts">Cohorts &amp; topics</Link> first.</>
-     :'Your account is not enrolled in any active course offering.'}
-   </p>}
-  </section>
-  {canEdit&&<div className="academic-columns quiz-authoring">
-   <section className="panel academic-panel">
-    <div className="panel-heading"><div><h2>Create draft quiz</h2>
-    </div></div>
-    <form className="academic-form quiz-form" onSubmit={e=>{void createQuiz(e);}}>
-     <label htmlFor="e4-quiz-name">Quiz title</label>
-     <input id="e4-quiz-name" minLength={2} maxLength={180} required value={quizTitle}
-      onChange={e=>setQuizTitle(e.target.value)}/>
-     <label htmlFor="e4-quiz-instructions">Instructions (optional)</label>
-     <textarea id="e4-quiz-instructions" rows={4} maxLength={10000}
-      value={quizInstructions} onChange={e=>setQuizInstructions(e.target.value)}/>
-     <button className="academic-submit" type="submit"
-      disabled={Boolean(saving)||loading||!pickedOffering}>
-      <Plus size={15}/> Save draft quiz
-     </button>
-    </form>
-   </section>
-   <section className="panel academic-panel">
-    <div className="panel-heading"><div><h2>Add four-choice question</h2>
-    </div></div>
-    <form className="academic-form quiz-form" onSubmit={e=>{void addQuestion(e);}}>
-     <label htmlFor="e4-select-quiz">Unpublished quiz</label>
-     <select id="e4-select-quiz" value={pickedQuiz} required
-      onChange={e=>setQuestionQuiz(e.target.value)}>
-      {draftQuizzes.map(z=><option key={z.id} value={z.id}>{z.title}</option>)}
-     </select>
-     <label htmlFor="e4-question-prompt">Question</label>
-     <textarea id="e4-question-prompt" required minLength={3} maxLength={2000}
-      rows={3} value={prompt} onChange={e=>setPrompt(e.target.value)}/>
-     {OPTIONS.map(letter=><label key={letter} htmlFor={`e4-option-${letter}`}>
-      Option {letter}
-      <input id={`e4-option-${letter}`} required maxLength={1000} value={options[letter]}
-       onChange={e=>setOptions(prev=>({...prev,[letter]:e.target.value}))}/>
-     </label>)}
-     <div className="quiz-form-pair">
-      <label htmlFor="e4-correct">Correct option (editors only)
-       <select id="e4-correct" value={correct}
-        onChange={e=>setCorrect(e.target.value as Option)}>
-        {OPTIONS.map(letter=><option key={letter} value={letter}>{letter}</option>)}
-       </select>
-      </label>
-      <label htmlFor="e4-order">Display order
-       <input id="e4-order" type="number" min={0} max={10000} required
-        value={sortOrder} onChange={e=>setSortOrder(e.target.value)}/>
-      </label>
-     </div>
-     {!draftQuizzes.length&&<p className="academic-code-hint">Create a draft quiz first. Published quizzes cannot receive new questions.</p>}
-     <button className="academic-submit" type="submit"
-      disabled={Boolean(saving)||loading||!pickedQuiz}>
-      <Plus size={15}/> Add question
-     </button>
-    </form>
-   </section>
-  </div>}
-  <section className="panel quiz-list">
-   <div className="panel-heading"><div>
-    <h2>{canEdit?'Question banks and attempts':'My quizzes'}</h2>
-    <p className="user-caption">{canEdit?'Quiz answer keys are shown only to authorised editors.':
-     'Only published quizzes for your enrolments are displayed.'}</p>
-   </div></div>
-   {currentQuizzes.length===0&&!loading&&pickedOffering&&
-    <p className="academic-empty">No accessible quizzes recorded for this class.</p>}
-   <div className="quiz-cards">
-    {currentQuizzes.map(z=>{
-     const myAttempt=quizAttempt(z.id);
-     const quizAttempts=attempts.filter(a=>a.quiz_id===z.id);
-     const ownAnswers=myAttempt?answers.filter(a=>a.attempt_id===myAttempt.id):[];
-     return <article className="quiz-card" key={z.id}>
-      <div className="quiz-heading"><div>
-       <h3>{z.title}</h3>
-       <p>{z.instructions||'No additional instructions provided.'}</p>
-      </div>
-       {canEdit&&<span className={z.is_published?'academic-badge active':'academic-badge inactive'}>
-        {z.is_published?'Published':'Draft'}
-       </span>}
-      </div>
-      {canEdit&&<>
-       <p className="quiz-muted">{questionCount(z.id)} questions · {quizAttempts.length} saved attempts</p>
-       <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-        onClick={()=>{void toggleQuiz(z);}}>
-        {z.is_published?<CircleOff size={15}/>:<CheckCircle2 size={15}/>}
-        {z.is_published?'Unpublish quiz':'Publish quiz'}
-       </button>
-       <div className="quiz-question-bank">
-        {questions.filter(q=>q.quiz_id===z.id).map((q,i)=><div className="quiz-question" key={q.id}>
-         <strong>{i+1}. {q.prompt}</strong>
-         <div className="quiz-option-preview">{OPTIONS.map(letter=><p key={letter}>
-          {letter}. {q[`option_${letter.toLowerCase()}` as keyof Question]}
-         </p>)}</div>
-         <small>Correct option: {q.correct_option} (editors only)</small>
-        </div>)}
-       </div>
-       {quizAttempts.length>0&&<div className="quiz-results-editor">
-        <strong>Saved results</strong>
-        {quizAttempts.map(a=><p key={a.id}>Student attempt {a.id.slice(0,8)} ·
-         {a.correct_count}/{a.total_count} correct · {safeTime(a.submitted_at)}</p>)}
-       </div>}
+  <div className="module-page-hero"><span className="module-page-icon"><BookOpen size={25}/></span><div className="module-page-copy"><h1>Quizzes &amp; results</h1><p>Open your tutor’s quiz link, then send your result for review.</p></div></div>
+  {error&&<p role="alert" className="auth-feedback error">{error}</p>}{notice&&<p role="status" className="auth-feedback success">{notice}</p>}
+  <div className="academic-top-actions"><button className="user-outline-button" type="button" disabled={loading||Boolean(saving)} onClick={()=>{void refresh();}}><RefreshCw size={15}/> Refresh</button></div>
+  <section className="panel quiz-class-select"><label htmlFor="e4-class">Choose an accessible class</label><select id="e4-class" value={pickedOffering} onChange={e=>setSelectedOffering(e.target.value)}>{currentOfferings.map(o=><option key={o.id} value={o.id}>{classLabel(o)}</option>)}</select>{!currentOfferings.length&&!loading&&<p className="academic-empty">{canEdit?'Create or activate a class first.':'No active class is available to your account yet.'}</p>}</section>
+  {canEdit&&<section className="panel academic-panel"><div className="panel-heading"><div><h2>Add a Gemini-created quiz</h2><p className="user-caption">Create the quiz outside DLI, then paste its secure link here.</p></div></div><form className="academic-form quiz-form" onSubmit={e=>{void createQuiz(e);}}><label htmlFor="external-quiz-title">Quiz title</label><input id="external-quiz-title" required minLength={2} maxLength={180} value={title} onChange={e=>setTitle(e.target.value)}/><label htmlFor="external-quiz-url">Quiz link (HTTPS)</label><input id="external-quiz-url" type="url" inputMode="url" placeholder="https://…" required maxLength={2048} value={quizUrl} onChange={e=>setQuizUrl(e.target.value)}/><label htmlFor="external-quiz-instructions">Instructions (optional)</label><textarea id="external-quiz-instructions" rows={3} maxLength={10000} value={instructions} onChange={e=>setInstructions(e.target.value)}/><button className="academic-submit" type="submit" disabled={Boolean(saving)||loading||!pickedOffering}><Plus size={15}/> Save quiz link</button></form></section>}
+  <section className="panel quiz-list"><div className="panel-heading"><div><h2>{canReview?'Quiz links & student results':'My quizzes'}</h2><p className="user-caption">{canReview?'Student screenshots are private. Review submissions here.':'Your submitted results are visible to your tutor and administrators.'}</p></div></div>
+   {currentQuizzes.length===0&&!loading&&pickedOffering&&<p className="academic-empty">No quiz links are available for this class yet.</p>}
+   <div className="quiz-cards">{currentQuizzes.map(q=>{
+    const own=isStudent?mySubmission(q.id):undefined;
+    const results=visibleSubmissions.filter(s=>s.quiz_id===q.id);
+    return <article className="quiz-card" key={q.id}><div className="quiz-heading"><div><h3>{q.title}</h3><p>{q.instructions||'Open the quiz link and follow the tutor’s instructions.'}</p></div>{canEdit&&<span className={q.is_published?'academic-badge active':'academic-badge inactive'}>{q.is_published?'Published':'Draft'}</span>}</div>
+     <p className="quiz-muted">{classLabel(currentOfferings.find(o=>o.id===q.offering_id)??currentOfferings[0]??{id:'',course_id:'',cohort_id:'',is_active:false})} · Added {readable(q.created_at)}</p>
+     {q.is_published&&<a className="user-outline-button" href={q.quiz_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/> Open external quiz</a>}
+     {canEdit&&<><button className="user-outline-button" type="button" disabled={Boolean(saving)} onClick={()=>{void publish(q);}}>{q.is_published?'Unpublish link':'Publish link'}</button><p className="quiz-muted">{results.length} student result{results.length===1?'':'s'}</p></>}
+     {isStudent&&q.is_published&&<div className="quiz-taking">
+      {own?.review_status==='reviewed'?<div className="quiz-completed"><p><CheckCircle2 size={16}/> Reviewed {own.reviewed_at?readable(own.reviewed_at):''}</p><strong>Your tutor has reviewed this result.</strong>{own.review_note&&<p>{own.review_note}</p>}</div>:<>
+       {own&&<p className="quiz-muted">Submitted {readable(own.submitted_at)} · Waiting for tutor review. You may update your result until it is reviewed.</p>}
+       <label htmlFor={`proof-${q.id}`}>Screenshot of result (JPG, PNG or WebP, up to 5 MB)</label><input id={`proof-${q.id}`} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>pickProof(q.id,e)}/>
+       <label htmlFor={`result-url-${q.id}`}>Result link (optional)</label><input id={`result-url-${q.id}`} type="url" inputMode="url" placeholder="https://…" maxLength={2048} value={resultUrls[q.id]??own?.result_url??''} onChange={e=>setResultUrls(prev=>({...prev,[q.id]:e.target.value}))}/>
+       <label htmlFor={`student-note-${q.id}`}>Note for your tutor (optional)</label><textarea id={`student-note-${q.id}`} rows={2} maxLength={2000} value={studentNotes[q.id]??own?.student_note??''} onChange={e=>setStudentNotes(prev=>({...prev,[q.id]:e.target.value}))}/>
+       <button className="academic-submit" type="button" disabled={Boolean(saving)} onClick={()=>{void submitResult(q);}}><Send size={15}/>{own?'Update result':'Send result for review'}</button>
       </>}
-      {isStudent&&<>
-       {myAttempt ? <div className="quiz-completed">
-        <p><CheckCircle2 size={16}/> Submitted {safeTime(myAttempt.submitted_at)}</p>
-        <strong>Result: {myAttempt.correct_count} / {myAttempt.total_count} correct</strong>
-        <small>No pass/fail threshold has been configured.</small>
-        <p className="quiz-muted">{ownAnswers.length} submitted answers recorded.</p>
-       </div> : <button className="user-outline-button" type="button"
-        disabled={Boolean(saving)||Boolean(activeQuiz)}
-        onClick={()=>{void startQuiz(z);}}><BookOpen size={15}/> Open quiz</button>}
-       {activeQuiz===z.id&&!myAttempt&&<div className="quiz-taking">
-        <h4>Answer all questions before final submission</h4>
-        {studentQuestions.map((q,i)=>{
-         const id=q.question_id??q.id;
-         return <fieldset className="quiz-answer-group" key={id}>
-          <legend>{i+1}. {q.prompt}</legend>
-          {OPTIONS.map(letter=><label key={letter}>
-           <input type="radio" name={`answer-${id}`} value={letter}
-            checked={selectedAnswers[id]===letter}
-            onChange={()=>setSelectedAnswers(prev=>({...prev,[id]:letter}))}/>
-           <span>{letter}. {q[`option_${letter.toLowerCase()}` as keyof Question]}</span>
-          </label>)}
-         </fieldset>;
-        })}
-        <div className="quiz-actions">
-         <button className="academic-submit" type="button" disabled={Boolean(saving)}
-          onClick={()=>{void submitQuiz();}}><Send size={15}/> Submit responses</button>
-         <button className="user-outline-button" type="button" disabled={Boolean(saving)}
-          onClick={()=>{setActiveQuiz(null);setStudentQuestions([]);setSelectedAnswers({});}}>
-          Cancel without submitting</button>
-        </div>
-       </div>}
-      </>}
-     </article>;
-    })}
-   </div>
+      {own?.screenshot_path&&<div className="quiz-proof"><button className="user-outline-button" type="button" onClick={()=>{void revealProof(own.screenshot_path!,`student-${own.id}`);}}><Eye size={15}/> View submitted screenshot</button>{proofLinks[`student-${own.id}`]&&<a href={proofLinks[`student-${own.id}`]} target="_blank" rel="noopener noreferrer">Open private screenshot</a>}</div>}
+     </div>}
+     {canReview&&results.length>0&&<div className="quiz-results-editor"><strong>Student results</strong>{results.map(s=><div className="quiz-result-review" key={s.id}><p>Student {s.student_id.slice(0,8)} · {s.review_status==='reviewed'?'Reviewed':'Awaiting review'} · {readable(s.submitted_at)}</p>{s.screenshot_path&&<div className="quiz-proof"><button className="user-outline-button" type="button" onClick={()=>{void revealProof(s.screenshot_path!,`tutor-${s.id}`);}}><FileImage size={15}/> View screenshot</button>{proofLinks[`tutor-${s.id}`]&&<a href={proofLinks[`tutor-${s.id}`]} target="_blank" rel="noopener noreferrer">Open private screenshot</a>}</div>}{s.result_url&&<p><a href={s.result_url} target="_blank" rel="noopener noreferrer">Open submitted result link</a></p>}{s.student_note&&<p>Student note: {s.student_note}</p>}{s.review_status==='reviewed'?<p>{s.review_note||'Reviewed; no note added.'}</p>:<><label htmlFor={`review-${s.id}`}>Tutor review note (optional)</label><textarea id={`review-${s.id}`} rows={2} maxLength={3000} value={reviewNotes[s.id]??''} onChange={e=>setReviewNotes(prev=>({...prev,[s.id]:e.target.value}))}/><button className="user-outline-button" type="button" disabled={Boolean(saving)} onClick={()=>{void markReviewed(s);}}><CheckCircle2 size={15}/> Mark reviewed</button></>}</div>)}</div>}
+    </article>;
+   })}</div>
   </section>
-  
  </div>;
 }
