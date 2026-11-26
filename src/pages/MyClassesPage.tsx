@@ -3,11 +3,13 @@ import { BookOpen, GraduationCap, Layers3, LockKeyhole, RefreshCw } from 'lucide
 import { useAuth } from '../auth/AuthProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import CourseOutlinePanel from '../components/CourseOutlinePanel';
 import './AcademicSetupPage.css';
 import './AcademicAssignmentsPage.css';
 
 type ClassOffering = { id: string; course_id: string; cohort_id: string; is_active: boolean };
-type Course = { id: string; title: string };
+type Course = { id: string; title: string; subject_id: string };
+type Subject = { id: string; name: string };
 type Cohort = { id: string; name: string };
 type Topic = { id: string; course_id: string; title: string; sort_order: number };
 type ClassInfo = {
@@ -54,21 +56,24 @@ export default function MyClassesPage() {
     const courseIds=unique(offerings.map(x=>x.course_id));
     const cohortIds=unique(offerings.map(x=>x.cohort_id));
 
-    const [courseResult,cohortResult,topicResult] = await Promise.all([
-      supabase.from('courses').select('id,title').in('id',courseIds),
+    const [courseResult,cohortResult,topicResult,subjectResult] = await Promise.all([
+      supabase.from('courses').select('id,title,subject_id').in('id',courseIds),
       supabase.from('cohorts').select('id,name').in('id',cohortIds),
       supabase.from('topics').select('id,course_id,title,sort_order').eq('is_active',true)
         .in('course_id',courseIds).order('sort_order'),
+      supabase.from('subjects').select('id,name').order('name'),
     ]);
-    if (courseResult.error || cohortResult.error || topicResult.error) {
+    if (courseResult.error || cohortResult.error || topicResult.error || subjectResult.error) {
       setError('Class details could not be read with the current permissions.');
     } else {
       const courses=(courseResult.data ?? []) as Course[];
+      const subjects=(subjectResult.data ?? []) as Subject[];
       const cohorts=(cohortResult.data ?? []) as Cohort[];
       const topics=(topicResult.data ?? []) as Topic[];
       setClasses(offerings.map(offering=>({
         offering,
-        courseTitle:courses.find(c=>c.id===offering.course_id)?.title ?? 'Course currently unavailable',
+        courseTitle:subjects.find(s=>s.id===courses.find(c=>c.id===offering.course_id)?.subject_id)?.name
+          ??courses.find(c=>c.id===offering.course_id)?.title ?? 'Subject currently unavailable',
         cohortName:cohorts.find(c=>c.id===offering.cohort_id)?.name ?? 'Cohort currently unavailable',
         topics:topics.filter(t=>t.course_id===offering.course_id),
       })));
@@ -109,6 +114,9 @@ export default function MyClassesPage() {
         <span className="my-class-icon"><BookOpen size={20}/></span>
         <h2>{item.courseTitle}</h2>
         <p className="my-class-cohort"><Layers3 size={15}/> {item.cohortName}</p>
+        <CourseOutlinePanel offeringId={item.offering.id}
+          canManage={account?.role==='owner'||account?.role==='admin'||
+            account?.role==='assistant_admin'}/>
         <Link className="user-outline-button" to={`/learning?offering=${encodeURIComponent(item.offering.id)}`}>
           <BookOpen size={15}/> Open lessons
         </Link>

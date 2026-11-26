@@ -73,9 +73,6 @@ export default function AcademicSetupPage() {
   const [subjectName, setSubjectName] = useState('');
   const [courseProgramme, setCourseProgramme] = useState('');
   const [courseLevel, setCourseLevel] = useState('');
-  const [courseSubject, setCourseSubject] = useState('');
-  const [courseTitle, setCourseTitle] = useState('');
-  const [courseDescription, setCourseDescription] = useState('');
 
   const refresh = useCallback(async () => {
     if (!supabase) {
@@ -148,12 +145,6 @@ export default function AcademicSetupPage() {
     ? courseProgramme : activeProgrammes[0]?.id ?? '';
   const courseLevelId = activeLevels.some(item => item.id === courseLevel)
     ? courseLevel : activeLevels[0]?.id ?? '';
-  const subjectOptions = subjects.filter(
-    subject => subject.academic_level_id === courseLevelId && subject.is_active,
-  );
-  const courseSubjectId = subjectOptions.some(item => item.id === courseSubject)
-    ? courseSubject : subjectOptions[0]?.id ?? '';
-
   const levelSubjects = useMemo(() => subjects.filter(
     subject => subject.academic_level_id === chosenLevelId,
   ), [subjects, chosenLevelId]);
@@ -239,28 +230,6 @@ export default function AcademicSetupPage() {
     }
     void create('subjects', { academic_level_id: chosenLevelId, name, code },
       'Subject saved.', () => setSubjectName(''));
-  }
-
-  function submitCourse(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = courseTitle.trim();
-    if (!courseProgrammeId || !courseLevelId || !courseSubjectId || title.length < 2) {
-      setError('Choose an active programme, level and subject, and enter a course title.');
-      return;
-    }
-    if (courses.some(item => item.programme_id === courseProgrammeId &&
-      item.academic_level_id === courseLevelId && item.subject_id === courseSubjectId)) {
-      setError('This programme, level and subject already have a course. Use the existing course in Catalogue management.');
-      return;
-    }
-    void create('courses', {
-      programme_id: courseProgrammeId,
-      academic_level_id: courseLevelId,
-      subject_id: courseSubjectId,
-      title, description: courseDescription.trim(),
-    }, 'Course saved.', () => {
-      setCourseTitle(''); setCourseDescription('');
-    });
   }
 
   const subjectNameFor = (id: string) => subjects.find(item => item.id === id)?.name ?? 'Unknown subject';
@@ -353,6 +322,10 @@ export default function AcademicSetupPage() {
       )}
 
       <div className="academic-next-steps" aria-label="Where to go next">
+        <Link to="/cohorts" className="academic-next-link">
+          <span><strong>Create classes &amp; add subjects</strong></span>
+          <ArrowRight size={18}/>
+        </Link>
         <Link to="/classes" className="academic-next-link">
           <span><strong>Organise classes &amp; timetable</strong></span>
           <ArrowRight size={18}/>
@@ -467,51 +440,33 @@ export default function AcademicSetupPage() {
 
         <section className="panel academic-panel">
           <div className="panel-heading"><div>
-            <h2>Course catalogue</h2>
+            <h2>Programme subject links</h2>
           </div></div>
-          <form className="academic-form academic-course-form" onSubmit={submitCourse}>
+          <p className="academic-code-hint">These links are created automatically when you add a subject to a class. Use this view to review or deactivate an existing link.</p>
+          <div className="academic-form academic-course-form">
             <label htmlFor="course-programme">Programme</label>
             <select id="course-programme" value={courseProgrammeId}
-              onChange={event=>setCourseProgramme(event.target.value)} required>
+              onChange={event=>setCourseProgramme(event.target.value)}>
               {activeProgrammes.map(item=><option value={item.id} key={item.id}>{item.name}</option>)}
             </select>
             <label htmlFor="course-level">Academic level</label>
             <select id="course-level" value={courseLevelId}
-              onChange={event=>{setCourseLevel(event.target.value); setCourseSubject('');}} required>
+              onChange={event=>setCourseLevel(event.target.value)}>
               {activeLevels.map(item=><option value={item.id} key={item.id}>{item.name}</option>)}
             </select>
-            <label htmlFor="course-subject">Subject</label>
-            <select id="course-subject" value={courseSubjectId}
-              onChange={event=>setCourseSubject(event.target.value)} required>
-              {subjectOptions.map(item=><option value={item.id} key={item.id}>{item.name}</option>)}
-            </select>
-            {courseLevelId && subjectOptions.length === 0 && (
-              <p className="academic-code-hint">Add an active subject to this level first.</p>
-            )}
-            <label htmlFor="course-title">Course title</label>
-            <input id="course-title" required minLength={2} maxLength={180} value={courseTitle}
-              onChange={event=>setCourseTitle(event.target.value)}
-              placeholder="e.g. course title approved by DLI"/>
-            <label htmlFor="course-description">Description (optional)</label>
-            <textarea id="course-description" rows={2} maxLength={1000}
-              value={courseDescription} onChange={event=>setCourseDescription(event.target.value)}/>
-            <button className="academic-submit" type="submit"
-              disabled={Boolean(saving) || loading || !courseProgrammeId || !courseSubjectId}>
-              <Plus size={15}/> {saving === 'courses' ? 'Saving course…' : 'Create course'}
-            </button>
-          </form>
+          </div>
           <div className="academic-record-list academic-course-list">
             {courses.filter(item => item.programme_id === courseProgrammeId &&
               item.academic_level_id === courseLevelId).map(item => <div className="academic-record" key={item.id}>
               <div className="academic-record-text">
-                <strong>{item.title}</strong>
+                <strong>{subjectNameFor(item.subject_id)}</strong>
               </div>
               <Badge active={item.is_active}/>
               <ActionButton active={item.is_active} disabled={Boolean(saving)}
                 onClick={() => { void toggle('courses', item, item.title); }}/>
             </div>)}
             {!loading && courses.length === 0 && (
-              <p className="academic-empty">No courses yet. Choose an active subject and create the first course.</p>
+              <p className="academic-empty">No programme subject links exist yet. Add a subject to a class to create the first link.</p>
             )}
           </div>
         </section>

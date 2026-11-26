@@ -501,6 +501,10 @@
       "gitBlobSha1": "58fafe7d859ab898046b35d0c62564c08b87a71b"
     },
     {
+      "gitBlobSha1": "a56d28a5a02e6a127a2bb5dd96bad02de1334d60",
+      "file": "20261126093000_disable_unmonitored_calling.sql"
+    },
+    {
       "file": "20261126110000_stage_q75_dli_online_comprehensive_tutorial.sql",
       "gitBlobSha1": "185af5470c5aa44802bb050047145de7e84fff8f"
     },
@@ -511,10 +515,6 @@
     {
       "file": "20261126120754_stage_q77_paid_only_external_quizzes.sql",
       "gitBlobSha1": "6f7ecd1f51df8afd38db67519474c3d62804de4e"
-    },
-    {
-      "gitBlobSha1": "a56d28a5a02e6a127a2bb5dd96bad02de1334d60",
-      "file": "20261126093000_disable_unmonitored_calling.sql"
     },
     {
       "file": "20261126132029_stage_q78_external_meetings_reminders.sql",
@@ -531,6 +531,10 @@
     {
       "file": "20261126132838_stage_q81_dispatch_api_key.sql",
       "gitBlobSha1": "ad0383d2c6e891dafbeb9bd70b158ed4f74c667d"
+    },
+    {
+      "gitBlobSha1": "8f9488de2ae3e3e6ef61ae05b317a18455a5a91b",
+      "file": "20261126135631_stage_q82_class_course_outline_files.sql"
     }
   ]
 }

@@ -1,23 +1,29 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, CalendarClock, CheckCircle2, GraduationCap, Layers3, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import {Link} from 'react-router-dom';
+import {useAuth} from '../auth/AuthProvider';
 import {supabase} from '../lib/supabase';
+import CourseOutlinePanel from '../components/CourseOutlinePanel';
 import './AcademicSetupPage.css';
 import './CohortCurriculumPage.css';
 
 type Item={id:string;is_active:boolean};
 type Programme=Item&{name:string};
 type Level=Item&{name:string;sort_order:number};
-type Course=Item&{title:string;programme_id:string;academic_level_id:string};
+type Course=Item&{title:string;subject_id:string;programme_id:string;academic_level_id:string};
+type Subject=Item&{name:string;academic_level_id:string};
 type Cohort=Item&{name:string;programme_id:string;academic_level_id:string};
 type Offering=Item&{id:string;cohort_id:string;course_id:string};
 type Topic=Item&{title:string;course_id:string;sort_order:number};
 type Plan={cohort_id:string;course_id:string;topic_id:string;position:number};
 
 export default function CohortCurriculumPage(){
+ const {account}=useAuth();
+ const canSequence=account?.role!=='assistant_admin';
  const [programmes,setProgrammes]=useState<Programme[]>([]);
  const [levels,setLevels]=useState<Level[]>([]);
  const [courses,setCourses]=useState<Course[]>([]);
+ const [subjects,setSubjects]=useState<Subject[]>([]);
  const [cohorts,setCohorts]=useState<Cohort[]>([]);
  const [offerings,setOfferings]=useState<Offering[]>([]);
  const [topics,setTopics]=useState<Topic[]>([]);
@@ -38,36 +44,41 @@ export default function CohortCurriculumPage(){
   if(!supabase){setLoading(false);setError('DLI database is unavailable.');return;}
   setLoading(true);
   try{
-   const [p,l,c,h,o,t,plan]=await Promise.all([
+   const [p,l,c,s,h,o,t,plan]=await Promise.all([
     supabase.from('programmes').select('id,name,is_active').order('name'),
     supabase.from('academic_levels').select('id,name,sort_order,is_active').order('sort_order'),
-    supabase.from('courses').select('id,title,programme_id,academic_level_id,is_active').order('title'),
+    supabase.from('courses').select('id,title,subject_id,programme_id,academic_level_id,is_active').order('title'),
+    supabase.from('subjects').select('id,name,academic_level_id,is_active').order('name'),
     supabase.from('cohorts').select('id,name,programme_id,academic_level_id,is_active').order('created_at',{ascending:false}),
     supabase.from('course_offerings').select('id,cohort_id,course_id,is_active'),
     supabase.from('topics').select('id,title,course_id,sort_order,is_active').order('sort_order').order('title'),
-    supabase.from('dli_cohort_topic_plan').select('cohort_id,course_id,topic_id,position').order('position'),
+    canSequence
+     ?supabase.from('dli_cohort_topic_plan').select('cohort_id,course_id,topic_id,position').order('position')
+     :Promise.resolve({data:[],error:null}),
    ]);
-   if([p,l,c,h,o,t,plan].some(r=>r.error)){
+   if([p,l,c,s,h,o,t,plan].some(r=>r.error)){
     setError('Could not load the verified academic catalogue, cohort links, or topic sequence. Check your role and refresh.');
    }else{
-    setProgrammes(p.data??[]);setLevels(l.data??[]);setCourses(c.data??[]);
+    setProgrammes(p.data??[]);setLevels(l.data??[]);setCourses(c.data??[]);setSubjects(s.data??[]);
     setCohorts(h.data??[]);setOfferings(o.data??[]);setTopics(t.data??[]);
     setPlans(plan.data??[]);setError(null);
    }
   }catch{setError('Academic setup could not be reached.');}
   finally{setLoading(false);}
- },[]);
+ },[canSequence]);
  useEffect(()=>{void refresh();},[refresh]);
  const enabledProgrammes=programmes.filter(p=>p.is_active);
  const chosenProgramme=enabledProgrammes.find(p=>p.id===programmeId)??enabledProgrammes[0];
- const programmeLevels=levels.filter(l=>l.is_active&&courses.some(c=>
-  c.is_active&&c.programme_id===chosenProgramme?.id&&c.academic_level_id===l.id));
+ const programmeLevels=levels.filter(l=>l.is_active);
  const chosenLevel=programmeLevels.find(l=>l.id===levelId)??programmeLevels[0];
  const selected=cohorts.find(c=>c.id===cohortId&&c.is_active)??cohorts.find(c=>c.is_active)??null;
  const cohortCourses=useMemo(()=>selected?courses.filter(c=>c.is_active&&
   c.programme_id===selected.programme_id&&c.academic_level_id===selected.academic_level_id):[],[courses,selected]);
  const assigned=useMemo(()=>selected?offerings.filter(o=>o.is_active&&o.cohort_id===selected.id
   &&cohortCourses.some(c=>c.id===o.course_id)):[],[offerings,selected,cohortCourses]);
+ const assignedSubjectIds=new Set(assigned.map(o=>courses.find(c=>c.id===o.course_id)?.subject_id).filter(Boolean));
+ const availableSubjects=subjects.filter(subject=>subject.is_active&&
+  subject.academic_level_id===selected?.academic_level_id&&!assignedSubjectIds.has(subject.id));
  const chosenCourse=assigned.find(o=>o.course_id===courseId)?.course_id??assigned[0]?.course_id??'';
  const courseTopics=topics.filter(t=>t.course_id===chosenCourse&&t.is_active);
  const ordered=plans.filter(p=>p.cohort_id===selected?.id&&p.course_id===chosenCourse)
@@ -75,7 +86,10 @@ export default function CohortCurriculumPage(){
  const available=courseTopics.filter(t=>!ordered.some(p=>p.topic_id===t.id));
  const allReady=assigned.length>0&&assigned.every(o=>plans.some(p=>
    p.cohort_id===selected?.id&&p.course_id===o.course_id));
- const memberTitle=(id:string)=>courses.find(c=>c.id===id)?.title??'Course unavailable';
+ const memberTitle=(id:string)=>{
+  const course=courses.find(c=>c.id===id);
+  return subjects.find(s=>s.id===course?.subject_id)?.name??course?.title??'Subject unavailable';
+ };
  const topicTitle=(id:string)=>topics.find(t=>t.id===id)?.title??'Topic unavailable';
 
  async function createCohort(e:FormEvent<HTMLFormElement>){
@@ -88,21 +102,36 @@ export default function CohortCurriculumPage(){
    }).select('id').single();
    if(r.error||!r.data){setError('Cohort creation was denied or the name already exists for this programme and level.');return;}
    setCohortId(r.data.id);setCourseId('');setName('');
-   await refresh();setNotice('Cohort created. Assign its approved courses in Step 2.');
+   await refresh();setNotice('Class created. Add its subjects in Step 2.');
   }catch{setError('The cohort could not be saved.');}
   finally{setBusy(false);}
  }
- async function assignCourse(id:string){
+ async function assignSubject(subjectId:string){
   if(!supabase||!selected||busy)return;
   setBusy(true);setError(null);setNotice(null);
   try{
+   const subject=subjects.find(item=>item.id===subjectId);
+   if(!subject){setError('This approved subject is no longer available. Refresh and retry.');return;}
+   let course=courses.find(item=>item.is_active&&item.programme_id===selected.programme_id&&
+    item.academic_level_id===selected.academic_level_id&&item.subject_id===subject.id);
+   if(!course){
+    const created=await supabase.from('courses').insert({
+     programme_id:selected.programme_id,academic_level_id:selected.academic_level_id,
+     subject_id:subject.id,title:subject.name,description:'',
+    }).select('id').single();
+    if(created.error||!created.data){
+     setError('The programme could not connect this subject. Check your permissions or refresh.');return;
+    }
+    course={id:created.data.id,title:subject.name,subject_id:subject.id,
+      programme_id:selected.programme_id,academic_level_id:selected.academic_level_id,is_active:true};
+   }
    const result=await supabase.from('course_offerings').insert({
-    cohort_id:selected.id,course_id:id,programme_id:selected.programme_id,
+    cohort_id:selected.id,course_id:course.id,programme_id:selected.programme_id,
     academic_level_id:selected.academic_level_id,
    }).select('id').single();
-   if(result.error){setError('Course assignment failed or was already present. Refresh to check its status.');return;}
-   setCourseId(id);await refresh();
-   setNotice('Course assigned to this cohort. Save its teaching topic sequence in Step 3.');
+   if(result.error){setError('Adding this subject failed or it is already part of the class. Refresh to check its status.');return;}
+   setCourseId(course.id);await refresh();
+   setNotice('Subject added to this class. Attach its course outline PDF below.');
   }catch{setError('The course assignment could not be confirmed.');}
   finally{setBusy(false);}
  }
@@ -150,11 +179,12 @@ export default function CohortCurriculumPage(){
   void saveSequence(ids,'Topic order updated. The next class schedule will use this exact sequence.');
  }
  return <div className="module-page dli-cohort-flow">
-  <Link className="back-link" to="/academics"><ArrowLeft size={16}/> Academic Setup</Link>
+  <Link className="back-link" to={account?.role==='assistant_admin'?'/classes':'/academics'}>
+   <ArrowLeft size={16}/> {account?.role==='assistant_admin'?'Classes & Timetable':'Academic Setup'}</Link>
   <div className="module-page-hero">
    <span className="module-page-icon"><Layers3 size={24}/></span>
    <div className="module-page-copy">
-    <h1>Cohorts, courses &amp; topic sequencing</h1>
+    <h1>Classes, subjects &amp; course outlines</h1>
     
    </div>
   </div>
@@ -164,15 +194,16 @@ export default function CohortCurriculumPage(){
   <div className="academic-top-actions">{loading&&<p role="status">Loading academic dependencies…</p>}
    <button type="button" className="user-outline-button" disabled={busy||loading} onClick={()=>void refresh()}>
     <RefreshCw size={16}/> Refresh</button></div>
-  <div className="dli-cohort-steps" aria-label="Curriculum setup steps">
-   <span><strong>1</strong> Create cohort</span><span><strong>2</strong> Assign courses</span><span><strong>3</strong> Sequence topics</span>
+  <div className="dli-cohort-steps" aria-label="Class setup steps">
+   <span><strong>1</strong> Create class</span><span><strong>2</strong> Add subjects</span>
+   {canSequence&&<span><strong>3</strong> Plan topics</span>}
   </div>
   <section className="panel dli-cohort-step">
-   <header><span className="dli-cohort-step-number">01</span><div><h2>Create cohort</h2>
+   <header><span className="dli-cohort-step-number">01</span><div><h2>Create a class</h2>
     <p>Only a name, programme and academic level are required. Scheduling dates belong in Classes &amp; Timetable.</p></div></header>
    <form onSubmit={e=>void createCohort(e)} className="academic-form dli-cohort-create">
-    <label htmlFor="cohort-name">Cohort name<input id="cohort-name" value={name} required minLength={2} maxLength={160}
-     placeholder="E.g. JAMB Science 2027" onChange={e=>setName(e.target.value)}/></label>
+   <label htmlFor="cohort-name">Class name<input id="cohort-name" value={name} required minLength={2} maxLength={160}
+     placeholder="E.g. Senior Secondary 3" onChange={e=>setName(e.target.value)}/></label>
     <label htmlFor="cohort-programme">Programme<select id="cohort-programme" value={chosenProgramme?.id??''}
       onChange={e=>{setProgrammeId(e.target.value);setLevelId('');}}>
       {enabledProgrammes.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}
@@ -182,12 +213,12 @@ export default function CohortCurriculumPage(){
        {programmeLevels.map(l=><option value={l.id} key={l.id}>{l.name}</option>)}
     </select></label>
     <button className="academic-submit" type="submit" disabled={busy||loading||!chosenProgramme||!chosenLevel}>
-     <Plus size={16}/> Create cohort</button>
+     <Plus size={16}/> Create class</button>
    </form>
-   <label className="dli-cohort-switch" htmlFor="cohort-select">Continue working on a cohort
+   <label className="dli-cohort-switch" htmlFor="cohort-select">Select a class to manage
     <select id="cohort-select" value={selected?.id??''} disabled={busy||loading} onChange={e=>{
      setCohortId(e.target.value);setCourseId('');setTopicPicker('');}}>
-     {!selected&&<option value="">Create a cohort first</option>}
+     {!selected&&<option value="">Create a class first</option>}
      {cohorts.filter(c=>c.is_active).map(h=><option key={h.id} value={h.id}>
       {h.name} · {programmes.find(p=>p.id===h.programme_id)?.name??'Programme'}
      </option>)}
@@ -195,25 +226,31 @@ export default function CohortCurriculumPage(){
    </label>
   </section>
   <section className="panel dli-cohort-step">
-   <header><span className="dli-cohort-step-number">02</span><div><h2>Assign approved courses</h2>
-    <p>Courses are drawn from the selected cohort’s programme and academic level.</p></div>
+   <header><span className="dli-cohort-step-number">02</span><div><h2>Add subjects to this class</h2>
+    <p>Choose the subjects taught in this class. Each subject can have its own PDF course outline.</p></div>
    {selected&&assigned.length>0&&<CheckCircle2 size={22}/>}</header>
-   {!selected?<p className="academic-empty">Create or select a cohort in Step 1 to unlock course assignment.</p>:<>
+   {!selected?<p className="academic-empty">Create or select a class in Step 1 to add subjects.</p>:<>
     <strong className="dli-cohort-context">{selected.name}</strong>
-    <div className="dli-cohort-choice-grid">{cohortCourses.map(c=>{
-     const linked=assigned.some(o=>o.course_id===c.id);
-     return <div className={linked?'dli-cohort-choice assigned':'dli-cohort-choice'} key={c.id}>
-      <BookOpen size={20}/><span><strong>{c.title}</strong><small>{linked?'Assigned to cohort':'Available course'}</small></span>
-      <button type="button" disabled={busy||linked} onClick={()=>void assignCourse(c.id)}>
-       {linked?<CheckCircle2 size={15}/>:<Plus size={15}/>} {linked?'Assigned':'Assign'}</button>
+    <div className="dli-cohort-choice-grid">{availableSubjects.map(subject=>{
+     return <div className="dli-cohort-choice" key={subject.id}>
+      <BookOpen size={20}/><span><strong>{subject.name}</strong><small>Available subject</small></span>
+      <button type="button" disabled={busy} onClick={()=>void assignSubject(subject.id)}>
+       <Plus size={15}/> Add subject</button>
      </div>;
     })}</div>
-    {!cohortCourses.length&&<p className="academic-empty">No course is configured at this programme and level. <Link to="/academics">Create an approved course</Link> first.</p>}
+    {!availableSubjects.length&&<p className="academic-empty">No other approved subjects are available for this class level. Add an approved subject to the catalogue or check whether all subjects are already assigned.</p>}
+    {assigned.length>0&&<div className="dli-cohort-assigned-subjects">
+     <h3>Subjects in {selected.name}</h3>
+     {assigned.map(offering=><article className="dli-cohort-assigned-subject" key={offering.id}>
+      <h4>{memberTitle(offering.course_id)}</h4>
+      <CourseOutlinePanel offeringId={offering.id} canManage/>
+     </article>)}
+    </div>}
    </>}
   </section>
-  <section className="panel dli-cohort-step">
+  {canSequence&&<section className="panel dli-cohort-step">
    <header><span className="dli-cohort-step-number">03</span><div><h2>Sequence teaching topics</h2>
-    <p>Each cohort course has its own ordered topic plan. Move topics up or down to change the exact teaching order.</p></div></header>
+    <p>Each class subject has its own ordered topic plan. Move topics up or down to change the teaching order.</p></div></header>
    {!selected||!assigned.length?<p className="academic-empty">Assign at least one course in Step 2 to unlock topic sequencing.</p>:<>
     <label htmlFor="cohort-topic-course">Course to sequence<select id="cohort-topic-course"
        value={chosenCourse} onChange={e=>{setCourseId(e.target.value);setTopicPicker('');}}>
@@ -258,8 +295,8 @@ export default function CohortCurriculumPage(){
     </div>}
     <p className="academic-code-hint">The first topic is taught first. Subsequent topics are allocated to meeting dates using the pacing chosen in Classes &amp; Timetable.</p>
    </>}
-  </section>
-  {selected&&<section className="panel dli-cohort-ready">
+  </section>}
+  {canSequence&&selected&&<section className="panel dli-cohort-ready">
    <div><GraduationCap size={22}/><div><h2>{allReady?'Ready for timetable setup':'Complete the topic plans to continue'}</h2>
     <p>{assigned.length} course{assigned.length===1?'':'s'} assigned · {assigned.filter(o=>plans.some(p=>p.cohort_id===selected.id&&p.course_id===o.course_id)).length} sequenced</p>
    </div></div>

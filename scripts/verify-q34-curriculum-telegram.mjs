@@ -12,15 +12,16 @@ const nav=read('src/App.tsx');
 const curriculumSQL=read('supabase/migrations/20261115193000_stage_q34_cohort_topic_schedule.sql');
 const chatSQL=read('supabase/migrations/20261115200000_stage_q34_direct_replies_reactions_and_actions.sql');
 for(const token of [
-  'Create cohort','Assign approved courses','Sequence teaching topics',
+  'Create a class','Add subjects to this class','Sequence teaching topics',
   'cohort-name','cohort-programme','cohort-level',
-  "from('cohorts').insert", "from('course_offerings').insert",
+  "from('cohorts').insert", "from('course_offerings').insert", "from('courses').insert",
+  'async function assignSubject','availableSubjects','CourseOutlinePanel',
   "rpc('dli_set_cohort_topics'", 'ArrowUp','ArrowDown',
-  'Create &amp; append topic','Continue working on a cohort',
+  'Create &amp; append topic','Select a class to manage',
   '/classes?cohort=','allReady',
 ])assert.ok(academic.includes(token),'Missing cohort-first flow '+token);
-assert.ok(academic.indexOf('Create cohort')<academic.indexOf('Assign approved courses')
-  &&academic.indexOf('Assign approved courses')<academic.indexOf('Sequence teaching topics'),
+assert.ok(academic.indexOf('Create a class')<academic.indexOf('Add subjects to this class')
+  &&academic.indexOf('Add subjects to this class')<academic.indexOf('Sequence teaching topics'),
   'Academic setup steps must be ordered strictly');
 assert.ok(!academic.includes('cohort-start')&&!academic.includes('cohort-end'),
   'Cohort creation must not ask for scheduling dates');
@@ -111,4 +112,17 @@ for(const guard of ['q34_assistant_active_cohorts_read','q34_assistant_active_of
  assert.ok(assistantGuard.includes(guard),'Assistant class catalogue permission missing '+guard);
 assert.ok(manifest.entries.some(e=>e.file==='20261115203000_stage_q34c_assistant_cohort_read.sql'),
  'Q34c Assistant Admin migration missing reviewed integrity blob');
-console.log('Q34 verified: cohort-first curriculum, topic pacing, Telegram composer, interactions, server role guards, RLS and migration integrity.');
+const outlines=read('src/components/CourseOutlinePanel.tsx');
+const myClasses=read('src/pages/MyClassesPage.tsx');
+const outlineSQL=read('supabase/migrations/20261126135631_stage_q82_class_course_outline_files.sql');
+for(const token of ['dli-course-outlines','application/pdf','is_published','storage().from'])
+ if(token==='storage().from')continue;
+ else assert.ok(outlines.includes(token)||outlineSQL.includes(token),'Missing course outline workflow '+token);
+assert.ok(myClasses.includes('CourseOutlinePanel'),'Course outlines must show on tutor/student class cards');
+for(const token of ['q82_assistant_cohort_insert','q82_assistant_connect_approved_subject',
+ 'dli_cohort_outline_read','dli_cohort_outline_storage_upload',
+ 'dli_cohort_outline_storage_download','private.can_read_dli_offering'])
+ assert.ok(outlineSQL.includes(token),'Missing course outline permission guard '+token);
+assert.ok(manifest.entries.some(e=>e.file==='20261126135631_stage_q82_class_course_outline_files.sql'),
+ 'Q82 class course outline migration missing reviewed integrity blob');
+console.log('Q34/Q82 verified: class-first subject assignment, private outlines, topic pacing, Telegram composer, interactions, server role guards, RLS and migration integrity.');

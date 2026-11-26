@@ -6,7 +6,7 @@ import {useAuth} from '../auth/AuthProvider';
 import {canAccessPath} from '../auth/permissions';
 
 const ITEMS=[
- {label:'Set up a cohort',path:'/cohorts',icon:BookOpen},
+ {label:'Create a class',path:'/cohorts',icon:BookOpen},
  {label:'Schedule a class',path:'/classes',icon:CalendarDays},
  {label:'Open tutorial classes',path:'/classes',icon:CalendarDays},
  {label:'Review payments',path:'/enrolment',icon:Wallet},

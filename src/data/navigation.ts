@@ -76,10 +76,10 @@ export const navigationSections: NavigationSection[] = [
         group: 'Academic',
       },
       {
-        label: 'Advanced curriculum',
+        label: 'Classes & subjects',
         path: '/cohorts',
         icon: School,
-        description: 'Academic topics, cohorts and course offerings, managed by authorised academic staff.',
+        description: 'Create a class, add its subjects and share course outlines with its students and tutors.',
         group: 'Academic',
       },
       {

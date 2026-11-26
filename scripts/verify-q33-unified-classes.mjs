@@ -28,7 +28,10 @@ assert.ok(app.includes('<Route path="/assignments" element={<Navigate to="/class
  'Legacy bookmark should redirect safely');
 assert.ok(!app.includes("import('./pages/AcademicAssignmentsPage')"),
  'Retire the redundant academic assignment screen but retain its source history');
-assert.ok(acad.includes('submitCourse'),'Master course catalogue must remain editable');
+assert.ok(acad.includes("toggle('courses'"),'Existing programme subject mappings must remain manageable');
+assert.ok(acad.includes('These links are created automatically when you add a subject to a class')
+  &&!acad.includes('function submitCourse'),
+  'Programme subject mappings should come from class setup, not a separate manual course form');
 for(const token of [
  'CREATE TABLE public.dli_class_curricula',
  'CREATE TABLE public.dli_class_co_tutors',
